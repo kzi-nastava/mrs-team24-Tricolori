@@ -1,8 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
 
+/* Add other fonts in the future...*/
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap');
+
+
 @import "tailwindcss";
 
+
 @theme {
+  --font-serif: "Libre Baskerville", serif;
+  --font-sans: "League Spartan", sans-serif;
+
   --color-light-100: #ccfff1;
   --color-light-200: #99ffe2;
   --color-light-300: #66ffd4;
