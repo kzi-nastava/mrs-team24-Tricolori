@@ -1,5 +1,72 @@
-<h2 class="font-logo text-9xl">CUBER</h2>
+<div class="font-sans container mx-auto">
+    <h2 class="text-2xl text-light-700">Your Profile</h2>
+    <p class="text-gray-500">Manage your personal information and settings</p>
 
-<h1 class="font-serif text-8xl">Whereas disregard and contempt for human rights have resulted</h1>
+    <div class="grid gap-10 grid-cols-6 mt-6">
+        <div class="email-prop order-1 col-span-4 bg-gray-200 rounded-2xl p-5 flex flex-col 
+        justify-center items-start gap-4">
+            <div class="flex items-center gap-4">
+                <div>Email Logo</div>
+                <div>
+                    <h3 class="text-xl text-light-700">Email Address</h3>
+                    <p class="text-gray-400 text-sm">Your primary contact email</p>
+                </div>
+            </div>
+            <input 
+                class="bg-gray-100 rounded-2xl p-5 size-full" 
+                type="email" readonly value="joedoe@example.com">
+        </div>
+        <div class="personal-prop order-3 row-span-3 col-span-4 bg-gray-200 rounded-2xl p-5 flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div>Person Logo</div>
+                    <div>
+                        <h3 class="text-xl text-light-700">Personal Information</h3>
+                        <p class="text-gray-400 text-sm">Update your personal details</p>
+                    </div>
+                </div>
+                <button class="bg-light-600 px-4 py-1 rounded-lg text-white cursor-pointer">Edit</button>
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">First Name</p>
+                <input 
+                    class="bg-gray-100 rounded-2xl p-5 size-full" 
+                    type="text" value="John">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Last Name</p>
+                <input 
+                    class="bg-gray-100 rounded-2xl p-5 size-full" 
+                    type="text" value="Doe">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Phone Number</p>
+                <input 
+                    class="bg-gray-100 rounded-2xl p-5 size-full" 
+                    type="text" value="+381 60 123 4567">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Home Address</p>
+                <input 
+                    class="bg-gray-100 rounded-2xl p-5 size-full" 
+                    type="text" value="123 Main Street, Belgrade">
+            </div>
+        </div>
 
-<p class="font-sans text-3xl">Lorem ipsum dolor sit amet consectetur adipisicing elit. A, possimus, alias unde cum delectus similique, perspiciatis assumenda repellendus fuga nesciunt laboriosam libero eaque esse eligendi dicta pariatur. Iusto, vel assumenda?</p>
+        <div class="picture-prop order-4 row-span-3 col-span-2 bg-gray-200 rounded-2xl p-5 flex flex-col justify-between">
+            <div class="flex flex-col gap-3">
+                <h3 class="text-xl text-light-700">Profile Picture</h3>
+                <div class="text-center">Image</div>
+            </div>
+            <div class="flex flex-col gap-3">
+                <p class="text-gray-500 text-center">Picture must be in .jpg or .png format</p>
+                <button class="bg-light-700 py-2.5 rounded-xl text-white cursor-pointer">Upload Picture</button>
+            </div>
+        </div>
+
+        <div class="security-prop order-2 col-span-2 bg-gray-200 rounded-2xl p-5 flex flex-col justify-between gap-4">
+            <h3 class="text-xl text-light-700">Security</h3>
+            <button class="bg-dark-700 py-2.5 rounded-xl text-white cursor-pointer">Change Password</button>
+        </div>
+    </div>
+</div>
