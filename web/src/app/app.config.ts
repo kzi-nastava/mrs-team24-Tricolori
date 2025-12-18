@@ -5,7 +5,7 @@ import {
   heroLockClosed,
   heroEye,
   heroEyeSlash,
-  heroArrowRight
+  heroArrowRight, heroUser, heroPhone, heroHome, heroArrowUpTray
 } from '@ng-icons/heroicons/outline';
 
 import { routes } from './app.routes';
@@ -20,7 +20,8 @@ export const appConfig: ApplicationConfig = {
       heroLockClosed,
       heroEye,
       heroEyeSlash,
-      heroArrowRight
+      heroArrowRight,
+      heroUser, heroArrowUpTray, heroHome, heroPhone
     })
   ]
 };
