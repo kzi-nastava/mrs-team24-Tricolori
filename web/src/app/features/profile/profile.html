@@ -1,0 +1,158 @@
+<div class="font-sans container mx-auto p-3">
+    <h2 class="text-2xl text-light-700 px-3">Your Profile</h2>
+    <p class="text-gray-500 px-3">Manage your personal information and settings</p>
+
+    <div class="grid gap-8 grid-cols-6 mt-6">
+        <div class="email-prop order-1 col-span-6 lg:col-span-4 bg-gray-200 rounded-2xl p-5 flex flex-col 
+        justify-center items-start gap-4">
+            <div class="flex items-center gap-4">
+                <div>Email Logo</div>
+                <div>
+                    <h3 class="text-xl text-light-700">Email Address</h3>
+                    <p class="text-gray-400 text-sm">Your primary contact email</p>
+                </div>
+            </div>
+            <input 
+                class="bg-gray-100 rounded-2xl p-5 size-full" 
+                type="email" readonly value="joedoe@example.com">
+        </div>
+        <div class="personal-prop order-3 row-span-3 col-span-6 lg:col-span-4 bg-gray-200 rounded-2xl p-5 flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div>Person Logo</div>
+                    <div>
+                        <h3 class="text-xl text-light-700">Personal Information</h3>
+                        <p class="text-gray-400 text-sm">Update your personal details</p>
+                    </div>
+                </div>
+                <button class="bg-light-600 px-4 py-1 rounded-lg text-white cursor-pointer">Edit</button>
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">First Name</p>
+                <input 
+                    class="bg-gray-100 rounded-2xl p-5 size-full" 
+                    type="text" value="John">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Last Name</p>
+                <input 
+                    class="bg-gray-100 rounded-2xl p-5 size-full" 
+                    type="text" value="Doe">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Phone Number</p>
+                <input 
+                    class="bg-gray-100 rounded-2xl p-5 size-full" 
+                    type="text" value="+381 60 123 4567">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Home Address</p>
+                <input 
+                    class="bg-gray-100 rounded-2xl p-5 size-full" 
+                    type="text" value="123 Main Street, Belgrade">
+            </div>
+        </div>
+
+        <div class="picture-prop order-4 row-span-3 col-span-6 lg:col-span-2 bg-gray-200 rounded-2xl p-5 flex flex-col justify-between">
+            <div class="flex flex-col gap-3">
+                <h3 class="text-xl text-light-700">Profile Picture</h3>
+                <div class="text-center">Image</div>
+            </div>
+            <div class="flex flex-col gap-3">
+                <p class="text-gray-500 text-center">Picture must be in .jpg or .png format</p>
+                <button class="bg-light-700 py-2.5 rounded-xl text-white cursor-pointer">Upload Picture</button>
+            </div>
+        </div>
+
+        <div class="security-prop order-2 col-span-6 lg:col-span-2 bg-gray-200 rounded-2xl p-5 flex flex-col justify-between gap-4">
+            <h3 class="text-xl text-light-700">Security</h3>
+            <button class="bg-dark-700 py-2.5 rounded-xl text-white cursor-pointer">Change Password</button>
+        </div>
+
+        <div class="vehicle-prop row-span-2 col-span-6 lg:col-span-3 order-5 bg-gray-200 rounded-2xl p-5 flex flex-col 
+        justify-center items-stretch gap-4">
+            <div class="flex items-center gap-4">
+                <div>Vehicle Logo</div>
+                <div>
+                    <h3 class="text-xl text-light-700">Vehicle Information</h3>
+                    <p class="text-gray-400 text-sm">Assigned by administrator</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 grid-rows-3 gap-3">
+                <div class="flex flex-col justify-between order-1 rounded-2xl bg-gray-300 p-3">
+                    <div class="flex justify-start items-center gap-3">
+                        <div>Model Image</div>
+                        <p class="text-sm">Model</p>
+                    </div>
+                    <p class="text-xl">Volkswagen Passat</p>
+                </div>
+                <div class="flex flex-col justify-between order-2 rounded-2xl bg-gray-300 p-3">
+                    <div class="flex justify-start items-center gap-3">
+                        <div>Place Image</div>
+                        <p class="text-sm">Place</p>
+                    </div>
+                    <p class="text-xl">Novi Sad</p>
+                </div>
+                <div class="flex flex-col justify-between order-3 rounded-2xl bg-gray-300 p-3">
+                    <div class="flex justify-start items-center gap-3">
+                        <div>Licence Image</div>
+                        <p class="text-sm">Licence plate</p>
+                    </div>
+                    <p class="text-xl">NS 123-AB</p>
+                </div>
+                <div class="flex flex-col justify-between order-4 rounded-2xl bg-gray-300 p-3">
+                    <div class="flex justify-start items-center gap-3">
+                        <div>Type Image</div>
+                        <p class="text-sm">Vehicle type</p>
+                    </div>
+                    <p class="text-xl">Standard</p>
+                </div>
+                <div class="flex flex-col justify-between order-5 rounded-2xl bg-gray-300 p-3">
+                    <div class="flex justify-start items-center gap-3">
+                        <div>Baby Image</div>
+                        <p class="text-sm">Does it drive babies?</p>
+                    </div>
+                    <p class="text-xl">Yes</p>
+                </div>
+                <div class="flex flex-col justify-between order-6 rounded-2xl bg-gray-300 p-3">
+                    <div class="flex justify-start items-center gap-3">
+                        <div>Pets Image</div>
+                        <p class="text-sm">Does it drive pets?</p>
+                    </div>
+                    <p class="text-xl">Yes</p>
+                </div>
+            </div>
+            <div class="bg-deep-100 rounded-2xl p-5 size-full">
+                <p class="text-deep">Vehicle information is managed by administrators. Contact support for any changes</p>
+            </div>
+        </div>
+
+        <div class="activity-prop col-span-6 lg:col-span-3 row-span-1 order-6 bg-gray-200 rounded-2xl p-5 flex flex-col gap-4">
+            <div class="flex items-center gap-4">
+                <div>Clock Logo</div>
+                <div>
+                    <h3 class="text-xl text-light-700">Active Hours</h3>
+                    <p class="text-gray-400 text-sm">Your activity in last 24 hours</p>
+                </div>
+            </div>
+            <div class="flex flex-col justify-between bg-dark-200 rounded-2xl p-5 gap-5">
+                <div class="flex justify-between items-center">
+                    <div class="flex flex-col">
+                        <p>Total Active Time</p>
+                        <p class="text-3xl"><strong>5.5 hours</strong></p>
+                    </div>
+                    <div>Clock logo</div>
+                </div>
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <p>Daily Goal: 8 hours</p>
+                        <p>69%</p>
+                    </div>
+                    <div class="rounded-3xl bg-white progress">
+                        <div class="rounded-3xl bg-light-600 progress-bar h-5"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
