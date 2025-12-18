@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { NgIcon } from '@ng-icons/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroEye } from '@ng-icons/heroicons/outline';
 
 interface Ride {
   id: number;
@@ -19,14 +20,16 @@ interface Ride {
 
 @Component({
   selector: 'app-driver-history',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     RouterLink,
     NgIcon
   ],
-  templateUrl: './driver-history.component.html',
-  styleUrl: './driver-history.component.css'
+  providers: [provideIcons({ heroEye })],
+  templateUrl: './driver-history.html',
+  styleUrl: './driver-history.css'
 })
 export class DriverHistory {
   rides: Ride[] = [];
@@ -34,7 +37,10 @@ export class DriverHistory {
   dateRange: string = '';
 
   constructor() {
+    console.log('DriverHistory component initialized');
     this.loadRides();
+    console.log('Rides loaded:', this.rides.length);
+    console.log('Filtered rides:', this.filteredRides.length);
   }
 
   loadRides(): void {
@@ -102,23 +108,16 @@ export class DriverHistory {
   }
 
   filterByDate(): void {
-    // TODO: Implement date filtering logic
-    // This should parse the dateRange input and filter rides accordingly
+    console.log('Filter clicked, dateRange:', this.dateRange);
     if (!this.dateRange) {
       this.filteredRides = [...this.rides];
       return;
     }
-
-    // Placeholder for filtering logic
-    console.log('Filtering by date range:', this.dateRange);
-    // You'll need to integrate a date picker library and implement proper filtering
   }
 
   viewRideDetails(rideId: number): void {
-    // TODO: Navigate to ride details page or open modal with full ride information
     const ride = this.rides.find(r => r.id === rideId);
     console.log('View details for ride:', ride);
-    // You could use router.navigate() or open a modal here
   }
 
   getStatusClass(status: string): string {

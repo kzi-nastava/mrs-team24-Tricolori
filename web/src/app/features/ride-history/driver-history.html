@@ -17,11 +17,14 @@
           <label class="block text-base-800 mb-2 text-sm">Select date range</label>
           <input 
             type="text" 
+            [(ngModel)]="dateRange"
             placeholder="Select dates"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent">
         </div>
         
-        <button class="bg-[#00acc1] hover:bg-[#008c9e] text-white px-8 py-3 rounded-lg font-medium transition">
+        <button 
+          (click)="filterByDate()"
+          class="bg-[#00acc1] hover:bg-[#008c9e] text-white px-8 py-3 rounded-lg font-medium transition">
           Filter
         </button>
       </div>
@@ -43,140 +46,41 @@
       <!-- Table Rows -->
       <div class="divide-y divide-gray-200">
         
-        <!-- Row 1 -->
-        <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
-          <div class="col-span-3 text-sm text-gray-900">
-            Kraljevo park → Jarmenačka 23b
+        @for (ride of filteredRides; track ride.id) {
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
+            <div class="col-span-3 text-sm text-gray-900">
+              {{ ride.route }}
+            </div>
+            <div class="col-span-2 text-sm text-gray-600">
+              {{ ride.startDate }}
+            </div>
+            <div class="col-span-2 text-sm text-gray-600">
+              {{ ride.endDate }}
+            </div>
+            <div class="col-span-1 text-sm text-gray-900 font-medium">
+              €{{ ride.price.toFixed(2) }}
+            </div>
+            <div class="col-span-2">
+              <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ' + getStatusClass(ride.status)">
+                {{ ride.status }}
+              </span>
+            </div>
+            <div class="col-span-2">
+              <button 
+                (click)="viewRideDetails(ride.id)"
+                class="inline-flex items-center gap-2 text-[#00acc1] hover:text-[#008c9e] text-sm font-medium transition">
+                <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
+                View
+              </button>
+            </div>
           </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 14, 2024 14:30
-          </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 14, 2024 14:45
-          </div>
-          <div class="col-span-1 text-sm text-gray-900 font-medium">
-            €8.50
-          </div>
-          <div class="col-span-2">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Completed
-            </span>
-          </div>
-          <div class="col-span-2">
-            <button class="inline-flex items-center gap-2 text-[#00acc1] hover:text-[#008c9e] text-sm font-medium transition">
-              <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
-              View
-            </button>
-          </div>
-        </div>
+        }
         
-        <!-- Row 2 -->
-        <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
-          <div class="col-span-3 text-sm text-gray-900">
-            Airport → City Center
+        @if (filteredRides.length === 0) {
+          <div class="px-6 py-12 text-center text-gray-500">
+            No rides found matching your criteria.
           </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 13, 2024 09:15
-          </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 13, 2024 09:45
-          </div>
-          <div class="col-span-1 text-sm text-gray-900 font-medium">
-            €15.30
-          </div>
-          <div class="col-span-2">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Completed
-            </span>
-          </div>
-          <div class="col-span-2">
-            <button class="inline-flex items-center gap-2 text-[#00acc1] hover:text-[#008c9e] text-sm font-medium transition">
-              <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
-              View
-            </button>
-          </div>
-        </div>
-        
-        <!-- Row 3 -->
-        <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
-          <div class="col-span-3 text-sm text-gray-900">
-            Main Square → Train Station
-          </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 12, 2024 18:20
-          </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 12, 2024 18:35
-          </div>
-          <div class="col-span-1 text-sm text-gray-900 font-medium">
-            €6.60
-          </div>
-          <div class="col-span-2">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-              Cancelled
-            </span>
-          </div>
-          <div class="col-span-2">
-            <button class="inline-flex items-center gap-2 text-[#00acc1] hover:text-[#008c9e] text-sm font-medium transition">
-              <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
-              View
-            </button>
-          </div>
-        </div>
-        
-        <!-- Row 4 -->
-        <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
-          <div class="col-span-3 text-sm text-gray-900">
-            University → Shopping Mall
-          </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 11, 2024 16:00
-          </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 11, 2024 16:20
-          </div>
-          <div class="col-span-1 text-sm text-gray-900 font-medium">
-            €12.00
-          </div>
-          <div class="col-span-2">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-              PANIC
-            </span>
-          </div>
-          <div class="col-span-2">
-            <button class="inline-flex items-center gap-2 text-[#00acc1] hover:text-[#008c9e] text-sm font-medium transition">
-              <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
-              View
-            </button>
-          </div>
-        </div>
-        
-        <!-- Row 5 -->
-        <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
-          <div class="col-span-3 text-sm text-gray-900">
-            Hotel Plaza → Conference Center
-          </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 10, 2024 08:45
-          </div>
-          <div class="col-span-2 text-sm text-gray-600">
-            Dec 10, 2024 09:10
-          </div>
-          <div class="col-span-1 text-sm text-gray-900 font-medium">
-            €9.30
-          </div>
-          <div class="col-span-2">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Completed
-            </span>
-          </div>
-          <div class="col-span-2">
-            <button class="inline-flex items-center gap-2 text-[#00acc1] hover:text-[#008c9e] text-sm font-medium transition">
-              <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
-              View
-            </button>
-          </div>
-        </div>
+        }
         
       </div>
       
