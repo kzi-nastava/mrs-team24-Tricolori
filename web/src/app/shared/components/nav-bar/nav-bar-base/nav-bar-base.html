@@ -11,8 +11,21 @@
     <h3 class="text-2xl font-logo text-deep-900 tracking-wide">CUBER</h3>
   </div>
 
-  <!-- Actions -->
+  <!-- Navigation && Actions -->
+  @switch (role) {
+    @case ('driver') {
+      <app-navigation-driver></app-navigation-driver>
+      <app-actions-driver></app-actions-driver>
+    }
+    @case ('admin') {
 
-  <!-- Navigation -->
+    }
+    @case ('user') {
+
+    }
+    @default {
+
+    }
+  }
 
 </nav>
