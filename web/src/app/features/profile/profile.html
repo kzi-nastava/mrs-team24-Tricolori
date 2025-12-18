@@ -3,10 +3,12 @@
     <p class="text-gray-500 px-3">Manage your personal information and settings</p>
 
     <div class="grid gap-8 grid-cols-6 mt-6">
-        <div class="prop order-1 col-span-6 lg:col-span-4 bg-white rounded-2xl p-5 flex flex-col 
+        <div class="shadowed order-1 col-span-6 lg:col-span-4 bg-white rounded-2xl p-5 flex flex-col 
         justify-center items-start gap-4">
             <div class="flex items-center gap-4">
-                <div>Email Logo</div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
                 <div>
                     <h3 class="text-xl text-light-700">Email Address</h3>
                     <p class="text-gray-400 text-sm">Your primary contact email</p>
@@ -16,10 +18,13 @@
                 class="bg-gray-100 rounded-2xl p-5 size-full" 
                 type="email" readonly value="joedoe@example.com">
         </div>
-        <div class="prop order-3 row-span-3 col-span-6 lg:col-span-4 bg-white rounded-2xl p-5 flex flex-col gap-4">
+        <div class="shadowed order-3 row-span-3 col-span-6 lg:col-span-4 bg-white rounded-2xl p-5 flex flex-col gap-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <div>Person Logo</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+
                     <div>
                         <h3 class="text-xl text-light-700">Personal Information</h3>
                         <p class="text-gray-400 text-sm">Update your personal details</p>
@@ -53,7 +58,7 @@
             </div>
         </div>
 
-        <div class="prop order-4 row-span-3 col-span-6 lg:col-span-2 bg-white rounded-2xl p-5 flex flex-col justify-between">
+        <div class="shadowed order-4 row-span-3 col-span-6 lg:col-span-2 bg-white rounded-2xl p-5 flex flex-col justify-between">
             <div class="flex flex-col gap-3">
                 <h3 class="text-xl text-light-700">Profile Picture</h3>
                 <div class="text-center">Image</div>
@@ -64,15 +69,23 @@
             </div>
         </div>
 
-        <div class="prop order-2 col-span-6 lg:col-span-2 bg-white rounded-2xl p-5 flex flex-col justify-between gap-4">
+        <div class="shadowed order-2 col-span-6 lg:col-span-2 bg-white rounded-2xl p-5 flex flex-col justify-between gap-4">
             <h3 class="text-xl text-light-700">Security</h3>
-            <button class="bg-dark-700 py-2.5 rounded-xl text-white cursor-pointer">Change Password</button>
+            <a routerLink="/password-change" class="bg-dark-700 text-center py-2.5 rounded-xl text-white cursor-pointer">Change Password</a>
         </div>
 
-        <div class="prop row-span-2 col-span-6 lg:col-span-3 order-5 bg-white rounded-2xl p-5 flex flex-col 
+        <div class="shadowed row-span-2 col-span-6 lg:col-span-3 order-5 bg-white rounded-2xl p-5 flex flex-col 
         justify-center items-stretch gap-4">
             <div class="flex items-center gap-4">
-                <div>Vehicle Logo</div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="none" stroke="currentColor" class="size-10 text-light-700">
+                    <g clip-path="url(#clip0)">
+                        <path d="M14.25 12.755H15.75C16.2 12.755 16.5 12.4549 16.5 12.0047V9.75379C16.5 9.07851 15.975 8.47827 15.375 8.32821C14.025 7.95305 12 7.50287 12 7.50287C12 7.50287 11.025 6.45244 10.35 5.77717C9.975 5.47704 9.525 5.25195 9 5.25195H3.75C3.3 5.25195 2.925 5.55208 2.7 5.92723L1.65 8.10312C1.55068 8.3929 1.5 8.69714 1.5 9.00348V12.0047C1.5 12.4549 1.8 12.755 2.25 12.755H3.75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M5.25 14.2556C6.07843 14.2556 6.75 13.5838 6.75 12.755C6.75 11.9262 6.07843 11.2544 5.25 11.2544C4.42157 11.2544 3.75 11.9262 3.75 12.755C3.75 13.5838 4.42157 14.2556 5.25 14.2556Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path  d="M6.75 12.7549H11.25"  stroke-width="1.5"  stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M12.75 14.2556C13.5784 14.2556 14.25 13.5838 14.25 12.755C14.25 11.9262 13.5784 11.2544 12.75 11.2544C11.9216 11.2544 11.25 11.9262 11.25 12.755C11.25 13.5838 11.9216 14.2556 12.75 14.2556Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </g>
+                    <defs><clipPath id="clip0"><rect width="18" height="18" fill="white"/></clipPath></defs>
+                </svg>
                 <div>
                     <h3 class="text-xl text-light-700">Vehicle Information</h3>
                     <p class="text-gray-400 text-sm">Assigned by administrator</p>
@@ -81,42 +94,49 @@
             <div class="grid grid-cols-2 grid-rows-3 gap-3">
                 <div class="flex flex-col justify-between order-1 rounded-2xl bg-gray-200 p-3">
                     <div class="flex justify-start items-center gap-3">
-                        <div>Model Image</div>
-                        <p class="text-sm">Model</p>
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--bx size-6" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path d="M20.772 10.155l-1.368-4.104A2.995 2.995 0 0 0 16.559 4H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.104A2 2 0 0 0 2 12v5c0 .738.404 1.376 1 1.723V21a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-2h12v2a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-2.277A1.99 1.99 0 0 0 22 17v-5a2 2 0 0 0-1.228-1.845zM7.441 6h9.117c.431 0 .813.274.949.684L18.613 10H5.387l1.105-3.316A1 1 0 0 1 7.441 6zM5.5 16a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 5.5 16zm13 0a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 18.5 16z" fill="currentColor"></path></svg>
+                        <p>Model</p>
                     </div>
-                    <p class="text-xl">Volkswagen Passat</p>
+                    <p class="text-lg">Volkswagen Passat</p>
                 </div>
                 <div class="flex flex-col justify-between order-2 rounded-2xl bg-gray-200 p-3">
                     <div class="flex justify-start items-center gap-3">
-                        <div>Place Image</div>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                        </svg>
+
                         <p class="text-sm">Place</p>
                     </div>
                     <p class="text-xl">Novi Sad</p>
                 </div>
                 <div class="flex flex-col justify-between order-3 rounded-2xl bg-gray-200 p-3">
                     <div class="flex justify-start items-center gap-3">
-                        <div>Licence Image</div>
-                        <p class="text-sm">Licence plate</p>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5" />
+                        </svg>
+                        <p>Licence plate</p>
                     </div>
-                    <p class="text-xl">NS 123-AB</p>
+                    <p class="text-lg">NS 123-AB</p>
                 </div>
                 <div class="flex flex-col justify-between order-4 rounded-2xl bg-gray-200 p-3">
                     <div class="flex justify-start items-center gap-3">
-                        <div>Type Image</div>
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--bx size-6" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path d="M20.772 13.155l-1.368-4.104A2.995 2.995 0 0 0 16.559 7H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.104A2.001 2.001 0 0 0 2 15v3c0 .738.404 1.376 1 1.723V21a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.277A1.99 1.99 0 0 0 22 18v-3c0-.831-.507-1.542-1.228-1.845zM7.441 9h9.117a1 1 0 0 1 .949.684L18.613 13H5.387l1.105-3.316c.137-.409.519-.684.949-.684zM5.5 18a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 5.5 18zm13 0a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 18.5 18zM5.277 5c.347.595.985 1 1.723 1s1.376-.405 1.723-1h6.555c.346.595.984 1 1.722 1s1.376-.405 1.723-1H17V3h1.723c-.347-.595-.985-1-1.723-1s-1.376.405-1.723 1H8.723C8.376 2.405 7.738 2 7 2s-1.376.405-1.723 1H7v2H5.277z" fill="currentColor"></path></svg>
                         <p class="text-sm">Vehicle type</p>
                     </div>
                     <p class="text-xl">Standard</p>
                 </div>
-                <div class="flex flex-col justify-between order-5 rounded-2xl bg-gray-200 p-3">
+                <div class="flex flex-col gap-2 justify-between order-5 rounded-2xl bg-gray-200 p-3">
                     <div class="flex justify-start items-center gap-3">
-                        <div>Baby Image</div>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
+                        </svg>
                         <p class="text-sm">Does it drive babies?</p>
                     </div>
                     <p class="text-xl">Yes</p>
                 </div>
                 <div class="flex flex-col justify-between order-6 rounded-2xl bg-gray-200 p-3">
                     <div class="flex justify-start items-center gap-3">
-                        <div>Pets Image</div>
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ph size-6" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 256"><path fill="currentColor" d="m239.71 125l-16.42-88a16 16 0 0 0-19.61-12.58l-.31.09L150.85 40h-45.7L52.63 24.56l-.31-.09a16 16 0 0 0-19.61 12.58L16.29 125a15.77 15.77 0 0 0 9.12 17.52a16.3 16.3 0 0 0 6.71 1.48a15.5 15.5 0 0 0 7.88-2.16V184a40 40 0 0 0 40 40h96a40 40 0 0 0 40-40v-42.15a15.5 15.5 0 0 0 7.87 2.16a16.3 16.3 0 0 0 6.72-1.47a15.77 15.77 0 0 0 9.12-17.54M32 128l16.43-88L90.5 52.37Zm144 80h-40v-12.69l13.66-13.65a8 8 0 0 0-11.32-11.32L128 180.69l-10.34-10.35a8 8 0 0 0-11.32 11.32L120 195.31V208H80a24 24 0 0 1-24-24v-60.89L107.92 56h40.15L200 123.11V184a24 24 0 0 1-24 24m48-80l-58.5-75.63L207.57 40zm-120 12a12 12 0 1 1-12-12a12 12 0 0 1 12 12m72 0a12 12 0 1 1-12-12a12 12 0 0 1 12 12"></path></svg>
                         <p class="text-sm">Does it drive pets?</p>
                     </div>
                     <p class="text-xl">Yes</p>
@@ -127,9 +147,11 @@
             </div>
         </div>
 
-        <div class="prop col-span-6 lg:col-span-3 row-span-1 order-6 bg-white rounded-2xl p-5 flex flex-col gap-4">
-            <div class="flex items-center gap-4">
-                <div>Clock Logo</div>
+        <div class="shadowed col-span-6 lg:col-span-3 row-span-1 order-6 bg-white rounded-2xl p-5 flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75" />
+                </svg>
                 <div>
                     <h3 class="text-xl text-light-700">Active Hours</h3>
                     <p class="text-gray-400 text-sm">Your activity in last 24 hours</p>
@@ -141,7 +163,11 @@
                         <p>Total Active Time</p>
                         <p class="text-3xl"><strong>5.5 hours</strong></p>
                     </div>
-                    <div>Clock logo</div>
+                    <div class="p-4 bg-white rounded-full shadowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8 text-light-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </div>
                 </div>
                 <div>
                     <div class="flex justify-between mb-1">
