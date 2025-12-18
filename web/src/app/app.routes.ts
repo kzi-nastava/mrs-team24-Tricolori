@@ -8,5 +8,6 @@ export const routes: Routes = [
   {path: "login", component: Login},
   {path: "register", component: Register},
   {path: "profile", component: Profile},
-  {path: "password-change", component: PasswordChange}
+  {path: "password-change", component: PasswordChange},
+  {path: "driver-history", loadComponent: () => import('./features/ride-history/driver-history').then(m => m.DriverHistory)},
 ];
