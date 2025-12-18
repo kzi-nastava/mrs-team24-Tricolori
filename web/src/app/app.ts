@@ -1,11 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import {NavBarBase} from './shared/components/nav-bar/nav-bar-base/nav-bar-base';
-import { Profile } from './features/profile/profile';
+import { NavBarBase } from './shared/components/nav-bar/nav-bar-base/nav-bar-base';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavBarBase, Profile],
+  imports: [RouterOutlet, NavBarBase],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
