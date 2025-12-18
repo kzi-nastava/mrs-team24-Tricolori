@@ -1,4 +1,4 @@
-<div class="flex justify-center pt-8 bg-white min-h-[calc(100vh-80px)]">
+<div class="flex justify-center pt-8 bg-white min-h-[calc(100vh-80px)] relative">
   
   <div class="w-full max-w-5xl px-6">
     
@@ -14,11 +14,18 @@
       
       <div class="flex items-end gap-4">
         <div class="flex-1">
-          <label class="block text-base-800 mb-2 text-sm">Select date range</label>
+          <label class="block text-base-800 mb-2 text-sm">Start Date</label>
           <input 
-            type="text" 
-            [(ngModel)]="dateRange"
-            placeholder="Select dates"
+            type="date" 
+            [(ngModel)]="startDate"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent">
+        </div>
+        
+        <div class="flex-1">
+          <label class="block text-base-800 mb-2 text-sm">End Date</label>
+          <input 
+            type="date" 
+            [(ngModel)]="endDate"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent">
         </div>
         
@@ -87,5 +94,109 @@
     </div>
     
   </div>
+  
+  <!-- Modal Popup -->
+  @if (selectedRide) {
+    <div class="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 class="text-2xl font-semibold text-gray-900">Ride Details</h2>
+          <button 
+            (click)="closeModal()"
+            class="text-gray-400 hover:text-gray-600 transition">
+            <ng-icon name="heroXMark" class="w-6 h-6"></ng-icon>
+          </button>
+        </div>
+        
+        <!-- Modal Content -->
+        <div class="p-6 space-y-6">
+          
+          <!-- Route Information -->
+          <div>
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Route</h3>
+            <p class="text-lg text-gray-900">{{ selectedRide.route }}</p>
+          </div>
+          
+          <!-- Date & Time -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Start Date</h3>
+              <p class="text-gray-900">{{ selectedRide.startDate }}</p>
+              <p class="text-sm text-gray-600 mt-1">{{ selectedRide.startTime }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">End Date</h3>
+              <p class="text-gray-900">{{ selectedRide.endDate }}</p>
+              <p class="text-sm text-gray-600 mt-1">{{ selectedRide.endTime }}</p>
+            </div>
+          </div>
+          
+          <!-- Price & Duration -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Total Price</h3>
+              <p class="text-2xl font-semibold text-gray-900">€{{ selectedRide.price.toFixed(2) }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Duration</h3>
+              <p class="text-lg text-gray-900">{{ selectedRide.duration }}</p>
+            </div>
+          </div>
+          
+          <!-- Status -->
+          <div>
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Status</h3>
+            <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ' + getStatusClass(selectedRide.status)">
+              {{ selectedRide.status }}
+            </span>
+          </div>
+          
+          <!-- Passenger Information -->
+          <div>
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Passenger</h3>
+            <p class="text-gray-900">{{ selectedRide.passengerName }}</p>
+            <p class="text-sm text-gray-600">{{ selectedRide.passengerPhone }}</p>
+          </div>
+          
+          <!-- Distance -->
+          <div>
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Distance</h3>
+            <p class="text-gray-900">{{ selectedRide.distance }} km</p>
+          </div>
+          
+          <!-- Payment Method -->
+          <div>
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Payment Method</h3>
+            <p class="text-gray-900">{{ selectedRide.paymentMethod }}</p>
+          </div>
+          
+          <!-- Notes -->
+          @if (selectedRide.notes) {
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Notes</h3>
+              <p class="text-gray-900">{{ selectedRide.notes }}</p>
+            </div>
+          }
+          
+        </div>
+        
+        <!-- Modal Footer -->
+        <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+          <button 
+            (click)="closeModal()"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+            Close
+          </button>
+          <button 
+            class="px-6 py-2 bg-[#00acc1] hover:bg-[#008c9e] text-white rounded-lg transition">
+            Download Receipt
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  }
   
 </div>
