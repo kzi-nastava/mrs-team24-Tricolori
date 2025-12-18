@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {passwordMatchValidator, strongPasswordValidator} from '../../shared/passwordValidator';
+import {passwordMatchValidator, strongPasswordValidator} from '../../../shared/passwordValidator';
 import {RouterLink} from '@angular/router';
 import {NgIcon} from '@ng-icons/core';
 
