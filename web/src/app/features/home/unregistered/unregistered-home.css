@@ -1,0 +1,21 @@
+.map-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Hide the routing machine control panel */
+.leaflet-routing-container {
+  display: none;
+}
+
+/* Custom marker styles if needed */
+.custom-marker-icon {
+  background: transparent;
+  border: none;
+}
