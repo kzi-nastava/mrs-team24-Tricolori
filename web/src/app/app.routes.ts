@@ -4,8 +4,12 @@ import { Register } from './features/auth/register/register';
 import { ResetPassword } from './features/auth/reset-password/reset-password';
 import { Profile } from './features/profile/profile';
 import { PasswordChange } from './features/password-change/password-change';
+import { UnregisteredHome } from './features/home/unregistered/unregistered-home';
 
 export const routes: Routes = [
+   {
+    path: '',
+    component: UnregisteredHome},
   {path: "login", component: Login},
   {path: "register", component: Register},
   {path: "reset-password", component: ResetPassword},

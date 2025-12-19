@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -11,7 +11,6 @@ interface EstimateResults {
   destination: string;
   distance: number;
   duration: number;
-  baseCost: number;
 }
 
 interface RideOption {
@@ -102,6 +101,8 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
     pickup: new FormControl('', [Validators.required]),
     destination: new FormControl('', [Validators.required])
   });
+
+  constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.updateAvailableDrivers();
@@ -333,19 +334,20 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
       // Calculate distance in km and duration in minutes
       const distanceKm = (summary.totalDistance / 1000).toFixed(1);
       const durationMin = Math.round(summary.totalTime / 60);
-      const baseCost = this.calculateBaseCost(summary.totalDistance);
 
       // Update estimate results
       this.estimateResults = {
         pickup,
         destination,
         distance: parseFloat(distanceKm),
-        duration: durationMin,
-        baseCost: baseCost
+        duration: durationMin
       };
 
-      // Update ride options with calculated prices
-      this.updateRideOptions(baseCost, durationMin);
+      // Update ride options with calculated prices based on distance
+      this.updateRideOptions(parseFloat(distanceKm), durationMin);
+
+      // Manually trigger change detection to update the UI
+      this.cdr.detectChanges();
     });
 
     // Handle routing errors
@@ -355,44 +357,40 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private calculateBaseCost(distanceInMeters: number): number {
-    // Base fare + distance-based pricing
-    const baseFare = 80; // RSD
-    const pricePerKm = 20; // RSD per km
-    const distanceKm = distanceInMeters / 1000;
-    return Math.round(baseFare + (distanceKm * pricePerKm));
-  }
-
-  private updateRideOptions(baseCost: number, durationMin: number): void {
+  private updateRideOptions(distanceKm: number, durationMin: number): void {
+    const pricePerKm = 120; // 120 RSD per km
     const etaMin = Math.max(3, Math.round(durationMin * 0.2)); // Estimated time to pickup
+    
+    // Calculate base price from distance
+    const basePrice = distanceKm * pricePerKm;
     
     this.rideOptions = [
       {
         type: 'Economy',
         icon: '🚗',
         eta: `${etaMin} min away`,
-        price: `${baseCost.toFixed(1)} RSD`,
+        price: `${basePrice.toFixed(1)} RSD`,
         seats: '4 seats'
       },
       {
         type: 'Comfort',
         icon: '🚙',
         eta: `${etaMin + 2} min away`,
-        price: `${(baseCost * 1.4).toFixed(1)} RSD`,
+        price: `${(basePrice * 1.4).toFixed(1)} RSD`,
         seats: '4 seats'
       },
       {
         type: 'Premium',
         icon: '🚕',
         eta: `${etaMin + 1} min away`,
-        price: `${(baseCost * 2.2).toFixed(1)} RSD`,
+        price: `${(basePrice * 2.2).toFixed(1)} RSD`,
         seats: '4 seats'
       },
       {
         type: 'XL',
         icon: '🚐',
         eta: `${etaMin + 3} min away`,
-        price: `${(baseCost * 1.7).toFixed(1)} RSD`,
+        price: `${(basePrice * 1.7).toFixed(1)} RSD`,
         seats: '6 seats'
       }
     ];

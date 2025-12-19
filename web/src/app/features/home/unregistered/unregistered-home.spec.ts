@@ -47,7 +47,6 @@ describe('UnregisteredHome', () => {
       destination: 'Test',
       distance: 2.1,
       duration: 13,
-      baseCost: 120
     };
     
     component.resetEstimate();
