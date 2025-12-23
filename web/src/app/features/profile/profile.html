@@ -30,31 +30,39 @@
                         <p class="text-gray-400 text-sm">Update your personal details</p>
                     </div>
                 </div>
-                <button class="bg-light-600 px-4 py-1 rounded-lg text-white cursor-pointer">Edit</button>
+                <div class="flex items-center justify-between gap-2">
+                    @if (editEnabled) {
+                        <button class="bg-light-700 px-4 py-1 rounded-lg text-white cursor-pointer">Save changes</button>
+                        <button class="bg-dark-700 px-4 py-1 rounded-lg text-white cursor-pointer" (click)="resetChanges()">X</button>
+                    }
+                    @else {
+                        <button class="bg-light-700 px-4 py-1 rounded-lg text-white cursor-pointer" (click)="editEnabled = !editEnabled">Edit</button>
+                    }
+                </div>
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">First Name</p>
                 <input 
                     class="bg-gray-100 rounded-2xl p-5 size-full" 
-                    type="text" value="John">
+                    type="text" [value]="firstName" [readonly]="!editEnabled" #firstNameInput>
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Last Name</p>
                 <input 
                     class="bg-gray-100 rounded-2xl p-5 size-full" 
-                    type="text" value="Doe">
+                    type="text" [value]="lastName" [readonly]="!editEnabled" #lastNameInput>
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Phone Number</p>
                 <input 
                     class="bg-gray-100 rounded-2xl p-5 size-full" 
-                    type="text" value="+381 60 123 4567">
+                    type="text" [value]="phoneNumber" [readonly]="!editEnabled" #phoneInput>
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Home Address</p>
                 <input 
                     class="bg-gray-100 rounded-2xl p-5 size-full" 
-                    type="text" value="123 Main Street, Belgrade">
+                    type="text" [value]="homeAddress" [readonly]="!editEnabled" #addressInput>
             </div>
         </div>
 
@@ -181,4 +189,5 @@
             </div>
         </div>
     </div>
+
 </div>
