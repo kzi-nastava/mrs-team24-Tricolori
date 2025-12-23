@@ -2,9 +2,9 @@
     <h2 class="text-2xl text-light-700 px-3">Your Profile</h2>
     <p class="text-gray-500 px-3">Manage your personal information and settings</p>
 
-    <div class="grid gap-8 grid-cols-6 mt-6">
+    <div class="grid h-full gap-8 grid-cols-6 grid-rows-4 mt-6">
         <div class="shadowed order-1 col-span-6 lg:col-span-4 bg-white rounded-2xl p-5 flex flex-col 
-        justify-center items-start gap-4">
+        justify-center items-start gap-4 h-full min-h-0">
             <div class="flex items-center gap-4">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
@@ -15,7 +15,7 @@
                 </div>
             </div>
             <input 
-                class="bg-gray-100 rounded-2xl p-5 size-full" 
+                class="bg-gray-100 rounded-2xl p-5 w-full" 
                 type="email" readonly value="joedoe@example.com">
         </div>
         <div class="shadowed order-3 row-span-3 col-span-6 lg:col-span-4 bg-white rounded-2xl p-5 flex flex-col gap-4">
@@ -66,16 +66,33 @@
             </div>
         </div>
 
-        <div class="shadowed order-4 row-span-3 col-span-6 lg:col-span-2 bg-white rounded-2xl p-5 flex flex-col justify-between">
-            <div class="flex flex-col gap-3">
-                <h3 class="text-xl text-light-700">Profile Picture</h3>
-                <div class="text-center">Image</div>
+        <div class="shadowed order-4 row-span-3 col-span-6 lg:col-span-2 
+            bg-white rounded-2xl p-5 flex flex-col justify-between h-full min-h-0">
+
+        <h3 class="text-xl text-light-700">Profile Picture</h3>
+            <div class="flex items-center justify-center flex-1 mt-4 mb-4">
+                <div class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 
+                            rounded-full overflow-hidden border-4 border-dark-800 flex items-center justify-center bg-gray-300">
+                    <img 
+                        src="assets/icons/logo.svg" 
+                        alt="Profile" 
+                        class="w-full h-full object-cover"
+                    />
+                </div>
             </div>
+
             <div class="flex flex-col gap-3">
-                <p class="text-gray-500 text-center">Picture must be in .jpg or .png format</p>
-                <button class="bg-light-700 py-2.5 rounded-xl text-white cursor-pointer">Upload Picture</button>
+                <p class="text-gray-500 text-center">
+                    Picture must be in .jpg or .png format
+                </p>
+                <button class="bg-light-700 py-2.5 rounded-xl text-white cursor-pointer">
+                    Upload Picture
+                </button>
             </div>
+
         </div>
+
+
 
         <div class="shadowed order-2 col-span-6 lg:col-span-2 bg-white rounded-2xl p-5 flex flex-col justify-between gap-4">
             <h3 class="text-xl text-light-700">Security</h3>
