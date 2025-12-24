@@ -1,19 +1,79 @@
 import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
-import { ResetPassword } from './features/auth/reset-password/reset-password';
-import { Profile } from './features/profile/profile';
-import { PasswordChange } from './features/password-change/password-change';
 import { UnregisteredHome } from './features/home/unregistered/unregistered-home';
-import { DriverHistory } from './features/ride-history/driver-history';
 
 export const routes: Routes = [
-  {path: '',component: UnregisteredHome},
-  {path: "login", component: Login},
-  {path: "register", component: Register},
-  {path: "reset-password", component: ResetPassword},
-  {path: "profile", component: Profile},
-  {path: "password-change", component: PasswordChange},
-  {path: "driver-history", component: DriverHistory},
-  {path: "unregistered-home", component: UnregisteredHome}
+  // Public routes
+  { path: '', component: UnregisteredHome },
+  { path: 'login', component: Login },
+  { path: 'register', component: Register },
+  { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password/reset-password').then(m => m.ResetPassword) },
+  { path: 'password-change', loadComponent: () => import('./features/password-change/password-change').then(m => m.PasswordChange) },
+  
+  // Driver routes
+  { 
+    path: 'driver',
+    children: [
+      { 
+        path: 'home', 
+        loadComponent: () => import('./features/home/driver/driver-home').then(m => m.HomeDriver) 
+      },
+      { 
+        path: 'history', 
+        loadComponent: () => import('./features/driver-history/driver-history').then(m => m.DriverHistory) 
+      },
+      { 
+        path: 'support', 
+        loadComponent: () => import('./features/support-chat/driver/driver-support').then(m => m.DriverSupport) 
+      },
+      { 
+        path: 'profile', 
+        loadComponent: () => import('./features/profile/profile').then(m => m.Profile) 
+      },
+      { path: '', redirectTo: 'home', pathMatch: 'full' }
+    ]
+  },
+  
+  // Passenger routes
+  { 
+    path: 'passenger',
+    children: [
+      { 
+        path: 'home', 
+        loadComponent: () => import('./features/home/passenger/passenger-home').then(m => m.HomePassenger) 
+      },
+      { 
+        path: 'support', 
+        loadComponent: () => import('./features/support-chat/passenger/passenger-support').then(m => m.PassengerSupport) 
+      },
+      { 
+        path: 'profile', 
+        loadComponent: () => import('./features/profile/profile').then(m => m.Profile) 
+      },
+      { path: '', redirectTo: 'home', pathMatch: 'full' }
+    ]
+  },
+  
+  // Admin routes
+  { 
+    path: 'admin',
+    children: [
+      { 
+        path: 'home', 
+        loadComponent: () => import('./features/home/admin/admin-home').then(m => m.AdminHome) 
+      },
+      { 
+        path: 'support', 
+        loadComponent: () => import('./features/support-chat/admin/admin-support').then(m => m.AdminSupport) 
+      },
+      { 
+        path: 'profile', 
+        loadComponent: () => import('./features/profile/profile').then(m => m.Profile) 
+      },
+      { path: '', redirectTo: 'home', pathMatch: 'full' }
+    ]
+  },
+  
+  { path: '**', redirectTo: '' }
 ];

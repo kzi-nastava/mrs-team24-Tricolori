@@ -1,26 +1,25 @@
-import {Component, signal} from '@angular/core';
-import {NgIcon} from '@ng-icons/core';
-import {NgClass} from '@angular/common';
-import {RouterLink} from '@angular/router';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-actions-driver',
-  imports: [
-    NgIcon,
-    NgClass,
-    RouterLink
-  ],
+  standalone: true,
+  imports: [CommonModule, RouterLink],
   templateUrl: './actions-driver.html',
-  styleUrl: './actions-driver.css',
+  styleUrl: './actions-driver.css'
 })
 export class ActionsDriver {
-  active: boolean = true ;
+  isActive = false;
 
-  toggleStatus() {
-    this.active = !this.active;
+  toggleActive() {
+    this.isActive = !this.isActive;
+    // TODO: Update backend with driver's active status
+    console.log('Driver active status:', this.isActive);
   }
 
-  protected logout() {
-
+  logout() {
+    // TODO: Implement logout logic
+    console.log('Logging out...');
   }
 }
