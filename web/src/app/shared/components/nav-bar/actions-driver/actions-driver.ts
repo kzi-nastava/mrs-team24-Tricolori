@@ -1,26 +1,28 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import {Component, signal} from '@angular/core';
+import {NgIcon} from '@ng-icons/core';
+import {NgClass} from '@angular/common';
+import {RouterLink} from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-actions-driver',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [
+    NgIcon,
+    NgClass,
+    RouterLink
+  ],
   templateUrl: './actions-driver.html',
-  styleUrl: './actions-driver.css'
+  styleUrl: './actions-driver.css',
 })
 export class ActionsDriver {
-  isActive = false;
-
+  active: boolean = true ;
   constructor(private authService: AuthService) {}
 
-  toggleActive() {
-    this.isActive = !this.isActive;
-    console.log('Driver active status:', this.isActive);
+  toggleStatus() {
+    this.active = !this.active;
   }
 
-  logout() {
+  protected logout() {
     this.authService.logout();
   }
 }
