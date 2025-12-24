@@ -10,6 +10,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { NgIcon } from '@ng-icons/core';
 
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+
+
 @Component({
   selector: 'app-login',
   imports: [
@@ -30,6 +34,8 @@ export class Login {
   errorMessage: string = '';
   successMessage: string = '';
 
+  constructor(private authService: AuthService, private router: Router) {}
+
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required, strongPasswordValidator])
@@ -44,6 +50,33 @@ export class Login {
       this.successMessage = 'Successfully logged in!';
 
       console.log('Logged in:', formData.email);
+      
+      this.authService.login(formData.email!, formData.password!).subscribe({
+    next: user => {
+      this.successMessage = 'Successfully logged in!';
+
+      switch (user?.role) {
+        case 'driver':
+          this.router.navigate(['/driver']);
+          break;
+
+        case 'user': // passenger
+          this.router.navigate(['/home']);
+          break;
+
+        case 'admin':
+          this.router.navigate(['/admin']);
+          break;
+
+        default:
+          this.router.navigate(['/']);
+      }
+    },
+    error: err => {
+      this.errorMessage = err?.message ?? 'Login failed';
+    }
+  });
+      
     } else {
       this.errorMessage = this.getErrorMessage();
     }
