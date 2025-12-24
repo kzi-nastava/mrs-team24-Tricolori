@@ -1,24 +1,23 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { NgOptimizedImage } from '@angular/common';
 import { NavigationDriver } from '../navigation-driver/navigation-driver';
+import { ActionsDriver } from '../actions-driver/actions-driver';
 import { NavigationPassenger } from '../navigation-passenger/navigation-passenger';
 import { NavigationAdmin } from '../navigation-admin/navigation-admin';
-import { ActionsDriver } from '../actions-driver/actions-driver';
+import { AuthService} from '../../../../core/services/auth.service';
 import { UserRole } from '../../../model/user-role';
 
 @Component({
   selector: 'app-nav-bar-base',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     NgOptimizedImage,
     NavigationDriver,
+    ActionsDriver,
     NavigationPassenger,
-    NavigationAdmin,
-    ActionsDriver
+    NavigationAdmin
   ],
   templateUrl: './nav-bar-base.html',
   styleUrl: './nav-bar-base.css',
@@ -26,20 +25,17 @@ import { UserRole } from '../../../model/user-role';
 export class NavBarBase implements OnInit {
   role: UserRole = 'guest';
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService) {}
 
   ngOnInit() {
-    this.role = this.getUserRole();
+    // Subscribe to user changes
+    this.authService.currentUser$.subscribe(user => {
+      this.role = user?.role || 'guest';
+    });
   }
-
-  private getUserRole(): UserRole {
-    const storedRole = localStorage.getItem('userRole');
-    return (storedRole as UserRole) || 'driver';
-  }
-
+  
   onLogout() {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('authToken');
-    this.router.navigate(['/login']);
-  }
+    this.authService.logout();
 }
+}
+

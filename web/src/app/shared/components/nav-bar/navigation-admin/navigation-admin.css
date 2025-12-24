@@ -52,7 +52,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(28, 45, 72, 0.85);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -62,7 +62,7 @@
 }
 
 .nav-link:hover {
-  color: white;
+  color: rgb(89, 154, 141);
   background: rgba(255, 255, 255, 0.1);
 }
 

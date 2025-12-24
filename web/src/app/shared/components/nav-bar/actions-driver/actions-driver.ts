@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-actions-driver',
@@ -12,14 +13,14 @@ import { RouterLink } from '@angular/router';
 export class ActionsDriver {
   isActive = false;
 
+  constructor(private authService: AuthService) {}
+
   toggleActive() {
     this.isActive = !this.isActive;
-    // TODO: Update backend with driver's active status
     console.log('Driver active status:', this.isActive);
   }
 
   logout() {
-    // TODO: Implement logout logic
-    console.log('Logging out...');
+    this.authService.logout();
   }
 }
