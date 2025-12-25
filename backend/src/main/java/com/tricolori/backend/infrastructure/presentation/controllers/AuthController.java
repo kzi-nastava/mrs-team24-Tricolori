@@ -1,5 +1,6 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
+import com.tricolori.backend.infrastructure.presentation.dtos.ForgotPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
 import jakarta.validation.Valid;
@@ -22,5 +23,11 @@ public class AuthController {
         LoginResponse response = new LoginResponse(token);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+
+        return ResponseEntity.ok().build();
     }
 }
