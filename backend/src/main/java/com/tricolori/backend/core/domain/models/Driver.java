@@ -20,6 +20,7 @@ public class Driver extends Person {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @OrderBy("date DESC")
     private List<DriverDailyLog> dailyLogs = new ArrayList<>();
 
     @OneToOne(
