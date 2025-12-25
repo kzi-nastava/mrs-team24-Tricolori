@@ -44,6 +44,12 @@ public class Person {
     private String phoneNum;
 
     @Column(
+            name = "home_address",
+            nullable = false
+    )
+    private String homeAddress;
+
+    @Column(
             unique = true,
             nullable = false
     )

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-
+import com.tricolori.backend.infrastructure.presentation.dtos.ChangeDriverProfileDTO;
 import java.time.LocalDateTime;
 
 @Entity(name = "ChangeDataRequest")
@@ -19,17 +19,14 @@ public class ChangeDataRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "old_profile_id",
+            name = "profile_id",
             nullable = false
     )
-    private Driver oldProfile;
+    private Driver profile;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "new_profile_id",
-            nullable = false
-    )
-    private Driver newProfile;
+    @Embedded
+    private ChangeDriverProfileDTO changes;
+
 
     @Column(
             nullable = false,
