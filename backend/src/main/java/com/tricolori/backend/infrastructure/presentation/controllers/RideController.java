@@ -34,5 +34,10 @@ public class RideController {
         return ResponseEntity.ok(Page.empty());
     }
 
+    @GetMapping("/details/{id}")
+    public ResponseEntity<RideDetailResponse> getRideDetails(@PathVariable Long id) {
+
+        return ResponseEntity.ok().build();
+    }
 
 }
