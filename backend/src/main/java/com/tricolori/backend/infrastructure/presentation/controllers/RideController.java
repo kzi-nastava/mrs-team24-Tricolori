@@ -1,8 +1,6 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
-import com.tricolori.backend.infrastructure.presentation.dtos.CancelRideRequest;
-import com.tricolori.backend.infrastructure.presentation.dtos.RideEstimationRequest;
-import com.tricolori.backend.infrastructure.presentation.dtos.RideEstimationResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,4 +22,11 @@ public class RideController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}/stop")
+    public ResponseEntity<StopRideResponse> stopRide(@Valid @RequestBody StopRideRequest request, @PathVariable Long id) {
+
+        return ResponseEntity.ok().build();
+    }
+
 }
