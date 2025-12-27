@@ -2,7 +2,6 @@ package com.tricolori.backend.infrastructure.presentation.dtos;
 
 import com.tricolori.backend.core.domain.models.Address;
 import com.tricolori.backend.shared.enums.RideStatus;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 

@@ -46,4 +46,14 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
+
+    @PostMapping("/order")
+    public ResponseEntity<Void> order(@RequestBody OrderRequest request) {
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/start")
+    public ResponseEntity<Void> startRide(@PathVariable Long id) {
+        return ResponseEntity.ok().build();
+    }
 }
