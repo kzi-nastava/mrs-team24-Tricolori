@@ -1,5 +1,6 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
+import com.tricolori.backend.infrastructure.presentation.dtos.ForgotPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
 import com.tricolori.backend.infrastructure.presentation.dtos.ResetPasswordRequest;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    @PostMapping(path = "/login")
+    @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
         String token = "dummy-jwt-token";
@@ -27,6 +28,12 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+
+        return ResponseEntity.ok().build();
+    }
+  
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
 
         return ResponseEntity.ok().build();
     }
