@@ -2,8 +2,12 @@ package com.tricolori.backend.infrastructure.presentation.controllers;
 
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.RegisterDriverRequest;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,5 +26,10 @@ public class AuthController {
         LoginResponse response = new LoginResponse(token);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/register-driver")
+    public ResponseEntity<Void> registerDriver(@Valid @RequestBody RegisterDriverRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
