@@ -3,6 +3,7 @@ package com.tricolori.backend.infrastructure.presentation.controllers;
 import com.tricolori.backend.infrastructure.presentation.dtos.ForgotPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.ResetPasswordRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,12 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+
+        return ResponseEntity.ok().build();
+    }
+  
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
 
