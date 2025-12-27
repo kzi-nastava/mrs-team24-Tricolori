@@ -3,6 +3,12 @@ package com.tricolori.backend.infrastructure.presentation.controllers;
 import com.tricolori.backend.infrastructure.presentation.dtos.ForgotPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.RegisterDriverRequest;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import com.tricolori.backend.infrastructure.presentation.dtos.RegisterRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.ResetPasswordRequest;
 import jakarta.validation.Valid;
@@ -26,6 +32,12 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/register-driver")
+    public ResponseEntity<Void> registerDriver(@Valid @RequestBody RegisterDriverRequest request) {
+      
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+      
     @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> register(
             @Valid @RequestPart("data") RegisterRequest request,
