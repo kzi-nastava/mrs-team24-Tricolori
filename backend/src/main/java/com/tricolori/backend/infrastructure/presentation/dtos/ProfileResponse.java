@@ -6,6 +6,7 @@ public record ProfileResponse(
     String lastName,
     String homeAddress,
     String phoneNumber,
+    String pfp,
     
     VehicleDto vehicle, // null for non-drivers
     Double activeHours  // null for non-drivers
