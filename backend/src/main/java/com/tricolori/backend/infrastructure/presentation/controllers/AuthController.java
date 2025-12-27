@@ -1,5 +1,6 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
+import com.tricolori.backend.infrastructure.presentation.dtos.ForgotPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
 import com.tricolori.backend.infrastructure.presentation.dtos.RegisterDriverRequest;
@@ -8,11 +9,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
+import com.tricolori.backend.infrastructure.presentation.dtos.RegisterRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.ResetPasswordRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -30,6 +34,28 @@ public class AuthController {
 
     @PostMapping("/register-driver")
     public ResponseEntity<Void> registerDriver(@Valid @RequestBody RegisterDriverRequest request) {
+      
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+      
+    @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> register(
+            @Valid @RequestPart("data") RegisterRequest request,
+            @RequestPart("image") MultipartFile pfp
+    ) {
+
+        return ResponseEntity.ok().build();
+    }
+  
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+
+        return ResponseEntity.ok().build();
+    }
+  
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+
+        return ResponseEntity.ok().build();
     }
 }
