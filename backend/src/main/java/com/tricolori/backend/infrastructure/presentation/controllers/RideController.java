@@ -1,6 +1,7 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
 import com.tricolori.backend.infrastructure.presentation.dtos.CancelRideRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.OrderRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.RideEstimationRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.RideEstimationResponse;
 import jakarta.validation.Valid;
@@ -22,6 +23,11 @@ public class RideController {
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelRide(@Valid @RequestBody CancelRideRequest request, @PathVariable Long id) {
 
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/order")
+    public ResponseEntity<Void> order(@RequestBody OrderRequest request) {
         return ResponseEntity.ok().build();
     }
 }
