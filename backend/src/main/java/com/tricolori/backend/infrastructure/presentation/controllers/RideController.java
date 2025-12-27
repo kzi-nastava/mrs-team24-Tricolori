@@ -39,5 +39,11 @@ public class RideController {
 
         return ResponseEntity.ok().build();
     }
+      
+    @PutMapping("/{id}/stop")
+    public ResponseEntity<StopRideResponse> stopRide(@Valid @RequestBody StopRideRequest request, @PathVariable Long id) {
+
+        return ResponseEntity.ok().build();
+    }
 
 }
