@@ -32,11 +32,17 @@ public class Ride {
     @Column(name = "scheduled_for")
     private LocalDateTime scheduledFor;
 
+    @Column(name = "start_time")
+    private LocalDateTime startTime;
+
+    @Column(name = "end_time")
+    private LocalDateTime endTime;
+
     @Enumerated(EnumType.STRING)
     private RideStatus status;
 
-    @Column(name = "estimated_duration_seconds")
-    private Long estimatedDurationSeconds;
+    @Column(name = "cancellation_reason")
+    private String cancellationReason;
 
     @Min(1)
     private Double price;

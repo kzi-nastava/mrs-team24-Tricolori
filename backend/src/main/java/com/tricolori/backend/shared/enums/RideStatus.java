@@ -5,6 +5,7 @@ public enum RideStatus {
     ONGOING,
     FINISHED,
     PANIC,
-    CANCELLED,
+    CANCELLED_BY_DRIVER,
+    CANCELLED_BY_PASSENGER,
     DECLINED
 }

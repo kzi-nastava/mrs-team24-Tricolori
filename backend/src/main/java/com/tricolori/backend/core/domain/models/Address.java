@@ -1,29 +1,23 @@
 package com.tricolori.backend.core.domain.models;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Embeddable
 @Data @NoArgsConstructor @AllArgsConstructor
 public class Address {
 
     @Column(nullable = false)
-    private String street;
+    private String address;
 
-    @Column(
-            name = "street_num",
-            nullable = false
-    )
-    private String streetNum;
-
-    @Column(nullable = false)
     private String city;
 
-    private String country = "Serbia";
-
+    @Column(nullable = false)
     private Double longitude;
 
+    @Column(nullable = false)
     private Double latitude;
-
 }

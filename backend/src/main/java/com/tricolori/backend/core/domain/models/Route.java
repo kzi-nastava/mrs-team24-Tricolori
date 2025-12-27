@@ -28,6 +28,16 @@ public class Route {
     @OrderColumn(name = "stop_index")
     private List<Address> stops = new ArrayList<>();
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String routeGeometry;
+
+    @Column(name = "distance_km")
+    private Double distanceKm;
+
+    @Column(name = "estimated_time_seconds")
+    private Long estimatedTimeSeconds;
+
     public Address getPickupAddress() {
         if (stops.isEmpty()) return null;
         return stops.getFirst();
