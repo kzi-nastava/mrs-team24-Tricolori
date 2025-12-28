@@ -73,7 +73,8 @@
             app:backgroundTint="#00838f"
             app:icon="@drawable/ic_upload"
             app:iconGravity="textStart"
-            android:layout_marginBottom="@dimen/spacing_1"/>
+            android:layout_marginBottom="@dimen/spacing_1"
+            android:textColor="@color/white"/>
 
         <TextView
             android:layout_width="wrap_content"

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/driverHistoryFragment">
 
     <fragment
         android:id="@+id/loginFragment"
@@ -15,6 +15,18 @@
             android:id="@+id/action_login_to_register"
             app:destination="@id/registerFragment" />
 
+    </fragment>
+
+    <fragment
+        android:id="@+id/driverHistoryFragment"
+        android:name="com.example.mobile.ui.fragments.RideHistory"
+        android:label="Ride History"
+        tools:layout="@layout/fragment_ride_history">
+
+        <!-- Add actions if you need to navigate to other fragments -->
+        <action
+            android:id="@+id/action_driverHistory_to_login"
+            app:destination="@id/loginFragment" />
     </fragment>
 
     <fragment
