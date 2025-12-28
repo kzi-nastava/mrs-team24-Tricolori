@@ -277,6 +277,37 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Security Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_2"
+            android:layout_marginTop="@dimen/spacing_6"
+            android:elevation="@dimen/spacing_0_5">
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/profile_security"
+                android:textColor="@color/light_700"
+                android:textSize="@dimen/text_xl"/>
+
+            <!-- Change Password Button -->
+            <Button
+                android:id="@+id/profile_btn_change_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_3"
+                android:backgroundTint="@color/dark_700"
+                android:textColor="@color/white"
+                android:text="@string/profile_security_submit"
+                android:paddingVertical="@dimen/spacing_2"
+                android:textSize="@dimen/text_base"/>
+        </LinearLayout>
+
+
         <!-- Vehicle Information Card -->
         <LinearLayout
             android:layout_width="match_parent"
