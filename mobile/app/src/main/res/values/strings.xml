@@ -113,4 +113,15 @@
     <string name="step_2">• Click the link to reset your password</string>
     <string name="step_3">• Link expires in 24 hours</string>
     <string name="step_4">• Check your spam folder if not received</string>
+
+    <!-- Reset password -->
+    <string name="reset_pass_title">Reset your password</string>
+    <string name="reset_pass_subtitle">Choose a strong password to secure your account</string>
+    <string name="label_new_pass">Enter your new password:</string>
+    <string name="label_confirm_pass">Re-enter your new password:</string>
+    <string name="hint_new_pass">Your new password</string>
+    <string name="req_title">Password Requirements:</string>
+    <string name="req_1">• At least 8 characters</string>
+    <string name="req_2">• Upper and lowercase letters</string>
+    <string name="req_3">• At least one number</string>
 </resources>
