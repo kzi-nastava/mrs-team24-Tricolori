@@ -47,6 +47,12 @@
         android:id="@+id/change_password_fragment"
         android:name="com.example.mobile.ui.fragments.ChangePasswordFragment"
         android:label="ChangePasswordFragment"
-        tools:layout="@layout/fragment_change_password">
-    </fragment>
+        tools:layout="@layout/fragment_change_password"/>
+  
+    <fragment
+        android:id="@+id/resetPasswordFragment"
+        android:name="com.example.mobile.ui.fragments.ResetPasswordFragment"
+        android:label="ResetPasswordFragment"
+        tools:layout="@layout/fragment_reset_password" />
+
 </navigation>
