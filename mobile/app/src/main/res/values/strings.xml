@@ -102,4 +102,15 @@
     <string name="profile_pic_label">Profile picture (optional)</string>
     <string name="btn_upload">Upload a picture</string>
     <string name="upload_note">Picture must be in .jpg or .png format</string>
+
+    <!-- Forgot password -->
+    <string name="forgot_password_title">Forgot Password?</string>
+    <string name="back_to_login_prompt">Remembered your password? Login here!</string>
+    <string name="btn_send_reset">Send Reset Link</string>
+
+    <string name="next_steps_title">What happens next?</string>
+    <string name="step_1">• We will send a link to your email</string>
+    <string name="step_2">• Click the link to reset your password</string>
+    <string name="step_3">• Link expires in 24 hours</string>
+    <string name="step_4">• Check your spam folder if not received</string>
 </resources>

@@ -15,12 +15,22 @@
             android:id="@+id/action_login_to_register"
             app:destination="@id/registerFragment" />
 
+        <action
+            android:id="@+id/action_login_to_forgotPassword"
+            app:destination="@id/forgotPasswordFragment" />
+
     </fragment>
 
     <fragment
-    android:id="@+id/registerFragment"
-    android:name="com.example.mobile.ui.fragments.RegisterFragment"
-    android:label="RegisterFragment"
-    tools:layout="@layout/fragment_register" />
+        android:id="@+id/registerFragment"
+        android:name="com.example.mobile.ui.fragments.RegisterFragment"
+        android:label="RegisterFragment"
+        tools:layout="@layout/fragment_register" />
+
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.example.mobile.ui.fragments.ForgotPasswordFragment"
+        android:label="ForgotPasswordFragment"
+        tools:layout="@layout/fragment_forgot_password" />
 
 </navigation>
