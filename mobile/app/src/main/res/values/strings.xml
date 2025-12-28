@@ -52,6 +52,7 @@
     <string name="profile_personal_home_example">123 Main Street, Belgrade</string>
     <!-- Password section -->
     <string name="profile_security">Security</string>
+    <string name="profile_security_desc">Update password to protect your account</string>
     <string name="profile_security_submit">Change Password</string>
     <!-- Vehicle information section -->
     <string name="profile_vehicle">Vehicle Information</string>

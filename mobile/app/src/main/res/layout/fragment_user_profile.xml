@@ -66,8 +66,8 @@
                         android:layout_height="@dimen/spacing_10"
                         android:contentDescription="@string/profile_email_icon_desc"
                         app:tint="@color/light_700"
-                        android:layout_marginEnd="@dimen/spacing_3"/>
-                    <!-- android:src="@drawable/ic_email" -->
+                        android:layout_marginEnd="@dimen/spacing_3"
+                        android:src="@drawable/ic_email"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -137,7 +137,8 @@
                         android:layout_height="@dimen/spacing_10"
                         android:contentDescription="@string/profile_picture_icon_desc"
                         app:tint="@color/light_700"
-                        android:layout_marginEnd="@dimen/spacing_3"/>
+                        android:layout_marginEnd="@dimen/spacing_3"
+                        android:src="@drawable/ic_profile_picture"/>
                     <!-- android:src="@drawable/ic_picture" -->
 
                     <LinearLayout
@@ -241,8 +242,8 @@
                             android:layout_height="@dimen/spacing_10"
                             android:contentDescription="@string/profile_personal_icon_desc"
                             app:tint="@color/light_700"
-                            android:layout_marginEnd="@dimen/spacing_3"/>
-                        <!-- android:src="@drawable/ic_person" -->
+                            android:layout_marginEnd="@dimen/spacing_3"
+                            android:src="@drawable/ic_person"/>
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -417,13 +418,42 @@
                 android:orientation="vertical"
                 android:padding="@dimen/spacing_3">
 
-                <!-- Title -->
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/profile_security"
-                    android:textColor="@color/light_700"
-                    android:textSize="@dimen/text_base"/>
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/spacing_3">
+
+                    <!-- Icon placeholder -->
+                    <ImageView
+                        android:layout_width="@dimen/spacing_10"
+                        android:layout_height="@dimen/spacing_10"
+                        android:contentDescription="@string/profile_email_icon_desc"
+                        app:tint="@color/light_700"
+                        android:layout_marginEnd="@dimen/spacing_3"
+                        android:src="@drawable/ic_lock"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_security"
+                            android:textColor="@color/light_700"
+                            android:textSize="@dimen/text_base"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_security_desc"
+                            android:textColor="@color/gray_400"
+                            android:textSize="@dimen/text_xs" />
+                    </LinearLayout>
+                </LinearLayout>
 
                 <!-- Change Password Button -->
                 <Button
@@ -471,8 +501,8 @@
                         android:layout_height="@dimen/spacing_10"
                         android:contentDescription="@string/profile_vehicle_icon_desc"
                         app:tint="@color/light_700"
-                        android:layout_marginEnd="@dimen/spacing_3"/>
-                    <!-- android:src="@drawable/ic_vehicle" -->
+                        android:layout_marginEnd="@dimen/spacing_3"
+                        android:src="@drawable/ic_vehicle"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -525,7 +555,9 @@
                                 android:layout_width="@dimen/spacing_6"
                                 android:layout_height="@dimen/spacing_6"
                                 android:contentDescription="@string/profile_vehicle_model_icon_desc"
-                                app:tint="@color/light_700"/>
+                                app:tint="@color/light_700"
+                                android:src="@drawable/ic_model"
+                                android:layout_marginEnd="@dimen/spacing_2"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -564,7 +596,9 @@
                                 android:layout_width="@dimen/spacing_6"
                                 android:layout_height="@dimen/spacing_6"
                                 android:contentDescription="@string/profile_vehicle_place_icon_desc"
-                                app:tint="@color/light_700"/>
+                                app:tint="@color/light_700"
+                                android:src="@drawable/ic_place"
+                                android:layout_marginEnd="@dimen/spacing_2"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -603,7 +637,9 @@
                                 android:layout_width="@dimen/spacing_6"
                                 android:layout_height="@dimen/spacing_6"
                                 android:contentDescription="@string/profile_vehicle_licence_icon_desc"
-                                app:tint="@color/light_700"/>
+                                app:tint="@color/light_700"
+                                android:src="@drawable/ic_licence"
+                                android:layout_marginEnd="@dimen/spacing_2"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -642,7 +678,9 @@
                                 android:layout_width="@dimen/spacing_6"
                                 android:layout_height="@dimen/spacing_6"
                                 android:contentDescription="@string/profile_vehicle_type_icon_desc"
-                                app:tint="@color/light_700"/>
+                                app:tint="@color/light_700"
+                                android:src="@drawable/ic_vehicle_type"
+                                android:layout_marginEnd="@dimen/spacing_2"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -681,7 +719,9 @@
                                 android:layout_width="@dimen/spacing_6"
                                 android:layout_height="@dimen/spacing_6"
                                 android:contentDescription="@string/profile_vehicle_baby_icon_desc"
-                                app:tint="@color/light_700"/>
+                                app:tint="@color/light_700"
+                                android:src="@drawable/ic_baby"
+                                android:layout_marginEnd="@dimen/spacing_2"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -720,7 +760,9 @@
                                 android:layout_width="@dimen/spacing_6"
                                 android:layout_height="@dimen/spacing_6"
                                 android:contentDescription="@string/profile_vehicle_pet_icon_desc"
-                                app:tint="@color/light_700"/>
+                                app:tint="@color/light_700"
+                                android:src="@drawable/ic_pets"
+                                android:layout_marginEnd="@dimen/spacing_2"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -784,8 +826,8 @@
                         android:layout_height="@dimen/spacing_10"
                         android:contentDescription="@string/profile_activity_icon_desc"
                         app:tint="@color/light_700"
-                        android:layout_marginEnd="@dimen/spacing_3"/>
-                    <!-- android:src="@drawable/ic_email" -->
+                        android:layout_marginEnd="@dimen/spacing_3"
+                        android:src="@drawable/ic_activity"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
