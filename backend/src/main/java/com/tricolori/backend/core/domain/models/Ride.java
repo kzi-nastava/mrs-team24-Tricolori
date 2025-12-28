@@ -73,11 +73,43 @@ public class Ride {
     )
     private Route route;
 
+    // one ride can have multiple reviews (one per passenger)
+    @OneToMany(
+            mappedBy = "ride",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<Review> reviews = new ArrayList<>();
+
+    // one ride can have multiple inconsistency reports
+    @OneToMany(
+            mappedBy = "ride",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<InconsistencyReport> inconsistencyReports = new ArrayList<>();
+
     public Passenger getMainPassenger() {
         if (passengers == null || passengers.isEmpty()) {
             return null;
         }
         return passengers.getFirst();
+    }
+
+    // check if specific passenger can rate a ride
+    public boolean canBeReviewedBy(Passenger passenger) {
+        if (endTime == null) return false; // Not finished yet
+
+        // Check if passenger already reviewed
+        boolean alreadyReviewed = reviews.stream()
+                .anyMatch(review -> review.getReviewer().getId().equals(passenger.getId()));
+        if (alreadyReviewed) return false;
+
+        // Check 3-day deadline
+        LocalDateTime deadline = endTime.plusDays(3);
+        return LocalDateTime.now().isBefore(deadline);
     }
 
 }
