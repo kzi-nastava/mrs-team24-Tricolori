@@ -19,7 +19,7 @@ public class VehicleController {
         return ResponseEntity.ok(List.of());
     }
 
-    // get real time location of a vehicle fro tracking
+    // get real time location of a vehicle for tracking
     @GetMapping("/{id}/location")
     public ResponseEntity<VehicleLocationResponse> getVehicleLocation(@PathVariable Long id) {
 

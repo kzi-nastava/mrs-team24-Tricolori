@@ -73,11 +73,38 @@ public class Ride {
     )
     private Route route;
 
+    // NEW: One-to-one relationship with Review
+    @OneToOne(
+            mappedBy = "ride",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Review review;
+
+    // NEW: One-to-many relationship with InconsistencyReport
+    @OneToMany(
+            mappedBy = "ride",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<InconsistencyReport> inconsistencyReports = new ArrayList<>();
+
     public Passenger getMainPassenger() {
         if (passengers == null || passengers.isEmpty()) {
             return null;
         }
         return passengers.getFirst();
+    }
+
+    // NEW: Helper method to check if ride can be reviewed
+    public boolean canBeReviewed() {
+        if (review != null) return false; // Already reviewed
+        if (endTime == null) return false; // Not finished yet
+
+        LocalDateTime deadline = endTime.plusDays(3);
+        return LocalDateTime.now().isBefore(deadline);
     }
 
 }
