@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/driverHistoryFragment">
+    app:startDestination="@id/loginFragment">
 
     <fragment
         android:id="@+id/loginFragment"
@@ -18,6 +18,12 @@
         <action
             android:id="@+id/action_login_to_forgotPassword"
             app:destination="@id/forgotPasswordFragment" />
+
+        <action
+            android:id="@+id/action_login_to_profile"
+            app:destination="@id/user_profile_fragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
 
     </fragment>
 
