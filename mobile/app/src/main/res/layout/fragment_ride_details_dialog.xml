@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_6">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ride_details_title"
+            android:textSize="@dimen/text_2xl"
+            android:textStyle="bold"
+            android:textColor="@color/base_900"
+            android:layout_marginBottom="@dimen/spacing_4" />
+
+        <!-- Route -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/spacing_3">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_route"
+                android:textSize="@dimen/text_xs"
+                android:textStyle="bold"
+                android:textColor="@color/base_600"
+                android:layout_marginBottom="@dimen/spacing_1" />
+
+            <TextView
+                android:id="@+id/tvDetailRoute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_base"
+                android:textColor="@color/base_900"
+                tools:text="Narodnog fronta 23 → Dunavski park" />
+        </LinearLayout>
+
+        <!-- Date -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/spacing_3">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_date"
+                android:textSize="@dimen/text_xs"
+                android:textStyle="bold"
+                android:textColor="@color/base_600"
+                android:layout_marginBottom="@dimen/spacing_1" />
+
+            <TextView
+                android:id="@+id/tvDetailDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_base"
+                android:textColor="@color/base_900"
+                tools:text="2024-12-15" />
+        </LinearLayout>
+
+        <!-- Time Details Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/spacing_3">
+
+            <!-- Start Time -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="@dimen/spacing_2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_start_time"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold"
+                    android:textColor="@color/base_600"
+                    android:layout_marginBottom="@dimen/spacing_1" />
+
+                <TextView
+                    android:id="@+id/tvDetailStartTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/base_900"
+                    tools:text="09:30 AM" />
+            </LinearLayout>
+
+            <!-- End Time -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/spacing_2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_end_time"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold"
+                    android:textColor="@color/base_600"
+                    android:layout_marginBottom="@dimen/spacing_1" />
+
+                <TextView
+                    android:id="@+id/tvDetailEndTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/base_900"
+                    tools:text="11:15 AM" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Duration and Distance Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/spacing_3">
+
+            <!-- Duration -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="@dimen/spacing_2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_duration"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold"
+                    android:textColor="@color/base_600"
+                    android:layout_marginBottom="@dimen/spacing_1" />
+
+                <TextView
+                    android:id="@+id/tvDetailDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/base_900"
+                    tools:text="1h 45min" />
+            </LinearLayout>
+
+            <!-- Distance -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/spacing_2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_distance"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold"
+                    android:textColor="@color/base_600"
+                    android:layout_marginBottom="@dimen/spacing_1" />
+
+                <TextView
+                    android:id="@+id/tvDetailDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/base_900"
+                    tools:text="89.5 km" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Price and Payment Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/spacing_3">
+
+            <!-- Price -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="@dimen/spacing_2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_price"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold"
+                    android:textColor="@color/base_600"
+                    android:layout_marginBottom="@dimen/spacing_1" />
+
+                <TextView
+                    android:id="@+id/tvDetailPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/deep_700"
+                    android:textStyle="bold"
+                    tools:text="€45.50" />
+            </LinearLayout>
+
+            <!-- Payment Method -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/spacing_2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_payment_method"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold"
+                    android:textColor="@color/base_600"
+                    android:layout_marginBottom="@dimen/spacing_1" />
+
+                <TextView
+                    android:id="@+id/tvDetailPaymentMethod"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/base_900"
+                    tools:text="Credit Card" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/spacing_3">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_status"
+                android:textSize="@dimen/text_xs"
+                android:textStyle="bold"
+                android:textColor="@color/base_600"
+                android:layout_marginBottom="@dimen/spacing_1" />
+
+            <TextView
+                android:id="@+id/tvDetailStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_base"
+                android:textColor="@color/base_700"
+                android:textStyle="bold"
+                tools:text="Completed" />
+        </LinearLayout>
+
+        <!-- Passenger Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/spacing_3">
+
+            <!-- Passenger Name -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="@dimen/spacing_2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_passenger"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold"
+                    android:textColor="@color/base_600"
+                    android:layout_marginBottom="@dimen/spacing_1" />
+
+                <TextView
+                    android:id="@+id/tvDetailPassengerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/base_900"
+                    tools:text="Marko Petrović" />
+            </LinearLayout>
+
+            <!-- Phone -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/spacing_2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_phone"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold"
+                    android:textColor="@color/base_600"
+                    android:layout_marginBottom="@dimen/spacing_1" />
+
+                <TextView
+                    android:id="@+id/tvDetailPassengerPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/base_900"
+                    tools:text="+381 64 123 4567" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Notes (conditionally visible) -->
+        <LinearLayout
+            android:id="@+id/notesContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/spacing_3"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_notes"
+                android:textSize="@dimen/text_xs"
+                android:textStyle="bold"
+                android:textColor="@color/base_600"
+                android:layout_marginBottom="@dimen/spacing_1" />
+
+            <TextView
+                android:id="@+id/tvDetailNotes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_base"
+                android:textColor="@color/base_900"
+                tools:text="Pleasant ride, passenger was on time." />
+        </LinearLayout>
+
+        <!-- Close Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClose"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/spacing_12"
+            android:text="@string/btn_close"
+            android:textAllCaps="false"
+            android:textSize="@dimen/text_base"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/base_600"
+            app:cornerRadius="@dimen/spacing_2"
+            android:layout_marginTop="@dimen/spacing_2" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>
