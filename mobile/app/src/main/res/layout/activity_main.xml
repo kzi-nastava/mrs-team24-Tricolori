@@ -105,6 +105,100 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/spacing_1"
+            android:layout_marginRight="@dimen/spacing_1"
+            android:layout_marginTop="@dimen/spacing_1"
+            android:layout_marginBottom="@dimen/spacing_6"
+            app:cardCornerRadius="@dimen/spacing_3"
+            app:cardElevation="@dimen/spacing_1"
+            app:cardBackgroundColor="@color/white"
+            app:strokeColor="@color/white">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_3">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/spacing_3">
+
+                    <!-- Icon placeholder -->
+                    <ImageView
+                        android:layout_width="@dimen/spacing_10"
+                        android:layout_height="@dimen/spacing_10"
+                        android:contentDescription="@string/profile_picture_icon_desc"
+                        app:tint="@color/light_700"
+                        android:layout_marginEnd="@dimen/spacing_3"/>
+                    <!-- android:src="@drawable/ic_picture" -->
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_picture"
+                            android:textColor="@color/light_700"
+                            android:textSize="@dimen/text_base"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_picture_desc"
+                            android:textColor="@color/gray_400"
+                            android:textSize="@dimen/text_xs" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Centered Profile Image -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="@dimen/spacing_40"
+                        android:layout_height="@dimen/spacing_40"
+                        android:layout_gravity="center"
+                        android:background="@drawable/profile_picture_background"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/profile_user_picture_desc"/>
+                    <!-- android:src="@drawable/logo" -->
+                </FrameLayout>
+
+                <!-- Instructions & Upload Button -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginTop="@dimen/spacing_3">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_picture_info"
+                        android:textColor="@color/gray_500"
+                        android:textAlignment="center"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_picture_submit"
+                        android:backgroundTint="@color/light_700"
+                        android:textColor="@color/white"/>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Personal Information Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
