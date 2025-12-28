@@ -72,6 +72,7 @@
             android:textAllCaps="false"
             app:backgroundTint="#00838f"
             app:icon="@drawable/ic_upload"
+            app:iconTint="@color/white"
             app:iconGravity="textStart"
             android:layout_marginBottom="@dimen/spacing_1"
             android:textColor="@color/white"/>

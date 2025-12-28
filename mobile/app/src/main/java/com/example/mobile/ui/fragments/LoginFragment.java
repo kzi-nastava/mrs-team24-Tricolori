@@ -1,5 +1,7 @@
 package com.example.mobile.ui.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,7 @@ public class LoginFragment extends Fragment {
 
     private TextInputEditText etEmail;
     private TextInputEditText etPassword;
+    private SharedPreferences sharedPreferences;
 
     public LoginFragment() {
         // Required empty constructor
@@ -35,19 +38,31 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Initialize SharedPreferences
+        sharedPreferences = requireActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+
         etEmail = view.findViewById(R.id.etEmail);
         etPassword = view.findViewById(R.id.etPassword);
         Button btnLogin = view.findViewById(R.id.btnLogin);
 
         btnLogin.setOnClickListener(v -> {
-            String email = etEmail.getText().toString();
-            String password = etPassword.getText().toString();
+            String email = etEmail.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getContext(), "Fill in all fields!", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getContext(), "Login pressed: " + email, Toast.LENGTH_SHORT).show();
-                // TODO: Retrofit
+                // Save login state
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("is_logged_in", true);
+                editor.putString("user_email", email);
+                editor.putString("user_name", "Driver Name"); // Replace with actual name from API
+                editor.apply();
+
+                Toast.makeText(getContext(), "Login successful!", Toast.LENGTH_SHORT).show();
+
+                // Navigate to user profile
+                Navigation.findNavController(v).navigate(R.id.action_login_to_profile);
             }
         });
 
