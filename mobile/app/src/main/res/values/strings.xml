@@ -66,4 +66,20 @@
     <string name="profile_activity_goal">Daily Goal: 8 hours</string>
     <string name="profile_activity_icon_desc">Activity icon</string>
     <string name="profile_activity_amount">5.5 hours</string>
+
+    <string name="login_title">Welcome back!</string>
+    <string name="register_prompt">New to Cuber? Register here!</string>
+
+    <string name="label_email">Enter your email address:</string>
+    <string name="hint_email">john@example.com</string>
+    <string name="label_password">Enter your password:</string>
+    <string name="hint_password">Your password</string>
+    <string name="forgot_password">Forgot your password?</string>
+    <string name="btn_submit">Submit</string>
+
+    <string name="benefits_title">Login Benefits:</string>
+    <string name="benefit_ride_history">• Access your ride history</string>
+    <string name="benefit_payment">• Saved payment methods</string>
+    <string name="benefit_locations">• Favorite locations</string>
+    <string name="benefit_discounts">• Exclusive member discounts</string>
 </resources>
