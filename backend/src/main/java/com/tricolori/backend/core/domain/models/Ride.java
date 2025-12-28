@@ -73,16 +73,16 @@ public class Ride {
     )
     private Route route;
 
-    // NEW: One-to-one relationship with Review
-    @OneToOne(
+    // one ride can have multiple reviews (one per passenger)
+    @OneToMany(
             mappedBy = "ride",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private Review review;
+    private List<Review> reviews = new ArrayList<>();
 
-    // NEW: One-to-many relationship with InconsistencyReport
+    // one ride can have multiple inconsistency reports
     @OneToMany(
             mappedBy = "ride",
             cascade = CascadeType.ALL,
@@ -98,11 +98,16 @@ public class Ride {
         return passengers.getFirst();
     }
 
-    // NEW: Helper method to check if ride can be reviewed
-    public boolean canBeReviewed() {
-        if (review != null) return false; // Already reviewed
+    // check if specific passenger can rate a ride
+    public boolean canBeReviewedBy(Passenger passenger) {
         if (endTime == null) return false; // Not finished yet
 
+        // Check if passenger already reviewed
+        boolean alreadyReviewed = reviews.stream()
+                .anyMatch(review -> review.getReviewer().getId().equals(passenger.getId()));
+        if (alreadyReviewed) return false;
+
+        // Check 3-day deadline
         LocalDateTime deadline = endTime.plusDays(3);
         return LocalDateTime.now().isBefore(deadline);
     }

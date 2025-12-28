@@ -11,7 +11,15 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity(name = "Review")
-@Table(name = "reviews")
+@Table(
+        name = "reviews",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_ride_reviewer",
+                        columnNames = {"ride_id", "reviewer_id"}
+                )
+        }
+)
 @Getter @Setter @NoArgsConstructor
 public class Review {
 
@@ -40,11 +48,10 @@ public class Review {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "ride_id",
-            nullable = false,
-            unique = true
+            nullable = false
     )
     private Ride ride;
 
