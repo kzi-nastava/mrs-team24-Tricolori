@@ -71,9 +71,8 @@ public class RideController {
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<Void> rateRide(
             @PathVariable Long id,
-            @Valid @RequestBody ReviewDto request
+            @Valid @RequestBody RideRatingRequest request
     ) {
-
         return ResponseEntity.ok().build();
     }
 
@@ -112,7 +111,6 @@ public class RideController {
             @PathVariable Long id,
             @Valid @RequestBody InconsistencyReportRequest request
     ) {
-
         return ResponseEntity.ok().build();
     }
 

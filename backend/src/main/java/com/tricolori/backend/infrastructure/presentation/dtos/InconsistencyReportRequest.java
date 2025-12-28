@@ -2,9 +2,16 @@ package com.tricolori.backend.infrastructure.presentation.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record InconsistencyReportRequest(
-        @NotBlank
-        @Size(min = 10, max = 500)
-        String description
-) {}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class InconsistencyReportRequest {
+
+        @NotBlank(message = "Description is required")
+        @Size(max = 500, message = "Description must not exceed 500 characters")
+        private String description;
+}
