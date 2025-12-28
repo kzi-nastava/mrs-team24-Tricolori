@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/user_profile_fragment">
+    app:startDestination="@id/driverHistoryFragment">
 
     <fragment
         android:id="@+id/loginFragment"
@@ -22,13 +22,24 @@
     </fragment>
 
     <fragment
-        android:id="@+id/user_profile_fragment"
-        android:name="com.example.mobile.ui.fragments.UserProfileFragment"
-        android:label="UserProfileFragment"
-        tools:layout="@layout/fragment_user_profile">
+        android:id="@+id/driverHistoryFragment"
+        android:name="com.example.mobile.ui.fragments.RideHistoryFragment"
+        android:label="Ride History"
+        tools:layout="@layout/fragment_ride_history">
+
         <action
-            android:id="@+id/action_profile_to_change_password"
-            app:destination="@id/change_password_fragment" />
+            android:id="@+id/action_driverHistory_to_login"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
+    <fragment
+      android:id="@+id/user_profile_fragment"
+      android:name="com.example.mobile.ui.fragments.UserProfileFragment"
+      android:label="UserProfileFragment"
+      tools:layout="@layout/fragment_user_profile">
+      <action
+          android:id="@+id/action_profile_to_change_password"
+          app:destination="@id/change_password_fragment" />
     </fragment>
 
     <fragment

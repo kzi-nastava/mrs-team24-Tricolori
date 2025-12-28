@@ -120,6 +120,28 @@
     <string name="profile_pic_label">Profile picture (optional)</string>
     <string name="btn_upload">Upload a picture</string>
     <string name="upload_note">Picture must be in .jpg or .png format</string>
+    <!-- Driver History Fragment -->
+    <string name="filter_ride_history">Filter Ride History</string>
+    <string name="label_start_date">Start Date</string>
+    <string name="label_end_date">End Date</string>
+    <string name="hint_select_start_date">Select start date</string>
+    <string name="hint_select_end_date">Select end date</string>
+    <string name="btn_apply_filter">Apply Filter</string>
+
+    <!-- Ride Details Dialog -->
+    <string name="ride_details_title">Ride Details</string>
+    <string name="label_route">Route</string>
+    <string name="label_date">Date</string>
+    <string name="label_start_time">Start Time</string>
+    <string name="label_end_time">End Time</string>
+    <string name="label_duration">Duration</string>
+    <string name="label_distance">Distance</string>
+    <string name="label_price">Price</string>
+    <string name="label_payment_method">Payment Method</string>
+    <string name="label_status">Status</string>
+    <string name="label_passenger">Passenger</string>
+    <string name="label_notes">Notes</string>
+    <string name="btn_close">Close</string>
 
     <!-- Forgot password -->
     <string name="forgot_password_title">Forgot Password?</string>
