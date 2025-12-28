@@ -38,7 +38,6 @@ public class LoginFragment extends Fragment {
         etEmail = view.findViewById(R.id.etEmail);
         etPassword = view.findViewById(R.id.etPassword);
         Button btnLogin = view.findViewById(R.id.btnLogin);
-        TextView tvRegisterPrompt = view.findViewById(R.id.tvRegisterPrompt);
 
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString();
@@ -53,8 +52,15 @@ public class LoginFragment extends Fragment {
         });
 
         // Navigate to registration
+        TextView tvRegisterPrompt = view.findViewById(R.id.tvRegisterPrompt);
         tvRegisterPrompt.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_login_to_register);
+        });
+
+        // Navigate to forgot password
+        TextView tvForgotPassword = view.findViewById(R.id.tvForgotPassword);
+        tvForgotPassword.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_login_to_forgotPassword);
         });
     }
 }
