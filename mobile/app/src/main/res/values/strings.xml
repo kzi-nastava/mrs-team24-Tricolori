@@ -82,4 +82,24 @@
     <string name="benefit_payment">• Saved payment methods</string>
     <string name="benefit_locations">• Favorite locations</string>
     <string name="benefit_discounts">• Exclusive member discounts</string>
+
+    <!-- Registration -->
+    <string name="register_title">Welcome to Cuber!</string>
+    <string name="login_prompt">Already have an account? Log back in here!</string>
+
+    <string name="label_firstname">Enter your first name:</string>
+    <string name="label_lastname">Enter your last name:</string>
+    <string name="label_phone">Enter your phone number:</string>
+    <string name="label_address">Enter your home address:</string>
+    <string name="label_repeat_password">Repeat your password:</string>
+
+    <string name="hint_firstname">First name</string>
+    <string name="hint_lastname">Last name</string>
+    <string name="hint_phone">Phone Number</string>
+    <string name="hint_address">Home address</string>
+    <string name="hint_repeat_password">Your password again</string>
+
+    <string name="profile_pic_label">Profile picture (optional)</string>
+    <string name="btn_upload">Upload a picture</string>
+    <string name="upload_note">Picture must be in .jpg or .png format</string>
 </resources>
