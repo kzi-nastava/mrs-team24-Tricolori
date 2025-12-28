@@ -61,8 +61,8 @@ public class RideHistoryFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        etStartDate = view.findViewById(R.id.etEmail);
-        etEndDate = view.findViewById(R.id.tvDate);
+        etStartDate = view.findViewById(R.id.etStartDate);
+        etEndDate = view.findViewById(R.id.etEndDate);
         btnFilter = view.findViewById(R.id.btnFilter);
         rvRides = view.findViewById(R.id.rvRides);
 
