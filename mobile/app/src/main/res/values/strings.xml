@@ -64,4 +64,6 @@
     <string name="profile_activity_desc">Your activity in last 24 hours</string>
     <string name="profile_activity_total">Total Active Time</string>
     <string name="profile_activity_goal">Daily Goal: 8 hours</string>
+    <string name="profile_activity_icon_desc">Activity icon</string>
+    <string name="profile_activity_amount">5.5 hours</string>
 </resources>
