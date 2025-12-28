@@ -175,7 +175,9 @@
                         android:layout_gravity="center"
                         android:background="@drawable/profile_picture_background"
                         android:scaleType="centerCrop"
-                        android:contentDescription="@string/profile_user_picture_desc"/>
+                        android:contentDescription="@string/profile_user_picture_desc"
+                        android:src="@drawable/ic_person"
+                        app:tint="@color/gray_400"/>
                     <!-- android:src="@drawable/logo" -->
                 </FrameLayout>
 
