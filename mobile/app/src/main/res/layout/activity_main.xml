@@ -1,4 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_1"
+            android:text="@string/profile_header"
+            android:textColor="@color/light_700"
+            android:textSize="@dimen/text_3xl" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_header_desc"
+            android:textColor="@color/gray_500"
+            android:textSize="@dimen/text_base"
+            android:layout_marginBottom="@dimen/spacing_3"/>
+
+        <!-- Email Address Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_4"
+            android:elevation="@dimen/spacing_0_5"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_4">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/spacing_3">
+
+                <!-- Icon placeholder -->
+                <ImageView
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:contentDescription="@string/profile_email_icon_desc"
+                    app:tint="@color/light_700"
+                    android:layout_marginEnd="@dimen/spacing_3"/>
+                <!-- android:src="@drawable/ic_email" -->
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_email"
+                        android:textColor="@color/light_700"
+                        android:textSize="@dimen/text_xl"
+                        android:labelFor="@id/profile_user_email"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_email_desc"
+                        android:textColor="@color/gray_400"
+                        android:textSize="@dimen/text_sm" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/profile_user_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:autofillHints="email"
+                android:background="@color/gray_100"
+                android:enabled="false"
+                android:focusable="false"
+                android:inputType="textEmailAddress"
+                android:padding="@dimen/spacing_4"
+                android:text="@string/profile_email_example"
+                android:textSize="@dimen/text_base"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
+
+<!-- <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,14 +102,4 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>-->
