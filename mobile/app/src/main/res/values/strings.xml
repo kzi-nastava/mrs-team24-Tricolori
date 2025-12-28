@@ -3,29 +3,25 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
-    <!-- Strings used on Profile page -->
+    <!--   Strings used on Profile page   -->
     <string name="profile_header">Your Profile</string>
     <string name="profile_header_desc">Manage your personal information and settings</string>
-
+    <!-- Email section -->
     <string name="profile_email">Email Address</string>
     <string name="profile_email_desc">Your primary contact email</string>
     <string name="profile_email_example">joedoe@example.com</string>
     <string name="profile_email_icon_desc">Email icon</string>
-
-
+    <!-- Profile picture section -->
     <string name="profile_picture">Profile Picture</string>
     <string name="profile_picture_info">Picture must be in .jpg or .png format</string>
     <string name="profile_picture_submit">Upload Picture</string>
     <string name="profile_picture_icon_desc">User profile picture</string>
-
-
+    <!-- Personal information section -->
     <string name="profile_personal">Personal Information</string>
     <string name="profile_personal_desc">Update your personal details</string>
-
     <string name="profile_personal_edit">Edit</string>
     <string name="profile_personal_save">Save</string>
     <string name="profile_personal_cancel">X</string>
-
     <string name="profile_personal_first_name">First Name</string>
     <string name="profile_personal_last_name">Last Name</string>
     <string name="profile_personal_phone">Phone Number</string>
@@ -35,21 +31,33 @@
     <string name="profile_personal_last_name_example">Doe</string>
     <string name="profile_personal_phone_example">+381601234567</string>
     <string name="profile_personal_home_example">123 Main Street, Belgrade</string>
-
-
+    <!-- Password section -->
     <string name="profile_security">Security</string>
     <string name="profile_security_submit">Change Password</string>
-
+    <!-- Vehicle information section -->
     <string name="profile_vehicle">Vehicle Information</string>
     <string name="profile_vehicle_desc">Assigned by administrator</string>
+    <string name="profile_vehicle_icon_desc">Vehicle icon</string>
     <string name="profile_vehicle_info">Vehicle information is managed by administrators. Contact support for any changes</string>
     <string name="profile_vehicle_model">Model</string>
+    <string name="profile_vehicle_model_icon_desc">Vehicle model icon</string>
+    <string name="profile_vehicle_model_example">Volkswagen Passat</string>
     <string name="profile_vehicle_place">Place</string>
+    <string name="profile_vehicle_place_icon_desc">Place icon</string>
+    <string name="profile_vehicle_place_example">Novi Sad</string>
     <string name="profile_vehicle_licence">Licence plate</string>
+    <string name="profile_vehicle_licence_icon_desc">Licence plate icon</string>
+    <string name="profile_vehicle_licence_example">NS 123-AB</string>
     <string name="profile_vehicle_type">Vehicle type</string>
+    <string name="profile_vehicle_type_icon_desc">Vehicle type icon</string>
+    <string name="profile_vehicle_type_example">Standard</string>
     <string name="profile_vehicle_baby">Does it drive babies?</string>
+    <string name="profile_vehicle_baby_icon_desc">Baby icon</string>
+    <string name="profile_vehicle_baby_example">Yes</string>
     <string name="profile_vehicle_pet">Does it drive pets?</string>
-
+    <string name="profile_vehicle_pet_icon_desc">Pet icon</string>
+    <string name="profile_vehicle_pet_example">Yes</string>
+    <!-- Driver activity section -->
     <string name="profile_activity">Active Hours</string>
     <string name="profile_activity_desc">Your activity in last 24 hours</string>
     <string name="profile_activity_total">Total Active Time</string>
