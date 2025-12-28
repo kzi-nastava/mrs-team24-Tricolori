@@ -10,6 +10,7 @@ constraintlayout = "2.2.1"
 navigationFragment = "2.9.6"
 retrofit = "3.0.0"
 retrofitVersion = "3.0.0"
+navigationRuntime = "2.9.6"
 
 [libraries]
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofitVersion" }
@@ -24,6 +25,7 @@ navigation-fragment = { module = "androidx.navigation:navigation-fragment", vers
 navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "navigationFragment" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-v290 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
+navigation-runtime = { group = "androidx.navigation", name = "navigation-runtime", version.ref = "navigationRuntime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

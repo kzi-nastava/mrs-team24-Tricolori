@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/user_profile_fragment">
 
     <fragment
         android:id="@+id/loginFragment"
@@ -22,6 +22,16 @@
     </fragment>
 
     <fragment
+        android:id="@+id/user_profile_fragment"
+        android:name="com.example.mobile.ui.fragments.UserProfileFragment"
+        android:label="UserProfileFragment"
+        tools:layout="@layout/fragment_user_profile">
+        <action
+            android:id="@+id/action_profile_to_change_password"
+            app:destination="@id/change_password_fragment" />
+    </fragment>
+
+    <fragment
         android:id="@+id/registerFragment"
         android:name="com.example.mobile.ui.fragments.RegisterFragment"
         android:label="RegisterFragment"
@@ -33,6 +43,12 @@
         android:label="ForgotPasswordFragment"
         tools:layout="@layout/fragment_forgot_password" />
 
+    <fragment
+        android:id="@+id/change_password_fragment"
+        android:name="com.example.mobile.ui.fragments.ChangePasswordFragment"
+        android:label="ChangePasswordFragment"
+        tools:layout="@layout/fragment_change_password"/>
+  
     <fragment
         android:id="@+id/resetPasswordFragment"
         android:name="com.example.mobile.ui.fragments.ResetPasswordFragment"
