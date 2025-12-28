@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Gray Colors (Tailwind) -->
+    <color name="gray_50">#f9fafb</color>
+    <color name="gray_100">#f3f4f6</color>
+    <color name="gray_200">#e5e7eb</color>
+    <color name="gray_300">#d1d5db</color>
+    <color name="gray_400">#9ca3af</color>
+    <color name="gray_500">#6b7280</color>
+    <color name="gray_600">#4b5563</color>
+    <color name="gray_700">#374151</color>
+    <color name="gray_800">#1f2937</color>
+    <color name="gray_900">#111827</color>
+
+    <!-- Light Colors -->
+    <color name="light_100">#ccfff1</color>
+    <color name="light_200">#99ffe2</color>
+    <color name="light_300">#66ffd4</color>
+    <color name="light_400">#33ffc5</color>
+    <color name="light_500">#00ffb7</color>
+    <color name="light_600">#00cc92</color>
+    <color name="light_700">#00996e</color>
+    <color name="light_800">#006649</color>
+    <color name="light_900">#003325</color>
+
+    <!-- Dark Colors -->
+    <color name="dark_100">#ccecff</color>
+    <color name="dark_200">#99daff</color>
+    <color name="dark_300">#66c7ff</color>
+    <color name="dark_400">#33b5ff</color>
+    <color name="dark_500">#00a2ff</color>
+    <color name="dark_600">#0082cc</color>
+    <color name="dark_700">#006199</color>
+    <color name="dark_800">#004166</color>
+    <color name="dark_900">#002033</color>
+
+    <!-- Base Colors -->
+    <color name="base_100">#ccfcff</color>
+    <color name="base_200">#99faff</color>
+    <color name="base_300">#66f7ff</color>
+    <color name="base_400">#33f5ff</color>
+    <color name="base_500">#00f2ff</color>
+    <color name="base_600">#00c2cc</color>
+    <color name="base_700">#009199</color>
+    <color name="base_800">#006166</color>
+    <color name="base_900">#003033</color>
+
+    <!-- Accent Colors -->
+    <color name="accent_100">#ccffdf</color>
+    <color name="accent_200">#99ffbf</color>
+    <color name="accent_300">#66ff9e</color>
+    <color name="accent_400">#33ff7e</color>
+    <color name="accent_500">#00ff5e</color>
+    <color name="accent_600">#00cc4b</color>
+    <color name="accent_700">#009938</color>
+    <color name="accent_800">#006626</color>
+    <color name="accent_900">#003313</color>
+
+    <!-- Deep Colors -->
+    <color name="deep_100">#ccdcff</color>
+    <color name="deep_200">#99b9ff</color>
+    <color name="deep_300">#6697ff</color>
+    <color name="deep_400">#3374ff</color>
+    <color name="deep_500">#0051ff</color>
+    <color name="deep_600">#0041cc</color>
+    <color name="deep_700">#003199</color>
+    <color name="deep_800">#002066</color>
+    <color name="deep_900">#001033</color>
+</resources>
