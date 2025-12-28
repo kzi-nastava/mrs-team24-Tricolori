@@ -19,16 +19,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/nav_graph" />
 
-    <!-- Bottom Navigation Bar -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/base_800"
+        android:background="@color/base_700"
         app:elevation="8dp"
         app:itemIconTint="@color/white"
         app:itemTextColor="@color/white"
-        app:itemRippleColor="@color/base_800"
+        app:itemBackground="@color/base_700"
         app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
