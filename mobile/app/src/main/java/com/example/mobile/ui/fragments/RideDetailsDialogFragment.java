@@ -1,6 +1,7 @@
 package com.example.mobile.ui.fragments;
 
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -105,5 +106,28 @@ public class RideDetailsDialogFragment extends DialogFragment {
         }
 
         btnClose.setOnClickListener(v -> dismiss());
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            // Get screen width
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getDialog().getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int width = displayMetrics.widthPixels;
+
+            // Set dialog to 90% of screen width (or use fixed dp if preferred)
+            int dialogWidth = (int) (width * 0.90);
+
+            getDialog().getWindow().setLayout(
+                    dialogWidth,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+
+            // Make background transparent so CardView corners show
+            getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
     }
 }

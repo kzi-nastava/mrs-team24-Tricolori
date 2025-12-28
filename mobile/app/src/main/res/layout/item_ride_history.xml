@@ -8,6 +8,7 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/spacing_2"
     android:layout_marginBottom="@dimen/spacing_2"
+    app:cardBackgroundColor="@color/white"
     app:cardElevation="@dimen/spacing_1"
     app:cardCornerRadius="@dimen/spacing_2"
     android:clickable="true"
