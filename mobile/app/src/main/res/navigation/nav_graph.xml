@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.mobile.ui.fragments.LoginFragment"
-        android:label="LoginFragment"
+        android:label="Login"
         tools:layout="@layout/fragment_login">
 
         <action
@@ -47,7 +47,7 @@
     <fragment
         android:id="@+id/userProfileFragment"
         android:name="com.example.mobile.ui.fragments.UserProfileFragment"
-        android:label="UserProfileFragment"
+        android:label="User Profile"
         tools:layout="@layout/fragment_user_profile">
 
         <action
@@ -58,25 +58,25 @@
     <fragment
         android:id="@+id/registerFragment"
         android:name="com.example.mobile.ui.fragments.RegisterFragment"
-        android:label="RegisterFragment"
+        android:label="Register"
         tools:layout="@layout/fragment_register" />
 
     <fragment
         android:id="@+id/forgotPasswordFragment"
         android:name="com.example.mobile.ui.fragments.ForgotPasswordFragment"
-        android:label="ForgotPasswordFragment"
+        android:label="Forgot Password"
         tools:layout="@layout/fragment_forgot_password" />
 
     <fragment
         android:id="@+id/changePasswordFragment"
         android:name="com.example.mobile.ui.fragments.ChangePasswordFragment"
-        android:label="ChangePasswordFragment"
+        android:label="Change Password"
         tools:layout="@layout/fragment_change_password"/>
 
     <fragment
         android:id="@+id/resetPasswordFragment"
         android:name="com.example.mobile.ui.fragments.ResetPasswordFragment"
-        android:label="ResetPasswordFragment"
+        android:label="Reset Password"
         tools:layout="@layout/fragment_reset_password" />
 
 </navigation>
