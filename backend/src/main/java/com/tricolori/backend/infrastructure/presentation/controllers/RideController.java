@@ -55,78 +55,78 @@ public class RideController {
     }
 
     // track ride in real time for passengers
-//    @GetMapping("/{id}/track")
-//    public ResponseEntity<RideTrackingResponse> trackRide(@PathVariable Long id) {
-//
-//        Address pickup = new Address(
-//                "Bulevar Oslobođenja 12",
-//                "Novi Sad",
-//                19.8335,
-//                45.2671
-//        );
-//
-//        Address destination = new Address(
-//                "Zmaj Jovina 4",
-//                "Novi Sad",
-//                19.8402,
-//                45.2558
-//        );
-//
-//        Address stop1 = new Address(
-//                "Futoška 45",
-//                "Novi Sad",
-//                19.8260,
-//                45.2620
-//        );
-//
-//        RouteDto route = new RouteDto(
-//                pickup,
-//                destination,
-//                List.of(stop1)   // order matters
-//        );
-//
-//        RideTrackingResponse response = new RideTrackingResponse(
-//                id,
-//                "IN_PROGRESS",
-//
-//                new VehicleLocationResponse(
-//                        1L,
-//                        "Toyota Corolla",
-//                        "NS-123-AB",
-//                        45.2665,
-//                        19.8340,
-//                        false,
-//                        new VehicleSpecificationDto(
-//                                "Sedan",
-//                                5,
-//                                true,
-//                                false
-//                        )
-//                ),
-//
-//                route,
-//
-//                8,
-//                LocalDateTime.now().plusMinutes(8),
-//                null,
-//                LocalDateTime.now().minusMinutes(5),
-//                650.0,
-//
-//                new DriverDto(
-//                        10L,
-//                        "Marko",
-//                        "Petrović",
-//                        "https://google.drive.com/epfjeoirfaspd243.jpg",
-//                        3.7
-//                ),
-//
-//                List.of(
-//                        new PassengerDto(20L, "Ana", "Jovanović", "anajo@example.com", true)
-//                )
-//        );
-//
-//        return ResponseEntity.ok(response);
-//    }
+    @GetMapping("/{id}/track")
+    public ResponseEntity<RideTrackingResponse> trackRide(@PathVariable Long id) {
+
+        Address pickup = new Address(
+                "Bulevar Oslobođenja 12",
+                "Novi Sad",
+                19.8335,
+                45.2671
+        );
+
+        Address destination = new Address(
+                "Zmaj Jovina 4",
+                "Novi Sad",
+                19.8402,
+                45.2558
+        );
+
+        Address stop1 = new Address(
+                "Futoška 45",
+                "Novi Sad",
+                19.8260,
+                45.2620
+        );
+
+        RouteDto route = new RouteDto(
+                pickup,
+                destination,
+                List.of(stop1)   // order matters
+        );
+
+        RideTrackingResponse response = new RideTrackingResponse(
+                id,
+                "IN_PROGRESS",
+
+                new VehicleLocationResponse(
+                        1L,
+                        "Toyota Corolla",
+                        "NS-123-AB",
+                        45.2665,
+                        19.8340,
+                        false,
+                        new VehicleSpecificationDto(
+                                "Sedan",
+                                5,
+                                true,
+                                false
+                        )
+                ),
+
+                route,
+
+                8,
+                LocalDateTime.now().plusMinutes(8),
+                null,
+                LocalDateTime.now().minusMinutes(5),
+                650.0,
+
+                new DriverDto(
+                        10L,
+                        "Marko",
+                        "Petrović",
+                        "https://google.drive.com/epfjeoirfaspd243.jpg",
+                        3.7
+                ),
+
+                List.of(
+                        new PassengerDto(20L, "Ana", "Jovanović", "anajo@example.com", true)
+                )
+        );
+
+        return ResponseEntity.ok(response);
+    }
 
 
     // finish the ride (driver)
