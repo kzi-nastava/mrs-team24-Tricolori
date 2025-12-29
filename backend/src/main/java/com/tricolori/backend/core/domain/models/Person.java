@@ -22,8 +22,16 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    public Long getId() {
+        return id;
+    }
+
     @Enumerated(EnumType.STRING)
     private PersonRole role;
+
+    public void setRole(PersonRole role) {
+        this.role = role;
+    }
 
     @Column(
             name = "first_name",

@@ -62,4 +62,7 @@ public class Review {
     )
     private Passenger reviewer;
 
+    public Passenger getReviewer() {
+        return reviewer;
+    }
 }
