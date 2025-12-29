@@ -1,0 +1,171 @@
+<resources>
+    <string name="app_name">mobile</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!--   Strings used on Change password page   -->
+    <string name="change_password_title">Change your password</string>
+    <string name="change_password_desc">Choose a strong password to secure your account</string>
+    <string name="change_password_current">Enter current password</string>
+    <string name="change_password_current_input">Current password</string>
+    <string name="change_password_new">Enter new password</string>
+    <string name="change_password_new_input">New password</string>
+    <string name="change_password_confirm">Confirm new password</string>
+    <string name="change_password_confirm_input">Confirm password</string>
+    <string name="change_password_submit">Submit</string>
+    <!-- Requirements -->
+    <string name="change_password_requirements">Password Requirements:</string>
+    <string name="change_password_8_chars">• At least 8 characters</string>
+    <string name="change_password_upper">• Upper and lowercase letters</string>
+    <string name="change_password_number">• At least one number</string>
+
+
+    <!--   Strings used on Profile page   -->
+    <string name="profile_header">Your Profile</string>
+    <string name="profile_header_desc">Manage your personal information and settings</string>
+    <!-- Email section -->
+    <string name="profile_email">Email Address</string>
+    <string name="profile_email_desc">Your primary contact email</string>
+    <string name="profile_email_example">joedoe@example.com</string>
+    <string name="profile_email_icon_desc">Email icon</string>
+    <!-- Profile picture section -->
+    <string name="profile_picture">Profile Picture</string>
+    <string name="profile_picture_desc">Change your profile picture</string>
+    <string name="profile_picture_info">Picture must be in .jpg or .png format</string>
+    <string name="profile_picture_submit">Upload Picture</string>
+    <string name="profile_picture_icon_desc">Profile icon</string>
+    <string name="profile_user_picture_desc">User picture</string>
+    <!-- Personal information section -->
+    <string name="profile_personal">Personal Information</string>
+    <string name="profile_personal_desc">Update your personal details</string>
+    <string name="profile_personal_edit">Edit</string>
+    <string name="profile_personal_save">Save</string>
+    <string name="profile_personal_cancel">X</string>
+    <string name="profile_personal_first_name">First Name</string>
+    <string name="profile_personal_last_name">Last Name</string>
+    <string name="profile_personal_phone">Phone Number</string>
+    <string name="profile_personal_home">Home Address</string>
+    <string name="profile_personal_icon_desc">User icon</string>
+    <string name="profile_personal_first_name_example">Joe</string>
+    <string name="profile_personal_last_name_example">Doe</string>
+    <string name="profile_personal_phone_example">+381601234567</string>
+    <string name="profile_personal_home_example">123 Main Street, Belgrade</string>
+    <!-- Password section -->
+    <string name="profile_security">Security</string>
+    <string name="profile_security_desc">Update password to protect your account</string>
+    <string name="profile_security_submit">Change Password</string>
+    <!-- Vehicle information section -->
+    <string name="profile_vehicle">Vehicle Information</string>
+    <string name="profile_vehicle_desc">Assigned by administrator</string>
+    <string name="profile_vehicle_icon_desc">Vehicle icon</string>
+    <string name="profile_vehicle_info">Vehicle information is managed by administrators. Contact support for any changes</string>
+    <string name="profile_vehicle_model">Model</string>
+    <string name="profile_vehicle_model_icon_desc">Vehicle model icon</string>
+    <string name="profile_vehicle_model_example">Volkswagen Passat</string>
+    <string name="profile_vehicle_place">Place</string>
+    <string name="profile_vehicle_place_icon_desc">Place icon</string>
+    <string name="profile_vehicle_place_example">Novi Sad</string>
+    <string name="profile_vehicle_licence">Licence plate</string>
+    <string name="profile_vehicle_licence_icon_desc">Licence plate icon</string>
+    <string name="profile_vehicle_licence_example">NS 123-AB</string>
+    <string name="profile_vehicle_type">Vehicle type</string>
+    <string name="profile_vehicle_type_icon_desc">Vehicle type icon</string>
+    <string name="profile_vehicle_type_example">Standard</string>
+    <string name="profile_vehicle_baby">Does it drive babies?</string>
+    <string name="profile_vehicle_baby_icon_desc">Baby icon</string>
+    <string name="profile_vehicle_baby_example">Yes</string>
+    <string name="profile_vehicle_pet">Does it drive pets?</string>
+    <string name="profile_vehicle_pet_icon_desc">Pet icon</string>
+    <string name="profile_vehicle_pet_example">Yes</string>
+    <!-- Driver activity section -->
+    <string name="profile_activity">Active Hours</string>
+    <string name="profile_activity_desc">Your activity in last 24 hours</string>
+    <string name="profile_activity_total">Total Active Time</string>
+    <string name="profile_activity_goal">Daily Goal: 8 hours</string>
+    <string name="profile_activity_icon_desc">Activity icon</string>
+    <string name="profile_activity_amount">5.5 hours</string>
+
+    <string name="login_title">Welcome back!</string>
+    <string name="register_prompt">New to Cuber? Register here!</string>
+
+    <string name="label_email">Enter your email address:</string>
+    <string name="hint_email">john@example.com</string>
+    <string name="label_password">Enter your password:</string>
+    <string name="hint_password">Your password</string>
+    <string name="forgot_password">Forgot your password?</string>
+    <string name="btn_submit">Submit</string>
+
+    <string name="benefits_title">Login Benefits:</string>
+    <string name="benefit_ride_history">• Access your ride history</string>
+    <string name="benefit_payment">• Saved payment methods</string>
+    <string name="benefit_locations">• Favorite locations</string>
+    <string name="benefit_discounts">• Exclusive member discounts</string>
+
+    <!-- Registration -->
+    <string name="register_title">Welcome to Cuber!</string>
+    <string name="login_prompt">Already have an account? Log back in here!</string>
+
+    <string name="label_firstname">Enter your first name:</string>
+    <string name="label_lastname">Enter your last name:</string>
+    <string name="label_phone">Enter your phone number:</string>
+    <string name="label_address">Enter your home address:</string>
+    <string name="label_repeat_password">Repeat your password:</string>
+
+    <string name="hint_firstname">First name</string>
+    <string name="hint_lastname">Last name</string>
+    <string name="hint_phone">Phone Number</string>
+    <string name="hint_address">Home address</string>
+    <string name="hint_repeat_password">Your password again</string>
+
+    <string name="profile_pic_label">Profile picture (optional)</string>
+    <string name="btn_upload">Upload a picture</string>
+    <string name="upload_note">Picture must be in .jpg or .png format</string>
+    <!-- Driver History Fragment -->
+    <string name="filter_ride_history">Filter Ride History</string>
+    <string name="label_start_date">Start Date</string>
+    <string name="label_end_date">End Date</string>
+    <string name="hint_select_start_date">Select start date</string>
+    <string name="hint_select_end_date">Select end date</string>
+    <string name="btn_apply_filter">Apply Filter</string>
+
+    <!-- Ride Details Dialog -->
+    <string name="ride_details_title">Ride Details</string>
+    <string name="label_route">Route</string>
+    <string name="label_date">Date</string>
+    <string name="label_start_time">Start Time</string>
+    <string name="label_end_time">End Time</string>
+    <string name="label_duration">Duration</string>
+    <string name="label_distance">Distance</string>
+    <string name="label_price">Price</string>
+    <string name="label_payment_method">Payment Method</string>
+    <string name="label_status">Status</string>
+    <string name="label_passenger">Passenger</string>
+    <string name="label_notes">Notes</string>
+    <string name="btn_close">Close</string>
+
+    <!-- Forgot password -->
+    <string name="forgot_password_title">Forgot Password?</string>
+    <string name="back_to_login_prompt">Remembered your password? Login here!</string>
+    <string name="btn_send_reset">Send Reset Link</string>
+
+    <string name="next_steps_title">What happens next?</string>
+    <string name="step_1">• We will send a link to your email</string>
+    <string name="step_2">• Click the link to reset your password</string>
+    <string name="step_3">• Link expires in 24 hours</string>
+    <string name="step_4">• Check your spam folder if not received</string>
+
+    <!-- Reset password -->
+    <string name="reset_pass_title">Reset your password</string>
+    <string name="reset_pass_subtitle">Choose a strong password to secure your account</string>
+    <string name="label_new_pass">Enter your new password:</string>
+    <string name="label_confirm_pass">Re-enter your new password:</string>
+    <string name="hint_new_pass">Your new password</string>
+    <string name="req_title">Password Requirements:</string>
+    <string name="req_1">• At least 8 characters</string>
+    <string name="req_2">• Upper and lowercase letters</string>
+    <string name="req_3">• At least one number</string>
+
+    <!-- Menu -->
+    <string name="nav_ride_history">Ride History</string>
+    <string name="nav_profile">Profile</string>
+</resources>

@@ -1,0 +1,73 @@
+/* Custom scrollbar for driver list */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* Smooth transitions for driver cards */
+.space-y-3 > button {
+  transition: all 0.2s ease;
+}
+
+/* Map placeholder styling */
+.bg-gray-100 {
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 35px,
+      rgba(0, 0, 0, 0.03) 35px,
+      rgba(0, 0, 0, 0.03) 70px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 35px,
+      rgba(0, 0, 0, 0.03) 35px,
+      rgba(0, 0, 0, 0.03) 70px
+    );
+}
+
+/* Animation for statistics cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grid > div {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.grid > div:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.grid > div:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.grid > div:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.grid > div:nth-child(4) {
+  animation-delay: 0.2s;
+}

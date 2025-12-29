@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Mobile" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+
+    <style name="Theme.Mobile" parent="Base.Theme.Mobile" />
+
+    <style name="Theme.Mobile.DrawerOverlay" parent="">
+        <item name="colorSecondaryContainer">@color/dark_100</item>
+
+        <item name="colorOnSecondaryContainer">@color/base_900</item>
+
+        <item name="colorOnSurfaceVariant">@color/gray_700</item>
+    </style>
+</resources>

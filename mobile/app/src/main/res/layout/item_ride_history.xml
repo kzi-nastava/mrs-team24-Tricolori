@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/spacing_1"
+    android:layout_marginRight="@dimen/spacing_1"
+    android:layout_marginTop="@dimen/spacing_1"
+    android:layout_marginBottom="@dimen/spacing_6"
+    app:cardCornerRadius="@dimen/spacing_3"
+    app:cardElevation="@dimen/spacing_2"
+    app:cardBackgroundColor="@color/white"
+    app:strokeColor="@color/white"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_4">
+
+        <!-- Route -->
+        <TextView
+            android:id="@+id/tvRoute"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_lg"
+            android:textStyle="bold"
+            android:textColor="@color/base_900"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="Narodnog fronta 23 → Dunavski park" />
+
+        <!-- Date and Time -->
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_1"
+            android:textSize="@dimen/text_sm"
+            android:textColor="@color/base_700"
+            tools:text="2024-12-15 • 09:30 AM" />
+
+        <!-- Bottom Row: Price, Passenger, Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_2"
+            android:orientation="horizontal">
+
+            <!-- Left Side: Price and Passenger -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_base"
+                    android:textStyle="bold"
+                    android:textColor="@color/accent_800"
+                    tools:text="€45.50" />
+
+                <TextView
+                    android:id="@+id/tvPassenger"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_1"
+                    android:textSize="@dimen/text_sm"
+                    android:textColor="@color/base_700"
+                    tools:text="Marko Petrović" />
+
+            </LinearLayout>
+
+            <!-- Right Side: Status -->
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold"
+                android:textColor="@color/accent_800"
+                tools:text="Completed" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

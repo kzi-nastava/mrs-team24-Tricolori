@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=League+Spartan:wght@100..900&family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap');
+
+@import "tailwindcss";
+
+
+@theme {
+  --font-serif: "Libre Baskerville", serif;
+  --font-sans: "League Spartan", sans-serif;
+  --font-logo: "Bebas Neue";
+
+  --color-light-100: #ccfff1;
+  --color-light-200: #99ffe2;
+  --color-light-300: #66ffd4;
+  --color-light-400: #33ffc5;
+  --color-light: #00ffb7;
+  --color-light-600: #00cc92;
+  --color-light-700: #00996e;
+  --color-light-800: #006649;
+  --color-light-900: #003325;
+
+  --color-dark-100: #ccecff;
+  --color-dark-200: #99daff;
+  --color-dark-300: #66c7ff;
+  --color-dark-400: #33b5ff;
+  --color-dark: #00a2ff;
+  --color-dark-600: #0082cc;
+  --color-dark-700: #006199;
+  --color-dark-800: #004166;
+  --color-dark-900: #002033;
+
+  --color-base-100: #ccfcff;
+  --color-base-200: #99faff;
+  --color-base-300: #66f7ff;
+  --color-base-400: #33f5ff;
+  --color-base: #00f2ff;
+  --color-base-600: #00c2cc;
+  --color-base-700: #009199;
+  --color-base-800: #006166;
+  --color-base-900: #003033;
+
+  --color-accent-100: #ccffdf;
+  --color-accent-200: #99ffbf;
+  --color-accent-300: #66ff9e;
+  --color-accent-400: #33ff7e;
+  --color-accent: #00ff5e;
+  --color-accent-600: #00cc4b;
+  --color-accent-700: #009938;
+  --color-accent-800: #006626;
+  --color-accent-900: #003313;
+
+  --color-deep-100: #ccdcff;
+  --color-deep-200: #99b9ff;
+  --color-deep-300: #6697ff;
+  --color-deep-400: #3374ff;
+  --color-deep: #0051ff;
+  --color-deep-600: #0041cc;
+  --color-deep-700: #003199;
+  --color-deep-800: #002066;
+  --color-deep-900: #001033;
+}
+
+.shadowed {
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
