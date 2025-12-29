@@ -12,7 +12,7 @@ public record RegisterDriverRequest(
     @NotBlank String vehicleModel,
     @NotBlank String vehicleType,
     @NotBlank String plateNumber,
-    @NotBlank int numSeats,
-    @NotBlank boolean babyFriendly,
-    @NotBlank boolean petFriendly)
+    int numSeats,
+    boolean babyFriendly,
+    boolean petFriendly)
 {}
