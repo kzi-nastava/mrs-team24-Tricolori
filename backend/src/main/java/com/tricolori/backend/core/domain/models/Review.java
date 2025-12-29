@@ -61,8 +61,4 @@ public class Review {
             nullable = false
     )
     private Passenger reviewer;
-
-    public Passenger getReviewer() {
-        return reviewer;
-    }
 }
