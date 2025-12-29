@@ -6,4 +6,12 @@
     </style>
 
     <style name="Theme.Mobile" parent="Base.Theme.Mobile" />
+
+    <style name="Theme.Mobile.DrawerOverlay" parent="">
+        <item name="colorSecondaryContainer">@color/dark_100</item>
+
+        <item name="colorOnSecondaryContainer">@color/base_900</item>
+
+        <item name="colorOnSurfaceVariant">@color/gray_700</item>
+    </style>
 </resources>
