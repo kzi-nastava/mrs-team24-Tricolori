@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
@@ -64,6 +66,8 @@ public class HomeFragment extends Fragment {
     private List<VehicleMarker> vehicleMarkers;
     private boolean isEstimationExpanded = false;
     private Polyline routeOverlay;
+    private Marker startMarker;
+    private Marker endMarker;
 
     // Default location (Novi Sad, Serbia)
     private static final double DEFAULT_LAT = 45.2671;
@@ -78,6 +82,15 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Set title to "Cuber" and hide back button for home
+        if (getActivity() != null) {
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
+            if (activity.getSupportActionBar() != null) {
+                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                activity.getSupportActionBar().setTitle("Cuber");
+            }
+        }
+
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -131,17 +144,13 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupListeners(View view) {
-        MaterialButton btnLogin = view.findViewById(R.id.btnLogin);
-        MaterialButton btnRegister = view.findViewById(R.id.btnRegister);
+        MaterialButton btnGetStarted = view.findViewById(R.id.btnGetStarted);
         FloatingActionButton fabRefresh = view.findViewById(R.id.fabRefresh);
         LinearLayout llEstimationHeader = view.findViewById(R.id.llEstimationHeader);
         MaterialButton btnCalculateRoute = view.findViewById(R.id.btnCalculateRoute);
 
-        btnLogin.setOnClickListener(v ->
+        btnGetStarted.setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_home_to_login));
-
-        btnRegister.setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_home_to_register));
 
         fabRefresh.setOnClickListener(v -> {
             refreshVehicles();
@@ -192,6 +201,9 @@ public class HomeFragment extends Fragment {
             return;
         }
 
+        // Hide keyboard
+        hideKeyboard();
+
         // Show loading indicator
         Toast.makeText(getContext(), R.string.calculating_route, Toast.LENGTH_SHORT).show();
 
@@ -236,6 +248,13 @@ public class HomeFragment extends Fragment {
                                 Toast.LENGTH_SHORT).show());
             }
         }).start();
+    }
+
+    private void hideKeyboard() {
+        if (getActivity() != null && getView() != null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+        }
     }
 
     private GeoPoint geocodeAddress(String address) {
@@ -330,9 +349,15 @@ public class HomeFragment extends Fragment {
     }
 
     private void drawRouteOnMap(Road road, GeoPoint startPoint, GeoPoint endPoint) {
-        // Remove existing route overlay
+        // Remove existing route overlay and markers
         if (routeOverlay != null) {
             mapView.getOverlays().remove(routeOverlay);
+        }
+        if (startMarker != null) {
+            mapView.getOverlays().remove(startMarker);
+        }
+        if (endMarker != null) {
+            mapView.getOverlays().remove(endMarker);
         }
 
         // Create route polyline
@@ -342,7 +367,7 @@ public class HomeFragment extends Fragment {
         mapView.getOverlays().add(routeOverlay);
 
         // Add start marker
-        Marker startMarker = new Marker(mapView);
+        startMarker = new Marker(mapView);
         startMarker.setPosition(startPoint);
         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         startMarker.setTitle(getString(R.string.start_location));
@@ -351,7 +376,7 @@ public class HomeFragment extends Fragment {
         mapView.getOverlays().add(startMarker);
 
         // Add end marker
-        Marker endMarker = new Marker(mapView);
+        endMarker = new Marker(mapView);
         endMarker.setPosition(endPoint);
         endMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         endMarker.setTitle(getString(R.string.end_location));
@@ -483,6 +508,15 @@ public class HomeFragment extends Fragment {
         super.onResume();
         if (mapView != null) {
             mapView.onResume();
+        }
+
+        // Hide back button when returning to home
+        if (getActivity() != null) {
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
+            if (activity.getSupportActionBar() != null) {
+                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                activity.getSupportActionBar().setTitle("Cuber");
+            }
         }
 
         // Check if user logged in/out

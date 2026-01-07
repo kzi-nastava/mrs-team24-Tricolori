@@ -175,9 +175,7 @@
     <string name="busy_vehicles">Busy</string>
     <string name="available_count">Available: %1$d</string>
     <string name="busy_count">Busy: %1$d</string>
-    <string name="home_cta_title">Sign in to request a ride</string>
-    <string name="btn_login">Login</string>
-    <string name="btn_register">Register</string>
+    <string name="btn_get_started">Get Started</string>
     <string name="refresh_vehicles">Refresh vehicles</string>
     <string name="refreshing_vehicles">Refreshing vehicle locations...</string>
     <string name="loading_map">Loading map...</string>

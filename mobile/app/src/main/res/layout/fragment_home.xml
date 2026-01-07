@@ -8,11 +8,14 @@
     android:background="@color/white"
     tools:context=".ui.fragments.HomeFragment">
 
-    <!-- Map Container -->
+    <!-- Map Container - Should be behind everything -->
+
+    <!-- Top Info Card -->
     <FrameLayout
         android:id="@+id/mapContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_dodgeInsetEdges="bottom">
 
         <!-- Placeholder for OSM MapView - will be added programmatically -->
         <TextView
@@ -27,13 +30,13 @@
 
     </FrameLayout>
 
-    <!-- Top Info Card -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="8dp"
+        app:layout_dodgeInsetEdges="bottom"
         app:cardBackgroundColor="@color/white"
         android:layout_gravity="top">
 
@@ -116,9 +119,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="120dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="8dp"
+        app:layout_dodgeInsetEdges="bottom"
         app:cardBackgroundColor="@color/white"
         android:layout_gravity="top">
 
@@ -402,65 +406,46 @@
 
     </androidx.cardview.widget.CardView>
 
-    <!-- Bottom Action Buttons (for unregistered users) -->
+    <!-- Bottom Action Bar - MUST BE LAST TO APPEAR ON TOP -->
     <LinearLayout
         android:id="@+id/llAuthButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="16dp"
-        android:background="@drawable/bg_bottom_gradient">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/home_cta_title"
-            android:textColor="@color/base_900"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="12dp"
-            android:layout_gravity="center_horizontal" />
+        android:gravity="center_vertical"
+        android:background="@color/white"
+        android:elevation="16dp"
+        android:translationZ="16dp">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogin"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="@string/btn_login"
+            android:id="@+id/btnGetStarted"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="@string/btn_get_started"
             android:textAllCaps="false"
             android:textSize="16sp"
             android:textColor="@color/white"
             app:backgroundTint="@color/base_600"
             app:cornerRadius="8dp"
-            android:layout_marginBottom="8dp" />
+            app:icon="@drawable/ic_arrow_right"
+            app:iconGravity="textEnd"
+            app:iconTint="@color/white" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRegister"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="@string/btn_register"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            android:textColor="@color/base_600"
-            app:backgroundTint="@color/white"
-            app:strokeColor="@color/base_600"
-            app:strokeWidth="1dp"
-            app:cornerRadius="8dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabRefresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/refresh_vehicles"
+            app:srcCompat="@drawable/ic_refresh"
+            app:backgroundTint="@color/base_600"
+            app:tint="@color/white"
+            app:fabSize="normal"
+            app:elevation="0dp" />
 
     </LinearLayout>
-
-    <!-- Refresh FAB -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabRefresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="16dp"
-        android:layout_marginBottom="180dp"
-        android:contentDescription="@string/refresh_vehicles"
-        app:srcCompat="@drawable/ic_refresh"
-        app:backgroundTint="@color/base_600"
-        app:tint="@color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
