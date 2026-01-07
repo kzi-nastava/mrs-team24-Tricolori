@@ -49,6 +49,10 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.navigation.runtime)
 
+    //OSMDroid for OpenStreetMap
+    implementation(libs.osmdroid.android)
+    implementation(libs.osmbonuspack)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

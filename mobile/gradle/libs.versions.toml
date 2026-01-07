@@ -11,6 +11,8 @@ navigationFragment = "2.9.6"
 retrofit = "3.0.0"
 retrofitVersion = "3.0.0"
 navigationRuntime = "2.9.6"
+osmdroid = "6.1.18"
+osmbonuspack = "6.9.0"
 
 [libraries]
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofitVersion" }
@@ -26,6 +28,8 @@ navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "n
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-v290 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
 navigation-runtime = { group = "androidx.navigation", name = "navigation-runtime", version.ref = "navigationRuntime" }
+osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "osmdroid" }
+osmbonuspack = { module = "com.github.MKergall:osmbonuspack", version.ref = "osmbonuspack" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

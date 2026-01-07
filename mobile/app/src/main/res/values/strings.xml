@@ -168,4 +168,40 @@
     <!-- Menu -->
     <string name="nav_ride_history">Ride History</string>
     <string name="nav_profile">Profile</string>
+
+    <!-- Home Fragment -->
+    <string name="active_vehicles">Active Vehicles</string>
+    <string name="available_vehicles">Available</string>
+    <string name="busy_vehicles">Busy</string>
+    <string name="available_count">Available: %1$d</string>
+    <string name="busy_count">Busy: %1$d</string>
+    <string name="home_cta_title">Sign in to request a ride</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_register">Register</string>
+    <string name="refresh_vehicles">Refresh vehicles</string>
+    <string name="refreshing_vehicles">Refreshing vehicle locations...</string>
+    <string name="loading_map">Loading map...</string>
+    <string name="status_available">Available</string>
+    <string name="status_busy">Busy</string>
+
+    <!-- Ride Estimation -->
+    <string name="ride_estimation">Ride Estimation</string>
+    <string name="expand">Expand</string>
+    <string name="label_start_location">Start Location</string>
+    <string name="label_end_location">End Location</string>
+    <string name="hint_enter_start_location">Enter start location</string>
+    <string name="hint_enter_end_location">Enter end location</string>
+    <string name="btn_calculate_route">Calculate Route</string>
+    <string name="label_distance">Distance</string>
+    <string name="label_duration">Duration</string>
+    <string name="label_estimated_price">Estimated Price</string>
+    <string name="distance">Distance</string>
+    <string name="duration">Duration</string>
+    <string name="estimated_price">Estimated Price</string>
+    <string name="error_empty_locations">Please enter both locations</string>
+    <string name="calculating_route">Calculating route...</string>
+    <string name="error_geocoding">Could not find location. Please try again.</string>
+    <string name="error_route_calculation">Could not calculate route. Please try again.</string>
+    <string name="start_location">Start</string>
+    <string name="end_location">End</string>
 </resources>
