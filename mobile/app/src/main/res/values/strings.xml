@@ -192,8 +192,6 @@
     <string name="hint_enter_start_location">Enter start location</string>
     <string name="hint_enter_end_location">Enter end location</string>
     <string name="btn_calculate_route">Calculate Route</string>
-    <string name="label_distance">Distance</string>
-    <string name="label_duration">Duration</string>
     <string name="label_estimated_price">Estimated Price</string>
     <string name="distance">Distance</string>
     <string name="duration">Duration</string>
