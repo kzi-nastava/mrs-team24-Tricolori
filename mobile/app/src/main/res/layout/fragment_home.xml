@@ -8,16 +8,12 @@
     android:background="@color/white"
     tools:context=".ui.fragments.HomeFragment">
 
-    <!-- Map Container - Should be behind everything -->
-
-    <!-- Top Info Card -->
+    <!-- Map Container - Full screen -->
     <FrameLayout
         android:id="@+id/mapContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_dodgeInsetEdges="bottom">
+        android:layout_height="match_parent">
 
-        <!-- Placeholder for OSM MapView - will be added programmatically -->
         <TextView
             android:id="@+id/tvMapPlaceholder"
             android:layout_width="wrap_content"
@@ -28,15 +24,55 @@
             android:textSize="16sp"
             android:visibility="gone" />
 
+        <!-- Bottom Action Bar INSIDE map container -->
+        <LinearLayout
+            android:id="@+id/llAuthButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical"
+            android:background="@color/white"
+            android:elevation="100dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGetStarted"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/btn_get_started"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/base_600"
+                app:cornerRadius="8dp"
+                app:icon="@drawable/ic_arrow_right"
+                app:iconGravity="textEnd"
+                app:iconTint="@color/white" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabRefresh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/refresh_vehicles"
+                app:srcCompat="@drawable/ic_refresh"
+                app:backgroundTint="@color/base_600"
+                app:tint="@color/white"
+                app:fabSize="normal" />
+
+        </LinearLayout>
+
     </FrameLayout>
 
+    <!-- Top Info Card -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="8dp"
-        app:layout_dodgeInsetEdges="bottom"
         app:cardBackgroundColor="@color/white"
         android:layout_gravity="top">
 
@@ -122,7 +158,6 @@
         android:layout_marginTop="120dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="8dp"
-        app:layout_dodgeInsetEdges="bottom"
         app:cardBackgroundColor="@color/white"
         android:layout_gravity="top">
 
@@ -406,7 +441,7 @@
 
     </androidx.cardview.widget.CardView>
 
-    <!-- Bottom Action Bar - MUST BE LAST TO APPEAR ON TOP -->
+    <!-- Bottom Action Bar - ALWAYS VISIBLE -->
     <LinearLayout
         android:id="@+id/llAuthButtons"
         android:layout_width="match_parent"
@@ -416,8 +451,7 @@
         android:padding="16dp"
         android:gravity="center_vertical"
         android:background="@color/white"
-        android:elevation="16dp"
-        android:translationZ="16dp">
+        android:elevation="24dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGetStarted"
@@ -443,8 +477,7 @@
             app:srcCompat="@drawable/ic_refresh"
             app:backgroundTint="@color/base_600"
             app:tint="@color/white"
-            app:fabSize="normal"
-            app:elevation="0dp" />
+            app:fabSize="normal" />
 
     </LinearLayout>
 

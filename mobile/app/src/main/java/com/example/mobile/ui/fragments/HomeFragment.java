@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -141,6 +142,15 @@ public class HomeFragment extends Fragment {
         tvDistance = view.findViewById(R.id.tvDistance);
         tvDuration = view.findViewById(R.id.tvDuration);
         tvEstimatedPrice = view.findViewById(R.id.tvEstimatedPrice);
+
+        // Make sure buttons are visible
+        if (llAuthButtons != null) {
+            llAuthButtons.setVisibility(View.VISIBLE);
+            llAuthButtons.setClickable(true);
+            Log.d(TAG, "llAuthButtons found and set to VISIBLE");
+        } else {
+            Log.e(TAG, "llAuthButtons is NULL!");
+        }
     }
 
     private void setupListeners(View view) {
@@ -149,27 +159,58 @@ public class HomeFragment extends Fragment {
         LinearLayout llEstimationHeader = view.findViewById(R.id.llEstimationHeader);
         MaterialButton btnCalculateRoute = view.findViewById(R.id.btnCalculateRoute);
 
-        btnGetStarted.setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_home_to_login));
+        // Debug: Check if buttons are found
+        if (btnGetStarted == null) {
+            Log.e(TAG, "btnGetStarted is NULL!");
+        } else {
+            Log.d(TAG, "btnGetStarted found successfully");
+            // Make button clickable and set listener
+            btnGetStarted.setClickable(true);
+            btnGetStarted.setFocusable(true);
+            btnGetStarted.setOnClickListener(v -> {
+                Log.d(TAG, "Get Started button clicked!");
+                try {
+                    Navigation.findNavController(v).navigate(R.id.action_home_to_login);
+                } catch (Exception e) {
+                    Log.e(TAG, "Navigation error: " + e.getMessage());
+                    Toast.makeText(getContext(), "Navigation error", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
-        fabRefresh.setOnClickListener(v -> {
-            refreshVehicles();
-            Toast.makeText(getContext(), R.string.refreshing_vehicles, Toast.LENGTH_SHORT).show();
-        });
+        if (fabRefresh == null) {
+            Log.e(TAG, "fabRefresh is NULL!");
+        } else {
+            Log.d(TAG, "fabRefresh found successfully");
+            // Make FAB clickable and set listener
+            fabRefresh.setClickable(true);
+            fabRefresh.setFocusable(true);
+            fabRefresh.setOnClickListener(v -> {
+                Log.d(TAG, "Refresh button clicked!");
+                refreshVehicles();
+                Toast.makeText(getContext(), R.string.refreshing_vehicles, Toast.LENGTH_SHORT).show();
+            });
+        }
 
-        llEstimationHeader.setOnClickListener(v -> toggleEstimationPanel());
+        if (llEstimationHeader != null) {
+            llEstimationHeader.setOnClickListener(v -> toggleEstimationPanel());
+        }
 
-        btnCalculateRoute.setOnClickListener(v -> calculateRoute());
+        if (btnCalculateRoute != null) {
+            btnCalculateRoute.setOnClickListener(v -> calculateRoute());
+        }
     }
 
     private void initializeMap(View view) {
-        mapView = new MapView(requireContext());
-        mapView.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-
         ViewGroup mapContainer = view.findViewById(R.id.mapContainer);
-        mapContainer.addView(mapView, 0);
+
+        mapView = new MapView(requireContext());
+        // Add map at index 0 so it goes BEHIND the buttons that are already in the container
+        mapView.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+
+        mapContainer.addView(mapView, 0); // Add at index 0 = behind everything else
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
@@ -178,6 +219,8 @@ public class HomeFragment extends Fragment {
         // Set initial position
         mapView.getController().setZoom(DEFAULT_ZOOM);
         mapView.getController().setCenter(new GeoPoint(DEFAULT_LAT, DEFAULT_LON));
+
+        Log.d(TAG, "Map added at index 0 (behind buttons)");
     }
 
     private void toggleEstimationPanel() {
