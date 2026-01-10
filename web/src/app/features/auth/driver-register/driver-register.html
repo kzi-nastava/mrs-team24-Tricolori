@@ -1,0 +1,195 @@
+<div class="container font-sans mx-auto p-3">
+    <h2 class="text-4xl font-semibold text-center text-cyan-800 mb-12">
+        Register a driver on Cuber
+    </h2>
+    <div class="flex items-center justify-center mb-12">
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 bg-base-700 text-white rounded-full flex items-center justify-center font-bold step-shadow">1</div>
+            <span class="text-xs mt-2 text-base-600 font-medium">Driver Info</span>
+        </div>
+        <div class="w-32 h-0.5 bg-gray-300 mx-4 -mt-6"></div>
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 border-2 border-gray-200 text-gray-400 rounded-full flex items-center justify-center font-bold">2</div>
+            <span class="text-xs mt-2 text-gray-400 font-medium">Car & Account</span>
+        </div>
+    </div>
+
+    <div class="grid h-full grid-cols-2 gap-8">
+        <div class="shadowed order-1 col-span-2 lg:col-span-1 bg-white rounded-2xl p-5 flex flex-col gap-4">
+            <div class="flex items-center gap-4 border-b-3 border-base-600 w-full pb-3 pl-2 pr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+                <h3 class="text-xl text-light-700">Driver's Information</h3>
+            </div>
+            <form class="flex flex-col gap-4">
+                <div class="flex flex-col">
+                    <label class="text-gray-500 ml-2">Driver's first name:</label>
+                    <input type="text" placeholder="First name" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="text-gray-500 ml-2">Driver's last name:</label>
+                    <input type="text" placeholder="Last name" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="text-gray-500 ml-2">Driver's phone number:</label>
+                    <input type="text" placeholder="Phone number" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="text-gray-500 ml-2">Driver's home address:</label>
+                    <input type="text" placeholder="Home address" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+                </div>
+            </form>
+        </div>
+        <div class="shadowed order-2 col-span-2 lg:col-span-1 
+            bg-white rounded-2xl p-5 flex flex-col justify-between h-full min-h-0">
+            <h3 class="text-xl text-light-700">Profile Picture (optional)</h3>
+            <div class="flex items-center justify-center flex-1 mt-4 mb-4">
+                <div class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 
+                            rounded-full overflow-hidden border-4 border-dark-800 flex items-center justify-center bg-gray-300">
+                    <img 
+                        src="assets/icons/logo.svg" 
+                        alt="Profile" 
+                        class="w-full h-full object-cover"
+                    />
+                </div>
+            </div>
+            <div class="flex flex-col gap-3">
+                <p class="text-gray-500 text-center">
+                    Picture must be in .jpg or .png format
+                </p>
+                <button class="bg-light-700 py-2.5 rounded-xl text-white cursor-pointer">
+                    Upload Picture
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="container font-sans mx-auto p-3">
+    <h2 class="text-4xl font-semibold text-center text-cyan-800 mb-12">
+        Register a driver on Cuber
+    </h2>
+
+    <!-- STEPS -->
+    <div class="flex items-center justify-center mb-12">
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 border-2 border-gray-200 text-gray-400 rounded-full flex items-center justify-center font-bold">
+                1
+            </div>
+            <span class="text-xs mt-2 text-gray-400 font-medium">Driver Info</span>
+        </div>
+
+        <div class="w-32 h-0.5 bg-gray-300 mx-4 -mt-6"></div>
+
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 bg-base-700 text-white rounded-full flex items-center justify-center font-bold step-shadow">
+                2
+            </div>
+            <span class="text-xs mt-2 text-base-600 font-medium">Car & Account</span>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-8 max-w-2xl mx-auto">
+        <div class="shadowed bg-white rounded-2xl p-5 flex flex-col gap-5">
+
+            <div class="flex items-center gap-4 border-b-3 border-base-600 w-full pb-3 pl-2 pr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     stroke-width="1.5" stroke="currentColor"
+                     class="size-10 text-light-700">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 17a2 2 0 11-4 0 2 2 0 014 0ZM19 17a2 2 0 11-4 0 2 2 0 014 0ZM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1" />
+                </svg>
+
+                <h3 class="text-xl text-light-700">
+                    Car & Account Information
+                </h3>
+            </div>
+
+            <form class="flex flex-col gap-4">
+
+                <!-- EMAIL -->
+                <div class="flex flex-col">
+                    <label class="text-gray-500 ml-2">
+                        Driver's email address:
+                    </label>
+                    <input
+                        type="email"
+                        placeholder="john@example.com"
+                        class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none"
+                    />
+                    <p class="text-[11px] text-gray-400 ml-2 mt-1">
+                        Driver will receive an email to set their password
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-4">
+
+                    <div class="flex flex-col">
+                        <label class="text-gray-500 ml-2">Vehicle model:</label>
+                        <input type="text" placeholder="Toyota Corolla"
+                               class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-gray-500 ml-2">Vehicle type:</label>
+                        <input type="text" placeholder="Standard"
+                               class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-gray-500 ml-2">Registration plate:</label>
+                        <input type="text" placeholder="ABC-1234"
+                               class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-gray-500 ml-2">Number of seats:</label>
+                        <input type="number" placeholder="4"
+                               class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 mt-4">
+
+                    <h4 class="text-light-700 ml-2">
+                        Additional Information
+                    </h4>
+
+                    <label class="flex items-center gap-4 bg-gray-100 rounded-2xl p-4 cursor-pointer
+                                  hover:bg-gray-200 transition">
+                        <input type="checkbox"
+                               class="w-5 h-5 text-base-600 focus:ring-base-600 rounded">
+                        <span class="text-gray-700">
+                            Vehicle drives babies
+                        </span>
+                    </label>
+
+                    <label class="flex items-center gap-4 bg-gray-100 rounded-2xl p-4 cursor-pointer
+                                  hover:bg-gray-200 transition">
+                        <input type="checkbox"
+                               class="w-5 h-5 text-base-600 focus:ring-base-600 rounded">
+                        <span class="text-gray-700">
+                            Vehicle drives pets
+                        </span>
+                    </label>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="mt-6 bg-light-700 py-3 rounded-xl text-white font-medium
+                           hover:bg-light-800 transition">
+                    Register Driver
+                </button>
+
+            </form>
+        </div>
+
+    </div>
+</div>
