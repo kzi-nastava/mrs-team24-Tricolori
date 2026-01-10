@@ -68,12 +68,25 @@ export class DriverRegister {
     if (this.secondStepForm.valid) {
       const finalData: DriverRegistrationData = {
         ...this.firstStepForm.value,
-        ...this.secondStepForm.value
+        ...this.secondStepForm.value,
+        seatNumber: Number(this.secondStepForm.value.seatNumber)
       };
-      console.log('Data ready for backend:', finalData);
-    }
 
-    this.step = 1;
+      console.log('Data ready for backend:', finalData);
+
+      this.firstStepForm.reset();
+      this.secondStepForm.reset({
+        petFriendly: false,
+        babyFriendly: false
+      });
+
+      this.firstStepForm.markAsPristine();
+      this.firstStepForm.markAsUntouched();
+      this.secondStepForm.markAsPristine();
+      this.secondStepForm.markAsUntouched();
+      
+      this.step = 1;
+    }
   }
 
   prevStep() {
