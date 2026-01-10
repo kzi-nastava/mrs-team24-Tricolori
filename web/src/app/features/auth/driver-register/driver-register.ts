@@ -1,6 +1,7 @@
 import { Component, model } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
+import { DriverRegistrationData } from '../../../shared/model/driver-registration';
 
 @Component({
   selector: 'app-driver-register',
@@ -12,6 +13,7 @@ import { NgIcon } from '@ng-icons/core';
   templateUrl: './driver-register.html',
   styleUrl: './driver-register.css',
 })
+
 
 export class DriverRegister {
   step: number;
@@ -26,27 +28,51 @@ export class DriverRegister {
   constructor() {
     this.step = 1;
     this.firstStepForm = new FormGroup({
-      firstName: new FormControl(''),
-      lastName: new FormControl(''),
-      phone: new FormControl(''),
-      address: new FormControl('')
+      firstName: new FormControl('', [Validators.required]),
+      lastName: new FormControl('', [Validators.required]),
+      phone: new FormControl('', [Validators.required]),
+      address: new FormControl('', [Validators.required])
     });
+
     this.secondStepForm = new FormGroup({
-      email: new FormControl(''),
-      vehicleModel: new FormControl(''),
-      vehicleType: new FormControl(''),
-      registrationPlate: new FormControl(),
-      seatNumber: new FormControl(''),
-      petFriendly: new FormControl(''),
-      babyFriendly: new FormControl(''),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      vehicleModel: new FormControl('', [Validators.required]),
+      vehicleType: new FormControl('', [Validators.required]),
+      registrationPlate: new FormControl('', [Validators.required]),
+      seatNumber: new FormControl('', [Validators.required, Validators.min(1)]),
+      petFriendly: new FormControl(false),
+      babyFriendly: new FormControl(false),
     });
   }
 
+  get firstName() { return this.firstStepForm.get('firstName')!; }
+  get lastName() { return this.firstStepForm.get('lastName')!; }
+  get phone() { return this.firstStepForm.get('phone')!; }
+  get address() { return this.firstStepForm.get('address')!; }
+  get email() { return this.secondStepForm.get('email')!; }
+  get vehicleModel() { return this.secondStepForm.get('vehicleModel')!; }
+  get vehicleType() { return this.secondStepForm.get('vehicleType')!; }
+  get registrationPlate() { return this.secondStepForm.get('registrationPlate')!; }
+  get seatNumber() { return this.secondStepForm.get('seatNumber')!; }
+  get petFriendly() { return this.secondStepForm.get('petFriendly')!; }
+  get babyFriendly() { return this.secondStepForm.get('babyFriendly')!; }
+
   firstSubmit() {
-    this.step = 2;
+    this.firstStepForm.markAllAsTouched();
+    if (this.firstStepForm.valid)
+      this.step = 2;
   }
 
   secondSubmit() {
+    this.secondStepForm.markAllAsTouched();
+    if (this.secondStepForm.valid) {
+      const finalData: DriverRegistrationData = {
+        ...this.firstStepForm.value,
+        ...this.secondStepForm.value
+      };
+      console.log('Data ready for backend:', finalData);
+    }
+
     this.step = 1;
   }
 

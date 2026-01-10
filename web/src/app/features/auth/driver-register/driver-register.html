@@ -1,8 +1,10 @@
 <div class="container font-sans mx-auto p-3">
-    <h2 class="text-4xl font-semibold text-center text-cyan-800 mb-12">
-        Register a driver on Cuber
-    </h2>
-    <div class="flex items-center justify-center mb-12">
+    <div>
+        <h2 class="text-5xl text-light-800 text-center">Register a driver on Cuber</h2>
+        <p class="text-gray-400 text-center">Add a new driver to the system</p>
+    </div>
+
+    <div class="flex items-center justify-center mb-12 mt-5">
         <div class="flex flex-col items-center">
             <div [class]="step == 1 ? selectedStepClasses : otherStepClasses">1</div>
             <p [class]="step == 1 ? selectedTextClasses : otherTextClasses">Driver Info</p>
@@ -18,25 +20,47 @@
         <div class="grid h-full grid-cols-2 gap-8">
             <div class="shadowed order-1 col-span-2 lg:col-span-1 bg-white rounded-2xl p-5 flex flex-col gap-4">
                 <div class="flex items-center gap-4 border-b-3 border-base-600 w-full pb-3 pl-2 pr-2">
-                    <ng-icon name="heroUser" class="size-10 text-light-700"></ng-icon>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
                     <h3 class="text-xl text-light-700">Driver's Information</h3>
                 </div>
                 <form [formGroup]="firstStepForm" (ngSubmit)="firstSubmit()" class="flex flex-col gap-4">
                     <div class="flex flex-col">
                         <label class="text-gray-500 ml-2">Driver's first name:</label>
                         <input formControlName="firstName" type="text" placeholder="First name" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+                        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                            @if(firstName.hasError('required') && (firstName.dirty || firstName.touched)) {
+                                <p>Driver's first name can't be empty</p>
+                            }
+                        </div>
                     </div>
                     <div class="flex flex-col">
                         <label class="text-gray-500 ml-2">Driver's last name:</label>
                         <input formControlName="lastName" type="text" placeholder="Last name" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+                        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                            @if(lastName.hasError('required') && (lastName.dirty || lastName.touched)) {
+                                <p>Driver's last name can't be empty</p>
+                            }
+                        </div>
                     </div>
                     <div class="flex flex-col">
                         <label class="text-gray-500 ml-2">Driver's phone number:</label>
                         <input formControlName="phone" type="text" placeholder="Phone number" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+                        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                            @if(phone.hasError('required') && (phone.dirty || phone.touched)) {
+                                <p>Driver's phone can't be empty</p>
+                            }
+                        </div>
                     </div>
                     <div class="flex flex-col">
                         <label class="text-gray-500 ml-2">Driver's home address:</label>
                         <input formControlName="address" type="text" placeholder="Home address" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+                        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                            @if(address.hasError('required') && (address.dirty || address.touched)) {
+                                <p>Driver's address can't be empty</p>
+                            }
+                        </div>
                     </div>
                     <button type="submit" class="bg-base-600 py-2.5 rounded-xl w-fit px-8 mx-auto mt-6 text-white cursor-pointer hover:bg-base-700 transition">Next step</button>
                 </form>
@@ -66,42 +90,73 @@
                 <form [formGroup]="secondStepForm" (ngSubmit)="secondSubmit()" class="flex flex-col gap-4">
                     <div class="flex flex-col">
                         <label class="text-gray-500 ml-2">Driver's email address:</label>
-                        <input type="email" formControlName="email" placeholder="john@example.com" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none"/>
-                        <p class="text-[11px] text-gray-400 ml-2 mt-1">Driver will receive an email to set their password</p>
+                        <input type="email" formControlName="email" placeholder="john@example.com" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none"/>
+                        <p class="text-sm text-gray-400 ml-3 mt-1">Driver will receive an email to set their password</p>
+                        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                            @if(email.hasError('required') && (email.dirty || email.touched)) {
+                                <p>Driver's email can't be empty</p>
+                            }
+                            @if(email.hasError('email') && (email.dirty || email.touched)) {
+                                <p>You must enter a valid email address</p>
+                            }
+                        </div>
                     </div>
-                    <div class="flex flex-col gap-4">
+                    <div class="grid grid-cols-2 grid-rows-2 gap-4">
                         <div class="flex flex-col">
                             <label class="text-gray-500 ml-2">Vehicle model:</label>
                             <input formControlName="vehicleModel" type="text" placeholder="Toyota Corolla" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                            <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                                @if(vehicleModel.hasError('required') && (vehicleModel.dirty || vehicleModel.touched)) {
+                                    <p>Vehicle model can't be empty</p>
+                                }
+                            </div>
                         </div>
                         <div class="flex flex-col">
                             <label class="text-gray-500 ml-2">Vehicle type:</label>
                             <input formControlName="vehicleType" type="text" placeholder="Standard" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                            <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                                @if(vehicleType.hasError('required') && (vehicleType.dirty || vehicleType.touched)) {
+                                    <p>Vehicle type can't be empty</p>
+                                }
+                            </div>
                         </div>
 
                         <div class="flex flex-col">
                             <label class="text-gray-500 ml-2">Registration plate:</label>
                             <input formControlName="registrationPlate" type="text" placeholder="ABC-1234" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                            <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                                @if(registrationPlate.hasError('required') && (registrationPlate.dirty || registrationPlate.touched)) {
+                                    <p>Vehicle's registration plate can't be empty</p>
+                                }
+                            </div>
                         </div>
 
                         <div class="flex flex-col">
                             <label class="text-gray-500 ml-2">Number of seats:</label>
                             <input formControlName="seatNumber" type="number" placeholder="4" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                             <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                                @if(seatNumber.hasError('required') && (seatNumber.dirty || seatNumber.touched)) {
+                                    <p>Number of seats can't be empty</p>
+                                }
+                                @if(seatNumber.hasError('min') && (seatNumber.dirty || seatNumber.touched)) {
+                                    <p>Vehicle must have at least one passenger seat</p>
+                                }
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-3 mt-4">
-                        <h4 class="text-light-700 ml-2">Additional Information</h4>
-                        <div class="flex items-center gap-4 bg-gray-100 rounded-2xl p-4 cursor-pointer hover:bg-gray-200 transition">
+                    <h4 class="text-light-700 ml-2">Additional Information</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex items-center gap-4 bg-gray-100 rounded-2xl p-4 hover:bg-gray-200 transition">
                             <input formControlName="babyFriendly" type="checkbox" class="w-5 h-5 text-base-600 focus:ring-base-600 rounded">
                             <p class="text-gray-700">Vehicle drives babies</p>
                         </div>
-                        <div class="flex items-center gap-4 bg-gray-100 rounded-2xl p-4 cursor-pointer hover:bg-gray-200 transition">
+                        <div class="flex items-center gap-4 bg-gray-100 rounded-2xl p-4 hover:bg-gray-200 transition">
                             <input formControlName="petFriendly" type="checkbox" class="w-5 h-5 text-base-600 focus:ring-base-600 rounded">
                             <p class="text-gray-700">Vehicle drives pets</p>
                         </div>
                     </div>
                     <div class="flex items-center justify-around mt-6">
-                        <button type="submit" class="bg-base-600 py-2.5 rounded-xl w-fit px-8 mx-auto text-white cursor-pointer hover:bg-base-700 transition">Previous Step</button>
+                        <button type="button" (click)="prevStep()" class="bg-base-600 py-2.5 rounded-xl w-fit px-8 mx-auto text-white cursor-pointer hover:bg-base-700 transition">Previous Step</button>
                         <button type="submit" class="bg-light-700 py-2.5 rounded-xl w-fit px-8 mx-auto text-white cursor-pointer hover:bg-light-800 transition">Register Driver</button>
                     </div>
                 </form>
