@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { UnregisteredHome } from './features/home/unregistered/unregistered-home';
+import { FavoriteRouteSelector } from './shared/components/favorite-route-selector/favorite-route-selector';
 
 export const routes: Routes = [
   // Public routes
@@ -11,6 +12,8 @@ export const routes: Routes = [
   { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(m => m.ForgotPassword) },
   { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password/reset-password').then(m => m.ResetPassword) },
   { path: 'password-change', loadComponent: () => import('./features/password-change/password-change').then(m => m.PasswordChange) },
+
+  { path: 'routes', component: FavoriteRouteSelector },
 
   // Driver routes
   {
