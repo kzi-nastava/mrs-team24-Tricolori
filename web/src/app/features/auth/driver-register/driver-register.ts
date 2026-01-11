@@ -42,18 +42,10 @@ export class DriverRegister {
 
   handleStepTwo(data: StepTwoDriverRegistrationData) {
     this.savedStepTwoData = data;
-    this.handleFinalSubmit();
-  }
-
-  handleFinalSubmit() {
-    if (!this.savedStepOneData || !this.savedStepTwoData) {
-      console.error('Neki od podataka nedostaju!');
-      return;
-    }
-
+    
     const finalData: DriverRegistrationData = {
-      ...this.savedStepOneData,
-      ...this.savedStepTwoData
+      ...this.savedStepOneData!,
+      ...this.savedStepTwoData!
     };
 
     console.log('Data ready for backend:', finalData);
