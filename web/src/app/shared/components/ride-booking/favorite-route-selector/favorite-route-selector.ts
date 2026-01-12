@@ -1,14 +1,19 @@
-import { Component, output } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
 import { FavoriteRoute } from '../../../model/route';
+import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-favorite-route-selector',
-  imports: [],
+  imports: [
+    MatDialogModule
+  ],
   templateUrl: './favorite-route-selector.html',
   styleUrl: './favorite-route-selector.css',
 })
 
 export class FavoriteRouteSelector {
+  private dialogRef = inject(MatDialogRef<FavoriteRouteSelector>);
+
   selectedRoute = output<FavoriteRoute>();
 
   favoriteRoutes: FavoriteRoute[] = [
@@ -36,11 +41,25 @@ export class FavoriteRouteSelector {
       title: 'University',
       from: 'Studentska 5',
       to: 'Zmaj Jovina 22',
+    },
+    {
+      title: 'University',
+      from: 'Studentska 5',
+      to: 'Zmaj Jovina 22',
+    },
+    {
+      title: 'University',
+      from: 'Studentska 5',
+      to: 'Zmaj Jovina 22',
     }
   ];
 
   selectRoute(route: FavoriteRoute) {
     this.selectedRoute.emit(route);
-    // TODO: close modal...
+    this.dialogRef.close(route);
+  }
+
+  close() {
+    this.dialogRef.close();
   }
 }

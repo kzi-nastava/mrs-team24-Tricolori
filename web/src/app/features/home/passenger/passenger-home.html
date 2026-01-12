@@ -5,7 +5,7 @@
                 <ng-icon name="ionLocationOutline" size="2rem"></ng-icon>
                 <h2 class="text-2xl">Book your Ride</h2>
             </div>
-            <button class="w-full py-3 mb-3 border border-gray-500 border-dashed rounded-2xl text-light-600 font-medium hover:bg-gray-300 transition-colors duration-300 hover:text-white bg-gray-100 cursor-pointer text-center">
+            <button type="button" (click)="openFavoriteRoutes()" class="w-full py-3 mb-3 border border-gray-500 border-dashed rounded-2xl text-light-600 font-medium hover:bg-gray-200 transition-colors duration-300 hover:text-light-700 bg-gray-100 cursor-pointer text-center">
                 Select from Favorite Routes
             </button>
             <app-route-selector [selectedRoute]="currentRouteSignal()"/>
@@ -34,12 +34,6 @@
             </div>
             <app-ride-trackers-selector />
         </div>
-
-        <!--
-        <div class="mt-20">
-            <app-favorite-route-selector (selectedRoute)="populateFavoriteRoute($event)"/>
-        </div>
-        -->
 
         <button type="submit" class="bg-light-700 mx-auto px-10 py-3 rounded-xl text-white cursor-pointer">
             Book a Ride

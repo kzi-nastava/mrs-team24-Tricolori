@@ -17,9 +17,7 @@ export class RideTrackersSelector {
   private fb = inject(FormBuilder);
 
   trackersForm = this.fb.group({
-    trackers: this.fb.array([
-      this.fb.control('john@gmail.com', [Validators.required, Validators.email])
-    ])
+    trackers: this.fb.array([])
   });
 
   newTrackerEmail = new FormControl('', {

@@ -1,5 +1,5 @@
-<div class="max-w-lg h-[75vh] flex flex-col bg-white rounded-2xl shadowed font-sans overflow-hidden m-3">
-  <div class="flex items-center justify-between p-5 border-b border-gray-100 shrink-0 bg-white">
+<div class="max-w-lg h-[75vh] flex flex-col bg-white rounded-2xl shadowed font-sans overflow-y-auto">
+  <div class="flex items-center justify-between p-5 border-b gap-4 border-gray-100 shrink-0 bg-white">
     <div class="flex items-center gap-5">
       <div class="bg-base-100 p-3 rounded-full">
         <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-base-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -12,7 +12,7 @@
         <p class="text-gray-400 text-sm">Quickly fill your form by selecting a favorite route</p>
       </div>
     </div>
-    <button class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+    <button (click)="close()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
