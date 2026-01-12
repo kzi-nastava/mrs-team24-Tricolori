@@ -1,6 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouteSelector } from '../../../shared/components/ride-booking/route-selector/route-selector';
+import { RideTrackersSelector } from '../../../shared/components/ride-booking/ride-trackers-selector/ride-trackers-selector';
+import { PreferencesSelector } from '../../../shared/components/ride-booking/preferences-selector/preferences-selector';
+import { FavoriteRouteSelector } from '../../../shared/components/ride-booking/favorite-route-selector/favorite-route-selector';
+import { FavoriteRoute, Route } from '../../../shared/model/route';
 
 interface Stop {
   id: number;
@@ -10,11 +15,22 @@ interface Stop {
 @Component({
   selector: 'app-home-passenger',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+
+    RouteSelector,
+    RideTrackersSelector,
+    PreferencesSelector,
+    FavoriteRouteSelector
+  ],
   templateUrl: './passenger-home.html',
   styleUrl: './passenger-home.css'
 })
 export class HomePassenger {
+  currentRouteSignal = signal<Route | undefined>(undefined);
+
+  /* ----------------------------- */
   pickupLocation = '';
   stops: Stop[] = [];
   destination = '';
@@ -63,5 +79,14 @@ export class HomePassenger {
     console.log('Booking ride:', rideData);
     alert('Searching for available drivers...');
     // TODO: Send to backend
+  }
+
+  /* ------------------------------ */
+  populateFavoriteRoute(route: FavoriteRoute) {
+    this.currentRouteSignal.set({
+      from: route.from,
+      stops: route.stops,
+      to: route.to
+    });
   }
 }

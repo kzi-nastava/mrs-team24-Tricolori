@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, output } from '@angular/core';
 import { FavoriteRoute } from '../../../model/route';
 
 @Component({
@@ -9,6 +9,8 @@ import { FavoriteRoute } from '../../../model/route';
 })
 
 export class FavoriteRouteSelector {
+  selectedRoute = output<FavoriteRoute>();
+
   favoriteRoutes: FavoriteRoute[] = [
     {
       title: 'Work - Home',
@@ -16,7 +18,9 @@ export class FavoriteRouteSelector {
       stops: [
         'A',
         'B',
-        'C'
+        'C',
+        'F',
+        'K'
       ],
       to: 'Laze Telečkog 13',
     },
@@ -34,4 +38,9 @@ export class FavoriteRouteSelector {
       to: 'Zmaj Jovina 22',
     }
   ];
+
+  selectRoute(route: FavoriteRoute) {
+    this.selectedRoute.emit(route);
+    // TODO: close modal...
+  }
 }
