@@ -1,10 +1,5 @@
 import { Component } from '@angular/core';
-
-interface FavoriteRoute {
-  title: string;
-  from: string;
-  to: string;
-}
+import { FavoriteRoute } from '../../../model/route';
 
 @Component({
   selector: 'app-favorite-route-selector',
@@ -18,11 +13,19 @@ export class FavoriteRouteSelector {
     {
       title: 'Work - Home',
       from: 'Bulevar kralja Petra 3',
+      stops: [
+        'A',
+        'B',
+        'C'
+      ],
       to: 'Laze Telečkog 13',
     },
     {
       title: 'Gym',
       from: 'Cara Dušana 10',
+      stops: [
+        'G'
+      ],
       to: 'Bulevar Oslobođenja 120',
     },
     {
