@@ -76,6 +76,78 @@ public class HomeFragment extends Fragment {
     private static final int DEFAULT_ZOOM = 13;
     private static final double PRICE_PER_KM = 120.0; // RSD per km
 
+    // Predefined road locations in Novi Sad (major streets and intersections)
+    private static final GeoPoint[] ROAD_LOCATIONS = {
+            // City Center
+            new GeoPoint(45.2671, 19.8335), // Trg Slobode
+            new GeoPoint(45.2551, 19.8451), // Zmaj Jovina
+            new GeoPoint(45.2558, 19.8468), // Dunavska
+            new GeoPoint(45.2650, 19.8320), // Bulevar Oslobođenja
+            new GeoPoint(45.2620, 19.8380), // Bulevar Mihajla Pupina
+            new GeoPoint(45.2590, 19.8410), // Kralja Aleksandra
+            new GeoPoint(45.2540, 19.8360), // Autobuska Stanica
+            new GeoPoint(45.2674, 19.8433), // Železnička Stanica
+
+            // Petrovaradin area (fortress side)
+            new GeoPoint(45.2516, 19.8661), // Petrovaradin Fortress
+            new GeoPoint(45.2505, 19.8640), // Petrovaradin main road
+            new GeoPoint(45.2490, 19.8620), // Near fortress entrance
+
+            // Universities and institutions
+            new GeoPoint(45.2479, 19.8517), // University Campus
+            new GeoPoint(45.2468, 19.8517), // FTN
+            new GeoPoint(45.2460, 19.8500), // Campus road
+
+            // Shopping areas
+            new GeoPoint(45.2530, 19.8312), // BIG Shopping Center
+            new GeoPoint(45.2639, 19.8319), // Promenada
+            new GeoPoint(45.2708, 19.8044), // Aviv Park
+            new GeoPoint(45.2447, 19.8084), // Novosadski Sajam
+
+            // Sports centers
+            new GeoPoint(45.2444, 19.8361), // SPENS
+            new GeoPoint(45.2398, 19.8425), // Štrand beach area
+
+            // Liman neighborhood (west side)
+            new GeoPoint(45.2391, 19.8255), // Liman 1
+            new GeoPoint(45.2360, 19.8220), // Liman 2
+            new GeoPoint(45.2330, 19.8180), // Liman 3
+            new GeoPoint(45.2300, 19.8150), // Liman 4
+
+            // Grbavica (south side)
+            new GeoPoint(45.2334, 19.8420), // Grbavica center
+            new GeoPoint(45.2310, 19.8440), // Grbavica south
+            new GeoPoint(45.2290, 19.8400), // Grbavica west
+
+            // Novo Naselje (north side)
+            new GeoPoint(45.2800, 19.8200), // Novo Naselje center
+            new GeoPoint(45.2820, 19.8180), // Novo Naselje north
+            new GeoPoint(45.2780, 19.8220), // Novo Naselje east
+
+            // Detelinara (northeast)
+            new GeoPoint(45.2750, 19.8550), // Detelinara center
+            new GeoPoint(45.2770, 19.8570), // Detelinara north
+            new GeoPoint(45.2730, 19.8530), // Detelinara south
+
+            // Telep (west)
+            new GeoPoint(45.2450, 19.8050), // Telep center
+            new GeoPoint(45.2470, 19.8030), // Telep north
+            new GeoPoint(45.2430, 19.8070), // Telep south
+
+            // Podbara (northwest)
+            new GeoPoint(45.2614, 19.8151), // Podbara center
+            new GeoPoint(45.2630, 19.8130), // Podbara north
+            new GeoPoint(45.2590, 19.8170), // Podbara south
+
+            // Major roads and boulevards
+            new GeoPoint(45.2700, 19.8250), // Bulevar Cara Lazara
+            new GeoPoint(45.2580, 19.8200), // Narodnih Heroja
+            new GeoPoint(45.2520, 19.8280), // Janka Veselinovića
+            new GeoPoint(45.2600, 19.8500), // Sentandrejski put
+            new GeoPoint(45.2420, 19.8300), // Rumenačka
+            new GeoPoint(45.2680, 19.8450), // Futoski put
+    };
+
     public HomeFragment() {
         // Required empty constructor
     }
@@ -83,7 +155,6 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Set title to "Cuber" and hide back button for home
         if (getActivity() != null) {
             AppCompatActivity activity = (AppCompatActivity) getActivity();
             if (activity.getSupportActionBar() != null) {
@@ -99,34 +170,23 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize OSMDroid configuration
         Context ctx = requireContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         Configuration.getInstance().setUserAgentValue(ctx.getPackageName());
 
-        // Initialize SharedPreferences
         sharedPreferences = requireActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
 
-        // Initialize views
         initializeViews(view);
-
-        // Initialize map
         initializeMap(view);
 
-        // Check if user is logged in
         boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
         llAuthButtons.setVisibility(isLoggedIn ? View.GONE : View.VISIBLE);
 
-        // Set up listeners
         setupListeners(view);
 
-        // Initialize vehicle markers list
         vehicleMarkers = new ArrayList<>();
 
-        // Load initial vehicles
         loadVehicles();
-
-        // Set up periodic updates (every 30 seconds for simulation)
         setupPeriodicUpdates();
     }
 
@@ -142,15 +202,6 @@ public class HomeFragment extends Fragment {
         tvDistance = view.findViewById(R.id.tvDistance);
         tvDuration = view.findViewById(R.id.tvDuration);
         tvEstimatedPrice = view.findViewById(R.id.tvEstimatedPrice);
-
-        // Make sure buttons are visible
-        if (llAuthButtons != null) {
-            llAuthButtons.setVisibility(View.VISIBLE);
-            llAuthButtons.setClickable(true);
-            Log.d(TAG, "llAuthButtons found and set to VISIBLE");
-        } else {
-            Log.e(TAG, "llAuthButtons is NULL!");
-        }
     }
 
     private void setupListeners(View view) {
@@ -159,32 +210,14 @@ public class HomeFragment extends Fragment {
         LinearLayout llEstimationHeader = view.findViewById(R.id.llEstimationHeader);
         MaterialButton btnCalculateRoute = view.findViewById(R.id.btnCalculateRoute);
 
-        // Debug: Check if buttons are found
-        if (btnGetStarted == null) {
-            Log.e(TAG, "btnGetStarted is NULL!");
-        } else {
-            Log.d(TAG, "btnGetStarted found successfully");
-            // Make button clickable and set listener
-            btnGetStarted.setClickable(true);
-            btnGetStarted.setFocusable(true);
+        if (btnGetStarted != null) {
             btnGetStarted.setOnClickListener(v -> {
                 Log.d(TAG, "Get Started button clicked!");
-                try {
-                    Navigation.findNavController(v).navigate(R.id.action_home_to_login);
-                } catch (Exception e) {
-                    Log.e(TAG, "Navigation error: " + e.getMessage());
-                    Toast.makeText(getContext(), "Navigation error", Toast.LENGTH_SHORT).show();
-                }
+                Navigation.findNavController(v).navigate(R.id.action_home_to_login);
             });
         }
 
-        if (fabRefresh == null) {
-            Log.e(TAG, "fabRefresh is NULL!");
-        } else {
-            Log.d(TAG, "fabRefresh found successfully");
-            // Make FAB clickable and set listener
-            fabRefresh.setClickable(true);
-            fabRefresh.setFocusable(true);
+        if (fabRefresh != null) {
             fabRefresh.setOnClickListener(v -> {
                 Log.d(TAG, "Refresh button clicked!");
                 refreshVehicles();
@@ -205,22 +238,18 @@ public class HomeFragment extends Fragment {
         ViewGroup mapContainer = view.findViewById(R.id.mapContainer);
 
         mapView = new MapView(requireContext());
-        // Add map at index 0 so it goes BEHIND the buttons that are already in the container
         mapView.setLayoutParams(new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        mapContainer.addView(mapView, 0); // Add at index 0 = behind everything else
+        mapContainer.addView(mapView, 0);
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
 
-        // Set initial position
         mapView.getController().setZoom(DEFAULT_ZOOM);
         mapView.getController().setCenter(new GeoPoint(DEFAULT_LAT, DEFAULT_LON));
-
-        Log.d(TAG, "Map added at index 0 (behind buttons)");
     }
 
     private void toggleEstimationPanel() {
@@ -244,16 +273,11 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        // Hide keyboard
         hideKeyboard();
-
-        // Show loading indicator
         Toast.makeText(getContext(), R.string.calculating_route, Toast.LENGTH_SHORT).show();
 
-        // Run route calculation in background thread
         new Thread(() -> {
             try {
-                // Geocode addresses to coordinates
                 GeoPoint startPoint = geocodeAddress(startLocation);
                 GeoPoint endPoint = geocodeAddress(endLocation);
 
@@ -263,7 +287,6 @@ public class HomeFragment extends Fragment {
                     return;
                 }
 
-                // Calculate route using OSRM
                 RoadManager roadManager = new OSRMRoadManager(requireContext(),
                         Configuration.getInstance().getUserAgentValue());
 
@@ -273,7 +296,6 @@ public class HomeFragment extends Fragment {
 
                 Road road = roadManager.getRoad(waypoints);
 
-                // Update UI on main thread
                 requireActivity().runOnUiThread(() -> {
                     if (road != null && road.mStatus == Road.STATUS_OK) {
                         displayRouteResults(road);
@@ -301,10 +323,6 @@ public class HomeFragment extends Fragment {
     }
 
     private GeoPoint geocodeAddress(String address) {
-        // Simple geocoding for Novi Sad locations
-        // In production, use Nominatim or another geocoding service
-
-        // Check for some common Novi Sad locations
         String lowerAddress = address.toLowerCase();
 
         // City center and main squares
@@ -315,7 +333,6 @@ public class HomeFragment extends Fragment {
         } else if (lowerAddress.contains("dunavska") || lowerAddress.contains("dunavska ulica")) {
             return new GeoPoint(45.2558, 19.8468);
         }
-
         // Notable landmarks
         else if (lowerAddress.contains("petrovaradin") || lowerAddress.contains("tvrđava") || lowerAddress.contains("fortress")) {
             return new GeoPoint(45.2516, 19.8661);
@@ -326,7 +343,6 @@ public class HomeFragment extends Fragment {
         } else if (lowerAddress.contains("sajam") || lowerAddress.contains("novosadski sajam")) {
             return new GeoPoint(45.2447, 19.8084);
         }
-
         // Shopping centers
         else if (lowerAddress.contains("big") || lowerAddress.contains("mercator")) {
             return new GeoPoint(45.2530, 19.8312);
@@ -335,21 +351,18 @@ public class HomeFragment extends Fragment {
         } else if (lowerAddress.contains("aviv") || lowerAddress.contains("aviv park")) {
             return new GeoPoint(45.2708, 19.8044);
         }
-
         // Universities
         else if (lowerAddress.contains("univerzitet") || lowerAddress.contains("university") || lowerAddress.contains("rektorat")) {
             return new GeoPoint(45.2479, 19.8517);
         } else if (lowerAddress.contains("ftn") || lowerAddress.contains("tehnički fakultet")) {
             return new GeoPoint(45.2468, 19.8517);
         }
-
         // Train and bus stations
         else if (lowerAddress.contains("železnička") || lowerAddress.contains("train station") || lowerAddress.contains("stanica")) {
             return new GeoPoint(45.2674, 19.8433);
         } else if (lowerAddress.contains("autobuska") || lowerAddress.contains("bus station")) {
             return new GeoPoint(45.2540, 19.8363);
         }
-
         // Neighborhoods
         else if (lowerAddress.contains("liman")) {
             return new GeoPoint(45.2391, 19.8255);
@@ -365,34 +378,81 @@ public class HomeFragment extends Fragment {
             return new GeoPoint(45.2450, 19.8050);
         }
 
-        // Default: add small random offset from city center for demo
-        Random random = new Random(address.hashCode());
-        double lat = DEFAULT_LAT + (random.nextDouble() - 0.5) * 0.03;
-        double lon = DEFAULT_LON + (random.nextDouble() - 0.5) * 0.03;
-        return new GeoPoint(lat, lon);
+        // Default: return a random road location
+        return getRandomRoadLocation();
+    }
+
+    /**
+     * Get a random location from predefined road locations
+     */
+    private GeoPoint getRandomRoadLocation() {
+        Random random = new Random();
+        int index = random.nextInt(ROAD_LOCATIONS.length);
+        return ROAD_LOCATIONS[index];
+    }
+
+    /**
+     * Get a nearby road location (for vehicle movement simulation)
+     */
+    private GeoPoint getNearbyRoadLocation(GeoPoint currentLocation) {
+        Random random = new Random();
+
+        // Find road locations within ~500m
+        List<GeoPoint> nearbyLocations = new ArrayList<>();
+        for (GeoPoint roadPoint : ROAD_LOCATIONS) {
+            double distance = calculateDistance(currentLocation, roadPoint);
+            if (distance < 0.5) { // within 500 meters
+                nearbyLocations.add(roadPoint);
+            }
+        }
+
+        // If we found nearby locations, pick one randomly
+        if (!nearbyLocations.isEmpty()) {
+            int index = random.nextInt(nearbyLocations.size());
+            return nearbyLocations.get(index);
+        }
+
+        // Otherwise, just pick any road location
+        return getRandomRoadLocation();
+    }
+
+    /**
+     * Calculate distance between two points in kilometers (Haversine formula)
+     */
+    private double calculateDistance(GeoPoint point1, GeoPoint point2) {
+        double lat1 = Math.toRadians(point1.getLatitude());
+        double lon1 = Math.toRadians(point1.getLongitude());
+        double lat2 = Math.toRadians(point2.getLatitude());
+        double lon2 = Math.toRadians(point2.getLongitude());
+
+        double dLat = lat2 - lat1;
+        double dLon = lon2 - lon1;
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return 6371 * c; // Earth radius in km
     }
 
     private void displayRouteResults(Road road) {
-        // Distance in km
         double distanceKm = road.mLength;
         tvDistance.setText(String.format("%.2f km", distanceKm));
 
-        // Duration in minutes and seconds (as per requirements)
         double durationMinutes = road.mDuration / 60.0;
         int minutes = (int) durationMinutes;
         int seconds = (int) ((durationMinutes - minutes) * 60);
         tvDuration.setText(String.format("%d min %d sec", minutes, seconds));
 
-        // Estimated price
         double estimatedPrice = distanceKm * PRICE_PER_KM;
         tvEstimatedPrice.setText(String.format("%.0f RSD", estimatedPrice));
 
-        // Show results
         llEstimationResults.setVisibility(View.VISIBLE);
     }
 
     private void drawRouteOnMap(Road road, GeoPoint startPoint, GeoPoint endPoint) {
-        // Remove existing route overlay and markers
         if (routeOverlay != null) {
             mapView.getOverlays().remove(routeOverlay);
         }
@@ -403,13 +463,11 @@ public class HomeFragment extends Fragment {
             mapView.getOverlays().remove(endMarker);
         }
 
-        // Create route polyline
         routeOverlay = RoadManager.buildRoadOverlay(road);
         routeOverlay.getOutlinePaint().setColor(Color.parseColor("#00a2ff"));
         routeOverlay.getOutlinePaint().setStrokeWidth(12f);
         mapView.getOverlays().add(routeOverlay);
 
-        // Add start marker
         startMarker = new Marker(mapView);
         startMarker.setPosition(startPoint);
         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -418,7 +476,6 @@ public class HomeFragment extends Fragment {
         startMarker.setIcon(startIcon);
         mapView.getOverlays().add(startMarker);
 
-        // Add end marker
         endMarker = new Marker(mapView);
         endMarker.setPosition(endPoint);
         endMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -427,21 +484,16 @@ public class HomeFragment extends Fragment {
         endMarker.setIcon(endIcon);
         mapView.getOverlays().add(endMarker);
 
-        // Zoom to show entire route
         mapView.zoomToBoundingBox(road.mBoundingBox, true);
-
         mapView.invalidate();
     }
 
     private void loadVehicles() {
-        // TODO: Replace with actual API call to fetch vehicles
-        // For now, generate mock data
         generateMockVehicles();
         updateVehicleCounts();
     }
 
     private void generateMockVehicles() {
-        // Clear existing markers
         for (VehicleMarker vm : vehicleMarkers) {
             mapView.getOverlays().remove(vm.marker);
         }
@@ -451,27 +503,25 @@ public class HomeFragment extends Fragment {
         int numVehicles = 8 + random.nextInt(5); // 8-12 vehicles
 
         for (int i = 0; i < numVehicles; i++) {
-            // Generate random position near center
-            double lat = DEFAULT_LAT + (random.nextDouble() - 0.5) * 0.05;
-            double lon = DEFAULT_LON + (random.nextDouble() - 0.5) * 0.05;
+            // Get random road location
+            GeoPoint position = getRandomRoadLocation();
             boolean isAvailable = random.nextBoolean();
 
             VehicleMarker vehicleMarker = new VehicleMarker(
                     "Vehicle " + (i + 1),
-                    lat,
-                    lon,
+                    position.getLatitude(),
+                    position.getLongitude(),
                     isAvailable
             );
 
             Marker marker = new Marker(mapView);
-            marker.setPosition(new GeoPoint(lat, lon));
+            marker.setPosition(position);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             marker.setTitle(vehicleMarker.name);
             marker.setSnippet(isAvailable ?
                     getString(R.string.status_available) :
                     getString(R.string.status_busy));
 
-            // Set marker icon based on availability
             Drawable icon = ContextCompat.getDrawable(requireContext(),
                     isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
             marker.setIcon(icon);
@@ -509,9 +559,8 @@ public class HomeFragment extends Fragment {
         updateRunnable = new Runnable() {
             @Override
             public void run() {
-                // Simulate vehicle movement and status changes
                 simulateVehicleUpdates();
-                updateHandler.postDelayed(this, 30000); // Update every 30 seconds
+                updateHandler.postDelayed(this, 30000);
             }
         };
         updateHandler.postDelayed(updateRunnable, 30000);
@@ -533,12 +582,14 @@ public class HomeFragment extends Fragment {
                 vm.marker.setIcon(icon);
             }
 
-            // Simulate small position changes (only if available)
-            if (vm.isAvailable) {
+            // Simulate movement to nearby road location (only if available)
+            if (vm.isAvailable && random.nextInt(3) == 0) { // 33% chance to move
                 GeoPoint currentPos = vm.marker.getPosition();
-                double newLat = currentPos.getLatitude() + (random.nextDouble() - 0.5) * 0.002;
-                double newLon = currentPos.getLongitude() + (random.nextDouble() - 0.5) * 0.002;
-                vm.marker.setPosition(new GeoPoint(newLat, newLon));
+                GeoPoint newPos = getNearbyRoadLocation(currentPos);
+
+                vm.marker.setPosition(newPos);
+                vm.latitude = newPos.getLatitude();
+                vm.longitude = newPos.getLongitude();
             }
         }
 
@@ -553,7 +604,6 @@ public class HomeFragment extends Fragment {
             mapView.onResume();
         }
 
-        // Hide back button when returning to home
         if (getActivity() != null) {
             AppCompatActivity activity = (AppCompatActivity) getActivity();
             if (activity.getSupportActionBar() != null) {
@@ -562,7 +612,6 @@ public class HomeFragment extends Fragment {
             }
         }
 
-        // Check if user logged in/out
         boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
         if (llAuthButtons != null) {
             llAuthButtons.setVisibility(isLoggedIn ? View.GONE : View.VISIBLE);
@@ -585,7 +634,6 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // Inner class to hold vehicle data
     private static class VehicleMarker {
         String name;
         double latitude;

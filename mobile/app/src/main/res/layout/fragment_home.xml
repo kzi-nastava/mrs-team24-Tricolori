@@ -8,11 +8,12 @@
     android:background="@color/white"
     tools:context=".ui.fragments.HomeFragment">
 
-    <!-- Map Container - Full screen -->
+    <!-- Map Container - Full screen BUT with bottom margin for buttons -->
     <FrameLayout
         android:id="@+id/mapContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginBottom="88dp">
 
         <TextView
             android:id="@+id/tvMapPlaceholder"
@@ -23,46 +24,6 @@
             android:textColor="@color/base_700"
             android:textSize="16sp"
             android:visibility="gone" />
-
-        <!-- Bottom Action Bar INSIDE map container -->
-        <LinearLayout
-            android:id="@+id/llAuthButtons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            android:gravity="center_vertical"
-            android:background="@color/white"
-            android:elevation="100dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnGetStarted"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="@string/btn_get_started"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/base_600"
-                app:cornerRadius="8dp"
-                app:icon="@drawable/ic_arrow_right"
-                app:iconGravity="textEnd"
-                app:iconTint="@color/white" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fabRefresh"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/refresh_vehicles"
-                app:srcCompat="@drawable/ic_refresh"
-                app:backgroundTint="@color/base_600"
-                app:tint="@color/white"
-                app:fabSize="normal" />
-
-        </LinearLayout>
 
     </FrameLayout>
 
@@ -441,17 +402,17 @@
 
     </androidx.cardview.widget.CardView>
 
-    <!-- Bottom Action Bar - ALWAYS VISIBLE -->
+    <!-- Bottom Action Bar - NOW WITH SOLID WHITE BACKGROUND AND SHADOW -->
     <LinearLayout
         android:id="@+id/llAuthButtons"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="88dp"
         android:layout_gravity="bottom"
         android:orientation="horizontal"
         android:padding="16dp"
         android:gravity="center_vertical"
-        android:background="@color/white"
-        android:elevation="24dp">
+        android:background="#FFFFFF"
+        android:elevation="16dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGetStarted"
