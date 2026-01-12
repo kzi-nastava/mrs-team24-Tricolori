@@ -1,0 +1,87 @@
+<form [formGroup]="preferencesForm" class="flex flex-col gap-3 w-full max-w-lg">
+    <div class="relative">
+        <select formControlName="vehicleType" 
+                class="w-full p-4 bg-gray-100 border border-gray-100 rounded-2xl outline-none appearance-none focus:ring-1 focus:ring-base-600 cursor-pointer transition-all">
+            @for (type of vehicleTypes; track type.id) {
+                <option [value]="type.id">{{type.icon}} {{ type.label }}</option>
+            }
+        </select>
+
+        <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+            <ng-icon name="heroArrowsUpDown" size="1.25rem"></ng-icon>
+        </div>
+    </div>
+
+  <div class="flex flex-col gap-2">
+    <!-- Baby friendly checkbox -->
+    <label class="flex items-center gap-4 p-4 bg-gray-100 rounded-2xl cursor-pointer transition-all group border active:scale-[0.98]"
+           [class.border-teal-500]="preferencesForm.get('babySeat')?.value"
+           [class.border-gray-100]="!preferencesForm.get('babySeat')?.value">
+      <input type="checkbox" formControlName="babySeat" class="hidden">
+      <div class="size-6 flex items-center justify-center">
+        <svg viewBox="0 0 17 15" fill="none" xmlns="http://www.w3.org/2000/svg" class="size-6 transition-all"
+            [class.text-base-600]="preferencesForm.get('babySeat')?.value"
+            [class.border-black]="!preferencesForm.get('babySeat')?.value">
+            <path d="M6.69531 10.5C7.07031 10.725 7.59531 10.875 8.19531 10.875C8.79531 10.875 9.32031 10.725 9.69531 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10.4453 7.5H10.4528" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.7312 3.60975C14.257 4.3743 14.6196 5.23905 14.7962 6.15C15.0498 6.27283 15.2637 6.46461 15.4133 6.70337C15.563 6.94213 15.6424 7.21821 15.6424 7.5C15.6424 7.78179 15.563 8.05787 15.4133 8.29663C15.2637 8.5354 15.0498 8.7272 14.7962 8.85C14.4724 10.3601 13.6406 11.7135 12.4395 12.6844C11.2384 13.6553 9.74057 14.1849 8.19617 14.1849C6.65174 14.1849 5.15401 13.6553 3.9529 12.6844C2.7518 11.7135 1.91995 10.3601 1.59617 8.85C1.34256 8.7272 1.12868 8.5354 0.97903 8.29663C0.82938 8.05787 0.75 7.78179 0.75 7.5C0.75 7.21821 0.82938 6.94213 0.97903 6.70337C1.12868 6.46461 1.34256 6.27283 1.59617 6.15C1.90687 4.62788 2.73309 3.25951 3.93544 2.27577C5.13779 1.29203 6.64267 0.75314 8.19617 0.75C9.69617 0.75 10.8212 1.575 10.8212 2.625C10.8212 3.675 10.1462 4.5 9.32117 4.5C8.72117 4.5 8.19617 4.2 8.19617 3.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.94531 7.5H5.95281" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="flex-1 transition-colors"
+            [class.text-base-600]="preferencesForm.get('babySeat')?.value"
+            [class.text-black]="!preferencesForm.get('babySeat')?.value">
+        Baby seat
+      </span>
+    </label>
+
+    <!-- Pet friendly checkbox -->
+    <label class="flex items-center gap-4 p-4 bg-gray-100 rounded-2xl cursor-pointer transition-all group border active:scale-[0.98]"
+           [class.border-base-600]="preferencesForm.get('petFriendly')?.value"
+           [class.border-gray-100]="!preferencesForm.get('petFriendly')?.value">
+      <input type="checkbox" formControlName="petFriendly" class="hidden">
+      <div class="size-6 flex items-center justify-center">
+        <svg viewBox="0 0 16 16" fill="none"  xmlns="http://www.w3.org/2000/svg" class="size-6 transition-all"
+            [class.text-base-600]="preferencesForm.get('petFriendly')?.value"
+            [class.border-black]="!preferencesForm.get('petFriendly')?.value">
+            <path d="M7.31836 10.7278H8.44336L7.88086 11.2903L7.31836 10.7278Z" 
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10.8809 9.04028V9.41528" 
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.19586 6.97546C1.98596 7.78599 1.88011 8.61991 1.88086 9.45721C1.88086 12.5862 4.56736 14.2902 7.88086 14.2902C11.1944 14.2902 13.8809 12.5862 13.8809 9.45721C13.8771 8.61651 13.7526 7.78073 13.5112 6.97546" 
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4.88086 9.04028V9.41528" 
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.25511 4.91526C4.96711 5.70276 4.44286 6.43626 3.49711 6.79026C2.04886 7.33176 0.815113 6.56751 0.755113 6.04026C0.670363 5.29476 1.63786 1.14276 3.75511 0.79026C5.19736 0.54951 6.49336 1.42401 6.49336 2.46651C7.44195 2.22559 8.437 2.23645 9.38011 2.49801C9.38011 1.45551 10.7631 0.54951 12.2054 0.79026C14.3226 1.14276 15.2901 5.29476 15.2053 6.04026C15.1453 6.56751 13.9116 7.33176 12.4634 6.79026C11.5176 6.43626 11.0721 5.70276 10.7841 4.91526" 
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="flex-1 transition-colors"
+            [class.text-base-700]="preferencesForm.get('petFriendly')?.value"
+            [class.text-black]="!preferencesForm.get('petFriendly')?.value">
+        Pet friendly
+      </span>
+    </label>
+
+    <label class="flex items-center gap-4 p-4 bg-gray-100 border rounded-2xl cursor-pointer transition-all group active:scale-[0.98]"
+           [class.border-teal-500]="preferencesForm.get('scheduleLater')?.value"
+           [class.border-gray-100]="!preferencesForm.get('scheduleLater')?.value">
+        <input type="checkbox" formControlName="scheduleLater" class="hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-base-600">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+      <span class="flex-1 transition-colors"
+            [class.text-teal-800]="preferencesForm.get('scheduleLater')?.value"
+            [class.text-black]="!preferencesForm.get('scheduleLater')?.value">
+        Schedule for later
+      </span>
+    </label>
+
+  </div>
+
+  <div class="flex items-center gap-2 text-gray-400 pl-4 mt-3">
+    <ng-icon name="heroInformationCircle" size="1.5rem"></ng-icon>
+    <p class="text-sm">Max 5 hours in advance</p>
+  </div>
+
+</form>
