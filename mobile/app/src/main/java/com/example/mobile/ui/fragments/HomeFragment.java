@@ -108,7 +108,7 @@ public class HomeFragment extends Fragment {
         initializeMap(view);
 
         boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
-        llAuthButtons.setVisibility(isLoggedIn ? View.GONE : View.VISIBLE);
+        llAuthButtons.setVisibility(View.VISIBLE);
 
         setupListeners(view);
 
@@ -170,7 +170,7 @@ public class HomeFragment extends Fragment {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        mapContainer.addView(mapView, 0);
+        mapContainer.addView(mapView);
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
@@ -252,7 +252,6 @@ public class HomeFragment extends Fragment {
 
     private GeoPoint geocodeAddress(String address) {
         try {
-            // Use Nominatim API to geocode the address
             String query = address + ", Novi Sad, Serbia";
             String urlString = "https://nominatim.openstreetmap.org/search?q=" +
                     java.net.URLEncoder.encode(query, "UTF-8") +
@@ -276,10 +275,8 @@ public class HomeFragment extends Fragment {
                 }
                 reader.close();
 
-                // Parse JSON response
                 String jsonResponse = response.toString();
                 if (jsonResponse.startsWith("[") && jsonResponse.length() > 2) {
-                    // Extract lat and lon from JSON
                     int latIndex = jsonResponse.indexOf("\"lat\":\"") + 7;
                     int latEnd = jsonResponse.indexOf("\"", latIndex);
                     int lonIndex = jsonResponse.indexOf("\"lon\":\"") + 7;
@@ -299,7 +296,6 @@ public class HomeFragment extends Fragment {
             Log.e(TAG, "Geocoding error for: " + address, e);
         }
 
-        // Fallback: generate random location near center
         Random random = new Random(address.hashCode());
         double lat = DEFAULT_LAT + (random.nextDouble() - 0.5) * 0.02;
         double lon = DEFAULT_LON + (random.nextDouble() - 0.5) * 0.02;
@@ -307,29 +303,22 @@ public class HomeFragment extends Fragment {
         return new GeoPoint(lat, lon);
     }
 
-    /**
-     * Snap a point to nearest road using OSRM routing
-     */
     private void snapToRoadAsync(GeoPoint point, RoadSnapCallback callback) {
         new Thread(() -> {
             try {
                 RoadManager roadManager = new OSRMRoadManager(requireContext(),
                         Configuration.getInstance().getUserAgentValue());
 
-                // Create a tiny route from the point to itself to get road-snapped coordinates
                 ArrayList<GeoPoint> waypoints = new ArrayList<>();
                 waypoints.add(point);
-                // Add a point very close by to force routing
                 waypoints.add(new GeoPoint(point.getLatitude() + 0.0001, point.getLongitude() + 0.0001));
 
                 Road road = roadManager.getRoad(waypoints);
 
                 if (road != null && road.mStatus == Road.STATUS_OK && road.mRouteHigh != null && !road.mRouteHigh.isEmpty()) {
-                    // Get the first point of the route (snapped to road)
                     GeoPoint snappedPoint = road.mRouteHigh.get(0);
                     requireActivity().runOnUiThread(() -> callback.onSnapped(snappedPoint));
                 } else {
-                    // Fallback to original point if snapping fails
                     requireActivity().runOnUiThread(() -> callback.onSnapped(point));
                 }
             } catch (Exception e) {
@@ -374,26 +363,22 @@ public class HomeFragment extends Fragment {
         routeOverlay.getOutlinePaint().setStrokeWidth(12f);
         mapView.getOverlays().add(routeOverlay);
 
-        // Add start marker (GREEN - #00996e)
         startMarker = new Marker(mapView);
         startMarker.setPosition(startPoint);
         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         startMarker.setTitle(getString(R.string.start_location));
         Drawable startIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_start_marker);
-        // Tint the marker with light_700 color
         if (startIcon != null) {
             startIcon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700));
         }
         startMarker.setIcon(startIcon);
         mapView.getOverlays().add(startMarker);
 
-        // Add end marker (DARK RED - #8B0000)
         endMarker = new Marker(mapView);
         endMarker.setPosition(endPoint);
         endMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         endMarker.setTitle(getString(R.string.end_location));
         Drawable endIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_end_marker);
-        // Tint the marker with dark red color
         if (endIcon != null) {
             endIcon.setTint(Color.parseColor("#8B0000"));
         }
@@ -416,17 +401,15 @@ public class HomeFragment extends Fragment {
         vehicleMarkers.clear();
 
         Random random = new Random();
-        int numVehicles = 8 + random.nextInt(5); // 8-12 vehicles
+        int numVehicles = 8 + random.nextInt(5);
 
         for (int i = 0; i < numVehicles; i++) {
-            // Generate random position near center
             double lat = DEFAULT_LAT + (random.nextDouble() - 0.5) * 0.04;
             double lon = DEFAULT_LON + (random.nextDouble() - 0.5) * 0.04;
             GeoPoint position = new GeoPoint(lat, lon);
 
             boolean isAvailable = random.nextBoolean();
 
-            // Snap to nearest road
             snapToRoadAsync(position, snappedPoint -> {
                 VehicleMarker vehicleMarker = new VehicleMarker(
                         "Vehicle " + vehicleMarkers.size(),
@@ -443,16 +426,14 @@ public class HomeFragment extends Fragment {
                         getString(R.string.status_available) :
                         getString(R.string.status_busy));
 
-                // GREEN (#00996e) for available, DARK RED (#8B0000) for busy
                 Drawable icon = ContextCompat.getDrawable(requireContext(),
                         isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
 
-                // Tint the icon with appropriate color
                 if (icon != null) {
                     if (isAvailable) {
-                        icon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700)); // Green
+                        icon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700));
                     } else {
-                        icon.setTint(Color.parseColor("#8B0000")); // Dark red
+                        icon.setTint(Color.parseColor("#8B0000"));
                     }
                 }
                 marker.setIcon(icon);
@@ -503,23 +484,20 @@ public class HomeFragment extends Fragment {
         Random random = new Random();
 
         for (VehicleMarker vm : vehicleMarkers) {
-            // Randomly change availability (10% chance)
             if (random.nextInt(10) == 0) {
                 vm.isAvailable = !vm.isAvailable;
                 vm.marker.setSnippet(vm.isAvailable ?
                         getString(R.string.status_available) :
                         getString(R.string.status_busy));
 
-                // Update icon: GREEN (#00996e) for available, DARK RED (#8B0000) for busy
                 Drawable icon = ContextCompat.getDrawable(requireContext(),
                         vm.isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
 
-                // Tint the icon with appropriate color
                 if (icon != null) {
                     if (vm.isAvailable) {
-                        icon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700)); // Green
+                        icon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700));
                     } else {
-                        icon.setTint(Color.parseColor("#8B0000")); // Dark red
+                        icon.setTint(Color.parseColor("#8B0000"));
                     }
                 }
                 vm.marker.setIcon(icon);
@@ -527,15 +505,12 @@ public class HomeFragment extends Fragment {
                 updateVehicleCounts();
             }
 
-            // Simulate small movement (only if available, 20% chance)
             if (vm.isAvailable && random.nextInt(5) == 0) {
                 GeoPoint currentPos = vm.marker.getPosition();
-                // Small movement in a random direction
                 double newLat = currentPos.getLatitude() + (random.nextDouble() - 0.5) * 0.003;
                 double newLon = currentPos.getLongitude() + (random.nextDouble() - 0.5) * 0.003;
                 GeoPoint newPos = new GeoPoint(newLat, newLon);
 
-                // Snap the new position to a road
                 snapToRoadAsync(newPos, snappedPoint -> {
                     vm.marker.setPosition(snappedPoint);
                     vm.latitude = snappedPoint.getLatitude();
@@ -565,7 +540,7 @@ public class HomeFragment extends Fragment {
 
         boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
         if (llAuthButtons != null) {
-            llAuthButtons.setVisibility(isLoggedIn ? View.GONE : View.VISIBLE);
+            llAuthButtons.setVisibility(View.VISIBLE);
         }
     }
 
