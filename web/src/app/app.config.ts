@@ -10,6 +10,7 @@ import {
   heroArrowsUpDown
 } from '@ng-icons/heroicons/outline';
 import {heroBoltSolid, heroBoltSlashSolid} from '@ng-icons/heroicons/solid'
+import {ionLocationOutline} from '@ng-icons/ionicons'
 
 import { routes } from './app.routes';
 import { provideIcons } from '@ng-icons/core';
@@ -26,7 +27,7 @@ export const appConfig: ApplicationConfig = {
       heroArrowRight, heroSquares2x2, heroTruck,
       heroUser, heroArrowUpTray, heroHome, heroPhone,
       heroClock, heroInformationCircle, heroChevronDown, 
-      heroChevronUp, heroArrowsUpDown
+      heroChevronUp, heroArrowsUpDown, ionLocationOutline
     })
   ]
 };

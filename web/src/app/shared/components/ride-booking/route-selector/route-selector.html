@@ -1,4 +1,4 @@
-<form [formGroup]="routeForm" class="flex flex-col gap-4 w-full max-w-lg">
+<form [formGroup]="routeForm" class="flex flex-col gap-2 w-full max-w-lg">
     <!-- Pickup Location -->
     <div class="flex flex-col">
         <p class="text-gray-400 pl-2">Pickup Location</p>
@@ -13,7 +13,7 @@
     </div>
 
 
-    <div formArrayName="stops" class="flex flex-col gap-4 overflow-y-auto max-h-72 py-1">
+    <div formArrayName="stops" class="flex flex-col gap-3.5 overflow-y-auto max-h-72 py-1">
         @for (stop of stops.controls; track stop; let i = $index) {
             <div class="w-full">
                 <p class="text-gray-400 pl-2">Stop {{ i + 1 }}</p>
@@ -39,7 +39,7 @@
 
     <!-- Add routes button -->
     <button type="button" (click)="addStop()" 
-            class="w-full py-4 border border-gray-400 border-dashed rounded-2xl text-base-700 font-medium hover:bg-gray-100 cursor-pointer text-center">
+            class="w-full py-3 border border-gray-400 border-dashed rounded-2xl text-base-700 font-medium hover:bg-gray-100 cursor-pointer text-center">
         Add Stop
     </button>
 

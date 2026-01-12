@@ -6,6 +6,7 @@ import { RideTrackersSelector } from '../../../shared/components/ride-booking/ri
 import { PreferencesSelector } from '../../../shared/components/ride-booking/preferences-selector/preferences-selector';
 import { FavoriteRouteSelector } from '../../../shared/components/ride-booking/favorite-route-selector/favorite-route-selector';
 import { FavoriteRoute, Route } from '../../../shared/model/route';
+import { NgIcon } from "@ng-icons/core";
 
 interface Stop {
   id: number;
@@ -16,14 +17,14 @@ interface Stop {
   selector: 'app-home-passenger',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
-
     RouteSelector,
     RideTrackersSelector,
     PreferencesSelector,
-    FavoriteRouteSelector
-  ],
+    FavoriteRouteSelector,
+    NgIcon
+],
   templateUrl: './passenger-home.html',
   styleUrl: './passenger-home.css'
 })

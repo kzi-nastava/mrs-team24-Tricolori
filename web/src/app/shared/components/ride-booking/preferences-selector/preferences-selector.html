@@ -1,7 +1,7 @@
 <form [formGroup]="preferencesForm" class="flex flex-col gap-3 w-full max-w-lg">
     <div class="relative">
         <select formControlName="vehicleType" 
-                class="w-full p-4 bg-gray-100 border border-gray-100 rounded-2xl outline-none appearance-none focus:ring-1 focus:ring-base-600 cursor-pointer transition-all">
+                class="w-full p-4 bg-gray-100 border text-lg border-gray-100 rounded-2xl outline-none appearance-none focus:ring-1 focus:ring-base-600 cursor-pointer transition-all">
             @for (type of vehicleTypes; track type.id) {
                 <option [value]="type.id">{{type.icon}} {{ type.label }}</option>
             }
@@ -79,7 +79,7 @@
 
   </div>
 
-  <div class="flex items-center gap-2 text-gray-400 pl-4 mt-3">
+  <div class="flex items-center gap-2 text-gray-400 pl-4 mt-2">
     <ng-icon name="heroInformationCircle" size="1.5rem"></ng-icon>
     <p class="text-sm">Max 5 hours in advance</p>
   </div>
