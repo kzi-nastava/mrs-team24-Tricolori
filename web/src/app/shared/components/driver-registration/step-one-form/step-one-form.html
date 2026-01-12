@@ -1,0 +1,39 @@
+<form [formGroup]="firstStepForm" (ngSubmit)="submit()" class="flex flex-col gap-4">
+    <div class="flex flex-col">
+        <label class="text-gray-500 ml-2">Driver's first name:</label>
+        <input formControlName="firstName" type="text" placeholder="First name" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+            @if(firstName.hasError('required') && (firstName.dirty || firstName.touched)) {
+                <p>Driver's first name can't be empty</p>
+            }
+        </div>
+    </div>
+    <div class="flex flex-col">
+        <label class="text-gray-500 ml-2">Driver's last name:</label>
+        <input formControlName="lastName" type="text" placeholder="Last name" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+            @if(lastName.hasError('required') && (lastName.dirty || lastName.touched)) {
+                <p>Driver's last name can't be empty</p>
+            }
+        </div>
+    </div>
+    <div class="flex flex-col">
+        <label class="text-gray-500 ml-2">Driver's phone number:</label>
+        <input formControlName="phone" type="text" placeholder="Phone number" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+            @if(phone.hasError('required') && (phone.dirty || phone.touched)) {
+                <p>Driver's phone can't be empty</p>
+            }
+        </div>
+    </div>
+    <div class="flex flex-col">
+        <label class="text-gray-500 ml-2">Driver's home address:</label>
+        <input formControlName="address" type="text" placeholder="Home address" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none">
+        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+            @if(address.hasError('required') && (address.dirty || address.touched)) {
+                <p>Driver's address can't be empty</p>
+            }
+        </div>
+    </div>
+    <button type="submit" class="bg-base-600 py-2.5 rounded-xl w-fit px-8 mx-auto mt-6 text-white cursor-pointer hover:bg-base-700 transition">Next step</button>
+</form>

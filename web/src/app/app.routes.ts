@@ -72,6 +72,10 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
       },
+      {
+        path: 'driver-register',
+        loadComponent: () => import('./features/auth/driver-register/driver-register').then(m => m.DriverRegister)
+      },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
