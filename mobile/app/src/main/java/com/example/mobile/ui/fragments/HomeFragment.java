@@ -374,21 +374,29 @@ public class HomeFragment extends Fragment {
         routeOverlay.getOutlinePaint().setStrokeWidth(12f);
         mapView.getOverlays().add(routeOverlay);
 
-        // Add start marker (GREEN)
+        // Add start marker (GREEN - #00996e)
         startMarker = new Marker(mapView);
         startMarker.setPosition(startPoint);
         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         startMarker.setTitle(getString(R.string.start_location));
         Drawable startIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_start_marker);
+        // Tint the marker with light_700 color
+        if (startIcon != null) {
+            startIcon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700));
+        }
         startMarker.setIcon(startIcon);
         mapView.getOverlays().add(startMarker);
 
-        // Add end marker (DARK RED)
+        // Add end marker (DARK RED - #8B0000)
         endMarker = new Marker(mapView);
         endMarker.setPosition(endPoint);
         endMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         endMarker.setTitle(getString(R.string.end_location));
         Drawable endIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_end_marker);
+        // Tint the marker with dark red color
+        if (endIcon != null) {
+            endIcon.setTint(Color.parseColor("#8B0000"));
+        }
         endMarker.setIcon(endIcon);
         mapView.getOverlays().add(endMarker);
 
@@ -435,9 +443,18 @@ public class HomeFragment extends Fragment {
                         getString(R.string.status_available) :
                         getString(R.string.status_busy));
 
-                // GREEN for available, DARK RED for busy
+                // GREEN (#00996e) for available, DARK RED (#8B0000) for busy
                 Drawable icon = ContextCompat.getDrawable(requireContext(),
                         isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
+
+                // Tint the icon with appropriate color
+                if (icon != null) {
+                    if (isAvailable) {
+                        icon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700)); // Green
+                    } else {
+                        icon.setTint(Color.parseColor("#8B0000")); // Dark red
+                    }
+                }
                 marker.setIcon(icon);
 
                 vehicleMarker.marker = marker;
@@ -493,9 +510,18 @@ public class HomeFragment extends Fragment {
                         getString(R.string.status_available) :
                         getString(R.string.status_busy));
 
-                // Update icon: GREEN for available, DARK RED for busy
+                // Update icon: GREEN (#00996e) for available, DARK RED (#8B0000) for busy
                 Drawable icon = ContextCompat.getDrawable(requireContext(),
                         vm.isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
+
+                // Tint the icon with appropriate color
+                if (icon != null) {
+                    if (vm.isAvailable) {
+                        icon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700)); // Green
+                    } else {
+                        icon.setTint(Color.parseColor("#8B0000")); // Dark red
+                    }
+                }
                 vm.marker.setIcon(icon);
 
                 updateVehicleCounts();

@@ -69,4 +69,8 @@
     <color name="deep_700">#003199</color>
     <color name="deep_800">#002066</color>
     <color name="deep_900">#001033</color>
+
+    <!-- Red Colors -->
+    <color name="dark_red">#8B0000</color>
+
 </resources>

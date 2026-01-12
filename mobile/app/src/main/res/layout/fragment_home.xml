@@ -50,7 +50,7 @@
                 android:textColor="@color/base_900"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="12dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -66,9 +66,9 @@
                     android:gravity="center_vertical">
 
                     <View
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:background="@drawable/bg_status_available"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:background="@drawable/bg_circle_green"
                         android:layout_marginEnd="8dp" />
 
                     <TextView
@@ -89,9 +89,9 @@
                     android:gravity="center_vertical">
 
                     <View
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:background="@drawable/bg_status_busy"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:background="@drawable/bg_circle_red"
                         android:layout_marginEnd="8dp" />
 
                     <TextView
@@ -116,7 +116,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="140dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="8dp"
         app:cardBackgroundColor="@color/white"
@@ -205,7 +205,7 @@
                     app:boxStrokeWidth="1dp"
                     app:hintEnabled="false"
                     app:startIconDrawable="@drawable/ic_location"
-                    app:startIconTint="@color/gray_400">
+                    app:startIconTint="@color/light_700">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etStartLocation"
@@ -240,7 +240,7 @@
                     app:boxStrokeWidth="1dp"
                     app:hintEnabled="false"
                     app:startIconDrawable="@drawable/ic_location"
-                    app:startIconTint="@color/gray_400">
+                    app:startIconTint="@color/dark_red">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etEndLocation"
@@ -402,7 +402,7 @@
 
     </androidx.cardview.widget.CardView>
 
-    <!-- Bottom Action Bar - NOW WITH SOLID WHITE BACKGROUND AND SHADOW -->
+    <!-- Bottom Action Bar -->
     <LinearLayout
         android:id="@+id/llAuthButtons"
         android:layout_width="match_parent"
