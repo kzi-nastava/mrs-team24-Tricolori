@@ -13,10 +13,9 @@ import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angula
 export class RouteSelector {
   private fb = inject(FormBuilder);
 
-  // Glavna forma za rutu
   routeForm = this.fb.group({
     pickup: ['Bulevar kralja Petra 3', Validators.required],
-    stops: this.fb.array([]), // Dinamički niz za stanice
+    stops: this.fb.array([]),
     destination: ['Laze Teleckog 13', Validators.required]
   });
 
@@ -25,7 +24,6 @@ export class RouteSelector {
   }
 
   addStop() {
-    // Dodajemo novu kontrolu u niz
     this.stops.push(this.fb.control('', Validators.required));
   }
 
