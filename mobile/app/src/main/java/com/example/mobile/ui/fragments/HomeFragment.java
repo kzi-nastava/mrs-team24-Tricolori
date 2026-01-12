@@ -76,78 +76,6 @@ public class HomeFragment extends Fragment {
     private static final int DEFAULT_ZOOM = 13;
     private static final double PRICE_PER_KM = 120.0; // RSD per km
 
-    // Predefined road locations in Novi Sad (major streets and intersections)
-    private static final GeoPoint[] ROAD_LOCATIONS = {
-            // City Center
-            new GeoPoint(45.2671, 19.8335), // Trg Slobode
-            new GeoPoint(45.2551, 19.8451), // Zmaj Jovina
-            new GeoPoint(45.2558, 19.8468), // Dunavska
-            new GeoPoint(45.2650, 19.8320), // Bulevar Oslobođenja
-            new GeoPoint(45.2620, 19.8380), // Bulevar Mihajla Pupina
-            new GeoPoint(45.2590, 19.8410), // Kralja Aleksandra
-            new GeoPoint(45.2540, 19.8360), // Autobuska Stanica
-            new GeoPoint(45.2674, 19.8433), // Železnička Stanica
-
-            // Petrovaradin area (fortress side)
-            new GeoPoint(45.2516, 19.8661), // Petrovaradin Fortress
-            new GeoPoint(45.2505, 19.8640), // Petrovaradin main road
-            new GeoPoint(45.2490, 19.8620), // Near fortress entrance
-
-            // Universities and institutions
-            new GeoPoint(45.2479, 19.8517), // University Campus
-            new GeoPoint(45.2468, 19.8517), // FTN
-            new GeoPoint(45.2460, 19.8500), // Campus road
-
-            // Shopping areas
-            new GeoPoint(45.2530, 19.8312), // BIG Shopping Center
-            new GeoPoint(45.2639, 19.8319), // Promenada
-            new GeoPoint(45.2708, 19.8044), // Aviv Park
-            new GeoPoint(45.2447, 19.8084), // Novosadski Sajam
-
-            // Sports centers
-            new GeoPoint(45.2444, 19.8361), // SPENS
-            new GeoPoint(45.2398, 19.8425), // Štrand beach area
-
-            // Liman neighborhood (west side)
-            new GeoPoint(45.2391, 19.8255), // Liman 1
-            new GeoPoint(45.2360, 19.8220), // Liman 2
-            new GeoPoint(45.2330, 19.8180), // Liman 3
-            new GeoPoint(45.2300, 19.8150), // Liman 4
-
-            // Grbavica (south side)
-            new GeoPoint(45.2334, 19.8420), // Grbavica center
-            new GeoPoint(45.2310, 19.8440), // Grbavica south
-            new GeoPoint(45.2290, 19.8400), // Grbavica west
-
-            // Novo Naselje (north side)
-            new GeoPoint(45.2800, 19.8200), // Novo Naselje center
-            new GeoPoint(45.2820, 19.8180), // Novo Naselje north
-            new GeoPoint(45.2780, 19.8220), // Novo Naselje east
-
-            // Detelinara (northeast)
-            new GeoPoint(45.2750, 19.8550), // Detelinara center
-            new GeoPoint(45.2770, 19.8570), // Detelinara north
-            new GeoPoint(45.2730, 19.8530), // Detelinara south
-
-            // Telep (west)
-            new GeoPoint(45.2450, 19.8050), // Telep center
-            new GeoPoint(45.2470, 19.8030), // Telep north
-            new GeoPoint(45.2430, 19.8070), // Telep south
-
-            // Podbara (northwest)
-            new GeoPoint(45.2614, 19.8151), // Podbara center
-            new GeoPoint(45.2630, 19.8130), // Podbara north
-            new GeoPoint(45.2590, 19.8170), // Podbara south
-
-            // Major roads and boulevards
-            new GeoPoint(45.2700, 19.8250), // Bulevar Cara Lazara
-            new GeoPoint(45.2580, 19.8200), // Narodnih Heroja
-            new GeoPoint(45.2520, 19.8280), // Janka Veselinovića
-            new GeoPoint(45.2600, 19.8500), // Sentandrejski put
-            new GeoPoint(45.2420, 19.8300), // Rumenačka
-            new GeoPoint(45.2680, 19.8450), // Futoski put
-    };
-
     public HomeFragment() {
         // Required empty constructor
     }
@@ -323,118 +251,96 @@ public class HomeFragment extends Fragment {
     }
 
     private GeoPoint geocodeAddress(String address) {
-        String lowerAddress = address.toLowerCase();
+        try {
+            // Use Nominatim API to geocode the address
+            String query = address + ", Novi Sad, Serbia";
+            String urlString = "https://nominatim.openstreetmap.org/search?q=" +
+                    java.net.URLEncoder.encode(query, "UTF-8") +
+                    "&format=json&limit=1";
 
-        // City center and main squares
-        if (lowerAddress.contains("trg slobode") || lowerAddress.contains("freedom square")) {
-            return new GeoPoint(45.2671, 19.8335);
-        } else if (lowerAddress.contains("zmaj jovina") || lowerAddress.contains("zmaj jovina ulica")) {
-            return new GeoPoint(45.2551, 19.8451);
-        } else if (lowerAddress.contains("dunavska") || lowerAddress.contains("dunavska ulica")) {
-            return new GeoPoint(45.2558, 19.8468);
-        }
-        // Notable landmarks
-        else if (lowerAddress.contains("petrovaradin") || lowerAddress.contains("tvrđava") || lowerAddress.contains("fortress")) {
-            return new GeoPoint(45.2516, 19.8661);
-        } else if (lowerAddress.contains("štrand") || lowerAddress.contains("strand")) {
-            return new GeoPoint(45.2398, 19.8425);
-        } else if (lowerAddress.contains("spens") || lowerAddress.contains("master")) {
-            return new GeoPoint(45.2444, 19.8361);
-        } else if (lowerAddress.contains("sajam") || lowerAddress.contains("novosadski sajam")) {
-            return new GeoPoint(45.2447, 19.8084);
-        }
-        // Shopping centers
-        else if (lowerAddress.contains("big") || lowerAddress.contains("mercator")) {
-            return new GeoPoint(45.2530, 19.8312);
-        } else if (lowerAddress.contains("promenada")) {
-            return new GeoPoint(45.2639, 19.8319);
-        } else if (lowerAddress.contains("aviv") || lowerAddress.contains("aviv park")) {
-            return new GeoPoint(45.2708, 19.8044);
-        }
-        // Universities
-        else if (lowerAddress.contains("univerzitet") || lowerAddress.contains("university") || lowerAddress.contains("rektorat")) {
-            return new GeoPoint(45.2479, 19.8517);
-        } else if (lowerAddress.contains("ftn") || lowerAddress.contains("tehnički fakultet")) {
-            return new GeoPoint(45.2468, 19.8517);
-        }
-        // Train and bus stations
-        else if (lowerAddress.contains("železnička") || lowerAddress.contains("train station") || lowerAddress.contains("stanica")) {
-            return new GeoPoint(45.2674, 19.8433);
-        } else if (lowerAddress.contains("autobuska") || lowerAddress.contains("bus station")) {
-            return new GeoPoint(45.2540, 19.8363);
-        }
-        // Neighborhoods
-        else if (lowerAddress.contains("liman")) {
-            return new GeoPoint(45.2391, 19.8255);
-        } else if (lowerAddress.contains("grbavica")) {
-            return new GeoPoint(45.2334, 19.8420);
-        } else if (lowerAddress.contains("podbara")) {
-            return new GeoPoint(45.2614, 19.8151);
-        } else if (lowerAddress.contains("novo naselje")) {
-            return new GeoPoint(45.2800, 19.8200);
-        } else if (lowerAddress.contains("detelinara")) {
-            return new GeoPoint(45.2750, 19.8550);
-        } else if (lowerAddress.contains("telep")) {
-            return new GeoPoint(45.2450, 19.8050);
-        }
+            java.net.URL url = new java.net.URL(urlString);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "CuberApp/1.0");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
 
-        // Default: return a random road location
-        return getRandomRoadLocation();
-    }
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
 
-    /**
-     * Get a random location from predefined road locations
-     */
-    private GeoPoint getRandomRoadLocation() {
-        Random random = new Random();
-        int index = random.nextInt(ROAD_LOCATIONS.length);
-        return ROAD_LOCATIONS[index];
-    }
+                // Parse JSON response
+                String jsonResponse = response.toString();
+                if (jsonResponse.startsWith("[") && jsonResponse.length() > 2) {
+                    // Extract lat and lon from JSON
+                    int latIndex = jsonResponse.indexOf("\"lat\":\"") + 7;
+                    int latEnd = jsonResponse.indexOf("\"", latIndex);
+                    int lonIndex = jsonResponse.indexOf("\"lon\":\"") + 7;
+                    int lonEnd = jsonResponse.indexOf("\"", lonIndex);
 
-    /**
-     * Get a nearby road location (for vehicle movement simulation)
-     */
-    private GeoPoint getNearbyRoadLocation(GeoPoint currentLocation) {
-        Random random = new Random();
-
-        // Find road locations within ~500m
-        List<GeoPoint> nearbyLocations = new ArrayList<>();
-        for (GeoPoint roadPoint : ROAD_LOCATIONS) {
-            double distance = calculateDistance(currentLocation, roadPoint);
-            if (distance < 0.5) { // within 500 meters
-                nearbyLocations.add(roadPoint);
+                    if (latIndex > 7 && lonIndex > 7) {
+                        String latStr = jsonResponse.substring(latIndex, latEnd);
+                        String lonStr = jsonResponse.substring(lonIndex, lonEnd);
+                        double lat = Double.parseDouble(latStr);
+                        double lon = Double.parseDouble(lonStr);
+                        Log.d(TAG, "Geocoded: " + address + " -> " + lat + ", " + lon);
+                        return new GeoPoint(lat, lon);
+                    }
+                }
             }
+        } catch (Exception e) {
+            Log.e(TAG, "Geocoding error for: " + address, e);
         }
 
-        // If we found nearby locations, pick one randomly
-        if (!nearbyLocations.isEmpty()) {
-            int index = random.nextInt(nearbyLocations.size());
-            return nearbyLocations.get(index);
-        }
-
-        // Otherwise, just pick any road location
-        return getRandomRoadLocation();
+        // Fallback: generate random location near center
+        Random random = new Random(address.hashCode());
+        double lat = DEFAULT_LAT + (random.nextDouble() - 0.5) * 0.02;
+        double lon = DEFAULT_LON + (random.nextDouble() - 0.5) * 0.02;
+        Log.d(TAG, "Using fallback location for: " + address);
+        return new GeoPoint(lat, lon);
     }
 
     /**
-     * Calculate distance between two points in kilometers (Haversine formula)
+     * Snap a point to nearest road using OSRM routing
      */
-    private double calculateDistance(GeoPoint point1, GeoPoint point2) {
-        double lat1 = Math.toRadians(point1.getLatitude());
-        double lon1 = Math.toRadians(point1.getLongitude());
-        double lat2 = Math.toRadians(point2.getLatitude());
-        double lon2 = Math.toRadians(point2.getLongitude());
+    private void snapToRoadAsync(GeoPoint point, RoadSnapCallback callback) {
+        new Thread(() -> {
+            try {
+                RoadManager roadManager = new OSRMRoadManager(requireContext(),
+                        Configuration.getInstance().getUserAgentValue());
 
-        double dLat = lat2 - lat1;
-        double dLon = lon2 - lon1;
+                // Create a tiny route from the point to itself to get road-snapped coordinates
+                ArrayList<GeoPoint> waypoints = new ArrayList<>();
+                waypoints.add(point);
+                // Add a point very close by to force routing
+                waypoints.add(new GeoPoint(point.getLatitude() + 0.0001, point.getLongitude() + 0.0001));
 
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1) * Math.cos(lat2) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                Road road = roadManager.getRoad(waypoints);
 
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                if (road != null && road.mStatus == Road.STATUS_OK && road.mRouteHigh != null && !road.mRouteHigh.isEmpty()) {
+                    // Get the first point of the route (snapped to road)
+                    GeoPoint snappedPoint = road.mRouteHigh.get(0);
+                    requireActivity().runOnUiThread(() -> callback.onSnapped(snappedPoint));
+                } else {
+                    // Fallback to original point if snapping fails
+                    requireActivity().runOnUiThread(() -> callback.onSnapped(point));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error snapping to road", e);
+                requireActivity().runOnUiThread(() -> callback.onSnapped(point));
+            }
+        }).start();
+    }
 
-        return 6371 * c; // Earth radius in km
+    interface RoadSnapCallback {
+        void onSnapped(GeoPoint snappedPoint);
     }
 
     private void displayRouteResults(Road road) {
@@ -468,6 +374,7 @@ public class HomeFragment extends Fragment {
         routeOverlay.getOutlinePaint().setStrokeWidth(12f);
         mapView.getOverlays().add(routeOverlay);
 
+        // Add start marker (GREEN)
         startMarker = new Marker(mapView);
         startMarker.setPosition(startPoint);
         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -476,6 +383,7 @@ public class HomeFragment extends Fragment {
         startMarker.setIcon(startIcon);
         mapView.getOverlays().add(startMarker);
 
+        // Add end marker (DARK RED)
         endMarker = new Marker(mapView);
         endMarker.setPosition(endPoint);
         endMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -503,35 +411,43 @@ public class HomeFragment extends Fragment {
         int numVehicles = 8 + random.nextInt(5); // 8-12 vehicles
 
         for (int i = 0; i < numVehicles; i++) {
-            // Get random road location
-            GeoPoint position = getRandomRoadLocation();
+            // Generate random position near center
+            double lat = DEFAULT_LAT + (random.nextDouble() - 0.5) * 0.04;
+            double lon = DEFAULT_LON + (random.nextDouble() - 0.5) * 0.04;
+            GeoPoint position = new GeoPoint(lat, lon);
+
             boolean isAvailable = random.nextBoolean();
 
-            VehicleMarker vehicleMarker = new VehicleMarker(
-                    "Vehicle " + (i + 1),
-                    position.getLatitude(),
-                    position.getLongitude(),
-                    isAvailable
-            );
+            // Snap to nearest road
+            snapToRoadAsync(position, snappedPoint -> {
+                VehicleMarker vehicleMarker = new VehicleMarker(
+                        "Vehicle " + vehicleMarkers.size(),
+                        snappedPoint.getLatitude(),
+                        snappedPoint.getLongitude(),
+                        isAvailable
+                );
 
-            Marker marker = new Marker(mapView);
-            marker.setPosition(position);
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            marker.setTitle(vehicleMarker.name);
-            marker.setSnippet(isAvailable ?
-                    getString(R.string.status_available) :
-                    getString(R.string.status_busy));
+                Marker marker = new Marker(mapView);
+                marker.setPosition(snappedPoint);
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                marker.setTitle(vehicleMarker.name);
+                marker.setSnippet(isAvailable ?
+                        getString(R.string.status_available) :
+                        getString(R.string.status_busy));
 
-            Drawable icon = ContextCompat.getDrawable(requireContext(),
-                    isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
-            marker.setIcon(icon);
+                // GREEN for available, DARK RED for busy
+                Drawable icon = ContextCompat.getDrawable(requireContext(),
+                        isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
+                marker.setIcon(icon);
 
-            vehicleMarker.marker = marker;
-            vehicleMarkers.add(vehicleMarker);
-            mapView.getOverlays().add(marker);
+                vehicleMarker.marker = marker;
+                vehicleMarkers.add(vehicleMarker);
+                mapView.getOverlays().add(marker);
+
+                updateVehicleCounts();
+                mapView.invalidate();
+            });
         }
-
-        mapView.invalidate();
     }
 
     private void updateVehicleCounts() {
@@ -577,23 +493,32 @@ public class HomeFragment extends Fragment {
                         getString(R.string.status_available) :
                         getString(R.string.status_busy));
 
+                // Update icon: GREEN for available, DARK RED for busy
                 Drawable icon = ContextCompat.getDrawable(requireContext(),
                         vm.isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
                 vm.marker.setIcon(icon);
+
+                updateVehicleCounts();
             }
 
-            // Simulate movement to nearby road location (only if available)
-            if (vm.isAvailable && random.nextInt(3) == 0) { // 33% chance to move
+            // Simulate small movement (only if available, 20% chance)
+            if (vm.isAvailable && random.nextInt(5) == 0) {
                 GeoPoint currentPos = vm.marker.getPosition();
-                GeoPoint newPos = getNearbyRoadLocation(currentPos);
+                // Small movement in a random direction
+                double newLat = currentPos.getLatitude() + (random.nextDouble() - 0.5) * 0.003;
+                double newLon = currentPos.getLongitude() + (random.nextDouble() - 0.5) * 0.003;
+                GeoPoint newPos = new GeoPoint(newLat, newLon);
 
-                vm.marker.setPosition(newPos);
-                vm.latitude = newPos.getLatitude();
-                vm.longitude = newPos.getLongitude();
+                // Snap the new position to a road
+                snapToRoadAsync(newPos, snappedPoint -> {
+                    vm.marker.setPosition(snappedPoint);
+                    vm.latitude = snappedPoint.getLatitude();
+                    vm.longitude = snappedPoint.getLongitude();
+                    mapView.invalidate();
+                });
             }
         }
 
-        updateVehicleCounts();
         mapView.invalidate();
     }
 
