@@ -14,7 +14,9 @@ import {
   heroArrowsRightLeft,
   heroCurrencyDollar
 } from '@ng-icons/heroicons/outline';
+import { heroStarSolid as heroStarSolidFill } from '@ng-icons/heroicons/solid';
 import * as L from 'leaflet';
+import 'leaflet-routing-machine';
 
 interface RideDetails {
   id: string;
@@ -43,6 +45,7 @@ interface RideDetails {
       heroMapPin,
       heroCalendar,
       heroStar,
+      heroStarSolid: heroStarSolidFill,
       heroClock,
       heroArrowsRightLeft,
       heroCurrencyDollar
@@ -59,24 +62,24 @@ export class RideRatingComponent implements OnInit, OnDestroy {
   isExpired = signal<boolean>(false);
   hoursRemaining = signal<number>(72);
 
-  // Mock ride details - in real app, fetch from service based on route param
+  // Mock ride details - using Novi Sad locations
   rideDetails = signal<RideDetails>({
     id: 'ride-123',
-    pickup: 'Kraljev park',
-    destination: 'Kosovska 21',
-    pickupCoords: [44.7866, 20.4489],
-    destinationCoords: [44.8125, 20.4612],
+    pickup: 'Trg Slobode 1',
+    destination: 'Kisačka 71',
+    pickupCoords: [45.2671, 19.8335], // Trg Slobode
+    destinationCoords: [45.2550, 19.8450], // Kisačka 71
     date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     driverName: 'Marko Petrović',
     vehicleType: 'Economy - Toyota Corolla',
-    distance: 1.9,
-    duration: 5,
-    price: 232.7,
+    distance: 2.3,
+    duration: 8,
+    price: 276,
     completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
   });
 
   private map: L.Map | null = null;
-  private routeLine: L.Polyline | null = null;
+  private routeControl: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -102,6 +105,10 @@ export class RideRatingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.routeControl && this.map) {
+      this.map.removeControl(this.routeControl);
+      this.routeControl = null;
+    }
     if (this.map) {
       this.map.remove();
       this.map = null;
@@ -146,41 +153,57 @@ export class RideRatingComponent implements OnInit, OnDestroy {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
-    // Add pickup marker
+    // Create custom icons for pickup and destination
     const pickupIcon = L.divIcon({
-      className: 'custom-marker',
-      html: '<div class="w-8 h-8 bg-blue-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center"><div class="w-3 h-3 bg-white rounded-full"></div></div>',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
+      className: 'custom-marker-icon',
+      html: `<div style="background: #00acc1; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
     });
 
-    L.marker(ride.pickupCoords, { icon: pickupIcon })
-      .addTo(this.map)
-      .bindPopup(`<b>Pickup:</b> ${ride.pickup}`);
-
-    // Add destination marker
-    const destIcon = L.divIcon({
-      className: 'custom-marker',
-      html: '<div class="w-8 h-8 bg-red-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center"><div class="w-3 h-3 bg-white rounded-full"></div></div>',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
+    const destinationIcon = L.divIcon({
+      className: 'custom-marker-icon',
+      html: `<div style="background: #ec407a; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
     });
 
-    L.marker(ride.destinationCoords, { icon: destIcon })
-      .addTo(this.map)
-      .bindPopup(`<b>Destination:</b> ${ride.destination}`);
+    // Create routing control with actual route
+    this.routeControl = L.Routing.control({
+      waypoints: [
+        L.latLng(ride.pickupCoords[0], ride.pickupCoords[1]),
+        L.latLng(ride.destinationCoords[0], ride.destinationCoords[1])
+      ],
+      router: L.Routing.osrmv1({
+        serviceUrl: 'https://router.project-osrm.org/route/v1'
+      }),
+      lineOptions: {
+        styles: [{ color: '#00acc1', opacity: 0.7, weight: 4 }],
+        extendToWaypoints: false,
+        missingRouteTolerance: 0
+      },
+      show: false,
+      addWaypoints: false,
+      fitSelectedRoutes: true,
+      createMarker: (i: number, waypoint: any, n: number) => {
+        const icon = i === 0 ? pickupIcon : destinationIcon;
+        return L.marker(waypoint.latLng, { icon });
+      }
+    } as any).addTo(this.map);
 
-    // Draw route line
-    this.routeLine = L.polyline([ride.pickupCoords, ride.destinationCoords], {
-      color: '#14b8a6',
-      weight: 4,
-      opacity: 0.7,
-      dashArray: '10, 10'
-    }).addTo(this.map);
+    // Update ride details when route is calculated
+    this.routeControl.on('routesfound', (e: any) => {
+      const summary = e.routes[0].summary;
+      const distanceKm = summary.totalDistance / 1000;
+      const durationMin = Math.round(summary.totalTime / 60);
 
-    // Fit map to show both markers
-    const bounds = L.latLngBounds([ride.pickupCoords, ride.destinationCoords]);
-    this.map.fitBounds(bounds, { padding: [50, 50] });
+      // Update the ride details with calculated values if needed
+      this.rideDetails.update(details => ({
+        ...details,
+        distance: parseFloat(distanceKm.toFixed(1)),
+        duration: durationMin
+      }));
+    });
   }
 
   setDriverRating(rating: number): void {
@@ -232,18 +255,18 @@ export class RideRatingComponent implements OnInit, OnDestroy {
       this.isSubmitting.set(false);
       this.isSubmitted.set(true);
 
-      // Redirect after 2 seconds
+      // Redirect after 2 seconds to ride history
       setTimeout(() => {
-        this.router.navigate(['/ride-history']);
+        this.router.navigate(['/passenger/history']);
       }, 2000);
     }, 1500);
   }
 
   skipRating(): void {
-    this.router.navigate(['/ride-history']);
+    this.router.navigate(['/passenger/history']);
   }
 
   handleBack(): void {
-    this.router.navigate(['/ride-history']);
+    this.router.navigate(['/passenger/history']);
   }
 }
