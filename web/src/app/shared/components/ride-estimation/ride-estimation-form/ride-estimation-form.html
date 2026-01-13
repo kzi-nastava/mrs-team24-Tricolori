@@ -1,0 +1,30 @@
+<form [formGroup]="estimateForm" (ngSubmit)="onSubmit()">
+  <div class="mb-4">
+    <label class="block text-base-800 mb-2 text-sm font-medium">Pickup Location</label>
+    <div class="relative w-full">
+      <ng-icon name="heroMapPin" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cyan-500"></ng-icon>
+      <input type="text" formControlName="pickup" placeholder="Enter pickup location"
+             class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-base-600 outline-none">
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <label class="block text-base-800 mb-2 text-sm font-medium">Destination</label>
+    <div class="relative w-full">
+      <ng-icon name="heroMapPin" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-500"></ng-icon>
+      <input type="text" formControlName="destination" placeholder="Where to?"
+             class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-base-600 outline-none">
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4 text-sm">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <button type="submit" class="w-full bg-base-600 hover:bg-base-700 text-white py-3 rounded-lg font-medium transition flex items-center justify-center gap-2">
+    <ng-icon name="heroSparkles" class="w-5 h-5"></ng-icon>
+    Get Estimate
+  </button>
+</form>
