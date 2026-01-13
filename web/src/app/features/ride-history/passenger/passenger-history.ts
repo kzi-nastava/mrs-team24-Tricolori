@@ -208,9 +208,10 @@ export class PassengerHistory {
     this.selectedRide = null;
   }
 
-  // Navigate to rating page
+  // Navigate to rating page - FIXED
   navigateToRating(rideId: number): void {
-    this.router.navigate(['/rate-ride', rideId]);
+    // Navigate to the ride rating page with the ride ID
+    this.router.navigate(['/passenger/ride-rating', rideId]);
   }
 
   // Get hours remaining for rating

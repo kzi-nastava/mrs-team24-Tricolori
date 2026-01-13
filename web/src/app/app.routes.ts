@@ -53,6 +53,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/ride-history/passenger/passenger-history').then(m => m.PassengerHistory)
       },
       {
+      path: 'ride-rating/:id',
+      loadComponent: () => import('./features/ride-rating/ride-rating').then(m => m.RideRatingComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
       },
