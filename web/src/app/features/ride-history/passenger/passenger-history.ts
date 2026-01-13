@@ -45,8 +45,8 @@ interface PassengerRide {
   providers: [
     provideIcons({ heroEye, heroXMark, heroStar, heroStarSolid })
   ],
-  templateUrl: './passenger-history.component.html',
-  styleUrls: ['./passenger-history.component.css']
+  templateUrl: './passenger-history.html',
+  styleUrls: ['./passenger-history.css']
 })
 export class PassengerHistory {
   // Date filter properties

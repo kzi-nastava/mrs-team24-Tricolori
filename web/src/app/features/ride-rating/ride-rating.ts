@@ -2,6 +2,18 @@ import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { 
+  heroArrowLeft, 
+  heroExclamationCircle, 
+  heroCheckCircle,
+  heroMapPin,
+  heroCalendar,
+  heroStar,
+  heroClock,
+  heroArrowsRightLeft,
+  heroCurrencyDollar
+} from '@ng-icons/heroicons/outline';
 import * as L from 'leaflet';
 
 interface RideDetails {
@@ -22,8 +34,21 @@ interface RideDetails {
 @Component({
   selector: 'app-ride-rating',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './ride-rating.component.html'
+  imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
+  providers: [
+    provideIcons({
+      heroArrowLeft,
+      heroExclamationCircle,
+      heroCheckCircle,
+      heroMapPin,
+      heroCalendar,
+      heroStar,
+      heroClock,
+      heroArrowsRightLeft,
+      heroCurrencyDollar
+    })
+  ],
+  templateUrl: './ride-rating.html'
 })
 export class RideRatingComponent implements OnInit, OnDestroy {
   ratingForm: FormGroup;
