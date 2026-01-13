@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+// passenger-home.ts
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouteSelector } from '../../../shared/components/ride-booking/route-selector/route-selector';
@@ -10,11 +11,8 @@ import { NgIcon } from "@ng-icons/core";
 import { MatDialog } from '@angular/material/dialog';
 import { Overlay } from '@angular/cdk/overlay';
 import { SchedulePicker } from '../../../shared/components/ride-booking/schedule-picker/schedule-picker';
-
-interface Stop {
-  id: number;
-  location: string;
-}
+import { RideOptions, RideRequest } from '../../../shared/model/ride';
+import { VehicleType } from '../../../shared/model/vehicle';
 
 @Component({
   selector: 'app-home-passenger',
@@ -26,11 +24,15 @@ interface Stop {
     RideTrackersSelector,
     PreferencesSelector,
     NgIcon
-],
+  ],
   templateUrl: './passenger-home.html',
   styleUrl: './passenger-home.css'
 })
 export class HomePassenger {
+  routeSelector = viewChild.required(RouteSelector);
+  preferencesSelector = viewChild.required(PreferencesSelector);
+  trackersSelector = viewChild.required(RideTrackersSelector);
+  
   private routesDialog = inject(MatDialog);
   private routeOverlay = inject(Overlay);
 
@@ -38,7 +40,7 @@ export class HomePassenger {
   private scheduleOverlay = inject(Overlay);
 
   currentRoute = signal<Route | undefined>(undefined);
-  scheduledTime = signal<Date | undefined>(undefined)
+  scheduledTime = signal<Date | undefined>(undefined);
 
   openFavoriteRoutes() {
     const dialogRef = this.routesDialog.open(FavoriteRouteSelector, {
@@ -76,5 +78,31 @@ export class HomePassenger {
         this.scheduledTime.set(result);
       }
     });
+  }
+
+  rideSubmit(event: Event) {
+    event.preventDefault();
+    
+    // Pristup child komponenti kroz signal
+    const routeSelector = this.routeSelector();
+    const preferencesSelector = this.preferencesSelector();
+    const trackersSelector = this.trackersSelector();
+    
+    if (routeSelector.routeForm.valid) {
+      const routeVal: Route = routeSelector.routeForm.value;
+      const preferencesVal: RideOptions = preferencesSelector.preferencesForm.value;
+      const trackersVal: string[] = trackersSelector.trackersForm.getRawValue().trackers as string[] || [];
+
+      const rideRequest: RideRequest = {
+        route: routeVal,
+        preferences: preferencesVal,
+        trackers: trackersVal
+      }
+
+      console.log('Route Data:', rideRequest);
+    } else {
+      console.log('Form is invalid');
+      routeSelector.routeForm.markAllAsTouched();
+    }
   }
 }
