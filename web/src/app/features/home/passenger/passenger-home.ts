@@ -9,6 +9,7 @@ import { FavoriteRoute, Route } from '../../../shared/model/route';
 import { NgIcon } from "@ng-icons/core";
 import { MatDialog } from '@angular/material/dialog';
 import { Overlay } from '@angular/cdk/overlay';
+import { SchedulePicker } from '../../../shared/components/ride-booking/schedule-picker/schedule-picker';
 
 interface Stop {
   id: number;
@@ -31,84 +32,49 @@ interface Stop {
 })
 export class HomePassenger {
   private routesDialog = inject(MatDialog);
-  private routesOverlay = inject(Overlay);
+  private routeOverlay = inject(Overlay);
 
-  currentRouteSignal = signal<Route | undefined>(undefined);
+  private scheduleDialog = inject(MatDialog);
+  private scheduleOverlay = inject(Overlay);
 
-  /* ----------------------------- */
-  pickupLocation = '';
-  stops: Stop[] = [];
-  destination = '';
-  nextStopId = 1;
-  
-  vehicleType = 'economy';
-  babySeat = false;
-  petFriendly = false;
-  scheduleForLater = false;
-  maxHoursAdvance = 5;
+  currentRoute = signal<Route | undefined>(undefined);
+  scheduledTime = signal<Date | undefined>(undefined)
 
-  vehicleTypes = [
-    { value: 'economy', label: 'Economy', icon: '🚗' },
-    { value: 'comfort', label: 'Comfort', icon: '🚙' },
-    { value: 'premium', label: 'Premium', icon: '🚕' },
-    { value: 'van', label: 'Van', icon: '🚐' }
-  ];
-
-  addStop() {
-    if (this.stops.length < 5) {
-      this.stops.push({ id: this.nextStopId++, location: '' });
-    }
-  }
-
-  removeStop(id: number) {
-    this.stops = this.stops.filter(stop => stop.id !== id);
-  }
-
-  bookRide() {
-    if (!this.pickupLocation || !this.destination) {
-      alert('Please enter pickup location and destination');
-      return;
-    }
-
-    const rideData = {
-      pickupLocation: this.pickupLocation,
-      stops: this.stops.filter(s => s.location.trim()),
-      destination: this.destination,
-      vehicleType: this.vehicleType,
-      babySeat: this.babySeat,
-      petFriendly: this.petFriendly,
-      scheduleForLater: this.scheduleForLater,
-      maxHoursAdvance: this.scheduleForLater ? this.maxHoursAdvance : null
-    };
-
-    console.log('Booking ride:', rideData);
-    alert('Searching for available drivers...');
-    // TODO: Send to backend
-  }
-
-  /* ------------------------------ */
   openFavoriteRoutes() {
     const dialogRef = this.routesDialog.open(FavoriteRouteSelector, {
       width: '100%',
       maxWidth: '32rem',
-      panelClass: 'custom-ride-modal',
+      panelClass: 'custom-modal',
       backdropClass: 'custom-backdrop',
       autoFocus: false,
-      scrollStrategy: this.routesOverlay.scrollStrategies.block()
+      scrollStrategy: this.routeOverlay.scrollStrategies.block()
     });
 
     dialogRef.afterClosed().subscribe((result: FavoriteRoute | undefined) => {
       if (result) {
-        this.populateFavoriteRoute(result);
+        this.currentRoute.set({
+          from: result.from,
+          stops: result.stops,
+          to: result.to
+        });
       }
     });
   }
 
-  populateFavoriteRoute(route: FavoriteRoute) {
-    this.currentRouteSignal.set({
-      from: route.from,
-      stops: route.stops,
-      to: route.to
+  openTimeScheduler() {
+    const dialogRef = this.scheduleDialog.open(SchedulePicker, {
+      width: '100%',
+      maxWidth: '24rem',
+      panelClass: 'custom-modal',
+      backdropClass: 'custom-backdrop',
+      autoFocus: false,
+      scrollStrategy: this.scheduleOverlay.scrollStrategies.block()
+    });
+
+    dialogRef.afterClosed().subscribe((result: Date | undefined) => {
+      if (result) {
+        this.scheduledTime.set(result);
+      }
     });
   }
 }

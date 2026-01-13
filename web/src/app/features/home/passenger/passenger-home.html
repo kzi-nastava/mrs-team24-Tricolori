@@ -8,7 +8,7 @@
             <button type="button" (click)="openFavoriteRoutes()" class="w-full py-3 mb-3 border border-gray-500 border-dashed rounded-2xl text-light-600 font-medium hover:bg-gray-200 transition-colors duration-300 hover:text-light-700 bg-gray-100 cursor-pointer text-center">
                 Select from Favorite Routes
             </button>
-            <app-route-selector [selectedRoute]="currentRouteSignal()"/>
+            <app-route-selector [selectedRoute]="currentRoute()"/>
         </div>
 
         <div>
@@ -24,7 +24,7 @@
                 </svg>
                 <h2 class="text-2xl">Ride Options</h2>
             </div>
-            <app-preferences-selector />
+            <app-preferences-selector (scheduleWanted)="openTimeScheduler()" [scheduled]="scheduledTime()" />
         </div>
 
         <div>

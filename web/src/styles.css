@@ -63,7 +63,7 @@
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 }
 
-.custom-ride-modal .mat-mdc-dialog-surface {
+.custom-modal .mat-mdc-dialog-surface {
   background: transparent !important;
   box-shadow: none !important;
   padding: 0 !important;
@@ -76,6 +76,6 @@
   backdrop-filter: blur(4px);
 }
 
-.custom-ride-modal .mat-mdc-dialog-container {
+.custom-modal .mat-mdc-dialog-container {
   padding: 0 !important;
 }

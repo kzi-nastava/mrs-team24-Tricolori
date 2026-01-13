@@ -1,28 +1,38 @@
-import { Component, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
+import { MatDialog } from '@angular/material/dialog';
+import { DatePipe } from '@angular/common';
+import { SchedulePicker } from '../schedule-picker/schedule-picker';
 
 @Component({
   selector: 'app-preferences-selector',
   imports: [
     ReactiveFormsModule,
-    NgIcon
+    NgIcon,
+    DatePipe
   ],
   templateUrl: './preferences-selector.html',
-  styleUrl: './preferences-selector.css',
+  styleUrl: './preferences-selector.css'
 })
 export class PreferencesSelector {
   private fb = inject(FormBuilder);
 
   selectedType = signal('standard');
+  scheduled = input<Date>();
+  scheduleWanted = output();
 
-  preferencesForm: FormGroup = this.fb.group({
-    vehicleType: ['standard'],
-    babySeat: [false],
-    petFriendly: [false],
-    scheduleLater: [false]
-  });
+  preferencesForm: FormGroup;
 
+  get vehicleType() { return this.preferencesForm.get('vehicleType'); }
+  get babySeat() { return this.preferencesForm.get('babySeat'); }
+  get petFriendly() { return this.preferencesForm.get('petFriendly'); }
+  get scheduledTime() { return this.preferencesForm.get('scheduledTime'); }
+  get isScheduled(): boolean {
+    return !!this.scheduledTime?.value;
+  }
+
+  // TODO: use global level vehicle types...
   vehicleTypes = [
     { id: 'standard', label: 'Standard', icon: '🚗' },
     { id: 'business', label: 'Business', icon: '💼' },
@@ -30,9 +40,42 @@ export class PreferencesSelector {
   ];
 
   constructor() {
+    this.preferencesForm = this.fb.group({
+      vehicleType: ['standard'],
+      babySeat: [false],
+      petFriendly: [false],
+      scheduledTime: [null as Date | null]
+    });
+
     this.preferencesForm.get('vehicleType')?.valueChanges.subscribe(value => {
       this.selectedType.set(value);
     });
+
+    effect(() => {
+      const time = this.scheduled();
+      if (time) {
+        this.preferencesForm.patchValue({
+          scheduledTime: time 
+        })
+      }
+    })
+  }
+
+  schedule() {
+    if (this.isScheduled) {
+      this.preferencesForm.patchValue({
+        scheduledTime: null
+      });
+    } else {
+      this.scheduleWanted.emit();
+    }
+  }
+
+  isTomorrow(date: Date | null): boolean {
+    if (!date) return false;
+
+    const today = new Date();
+    return date.getDate() !== today.getDate();
   }
 
   get currentIcon() {
