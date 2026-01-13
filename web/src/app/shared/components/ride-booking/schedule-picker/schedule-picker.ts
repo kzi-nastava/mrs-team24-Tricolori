@@ -6,7 +6,6 @@ import { NgIcon } from '@ng-icons/core';
 @Component({
   selector: 'app-schedule-picker',
   imports: [
-    NgIcon,
     DatePipe
   ],
   templateUrl: './schedule-picker.html',

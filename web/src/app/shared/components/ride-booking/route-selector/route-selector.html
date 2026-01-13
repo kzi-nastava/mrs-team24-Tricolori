@@ -10,6 +10,11 @@
             placeholder="Bulevar kralja Petra 3"
             class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
         </div>
+        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+            @if(pickup.hasError('required') && (pickup.dirty || pickup.touched)) {
+                <p>Pickup location is required</p>
+            }
+        </div>
     </div>
 
 
@@ -52,6 +57,11 @@
         <input formControlName="destination" 
             placeholder="Laze Teleckog 13"
             class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
+        </div>
+        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+            @if(destination.hasError('required') && (destination.dirty || destination.touched)) {
+                <p>Destination location is required</p>
+            }
         </div>
     </div>
 </form>

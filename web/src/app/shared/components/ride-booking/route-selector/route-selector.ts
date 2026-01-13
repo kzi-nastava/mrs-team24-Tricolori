@@ -38,6 +38,8 @@ export class RouteSelector {
     })
   }
 
+  get pickup() { return this.routeForm.get("pickup")!; }
+  get destination() { return this.routeForm.get("destination")!; }
   get stops() {
     return this.routeForm.get('stops') as FormArray;
   }

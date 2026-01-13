@@ -12,7 +12,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { Overlay } from '@angular/cdk/overlay';
 import { SchedulePicker } from '../../../shared/components/ride-booking/schedule-picker/schedule-picker';
 import { RideOptions, RideRequest } from '../../../shared/model/ride';
-import { VehicleType } from '../../../shared/model/vehicle';
 
 @Component({
   selector: 'app-home-passenger',
@@ -88,6 +87,8 @@ export class HomePassenger {
     const preferencesSelector = this.preferencesSelector();
     const trackersSelector = this.trackersSelector();
     
+    // Since route selection is only mandatory data, I don't check
+    // other child components' validity...
     if (routeSelector.routeForm.valid) {
       const routeVal: Route = routeSelector.routeForm.value;
       const preferencesVal: RideOptions = preferencesSelector.preferencesForm.value;
@@ -101,7 +102,6 @@ export class HomePassenger {
 
       console.log('Route Data:', rideRequest);
     } else {
-      console.log('Form is invalid');
       routeSelector.routeForm.markAllAsTouched();
     }
   }
