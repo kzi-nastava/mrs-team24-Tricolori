@@ -74,8 +74,8 @@ export class RideTrackingComponent implements OnInit, OnDestroy {
 
   // Current vehicle position (simulated)
   vehiclePosition = signal<VehiclePosition>({
-    lat: 45.2650,
-    lng: 19.8370,
+    lat: 45.2671,
+    lng: 19.8335,
     timestamp: new Date()
   });
 
@@ -89,6 +89,8 @@ export class RideTrackingComponent implements OnInit, OnDestroy {
   private routeControl: any = null;
   private vehicleMarker: L.Marker | null = null;
   private updateInterval: any = null;
+  private routePoints: L.LatLng[] = [];
+  private currentPointIndex = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -107,9 +109,6 @@ export class RideTrackingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Initialize map after view is ready
     setTimeout(() => this.initMap(), 100);
-
-    // Start simulating vehicle movement
-    this.startTracking();
   }
 
   ngOnDestroy(): void {
@@ -191,14 +190,35 @@ export class RideTrackingComponent implements OnInit, OnDestroy {
       }
     } as any).addTo(this.map);
 
-    // Add vehicle marker
-    const currentPos = this.vehiclePosition();
-    this.vehicleMarker = L.marker([currentPos.lat, currentPos.lng], { 
-      icon: vehicleIcon,
-      zIndexOffset: 1000
-    }).addTo(this.map);
-    
-    this.vehicleMarker.bindPopup(`<b>Driver Location</b><br>${ride.driverName}`);
+    // Extract route points once routing is complete
+    this.routeControl.on('routesfound', (e: any) => {
+      const routes = e.routes;
+      if (routes && routes.length > 0) {
+        const route = routes[0];
+        this.routePoints = route.coordinates || [];
+        
+        // Start vehicle at the first point
+        if (this.routePoints.length > 0) {
+          const startPoint = this.routePoints[0];
+          this.vehiclePosition.set({
+            lat: startPoint.lat,
+            lng: startPoint.lng,
+            timestamp: new Date()
+          });
+          
+          // Add vehicle marker at starting position
+          this.vehicleMarker = L.marker([startPoint.lat, startPoint.lng], { 
+            icon: vehicleIcon,
+            zIndexOffset: 1000
+          }).addTo(this.map!);
+          
+          this.vehicleMarker.bindPopup(`<b>Driver Location</b><br>${ride.driverName}`);
+          
+          // Start tracking after route is loaded
+          this.startTracking();
+        }
+      }
+    });
   }
 
   private startTracking(): void {
@@ -216,37 +236,49 @@ export class RideTrackingComponent implements OnInit, OnDestroy {
   }
 
   private updateVehiclePosition(): void {
-    // Simulate vehicle moving towards destination
-    const ride = this.rideDetails();
-    const currentPos = this.vehiclePosition();
+    if (this.routePoints.length === 0) return;
     
-    // Calculate direction towards destination
-    const latDiff = ride.destinationCoords[0] - currentPos.lat;
-    const lngDiff = ride.destinationCoords[1] - currentPos.lng;
+    // Move to next point in the route
+    this.currentPointIndex++;
     
-    // Move a small step towards destination (simplified simulation)
-    const step = 0.001;
-    const newLat = currentPos.lat + (latDiff > 0 ? step : -step);
-    const newLng = currentPos.lng + (lngDiff > 0 ? step : -step);
+    // Calculate how many points to skip for realistic speed
+    // Skip 3-5 points per update for faster movement
+    const pointsToSkip = 4;
+    this.currentPointIndex = Math.min(
+      this.currentPointIndex + pointsToSkip, 
+      this.routePoints.length - 1
+    );
+    
+    if (this.currentPointIndex >= this.routePoints.length - 1) {
+      // Reached destination
+      this.stopTracking();
+      this.remainingDistance.set(0);
+      this.estimatedArrival.set(0);
+      return;
+    }
+    
+    const nextPoint = this.routePoints[this.currentPointIndex];
     
     // Update position
     this.vehiclePosition.set({
-      lat: newLat,
-      lng: newLng,
+      lat: nextPoint.lat,
+      lng: nextPoint.lng,
       timestamp: new Date()
     });
 
     // Update marker on map
     if (this.vehicleMarker) {
-      this.vehicleMarker.setLatLng([newLat, newLng]);
+      this.vehicleMarker.setLatLng([nextPoint.lat, nextPoint.lng]);
     }
 
-    // Update remaining distance and time (simplified)
-    const remaining = this.remainingDistance();
-    if (remaining > 0.1) {
-      this.remainingDistance.set(Math.max(0, remaining - 0.1));
-      this.estimatedArrival.set(Math.max(1, this.estimatedArrival() - 0.5));
-    }
+    // Calculate remaining distance based on progress
+    const ride = this.rideDetails();
+    const progress = this.currentPointIndex / this.routePoints.length;
+    const remainingDist = ride.totalDistance * (1 - progress);
+    const remainingTime = ride.estimatedDuration * (1 - progress);
+    
+    this.remainingDistance.set(Math.max(0, parseFloat(remainingDist.toFixed(2))));
+    this.estimatedArrival.set(Math.max(0, Math.ceil(remainingTime)));
   }
 
   toggleReportForm(): void {
