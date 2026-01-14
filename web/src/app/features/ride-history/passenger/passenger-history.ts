@@ -251,4 +251,10 @@ export class PassengerHistory {
   isStarFilled(starNumber: number, rating: number): boolean {
     return starNumber <= rating;
   }
+
+  // DELETE AFTER TESTING
+  // Navigate to test ride tracking
+  startTestRide() {
+  this.router.navigate(['/passenger/ride-tracking', 'test-ride-123']);
+  }
 }
