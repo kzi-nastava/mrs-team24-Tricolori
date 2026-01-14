@@ -1,0 +1,295 @@
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { 
+  heroArrowLeft, 
+  heroMapPin,
+  heroClock,
+  heroExclamationTriangle,
+  heroCheckCircle,
+  heroPhone
+} from '@ng-icons/heroicons/outline';
+import * as L from 'leaflet';
+import 'leaflet-routing-machine';
+
+interface RideDetails {
+  id: string;
+  pickup: string;
+  destination: string;
+  pickupCoords: [number, number];
+  destinationCoords: [number, number];
+  driverName: string;
+  vehicleType: string;
+  licensePlate: string;
+  totalDistance: number;
+  estimatedDuration: number;
+}
+
+interface VehiclePosition {
+  lat: number;
+  lng: number;
+  timestamp: Date;
+}
+
+@Component({
+  selector: 'app-ride-tracking',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
+  providers: [
+    provideIcons({
+      heroArrowLeft,
+      heroMapPin,
+      heroClock,
+      heroExclamationTriangle,
+      heroCheckCircle,
+      heroPhone
+    })
+  ],
+  templateUrl: './ride-tracking.html'
+})
+export class RideTrackingComponent implements OnInit, OnDestroy {
+  reportForm: FormGroup;
+  showReportForm = signal<boolean>(false);
+  isSubmittingReport = signal<boolean>(false);
+  reportSubmitted = signal<boolean>(false);
+  
+  estimatedArrival = signal<number>(8);
+  remainingDistance = signal<number>(2.3);
+  
+  // Mock ride details
+  rideDetails = signal<RideDetails>({
+    id: 'ride-123',
+    pickup: 'Trg Slobode 1',
+    destination: 'Kisačka 71',
+    pickupCoords: [45.2671, 19.8335],
+    destinationCoords: [45.2550, 19.8450],
+    driverName: 'Marko Petrović',
+    vehicleType: 'Economy - Toyota Corolla',
+    licensePlate: 'NS-123-AB',
+    totalDistance: 2.3,
+    estimatedDuration: 8
+  });
+
+  // Current vehicle position (simulated)
+  vehiclePosition = signal<VehiclePosition>({
+    lat: 45.2650,
+    lng: 19.8370,
+    timestamp: new Date()
+  });
+
+  progressPercentage = computed(() => {
+    const total = this.rideDetails().totalDistance;
+    const remaining = this.remainingDistance();
+    return Math.round(((total - remaining) / total) * 100);
+  });
+
+  private map: L.Map | null = null;
+  private routeControl: any = null;
+  private vehicleMarker: L.Marker | null = null;
+  private updateInterval: any = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    this.reportForm = this.fb.group({
+      description: ['', [
+        Validators.required, 
+        Validators.minLength(10), 
+        Validators.maxLength(500)
+      ]]
+    });
+  }
+
+  ngOnInit(): void {
+    // Initialize map after view is ready
+    setTimeout(() => this.initMap(), 100);
+
+    // Start simulating vehicle movement
+    this.startTracking();
+  }
+
+  ngOnDestroy(): void {
+    this.stopTracking();
+    
+    if (this.routeControl && this.map) {
+      this.map.removeControl(this.routeControl);
+      this.routeControl = null;
+    }
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+  }
+
+  private initMap(): void {
+    const mapElement = document.getElementById('trackingMap');
+    if (!mapElement) return;
+
+    const ride = this.rideDetails();
+    
+    // Calculate center point
+    const centerLat = (ride.pickupCoords[0] + ride.destinationCoords[0]) / 2;
+    const centerLng = (ride.pickupCoords[1] + ride.destinationCoords[1]) / 2;
+
+    this.map = L.map('trackingMap').setView([centerLat, centerLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.map);
+
+    // Create custom icons
+    const pickupIcon = L.divIcon({
+      className: 'custom-marker-icon',
+      html: `<div style="background: #00acc1; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+
+    const destinationIcon = L.divIcon({
+      className: 'custom-marker-icon',
+      html: `<div style="background: #ec407a; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+
+    // Create vehicle icon
+    const vehicleIcon = L.divIcon({
+      className: 'vehicle-marker',
+      html: `<div style="background: #10b981; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="12" height="12">
+          <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+        </svg>
+      </div>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 13]
+    });
+
+    // Create routing control
+    this.routeControl = L.Routing.control({
+      waypoints: [
+        L.latLng(ride.pickupCoords[0], ride.pickupCoords[1]),
+        L.latLng(ride.destinationCoords[0], ride.destinationCoords[1])
+      ],
+      router: L.Routing.osrmv1({
+        serviceUrl: 'https://router.project-osrm.org/route/v1'
+      }),
+      lineOptions: {
+        styles: [{ color: '#00acc1', opacity: 0.7, weight: 4 }],
+        extendToWaypoints: false,
+        missingRouteTolerance: 0
+      },
+      show: false,
+      addWaypoints: false,
+      fitSelectedRoutes: true,
+      createMarker: (i: number, waypoint: any, n: number) => {
+        const icon = i === 0 ? pickupIcon : destinationIcon;
+        return L.marker(waypoint.latLng, { icon });
+      }
+    } as any).addTo(this.map);
+
+    // Add vehicle marker
+    const currentPos = this.vehiclePosition();
+    this.vehicleMarker = L.marker([currentPos.lat, currentPos.lng], { 
+      icon: vehicleIcon,
+      zIndexOffset: 1000
+    }).addTo(this.map);
+    
+    this.vehicleMarker.bindPopup(`<b>Driver Location</b><br>${ride.driverName}`);
+  }
+
+  private startTracking(): void {
+    // Simulate vehicle movement every 5 seconds
+    this.updateInterval = setInterval(() => {
+      this.updateVehiclePosition();
+    }, 5000);
+  }
+
+  private stopTracking(): void {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
+    }
+  }
+
+  private updateVehiclePosition(): void {
+    // Simulate vehicle moving towards destination
+    const ride = this.rideDetails();
+    const currentPos = this.vehiclePosition();
+    
+    // Calculate direction towards destination
+    const latDiff = ride.destinationCoords[0] - currentPos.lat;
+    const lngDiff = ride.destinationCoords[1] - currentPos.lng;
+    
+    // Move a small step towards destination (simplified simulation)
+    const step = 0.001;
+    const newLat = currentPos.lat + (latDiff > 0 ? step : -step);
+    const newLng = currentPos.lng + (lngDiff > 0 ? step : -step);
+    
+    // Update position
+    this.vehiclePosition.set({
+      lat: newLat,
+      lng: newLng,
+      timestamp: new Date()
+    });
+
+    // Update marker on map
+    if (this.vehicleMarker) {
+      this.vehicleMarker.setLatLng([newLat, newLng]);
+    }
+
+    // Update remaining distance and time (simplified)
+    const remaining = this.remainingDistance();
+    if (remaining > 0.1) {
+      this.remainingDistance.set(Math.max(0, remaining - 0.1));
+      this.estimatedArrival.set(Math.max(1, this.estimatedArrival() - 0.5));
+    }
+  }
+
+  toggleReportForm(): void {
+    this.showReportForm.update(value => !value);
+    if (!this.showReportForm()) {
+      this.reportForm.reset();
+    }
+  }
+
+  submitReport(): void {
+    if (this.reportForm.invalid || this.isSubmittingReport()) {
+      return;
+    }
+
+    this.isSubmittingReport.set(true);
+
+    const reportData = {
+      rideId: this.rideDetails().id,
+      description: this.reportForm.value.description,
+      timestamp: new Date(),
+      vehiclePosition: this.vehiclePosition()
+    };
+
+    // Simulate API call
+    setTimeout(() => {
+      console.log('Submitting route inconsistency report:', reportData);
+      
+      // In real app, call report service:
+      // this.reportService.submitInconsistency(reportData).subscribe(...)
+      
+      this.isSubmittingReport.set(false);
+      this.reportSubmitted.set(true);
+      this.showReportForm.set(false);
+      this.reportForm.reset();
+
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        this.reportSubmitted.set(false);
+      }, 5000);
+    }, 1500);
+  }
+
+  handleBack(): void {
+    this.router.navigate(['/passenger/home']);
+  }
+}
