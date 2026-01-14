@@ -1,67 +1,108 @@
-import { Component } from '@angular/core';
+// passenger-home.ts
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Stop {
-  id: number;
-  location: string;
-}
+import { RouteSelector } from '../../../shared/components/ride-booking/route-selector/route-selector';
+import { RideTrackersSelector } from '../../../shared/components/ride-booking/ride-trackers-selector/ride-trackers-selector';
+import { PreferencesSelector } from '../../../shared/components/ride-booking/preferences-selector/preferences-selector';
+import { FavoriteRouteSelector } from '../../../shared/components/ride-booking/favorite-route-selector/favorite-route-selector';
+import { FavoriteRoute, Route } from '../../../shared/model/route';
+import { NgIcon } from "@ng-icons/core";
+import { MatDialog } from '@angular/material/dialog';
+import { Overlay } from '@angular/cdk/overlay';
+import { SchedulePicker } from '../../../shared/components/ride-booking/schedule-picker/schedule-picker';
+import { RideOptions, RideRequest } from '../../../shared/model/ride';
 
 @Component({
   selector: 'app-home-passenger',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouteSelector,
+    RideTrackersSelector,
+    PreferencesSelector,
+    NgIcon
+  ],
   templateUrl: './passenger-home.html',
   styleUrl: './passenger-home.css'
 })
 export class HomePassenger {
-  pickupLocation = '';
-  stops: Stop[] = [];
-  destination = '';
-  nextStopId = 1;
+  routeSelector = viewChild.required(RouteSelector);
+  preferencesSelector = viewChild.required(PreferencesSelector);
+  trackersSelector = viewChild.required(RideTrackersSelector);
   
-  vehicleType = 'economy';
-  babySeat = false;
-  petFriendly = false;
-  scheduleForLater = false;
-  maxHoursAdvance = 5;
+  private routesDialog = inject(MatDialog);
+  private routeOverlay = inject(Overlay);
 
-  vehicleTypes = [
-    { value: 'economy', label: 'Economy', icon: '🚗' },
-    { value: 'comfort', label: 'Comfort', icon: '🚙' },
-    { value: 'premium', label: 'Premium', icon: '🚕' },
-    { value: 'van', label: 'Van', icon: '🚐' }
-  ];
+  private scheduleDialog = inject(MatDialog);
+  private scheduleOverlay = inject(Overlay);
 
-  addStop() {
-    if (this.stops.length < 5) {
-      this.stops.push({ id: this.nextStopId++, location: '' });
-    }
+  currentRoute = signal<Route | undefined>(undefined);
+  scheduledTime = signal<Date | undefined>(undefined);
+
+  openFavoriteRoutes() {
+    const dialogRef = this.routesDialog.open(FavoriteRouteSelector, {
+      width: '100%',
+      maxWidth: '32rem',
+      panelClass: 'custom-modal',
+      backdropClass: 'custom-backdrop',
+      autoFocus: false,
+      scrollStrategy: this.routeOverlay.scrollStrategies.block()
+    });
+
+    dialogRef.afterClosed().subscribe((result: FavoriteRoute | undefined) => {
+      if (result) {
+        this.currentRoute.set({
+          from: result.from,
+          stops: result.stops,
+          to: result.to
+        });
+      }
+    });
   }
 
-  removeStop(id: number) {
-    this.stops = this.stops.filter(stop => stop.id !== id);
+  openTimeScheduler() {
+    const dialogRef = this.scheduleDialog.open(SchedulePicker, {
+      width: '100%',
+      maxWidth: '24rem',
+      panelClass: 'custom-modal',
+      backdropClass: 'custom-backdrop',
+      autoFocus: false,
+      scrollStrategy: this.scheduleOverlay.scrollStrategies.block()
+    });
+
+    dialogRef.afterClosed().subscribe((result: Date | undefined) => {
+      if (result) {
+        this.scheduledTime.set(result);
+      }
+    });
   }
 
-  bookRide() {
-    if (!this.pickupLocation || !this.destination) {
-      alert('Please enter pickup location and destination');
-      return;
+  rideSubmit(event: Event) {
+    event.preventDefault();
+    
+    // Pristup child komponenti kroz signal
+    const routeSelector = this.routeSelector();
+    const preferencesSelector = this.preferencesSelector();
+    const trackersSelector = this.trackersSelector();
+    
+    // Since route selection is only mandatory data, I don't check
+    // other child components' validity...
+    if (routeSelector.routeForm.valid) {
+      const routeVal: Route = routeSelector.routeForm.value;
+      const preferencesVal: RideOptions = preferencesSelector.preferencesForm.value;
+      const trackersVal: string[] = trackersSelector.trackersForm.getRawValue().trackers as string[] || [];
+
+      const rideRequest: RideRequest = {
+        route: routeVal,
+        preferences: preferencesVal,
+        trackers: trackersVal
+      }
+
+      console.log('Route Data:', rideRequest);
+    } else {
+      routeSelector.routeForm.markAllAsTouched();
     }
-
-    const rideData = {
-      pickupLocation: this.pickupLocation,
-      stops: this.stops.filter(s => s.location.trim()),
-      destination: this.destination,
-      vehicleType: this.vehicleType,
-      babySeat: this.babySeat,
-      petFriendly: this.petFriendly,
-      scheduleForLater: this.scheduleForLater,
-      maxHoursAdvance: this.scheduleForLater ? this.maxHoursAdvance : null
-    };
-
-    console.log('Booking ride:', rideData);
-    alert('Searching for available drivers...');
-    // TODO: Send to backend
   }
 }

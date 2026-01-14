@@ -10,7 +10,6 @@ import { StepTwoForm } from '../../../shared/components/driver-registration/step
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    NgIcon,
     StepOneForm,
     StepTwoForm
 ],

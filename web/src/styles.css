@@ -62,3 +62,20 @@
 .shadowed {
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 }
+
+.custom-modal .mat-mdc-dialog-surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 1rem !important;
+  overflow: hidden;
+}
+
+.custom-backdrop {
+  background: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(4px);
+}
+
+.custom-modal .mat-mdc-dialog-container {
+  padding: 0 !important;
+}

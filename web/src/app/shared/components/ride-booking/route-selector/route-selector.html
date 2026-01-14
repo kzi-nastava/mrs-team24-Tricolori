@@ -1,0 +1,67 @@
+<form [formGroup]="routeForm" class="flex flex-col gap-2 w-full max-w-lg">
+    <!-- Pickup Location -->
+    <div class="flex flex-col">
+        <p class="text-gray-400 pl-2">Pickup Location</p>
+        <div class="relative">
+        <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <div class="size-3 rounded-full bg-dark"></div>
+        </div>
+        <input formControlName="pickup" 
+            placeholder="Bulevar kralja Petra 3"
+            class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
+        </div>
+        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+            @if(pickup.hasError('required') && (pickup.dirty || pickup.touched)) {
+                <p>Pickup location is required</p>
+            }
+        </div>
+    </div>
+
+
+    <div formArrayName="stops" class="flex flex-col gap-3.5 overflow-y-auto max-h-72 py-1">
+        @for (stop of stops.controls; track stop; let i = $index) {
+            <div class="w-full">
+                <p class="text-gray-400 pl-2">Stop {{ i + 1 }}</p>
+                <div class="flex items-center gap-3">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-4 flex items-center">
+                            <div class="size-3 rounded-full bg-base-600"></div>
+                        </div>
+                        <input [formControlName]="i" placeholder="Enter stop address"
+                            class="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600 transition-all">
+                    </div>
+                    <button 
+                        (click)="removeStop(i)"
+                        class="bg-deep-300 hover:bg-deep-400 transition-colors p-4 rounded-2xl text-white cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Add routes button -->
+    <button type="button" (click)="addStop()" 
+            class="w-full py-3 border border-gray-400 border-dashed rounded-2xl text-base-700 font-medium hover:bg-gray-100 cursor-pointer text-center">
+        Add Stop
+    </button>
+
+    <div class="flex flex-col">
+        <p class="text-gray-400 pl-2">Destination</p>
+        <div class="relative">
+        <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <div class="size-3 rounded-full bg-light-600"></div>
+        </div>
+        <input formControlName="destination" 
+            placeholder="Laze Teleckog 13"
+            class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
+        </div>
+        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+            @if(destination.hasError('required') && (destination.dirty || destination.touched)) {
+                <p>Destination location is required</p>
+            }
+        </div>
+    </div>
+</form>

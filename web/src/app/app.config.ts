@@ -5,9 +5,12 @@ import {
   heroLockClosed, heroCurrencyDollar,
   heroEye, heroArrowRightOnRectangle,
   heroEyeSlash, heroPower,
-  heroArrowRight, heroUser, heroPhone, heroHome, heroArrowUpTray
+  heroArrowRight, heroUser, heroPhone, heroHome, heroArrowUpTray,
+  heroClock, heroInformationCircle, heroChevronDown, heroChevronUp,
+  heroArrowsUpDown
 } from '@ng-icons/heroicons/outline';
 import {heroBoltSolid, heroBoltSlashSolid} from '@ng-icons/heroicons/solid'
+import {ionLocationOutline} from '@ng-icons/ionicons'
 
 import { routes } from './app.routes';
 import { provideIcons } from '@ng-icons/core';
@@ -22,7 +25,9 @@ export const appConfig: ApplicationConfig = {
       heroEye, heroPower, heroArrowRightOnRectangle,
       heroEyeSlash, heroCurrencyDollar,
       heroArrowRight, heroSquares2x2, heroTruck,
-      heroUser, heroArrowUpTray, heroHome, heroPhone
+      heroUser, heroArrowUpTray, heroHome, heroPhone,
+      heroClock, heroInformationCircle, heroChevronDown, 
+      heroChevronUp, heroArrowsUpDown, ionLocationOutline
     })
   ]
 };
