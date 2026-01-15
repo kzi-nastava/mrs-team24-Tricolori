@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -10,7 +10,10 @@ import {
   heroUserPlus,
   heroCheckCircle,
   heroExclamationTriangle,
-  heroInformationCircle
+  heroInformationCircle,
+  heroTicket,
+  heroArrowRight,
+  heroFunnel
 } from '@ng-icons/heroicons/outline';
 
 interface Notification {
@@ -37,7 +40,10 @@ interface Notification {
       heroUserPlus,
       heroCheckCircle,
       heroExclamationTriangle,
-      heroInformationCircle
+      heroInformationCircle,
+      heroTicket,
+      heroArrowRight,
+      heroFunnel
     })
   ],
   templateUrl: './passenger-notifications.html',
@@ -45,8 +51,9 @@ interface Notification {
 })
 export class PassengerNotificationsComponent {
   selectedNotification: Notification | null = null;
+  showUnreadOnly = signal<boolean>(false);
   
-  notifications: Notification[] = [
+  notifications = signal<Notification[]>([
     {
       id: 1,
       type: 'ride_starting',
@@ -115,21 +122,30 @@ export class PassengerNotificationsComponent {
       rideId: 12339,
       actionUrl: '/passenger/ride-tracking/12339'
     }
-  ];
+  ]);
+
+  filteredNotifications = computed(() => {
+    if (this.showUnreadOnly()) {
+      return this.notifications().filter(n => !n.isRead);
+    }
+    return this.notifications();
+  });
 
   constructor(private router: Router) {}
 
   unreadCount(): number {
-    return this.notifications.filter(n => !n.isRead).length;
+    return this.notifications().filter(n => !n.isRead).length;
   }
 
   readCount(): number {
-    return this.notifications.filter(n => n.isRead).length;
+    return this.notifications().filter(n => n.isRead).length;
   }
 
   openNotification(notification: Notification): void {
     if (!notification.isRead) {
-      notification.isRead = true;
+      this.notifications.update(notifications => 
+        notifications.map(n => n.id === notification.id ? { ...n, isRead: true } : n)
+      );
     }
     this.selectedNotification = notification;
   }
@@ -139,7 +155,19 @@ export class PassengerNotificationsComponent {
   }
 
   markAllAsRead(): void {
-    this.notifications.forEach(n => n.isRead = true);
+    this.notifications.update(notifications =>
+      notifications.map(n => ({ ...n, isRead: true }))
+    );
+  }
+
+  clearAllNotifications(): void {
+    if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+      this.notifications.set([]);
+    }
+  }
+
+  toggleFilter(): void {
+    this.showUnreadOnly.update(value => !value);
   }
 
   handleAction(notification: Notification): void {
