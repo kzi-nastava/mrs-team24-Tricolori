@@ -7,6 +7,21 @@
     
     <!-- Subtitle -->
     <p class="text-gray-600 mb-6">View all your rides and leave ratings for completed trips</p>
+
+    <!-- DELETE AFTER TESTING - Button to go to ride tracking -->
+    <div class="mb-4 p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold text-purple-900 mb-1">Testing</p>
+          <p class="text-xs text-purple-700">Simulate an active ride to test tracking</p>
+        </div>
+        <button 
+          (click)="startTestRide()"
+          class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors text-sm">
+          Start Test Ride
+        </button>
+      </div>
+    </div>
     
     <!-- Filter by Date Section -->
     <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">

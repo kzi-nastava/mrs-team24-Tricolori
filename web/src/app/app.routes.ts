@@ -53,8 +53,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/ride-history/passenger/passenger-history').then(m => m.PassengerHistory)
       },
       {
-      path: 'ride-rating/:id',
-      loadComponent: () => import('./features/ride-rating/ride-rating').then(m => m.RideRatingComponent)
+        path: 'ride-rating/:id',
+        loadComponent: () => import('./features/ride-rating/ride-rating').then(m => m.RideRatingComponent)
+      },
+      {
+        path: 'ride-tracking/:id',
+        loadComponent: () => import('./features/ride-tracking/ride-tracking').then(m => m.RideTrackingComponent)
       },
       {
       path: 'notifications',
