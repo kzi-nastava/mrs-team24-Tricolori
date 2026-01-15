@@ -92,6 +92,10 @@ export const routes: Routes = [
         path: 'driver-register',
         loadComponent: () => import('./features/auth/driver-register/driver-register').then(m => m.DriverRegister)
       },
+      {
+        path: 'pricelist',
+        loadComponent: () => import('./features/pricelist/pricelist-admin').then(m => m.PricelistAdmin)
+      },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },

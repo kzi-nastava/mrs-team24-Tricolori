@@ -1,0 +1,72 @@
+<div class="pricelist-container">
+  <div class="pricelist-card">
+    <div class="section">
+      <div class="section-header">
+        <div class="icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M2 12h20"/>
+          </svg>
+        </div>
+        <h2>Price per Kilometer</h2>
+      </div>
+      <div class="input-group">
+        <input 
+          type="number" 
+          [(ngModel)]="pricePerKm" 
+          class="price-input"
+          placeholder="150"
+        />
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <h2>Start Prices</h2>
+      </div>
+
+      <div class="price-item">
+        <label class="price-label">Standard</label>
+        <input 
+          type="number" 
+          [(ngModel)]="standardPrice" 
+          class="price-input"
+          placeholder="150"
+        />
+      </div>
+
+      <div class="price-item">
+        <label class="price-label">Luxury</label>
+        <input 
+          type="number" 
+          [(ngModel)]="luxuryPrice" 
+          class="price-input"
+          placeholder="250"
+        />
+      </div>
+
+      <div class="price-item">
+        <label class="price-label">Van</label>
+        <input 
+          type="number" 
+          [(ngModel)]="vanPrice" 
+          class="price-input"
+          placeholder="225"
+        />
+      </div>
+    </div>
+
+    <div class="info-text">
+      All prices are calculated in RSD - Serbian Dinars.
+    </div>
+
+    <button class="save-button" (click)="onSaveChanges()">
+      Save changes
+    </button>
+  </div>
+</div>
