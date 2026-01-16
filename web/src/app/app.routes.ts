@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { UnregisteredHome } from './features/home/unregistered/unregistered-home';
+import {DriverRideAssignment} from './shared/components/driver-ride-assignment/driver-ride-assignment';
 
 export const routes: Routes = [
   // Public routes
@@ -21,7 +22,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/home/driver/driver-home').then(m => m.HomeDriver),
         children: [
           // { path: 'waiting', component: WaitingComponent },
-          // { path: 'request/:id', component: RideRequestComponent },
+          { path: 'ride-assign/:id', component: DriverRideAssignment },
           // { path: 'active-ride/:id', component: ActiveRideComponent },
           // { path: '', redirectTo: 'waiting', pathMatch: 'full' }
         ]
