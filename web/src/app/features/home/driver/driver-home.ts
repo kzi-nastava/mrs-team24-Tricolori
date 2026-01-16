@@ -1,58 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import * as L from 'leaflet';
 import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
 
-interface RideRequest {
-  id: string;
-  pickupLocation: string;
-  destination: string;
-  timeToPickup: number;
-  passengerName?: string;
-  estimatedFare?: number;
-}
 
 @Component({
   selector: 'app-home-driver',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './driver-home.html',
   styleUrl: './driver-home.css'
 })
-export class HomeDriver implements OnInit {
-  currentRequest: RideRequest | null = null;
-  showAcceptDialog = false;
+export class HomeDriver {
+  private map!: L.Map;
 
-  ngOnInit() {
-    // Simulate receiving a ride request
-    this.simulateRideRequest();
+  ngAfterViewInit() {
+    this.initMap();
   }
 
-  simulateRideRequest() {
-    // Simulate a new ride request
-    setTimeout(() => {
-      this.currentRequest = {
-        id: '1',
-        pickupLocation: 'Krajev park',
-        destination: 'Jevrejska 23b',
-        timeToPickup: 5,
-        passengerName: 'John Doe',
-        estimatedFare: 450
-      };
-      this.showAcceptDialog = true;
-    }, 1000);
+  private initMap(): void {
+    this.map = L.map('map', {
+      center: [45.2609, 19.8319],
+      zoom: 13,
+      zoomControl: false
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(this.map);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
   }
 
-  acceptRide() {
-    console.log('Ride accepted:', this.currentRequest);
-    this.showAcceptDialog = false;
-    // TODO: Navigate to active ride page
-    alert('Ride accepted! Navigation to pickup location...');
-  }
-
-  declineRide() {
-    console.log('Ride declined:', this.currentRequest);
-    this.showAcceptDialog = false;
-    this.currentRequest = null;
-    // Simulate next request
-    setTimeout(() => this.simulateRideRequest(), 3000);
-  }
 }
