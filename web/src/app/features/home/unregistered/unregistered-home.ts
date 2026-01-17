@@ -15,7 +15,7 @@ import { RideEstimationForm } from '../../../shared/components/ride-estimation/r
 import { RideEstimationResult } from '../../../shared/components/ride-estimation/ride-estimation-result/ride-estimation-result';
 
 // Model
-import { EstimateResults, RideOption, Vehicle, EstimationState } from '../../../shared/model/ride-estimation';
+import { EstimateResults, Vehicle, EstimationState } from '../../../shared/model/ride-estimation';
 
 @Component({
   selector: 'app-unregistered-home',
@@ -42,7 +42,6 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
   currentState = signal<EstimationState>('INITIAL');
   errorMessage = signal<string>('');
   estimateResults = signal<EstimateResults | null>(null);
-  rideOptions = signal<RideOption[]>([]);
 
   vehicles = signal<Vehicle[]>([
     { id: 1, lat: 45.2705, lng: 19.8250, status: 'available' },
@@ -222,7 +221,6 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
         duration: durationMin
       });
 
-      this.updateRideOptions(distanceKm, durationMin);
       this.currentState.set('RESULT');
       this.cdr.detectChanges();
     });
@@ -231,19 +229,6 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
       this.errorMessage.set('Could not calculate route. Try different addresses.');
       this.cdr.detectChanges();
     });
-  }
-
-  private updateRideOptions(distanceKm: number, durationMin: number): void {
-    const pricePerKm = 120;
-    const basePrice = distanceKm * pricePerKm;
-    const etaMin = Math.max(3, Math.round(durationMin * 0.2));
-
-    this.rideOptions.set([
-      { type: 'Economy', icon: '🚗', eta: `${etaMin} min away`, price: `${basePrice.toFixed(1)} RSD`, seats: '4 seats' },
-      { type: 'Comfort', icon: '🚙', eta: `${etaMin + 2} min away`, price: `${(basePrice * 1.4).toFixed(1)} RSD`, seats: '4 seats' },
-      { type: 'Premium', icon: '🚕', eta: `${etaMin + 1} min away`, price: `${(basePrice * 2.2).toFixed(1)} RSD`, seats: '4 seats' },
-      { type: 'XL', icon: '🚐', eta: `${etaMin + 3} min away`, price: `${(basePrice * 1.7).toFixed(1)} RSD`, seats: '6 seats' }
-    ]);
   }
 
   private clearRouteMarkers(): void {
