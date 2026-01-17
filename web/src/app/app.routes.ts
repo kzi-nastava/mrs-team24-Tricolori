@@ -69,7 +69,7 @@ export const routes: Routes = [
       },
       {
       path: 'notifications',
-      loadComponent: () => import('./features/notifications/passenger-notifications').then(m => m.PassengerNotificationsComponent)
+      loadComponent: () => import('./features/notifications/passenger/passenger-notifications').then(m => m.PassengerNotificationsComponent)
       },
       {
         path: 'profile',
@@ -94,6 +94,10 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
+      },
+      {
+        path: 'notifications',
+        loadComponent: () => import('./features/notifications/admin/admin-notifications').then(m => m.AdminNotificationsComponent)
       },
       {
         path: 'driver-register',
