@@ -1,6 +1,6 @@
-<div class="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] bg-gray-100">
+<div class="flex flex-col lg:flex-row w-full h-[calc(100vh-64px)] bg-gray-100">
   <!-- Tracking Panel -->
-  <div class="w-full lg:w-1/4 bg-white shadow-lg p-6 overflow-y-auto z-10 lg:h-full">
+  <div class="w-full lg:w-1/4 bg-white shadow-lg p-6 overflow-y-auto z-10 lg:h-full flex flex-col">
     <!-- Header -->
     <div class="flex items-center gap-3 mb-6">
       <button (click)="handleBack()" class="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg text-gray-700 font-medium text-sm">
@@ -29,7 +29,7 @@
     <!-- Ride Details -->
     <div class="bg-gray-50 rounded-lg p-4 mb-6">
       <h3 class="text-sm font-semibold text-base-900 mb-3 m-0">Ride Details</h3>
-      
+
       <div class="space-y-3">
         <div class="flex items-start gap-3">
           <ng-icon name="heroMapPin" class="w-4 h-4 text-teal-600 mt-1"></ng-icon>
@@ -38,7 +38,7 @@
             <p class="text-sm text-gray-900 m-0">{{ rideDetails().pickup }}</p>
           </div>
         </div>
-        
+
         <div class="flex items-start gap-3">
           <ng-icon name="heroMapPin" class="w-4 h-4 text-red-600 mt-1"></ng-icon>
           <div class="flex-1">
@@ -64,10 +64,13 @@
       </div>
     </div>
 
+    <!-- Spacer to push buttons to bottom -->
+    <div class="flex-1"></div>
+
     @if (!showReportForm()) {
       <!-- Report Inconsistency Button -->
       <div class="mb-4">
-        <button 
+        <button
           (click)="toggleReportForm()"
           class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 text-yellow-800 rounded-lg transition-colors font-medium text-sm">
           <ng-icon name="heroExclamationTriangle" class="w-5 h-5"></ng-icon>
@@ -93,7 +96,7 @@
             class="w-full px-4 py-3 rounded-lg border border-yellow-300 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 outline-none text-sm resize-none mb-2"
             [class.border-red-500]="reportForm.get('description')?.invalid && reportForm.get('description')?.touched">
           </textarea>
-          
+
           @if (reportForm.get('description')?.hasError('required') && reportForm.get('description')?.touched) {
             <p class="text-xs text-red-600 mb-2 m-0">Description is required</p>
           }
@@ -143,18 +146,38 @@
       </div>
     }
 
-    <!-- Contact Driver Button -->
-    <button 
-      class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors font-medium text-sm">
-      <ng-icon name="heroPhone" class="w-5 h-5"></ng-icon>
-      Contact Driver
+    <!-- Panic Button -->
+    <button
+      (click)="triggerPanic()"
+      [disabled]="panicTriggered()"
+      class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium text-sm shadow-lg">
+      <ng-icon name="heroExclamationTriangle" class="w-5 h-5"></ng-icon>
+      @if (panicTriggered()) {
+        <span>PANIC Alert Sent</span>
+      } @else {
+        <span>PANIC BUTTON</span>
+      }
     </button>
+
+    @if (panicTriggered()) {
+      <!-- Panic Confirmation -->
+      <div class="bg-red-50 border-2 border-red-500 rounded-lg p-4 mt-3 animate-pulse">
+        <div class="flex items-start gap-3">
+          <ng-icon name="heroExclamationCircle" class="w-6 h-6 text-red-600 mt-0.5"></ng-icon>
+          <div>
+            <h3 class="text-sm font-bold text-red-900 m-0 mb-1">Emergency Alert Active</h3>
+            <p class="text-xs text-red-700 m-0">Central dispatch has been notified. Help is on the way.</p>
+          </div>
+        </div>
+      </div>
+    }
+
   </div>
 
   <!-- Map Container -->
   <div class="w-full lg:w-3/4 h-[50vh] lg:h-full relative">
     <div id="trackingMap" class="w-full h-full"></div>
-    
+
     <!-- Live Updates Indicator -->
     <div class="absolute top-6 left-6 bg-white rounded-lg shadow-lg px-4 py-3 z-10 flex items-center gap-3">
       <div class="relative">
@@ -176,7 +199,7 @@
           <span class="text-xs text-gray-700">{{ rideDetails().totalDistance }} km total</span>
         </div>
         <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-          <div 
+          <div
             class="bg-teal-500 h-2 rounded-full transition-all duration-500"
             [style.width.%]="progressPercentage()">
           </div>
