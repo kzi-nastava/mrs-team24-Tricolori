@@ -69,7 +69,7 @@ export const routes: Routes = [
       },
       {
       path: 'notifications',
-      loadComponent: () => import('./features/notifications/passenger-notifications').then(m => m.PassengerNotificationsComponent)
+      loadComponent: () => import('./features/notifications/passenger/passenger-notifications').then(m => m.PassengerNotificationsComponent)
       },
       {
         path: 'profile',
