@@ -96,6 +96,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
       },
       {
+        path: 'notifications',
+        loadComponent: () => import('./features/notifications/admin/admin-notifications').then(m => m.AdminNotificationsComponent)
+      },
+      {
         path: 'driver-register',
         loadComponent: () => import('./features/auth/driver-register/driver-register').then(m => m.DriverRegister)
       },
