@@ -29,7 +29,7 @@ export const routes: Routes = [
       },
       {
         path: 'history',
-        loadComponent: () => import('./features/driver-history/driver-history').then(m => m.DriverHistory)
+        loadComponent: () => import('./features/ride-history/driver/driver-history').then(m => m.DriverHistory)
       },
       {
         path: 'support',
