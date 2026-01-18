@@ -40,15 +40,23 @@ public class AuthController {
     }
       
     @PostMapping(path = "/register-passenger", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> register(
+    public ResponseEntity<String> register(
             @Valid @RequestPart("data") RegisterPassengerRequest request,
             @RequestPart("image") MultipartFile pfp
     ) {
 
         authService.registerPassenger(request, pfp);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Registration successful. Please check your email to activate your account.");
     }
-  
+
+    @GetMapping("/activate")
+    public ResponseEntity<String> activateAccount(@RequestParam("token") String token) {
+
+        authService.activateAccount(token);
+        return ResponseEntity.ok("Account activated successfully! You can now login.");
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
 
