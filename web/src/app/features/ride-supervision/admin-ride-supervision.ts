@@ -11,7 +11,8 @@ import {
   heroPhone,
   heroChatBubbleLeft,
   heroUser,
-  heroXMark
+  heroXMark,
+  heroArrowLeft
 } from '@ng-icons/heroicons/outline';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
@@ -55,7 +56,8 @@ interface Driver {
       heroPhone,
       heroChatBubbleLeft,
       heroUser,
-      heroXMark
+      heroXMark,
+      heroArrowLeft
     })
   ],
   templateUrl: './admin-ride-supervision.html'

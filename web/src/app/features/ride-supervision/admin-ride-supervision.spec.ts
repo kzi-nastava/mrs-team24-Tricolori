@@ -1,5 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminRideSupervisionComponent } from './admin-ride-supervision';
+import { provideIcons } from '@ng-icons/core';
+import {
+  heroEye,
+  heroMagnifyingGlass,
+  heroTruck,
+  heroUserGroup,
+  heroMapPin,
+  heroPhone,
+  heroChatBubbleLeft,
+  heroUser,
+  heroXMark,
+  heroArrowLeft
+} from '@ng-icons/heroicons/outline';
 
 describe('AdminRideSupervisionComponent', () => {
   let component: AdminRideSupervisionComponent;
@@ -7,12 +20,47 @@ describe('AdminRideSupervisionComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdminRideSupervisionComponent]
+      imports: [AdminRideSupervisionComponent],
+      providers: [
+        provideIcons({
+          heroEye,
+          heroMagnifyingGlass,
+          heroTruck,
+          heroUserGroup,
+          heroMapPin,
+          heroPhone,
+          heroChatBubbleLeft,
+          heroUser,
+          heroXMark,
+          heroArrowLeft
+        })
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminRideSupervisionComponent);
     component = fixture.componentInstance;
+    
+    // Create the map container element that the component expects
+    const mapDiv = document.createElement('div');
+    mapDiv.id = 'supervisionMap';
+    mapDiv.style.width = '800px';
+    mapDiv.style.height = '600px';
+    document.body.appendChild(mapDiv);
+    
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    // Clean up the map element after each test
+    const mapDiv = document.getElementById('supervisionMap');
+    if (mapDiv) {
+      document.body.removeChild(mapDiv);
+    }
+    
+    // Clean up component
+    if (component) {
+      component.ngOnDestroy();
+    }
   });
 
   it('should create', () => {
@@ -96,5 +144,34 @@ describe('AdminRideSupervisionComponent', () => {
         expect(driver.currentRide.progress).toBeLessThanOrEqual(100);
       }
     });
+  });
+
+  it('should have valid coordinates for all drivers', () => {
+    component.drivers().forEach(driver => {
+      expect(driver.currentPosition).toBeDefined();
+      expect(driver.currentPosition.length).toBe(2);
+      expect(typeof driver.currentPosition[0]).toBe('number');
+      expect(typeof driver.currentPosition[1]).toBe('number');
+    });
+  });
+
+  it('should search be case insensitive', () => {
+    component.searchQuery = 'marko';
+    const filtered = component.filteredDrivers();
+    expect(filtered.length).toBeGreaterThan(0);
+    expect(filtered.some(d => d.name.toLowerCase().includes('marko'))).toBe(true);
+  });
+
+  it('should clear route when deselecting driver', () => {
+    const driver = component.drivers()[0];
+    component.selectDriver(driver);
+    
+    // Simulate route being drawn
+    const mockRouteControl = { remove: jasmine.createSpy('remove') };
+    component['routeControl'] = mockRouteControl;
+    
+    component.deselectDriver();
+    
+    expect(component.selectedDriver()).toBeNull();
   });
 });
