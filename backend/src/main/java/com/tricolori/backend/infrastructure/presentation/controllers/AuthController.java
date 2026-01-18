@@ -1,5 +1,6 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
+import com.tricolori.backend.core.services.AuthService;
 import com.tricolori.backend.infrastructure.presentation.dtos.ForgotPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
@@ -9,10 +10,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
-import com.tricolori.backend.infrastructure.presentation.dtos.RegisterRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.RegisterPassengerRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.ResetPasswordRequest;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -38,15 +39,24 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
       
-    @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> register(
-            @Valid @RequestPart("data") RegisterRequest request,
+    @PostMapping(path = "/register-passenger", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> register(
+            @Valid @RequestPart("data") RegisterPassengerRequest request,
             @RequestPart("image") MultipartFile pfp
     ) {
 
-        return ResponseEntity.ok().build();
+        authService.registerPassenger(request, pfp);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Registration successful. Please check your email to activate your account.");
     }
-  
+
+    @GetMapping("/activate")
+    public ResponseEntity<String> activateAccount(@RequestParam("token") String token) {
+
+        authService.activateAccount(token);
+        return ResponseEntity.ok("Account activated successfully! You can now login.");
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
 
