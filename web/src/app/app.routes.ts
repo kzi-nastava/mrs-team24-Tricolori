@@ -92,6 +92,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/support-chat/admin/admin-support').then(m => m.AdminSupport)
       },
       {
+        path: 'ride-supervision',
+        loadComponent: () => import('./features/ride-supervision/admin-ride-supervision').then(m => m.AdminRideSupervisionComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
       },
