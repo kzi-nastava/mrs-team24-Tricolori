@@ -29,7 +29,7 @@ export const routes: Routes = [
       },
       {
         path: 'history',
-        loadComponent: () => import('./features/driver-history/driver-history').then(m => m.DriverHistory)
+        loadComponent: () => import('./features/ride-history/driver/driver-history').then(m => m.DriverHistory)
       },
       {
         path: 'support',
@@ -94,6 +94,10 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
+      },
+      {
+        path: 'history',
+        loadComponent: () => import('./features/ride-history/admin/admin-history').then(m => m.AdminRideHistoryComponent)
       },
       {
         path: 'notifications',
