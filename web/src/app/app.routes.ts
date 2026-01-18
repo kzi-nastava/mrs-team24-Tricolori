@@ -96,6 +96,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
       },
       {
+        path: 'history',
+        loadComponent: () => import('./features/ride-history/admin/admin-history').then(m => m.AdminRideHistoryComponent)
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('./features/notifications/admin/admin-notifications').then(m => m.AdminNotificationsComponent)
       },
