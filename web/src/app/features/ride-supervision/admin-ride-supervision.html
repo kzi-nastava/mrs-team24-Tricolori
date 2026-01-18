@@ -1,168 +1,204 @@
 <div class="flex flex-col lg:flex-row w-full h-[calc(100vh-64px)] bg-gray-100">
 
   <!-- Info Panel -->
-  <div class="w-full lg:w-1/3 bg-white shadow-lg p-6 overflow-y-auto z-10 lg:h-full">
+  <div class="w-full lg:w-1/3 bg-white shadow-lg p-6 overflow-y-auto z-20 lg:h-full">
 
     <!-- Header -->
     <div class="flex items-center gap-3 mb-4">
-      <ng-icon name="heroEye" class="w-6 h-6 text-base-600"></ng-icon>
+      @if (selectedDriver()) {
+        <button (click)="deselectDriver()" class="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg text-gray-700 font-medium text-sm">
+          <ng-icon name="heroArrowLeft" class="w-4 h-4"></ng-icon> Back
+        </button>
+      } @else {
+        <ng-icon name="heroEye" class="w-6 h-6 text-base-600"></ng-icon>
+      }
       <h2 class="text-xl font-semibold text-base-900 m-0">Ride Supervision</h2>
     </div>
 
-    <p class="text-sm text-gray-600 mb-6">Monitor active rides and driver status in real-time</p>
+    @if (!selectedDriver()) {
+      <p class="text-sm text-gray-600 mb-6">Monitor active rides and driver status in real-time</p>
 
-    <!-- Search Section -->
-    <div class="mb-6">
-      <label class="block text-sm font-medium text-gray-700 mb-2">Search Driver</label>
-      <div class="relative">
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          (input)="onSearchChange()"
-          placeholder="Enter driver name..."
-          class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent"
-        />
-        <ng-icon name="heroMagnifyingGlass" class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2"></ng-icon>
-      </div>
-    </div>
-
-    <!-- Active Rides Count -->
-    <div class="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-4 mb-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-xs text-gray-600 mb-1">Active Rides</p>
-          <p class="text-2xl font-bold text-teal-700">{{ getActiveRides().length }}</p>
-        </div>
-        <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
-          <ng-icon name="heroTruck" class="w-6 h-6 text-white"></ng-icon>
+      <!-- Search Section -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Search Driver</label>
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+            placeholder="Enter driver name..."
+            class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent"
+          />
+          <ng-icon name="heroMagnifyingGlass" class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2"></ng-icon>
         </div>
       </div>
-    </div>
 
-    <!-- Driver List -->
-    <div class="space-y-3">
-      <h3 class="text-sm font-semibold text-gray-700 mb-3">
-        {{ searchQuery ? 'Search Results' : 'Active Drivers' }}
-      </h3>
-
-      @if (filteredDrivers().length === 0) {
-        <div class="text-center py-8">
-          <ng-icon name="heroUserGroup" class="w-12 h-12 text-gray-300 mx-auto mb-3"></ng-icon>
-          <p class="text-sm text-gray-500">
-            {{ searchQuery ? 'No drivers found matching your search' : 'No active rides at the moment' }}
-          </p>
+      <!-- Active Rides Count -->
+      <div class="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-600 mb-1">Active Rides</p>
+            <p class="text-2xl font-bold text-teal-700">{{ getActiveRides().length }}</p>
+          </div>
+          <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
+            <ng-icon name="heroTruck" class="w-6 h-6 text-white"></ng-icon>
+          </div>
         </div>
-      } @else {
-        @for (driver of filteredDrivers(); track driver.id) {
-          <div
-            (click)="selectDriver(driver)"
-            [class]="'border rounded-lg p-4 cursor-pointer transition ' + 
-              (selectedDriver()?.id === driver.id 
-                ? 'border-teal-500 bg-teal-50' 
-                : 'border-gray-200 hover:border-teal-300 bg-white hover:bg-gray-50')">
-            
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex-1">
-                <h4 class="font-semibold text-gray-900 text-sm">{{ driver.name }}</h4>
-                <p class="text-xs text-gray-600">{{ driver.vehicleType }}</p>
-                <p class="text-xs text-gray-500">{{ driver.licensePlate }}</p>
+      </div>
+    }
+
+    <!-- Content Area: Driver List or Selected Driver Details -->
+    @if (!selectedDriver()) {
+      <!-- Driver List -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">
+          {{ searchQuery ? 'Search Results' : 'Active Drivers' }}
+        </h3>
+
+        @if (filteredDrivers().length === 0) {
+          <div class="text-center py-8">
+            <ng-icon name="heroUserGroup" class="w-12 h-12 text-gray-300 mx-auto mb-3"></ng-icon>
+            <p class="text-sm text-gray-500">
+              {{ searchQuery ? 'No drivers found matching your search' : 'No active rides at the moment' }}
+            </p>
+          </div>
+        } @else {
+          @for (driver of filteredDrivers(); track driver.id) {
+            <div
+              (click)="selectDriver(driver)"
+              class="border rounded-lg p-4 cursor-pointer transition border-gray-200 hover:border-teal-300 bg-white hover:bg-gray-50">
+              
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex-1">
+                  <h4 class="font-semibold text-gray-900 text-sm">{{ driver.name }}</h4>
+                  <p class="text-xs text-gray-600">{{ driver.vehicleType }}</p>
+                  <p class="text-xs text-gray-500">{{ driver.licensePlate }}</p>
+                </div>
+                <div [class]="'w-3 h-3 rounded-full ' + (driver.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-400')"></div>
               </div>
-              <div [class]="'w-3 h-3 rounded-full ' + (driver.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-400')"></div>
+
+              @if (driver.currentRide) {
+                <div class="mt-3 pt-3 border-t border-gray-200">
+                  <div class="flex items-center gap-2 text-xs text-gray-600 mb-1">
+                    <ng-icon name="heroMapPin" class="w-3 h-3 text-teal-600"></ng-icon>
+                    <span class="truncate">{{ driver.currentRide.pickup }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-xs text-gray-600">
+                    <ng-icon name="heroMapPin" class="w-3 h-3 text-red-600"></ng-icon>
+                    <span class="truncate">{{ driver.currentRide.destination }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    } @else {
+      <!-- Selected Driver Details -->
+      <div class="space-y-4">
+        <!-- Driver Header -->
+        <div class="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
+                <ng-icon name="heroUser" class="w-6 h-6 text-white"></ng-icon>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">{{ selectedDriver()!.name }}</h3>
+                <p class="text-sm text-gray-600">{{ selectedDriver()!.vehicleType }}</p>
+                <p class="text-xs text-gray-500">{{ selectedDriver()!.licensePlate }}</p>
+              </div>
+            </div>
+            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+
+        @if (selectedDriver()!.currentRide) {
+          <!-- Ride Details -->
+          <div class="space-y-4">
+            <h3 class="text-sm font-semibold text-gray-700">Current Ride Details</h3>
+
+            <!-- Route -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+              <div class="space-y-3">
+                <div class="flex items-start gap-2">
+                  <ng-icon name="heroMapPin" class="w-4 h-4 text-teal-600 mt-0.5"></ng-icon>
+                  <div class="flex-1">
+                    <p class="text-xs text-gray-500">Pickup</p>
+                    <p class="text-sm font-medium text-gray-900">{{ selectedDriver()!.currentRide!.pickup }}</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <ng-icon name="heroMapPin" class="w-4 h-4 text-red-600 mt-0.5"></ng-icon>
+                  <div class="flex-1">
+                    <p class="text-xs text-gray-500">Destination</p>
+                    <p class="text-sm font-medium text-gray-900">{{ selectedDriver()!.currentRide!.destination }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            @if (driver.currentRide) {
-              <div class="mt-3 pt-3 border-t border-gray-200">
-                <div class="flex items-center gap-2 text-xs text-gray-600 mb-1">
-                  <ng-icon name="heroMapPin" class="w-3 h-3 text-teal-600"></ng-icon>
-                  <span class="truncate">{{ driver.currentRide.pickup }}</span>
-                </div>
-                <div class="flex items-center gap-2 text-xs text-gray-600">
-                  <ng-icon name="heroMapPin" class="w-3 h-3 text-red-600"></ng-icon>
-                  <span class="truncate">{{ driver.currentRide.destination }}</span>
+            <!-- Ride Info Grid -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white border border-gray-200 rounded-lg p-3">
+                <p class="text-xs text-gray-500 mb-1">Ride ID</p>
+                <p class="text-sm font-semibold text-gray-900">#{{ selectedDriver()!.currentRide!.id }}</p>
+              </div>
+              <div class="bg-white border border-gray-200 rounded-lg p-3">
+                <p class="text-xs text-gray-500 mb-1">Passenger</p>
+                <p class="text-sm font-semibold text-gray-900 truncate">{{ selectedDriver()!.currentRide!.passengerName }}</p>
+              </div>
+              <div class="bg-white border border-gray-200 rounded-lg p-3">
+                <p class="text-xs text-gray-500 mb-1">Departure</p>
+                <p class="text-sm font-semibold text-gray-900">{{ selectedDriver()!.currentRide!.departureTime }}</p>
+              </div>
+              <div class="bg-white border border-gray-200 rounded-lg p-3">
+                <p class="text-xs text-gray-500 mb-1">Est. Arrival</p>
+                <p class="text-sm font-semibold text-gray-900">{{ selectedDriver()!.currentRide!.estimatedArrival }}</p>
+              </div>
+              <div class="bg-white border border-gray-200 rounded-lg p-3">
+                <p class="text-xs text-gray-500 mb-1">Distance</p>
+                <p class="text-sm font-semibold text-gray-900">{{ selectedDriver()!.currentRide!.distance }} km</p>
+              </div>
+              <div class="bg-white border border-gray-200 rounded-lg p-3">
+                <p class="text-xs text-gray-500 mb-1">Price</p>
+                <p class="text-sm font-semibold text-gray-900">{{ selectedDriver()!.currentRide!.price.toFixed(2) }} RSD</p>
+              </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+              <div class="flex justify-between text-sm text-gray-700 mb-2">
+                <span class="font-medium">Trip Progress</span>
+                <span class="font-semibold text-teal-600">{{ selectedDriver()!.currentRide!.progress }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  class="bg-teal-500 h-3 rounded-full transition-all duration-500"
+                  [style.width.%]="selectedDriver()!.currentRide!.progress">
                 </div>
               </div>
-            }
+              <div class="mt-3 flex items-center justify-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                  In Progress
+                </span>
+              </div>
+            </div>
+
+            <!-- Contact Buttons -->
+            <div class="grid grid-cols-2 gap-3">
+              <button class="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition">
+                <ng-icon name="heroPhone" class="w-4 h-4"></ng-icon>
+                Call Driver
+              </button>
+              <button class="flex items-center justify-center gap-2 px-4 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium transition">
+                <ng-icon name="heroChatBubbleLeft" class="w-4 h-4"></ng-icon>
+                Message
+              </button>
+            </div>
           </div>
         }
-      }
-    </div>
-
-    <!-- Selected Driver Details -->
-    @if (selectedDriver() && selectedDriver()!.currentRide) {
-      <div class="mt-6 border-t pt-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-4">Ride Details</h3>
-        
-        <div class="bg-gray-50 rounded-lg p-4 space-y-3">
-          <!-- Ride ID -->
-          <div class="flex justify-between text-sm">
-            <span class="text-gray-600">Ride ID:</span>
-            <span class="font-medium text-gray-900">#{{ selectedDriver()!.currentRide!.id }}</span>
-          </div>
-
-          <!-- Passenger -->
-          <div class="flex justify-between text-sm">
-            <span class="text-gray-600">Passenger:</span>
-            <span class="font-medium text-gray-900">{{ selectedDriver()!.currentRide!.passengerName }}</span>
-          </div>
-
-          <!-- Departure Time -->
-          <div class="flex justify-between text-sm">
-            <span class="text-gray-600">Departure:</span>
-            <span class="font-medium text-gray-900">{{ selectedDriver()!.currentRide!.departureTime }}</span>
-          </div>
-
-          <!-- Estimated Arrival -->
-          <div class="flex justify-between text-sm">
-            <span class="text-gray-600">Est. Arrival:</span>
-            <span class="font-medium text-gray-900">{{ selectedDriver()!.currentRide!.estimatedArrival }}</span>
-          </div>
-
-          <!-- Distance -->
-          <div class="flex justify-between text-sm">
-            <span class="text-gray-600">Distance:</span>
-            <span class="font-medium text-gray-900">{{ selectedDriver()!.currentRide!.distance }} km</span>
-          </div>
-
-          <!-- Price -->
-          <div class="flex justify-between text-sm">
-            <span class="text-gray-600">Price:</span>
-            <span class="font-medium text-gray-900">{{ selectedDriver()!.currentRide!.price.toFixed(2) }} RSD</span>
-          </div>
-
-          <!-- Progress -->
-          <div class="pt-3 border-t border-gray-200">
-            <div class="flex justify-between text-xs text-gray-600 mb-2">
-              <span>Progress</span>
-              <span>{{ selectedDriver()!.currentRide!.progress }}%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                class="bg-teal-500 h-2 rounded-full transition-all duration-500"
-                [style.width.%]="selectedDriver()!.currentRide!.progress">
-              </div>
-            </div>
-          </div>
-
-          <!-- Status -->
-          <div class="pt-3 border-t border-gray-200">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-              In Progress
-            </span>
-          </div>
-        </div>
-
-        <!-- Contact Buttons -->
-        <div class="mt-4 grid grid-cols-2 gap-3">
-          <button class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition">
-            <ng-icon name="heroPhone" class="w-4 h-4"></ng-icon>
-            Call Driver
-          </button>
-          <button class="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-medium transition">
-            <ng-icon name="heroChatBubbleLeft" class="w-4 h-4"></ng-icon>
-            Message
-          </button>
-        </div>
       </div>
     }
   </div>
@@ -172,7 +208,7 @@
     <div id="supervisionMap" class="w-full h-full"></div>
 
     <!-- Map Controls -->
-    <div class="absolute top-6 right-6 bg-white rounded-lg shadow-lg p-4 z-10">
+    <div class="absolute top-6 right-6 bg-white rounded-lg shadow-lg p-4 z-[500]">
       <h3 class="text-sm font-semibold text-base-900 mb-3 m-0">Map Legend</h3>
       <div class="space-y-2">
         <div class="flex items-center gap-2">
@@ -191,7 +227,7 @@
     </div>
 
     <!-- Live Update Indicator -->
-    <div class="absolute top-6 left-6 bg-white rounded-lg shadow-lg px-4 py-3 z-10">
+    <div class="absolute top-6 left-6 bg-white rounded-lg shadow-lg px-4 py-3 z-[500]">
       <div class="flex items-center gap-3">
         <div class="relative">
           <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
@@ -206,7 +242,7 @@
 
     <!-- Selected Driver Info Card (on map) -->
     @if (selectedDriver() && selectedDriver()!.currentRide) {
-      <div class="absolute bottom-6 left-6 right-6 lg:right-auto lg:max-w-md bg-white rounded-lg shadow-xl p-4 z-10">
+      <div class="absolute bottom-6 left-6 right-6 lg:right-auto lg:max-w-md bg-white rounded-lg shadow-xl p-4 z-[500]">
         <div class="flex items-start justify-between mb-3">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center">
