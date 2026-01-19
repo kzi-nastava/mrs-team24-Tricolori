@@ -35,7 +35,7 @@ interface VehiclePosition {
 }
 
 @Component({
-  selector: 'app-ride-tracking',
+  selector: 'app-passenger-ride-tracking',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
   providers: [
@@ -49,9 +49,9 @@ interface VehiclePosition {
       heroExclamationCircle
     })
   ],
-  templateUrl: './ride-tracking.html'
+  templateUrl: './passenger-ride-tracking.html'
 })
-export class RideTrackingComponent implements OnInit, OnDestroy {
+export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   reportForm: FormGroup;
   showReportForm = signal<boolean>(false);
   isSubmittingReport = signal<boolean>(false);

@@ -65,7 +65,7 @@ export const routes: Routes = [
       },
       {
         path: 'ride-tracking/:id',
-        loadComponent: () => import('./features/ride-tracking/ride-tracking').then(m => m.RideTrackingComponent)
+        loadComponent: () => import('./features/ride-tracking/passenger-ride-tracking/passenger-ride-tracking').then(m => m.PassengerRideTrackingComponent)
       },
       {
       path: 'notifications',
