@@ -1,7 +1,6 @@
-import { Component } from '@angular/core';
+import {ChangeDetectorRef, Component} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { strongPasswordValidator } from '../../../shared/passwordValidator';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,8 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { NgIcon } from '@ng-icons/core';
 
-import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LoginRequest } from '../../../shared/model/auth.model';
 
 
 @Component({
@@ -34,11 +33,11 @@ export class Login {
   errorMessage: string = '';
   successMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private cdr: ChangeDetectorRef) {}
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required, strongPasswordValidator])
+    password: new FormControl('', [Validators.required])
   });
 
   onSubmit() {
@@ -46,37 +45,22 @@ export class Login {
     this.successMessage = '';
 
     if (this.loginForm.valid) {
-      const formData = this.loginForm.value;
-      this.successMessage = 'Successfully logged in!';
 
-      console.log('Logged in:', formData.email);
-      
-      this.authService.login(formData.email!, formData.password!).subscribe({
-    next: user => {
-      this.successMessage = 'Successfully logged in!';
+      const loginRequest: LoginRequest = {
+        email: this.loginForm.value.email!,
+        password: this.loginForm.value.password!
+      };
 
-      switch (user?.role) {
-        case 'driver':
-          this.router.navigate(['/driver']);
-          break;
+      this.authService.login(loginRequest).subscribe({
+        next: () => {
+          this.successMessage = 'Success! Redirecting...';
+        },
+        error: () => {
+          this.errorMessage = 'Invalid email or password';
+          this.cdr.detectChanges();
+        }
+      });
 
-        case 'user': // passenger
-          this.router.navigate(['/passenger']);
-          break;
-
-        case 'admin':
-          this.router.navigate(['/admin']);
-          break;
-
-        default:
-          this.router.navigate(['/']);
-      }
-    },
-    error: err => {
-      this.errorMessage = err?.message ?? 'Login failed';
-    }
-  });
-      
     } else {
       this.errorMessage = this.getErrorMessage();
     }
@@ -90,16 +74,8 @@ export class Login {
       return 'Email address is required!';
     }
 
-    if (emailControl?.errors?.['email']) {
-      return 'Please enter a valid email address!';
-    }
-
     if (passwordControl?.errors?.['required']) {
       return 'Password is required!';
-    }
-
-    if (passwordControl?.errors?.['weakPassword']) {
-      return 'Password must be at least 8 characters with uppercase, lowercase and number!';
     }
 
     return 'Please fill in all fields correctly!';

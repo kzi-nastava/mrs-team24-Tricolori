@@ -9,7 +9,6 @@ import { AuthService } from '../../../../core/services/auth.service';
   imports: [
     NgIcon,
     NgClass,
-    RouterLink
   ],
   templateUrl: './actions-driver.html',
   styleUrl: './actions-driver.css',

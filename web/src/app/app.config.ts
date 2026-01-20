@@ -14,6 +14,8 @@ import {ionLocationOutline} from '@ng-icons/ionicons'
 
 import { routes } from './app.routes';
 import { provideIcons } from '@ng-icons/core';
+import {provideHttpClient, withInterceptors} from '@angular/common/http';
+import {authInterceptor} from './shared/model/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,8 +28,9 @@ export const appConfig: ApplicationConfig = {
       heroEyeSlash, heroCurrencyDollar,
       heroArrowRight, heroSquares2x2, heroTruck,
       heroUser, heroArrowUpTray, heroHome, heroPhone,
-      heroClock, heroInformationCircle, heroChevronDown, 
+      heroClock, heroInformationCircle, heroChevronDown,
       heroChevronUp, heroArrowsUpDown, ionLocationOutline
-    })
+    }),
+    provideHttpClient(withInterceptors([authInterceptor]))
   ]
 };
