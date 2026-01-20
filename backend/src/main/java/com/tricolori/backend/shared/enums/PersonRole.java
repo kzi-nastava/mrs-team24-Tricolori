@@ -1,7 +1,8 @@
 package com.tricolori.backend.shared.enums;
 
 public enum PersonRole {
-    ADMIN,
-    DRIVER,
-    PASSENGER
+    ROLE_ADMIN,
+    ROLE_DRIVER,
+    ROLE_PASSENGER
 }
+

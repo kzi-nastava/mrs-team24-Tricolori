@@ -6,16 +6,27 @@ import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.core.domain.repositories.ActivationTokenRepository;
 import com.tricolori.backend.core.domain.repositories.PassengerRepository;
 import com.tricolori.backend.core.domain.repositories.PersonRepository;
+import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.PersonDto;
 import com.tricolori.backend.infrastructure.presentation.dtos.RegisterPassengerRequest;
+import com.tricolori.backend.infrastructure.presentation.mappers.PersonMapper;
+import com.tricolori.backend.infrastructure.security.JwtUtil;
 import com.tricolori.backend.shared.enums.AccountStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final PersonRepository personRepository;
@@ -24,6 +35,24 @@ public class AuthService {
     private final CloudinaryService cloudinaryService;
     private final EmailService emailService;
     private final ActivationTokenRepository tokenRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final PersonMapper personMapper;
+
+    public LoginResponse login(LoginRequest request) {
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.email(), request.password())
+        );
+
+        log.info("iddler");
+
+        Person person = (Person) authentication.getPrincipal();
+        final String token = jwtUtil.generateToken(person.getEmail());
+        PersonDto personDto = personMapper.toDto(person);
+
+        return new LoginResponse(token, personDto);
+    }
 
     @Transactional
     public void registerPassenger(RegisterPassengerRequest request, MultipartFile pfp) {
