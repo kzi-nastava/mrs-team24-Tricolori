@@ -31,7 +31,7 @@ public class Driver extends Person {
     private Vehicle vehicle;
 
     {
-        this.setRole(PersonRole.DRIVER);
+        this.setRole(PersonRole.ROLE_DRIVER);
     }
 
 }

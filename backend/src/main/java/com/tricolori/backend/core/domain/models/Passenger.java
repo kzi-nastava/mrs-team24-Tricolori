@@ -13,7 +13,7 @@ import lombok.Setter;
 public class Passenger extends Person {
 
     {
-        this.setRole(PersonRole.PASSENGER);
+        this.setRole(PersonRole.ROLE_PASSENGER);
     }
 
 }

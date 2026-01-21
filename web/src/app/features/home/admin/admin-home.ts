@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { 
-  heroUsers, 
-  heroStar, 
+import {
+  heroUsers,
+  heroStar,
   heroMapPin,
   heroChartBar,
   heroClock
@@ -32,12 +32,11 @@ interface Statistics {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     NgIcon
   ],
-  providers: [provideIcons({ 
-    heroUsers, 
-    heroStar, 
+  providers: [provideIcons({
+    heroUsers,
+    heroStar,
     heroMapPin,
     heroChartBar,
     heroClock

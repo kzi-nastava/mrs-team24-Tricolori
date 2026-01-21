@@ -13,11 +13,11 @@
 
   <!-- Navigation && Actions based on role -->
   @switch (role) {
-    @case ('driver') {
+    @case ('ROLE_DRIVER') {
       <app-navigation-driver></app-navigation-driver>
       <app-actions-driver></app-actions-driver>
     }
-    @case ('user') {
+    @case ('ROLE_PASSENGER') {
       <app-navigation-passenger></app-navigation-passenger>
       <div class="flex items-center gap-4">
         <button (click)="onLogout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition">
@@ -25,7 +25,7 @@
         </button>
       </div>
     }
-    @case ('admin') {
+    @case ('ROLE_ADMIN') {
       <app-navigation-admin></app-navigation-admin>
       <div class="flex items-center gap-4">
         <button (click)="onLogout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition">
