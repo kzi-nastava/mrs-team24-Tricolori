@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
   heroEnvelope, heroSquares2x2, heroTruck,
   heroLockClosed, heroCurrencyDollar,
@@ -10,19 +10,18 @@ import {
   heroClock, heroInformationCircle, heroChevronDown, heroChevronUp,
   heroArrowsUpDown
 } from '@ng-icons/heroicons/outline';
-import {heroBoltSolid, heroBoltSlashSolid} from '@ng-icons/heroicons/solid'
-import {ionLocationOutline} from '@ng-icons/ionicons'
+import { heroBoltSolid, heroBoltSlashSolid } from '@ng-icons/heroicons/solid';
+import { ionLocationOutline } from '@ng-icons/ionicons';
 
 import { routes } from './app.routes';
 import { provideIcons } from '@ng-icons/core';
-import {provideHttpClient, withInterceptors} from '@angular/common/http';
-import {authInterceptor} from './shared/model/auth.interceptor';
+import { authInterceptor } from './shared/model/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withInterceptors([authInterceptor])),
     provideIcons({
       heroEnvelope, heroBoltSlashSolid,
       heroLockClosed, heroBoltSolid,
@@ -32,7 +31,6 @@ export const appConfig: ApplicationConfig = {
       heroUser, heroArrowUpTray, heroHome, heroPhone,
       heroClock, heroInformationCircle, heroChevronDown,
       heroChevronUp, heroArrowsUpDown, ionLocationOutline
-    }),
-    provideHttpClient(withInterceptors([authInterceptor]))
+    })
   ]
 };
