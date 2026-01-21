@@ -18,7 +18,7 @@ export class AuthService {
   public currentPerson$ = this.currentPersonSubject.asObservable();
 
   constructor() {
-    const storedUser = localStorage.getItem('currentUser');
+    const storedUser = localStorage.getItem('person_data');
     if (storedUser) {
       this.currentPersonSubject.next(JSON.parse(storedUser));
     }
