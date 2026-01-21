@@ -1,6 +1,7 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, inject, OnInit, output } from '@angular/core';
 import { FavoriteRoute } from '../../../model/route';
-import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogRef, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FavoriteRoutesService } from '../../../../core/services/favorite-routes.service';
 
 @Component({
   selector: 'app-favorite-route-selector',
@@ -11,48 +12,19 @@ import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
   styleUrl: './favorite-route-selector.css',
 })
 
-export class FavoriteRouteSelector {
+export class FavoriteRouteSelector implements OnInit {
   private dialogRef = inject(MatDialogRef<FavoriteRouteSelector>);
+  private favRouteService = inject(FavoriteRoutesService);
+  private data_ = inject(MAT_DIALOG_DATA);
 
   selectedRoute = output<FavoriteRoute>();
 
-  favoriteRoutes: FavoriteRoute[] = [
-    {
-      title: 'Work - Home',
-      from: 'Bulevar kralja Petra 3',
-      stops: [
-        'A',
-        'B',
-        'C',
-        'F',
-        'K'
-      ],
-      to: 'Laze Telečkog 13',
-    },
-    {
-      title: 'Gym',
-      from: 'Cara Dušana 10',
-      stops: [
-        'G'
-      ],
-      to: 'Bulevar Oslobođenja 120',
-    },
-    {
-      title: 'University',
-      from: 'Studentska 5',
-      to: 'Zmaj Jovina 22',
-    },
-    {
-      title: 'University',
-      from: 'Studentska 5',
-      to: 'Zmaj Jovina 22',
-    },
-    {
-      title: 'University',
-      from: 'Studentska 5',
-      to: 'Zmaj Jovina 22',
-    }
-  ];
+  favoriteRoutes = this.favRouteService.favoriteRoutes;
+
+  ngOnInit(): void {
+      const id = this.data_.userId;
+      this.favRouteService.getFavoriteRoutes(id);
+  }
 
   selectRoute(route: FavoriteRoute) {
     this.selectedRoute.emit(route);
