@@ -8,6 +8,13 @@
     <!-- Subtitle -->
     <p class="text-gray-600 mb-6">View all your completed rides and details</p>
     
+    <!-- Error Message -->
+    @if (errorMessage) {
+      <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+        {{ errorMessage }}
+      </div>
+    }
+    
     <!-- Filter by Date Section -->
     <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
       <h3 class="text-base-800 font-medium mb-4 text-lg">Filter by Date:</h3>
@@ -18,7 +25,8 @@
           <input 
             type="date" 
             [(ngModel)]="startDate"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent">
+            [disabled]="isLoading"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed">
         </div>
         
         <div class="flex-1">
@@ -26,13 +34,15 @@
           <input 
             type="date" 
             [(ngModel)]="endDate"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent">
+            [disabled]="isLoading"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed">
         </div>
         
         <button 
           (click)="filterByDate()"
-          class="bg-[#00acc1] hover:bg-[#008c9e] text-white px-8 py-3 rounded-lg font-medium transition">
-          Filter
+          [disabled]="isLoading"
+          class="bg-[#00acc1] hover:bg-[#008c9e] text-white px-8 py-3 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ isLoading ? 'Loading...' : 'Filter' }}
         </button>
       </div>
     </div>
@@ -50,46 +60,56 @@
         <div class="col-span-2">Actions</div>
       </div>
       
+      <!-- Loading State -->
+      @if (isLoading) {
+        <div class="px-6 py-12 text-center">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00acc1]"></div>
+          <p class="mt-4 text-gray-500">Loading ride history...</p>
+        </div>
+      }
+      
       <!-- Table Rows -->
-      <div class="divide-y divide-gray-200">
-        
-        @for (ride of filteredRides; track ride.id) {
-          <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
-            <div class="col-span-3 text-sm text-gray-900">
-              {{ ride.route }}
+      @else {
+        <div class="divide-y divide-gray-200">
+          
+          @for (ride of filteredRides; track ride.id) {
+            <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
+              <div class="col-span-3 text-sm text-gray-900">
+                {{ ride.route }}
+              </div>
+              <div class="col-span-2 text-sm text-gray-600">
+                {{ ride.startDate }}
+              </div>
+              <div class="col-span-2 text-sm text-gray-600">
+                {{ ride.endDate }}
+              </div>
+              <div class="col-span-1 text-sm text-gray-900 font-medium">
+                €{{ ride.price.toFixed(2) }}
+              </div>
+              <div class="col-span-2">
+                <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ' + getStatusClass(ride.status)">
+                  {{ ride.status }}
+                </span>
+              </div>
+              <div class="col-span-2">
+                <button 
+                  (click)="viewRideDetails(ride.id)"
+                  class="inline-flex items-center gap-2 text-[#00acc1] hover:text-[#008c9e] text-sm font-medium transition">
+                  <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
+                  View
+                </button>
+              </div>
             </div>
-            <div class="col-span-2 text-sm text-gray-600">
-              {{ ride.startDate }}
+          }
+          
+          @if (filteredRides.length === 0 && !isLoading) {
+            <div class="px-6 py-12 text-center text-gray-500">
+              No rides found matching your criteria.
             </div>
-            <div class="col-span-2 text-sm text-gray-600">
-              {{ ride.endDate }}
-            </div>
-            <div class="col-span-1 text-sm text-gray-900 font-medium">
-              €{{ ride.price.toFixed(2) }}
-            </div>
-            <div class="col-span-2">
-              <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ' + getStatusClass(ride.status)">
-                {{ ride.status }}
-              </span>
-            </div>
-            <div class="col-span-2">
-              <button 
-                (click)="viewRideDetails(ride.id)"
-                class="inline-flex items-center gap-2 text-[#00acc1] hover:text-[#008c9e] text-sm font-medium transition">
-                <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
-                View
-              </button>
-            </div>
-          </div>
-        }
-        
-        @if (filteredRides.length === 0) {
-          <div class="px-6 py-12 text-center text-gray-500">
-            No rides found matching your criteria.
-          </div>
-        }
-        
-      </div>
+          }
+          
+        </div>
+      }
       
     </div>
     
@@ -97,7 +117,7 @@
   
   <!-- Modal Popup -->
   @if (selectedRide) {
-  <div class="fixed inset-0 bg-zinc-900/35 flex items-center justify-center z-50 p-4">
+    <div class="fixed inset-0 bg-zinc-900/35 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         
         <!-- Modal Header -->
@@ -161,16 +181,20 @@
           </div>
           
           <!-- Distance -->
-          <div>
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Distance</h3>
-            <p class="text-gray-900">{{ selectedRide.distance }} km</p>
-          </div>
+          @if (selectedRide.distance > 0) {
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Distance</h3>
+              <p class="text-gray-900">{{ selectedRide.distance }} km</p>
+            </div>
+          }
           
           <!-- Payment Method -->
-          <div>
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Payment Method</h3>
-            <p class="text-gray-900">{{ selectedRide.paymentMethod }}</p>
-          </div>
+          @if (selectedRide.paymentMethod !== 'N/A') {
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Payment Method</h3>
+              <p class="text-gray-900">{{ selectedRide.paymentMethod }}</p>
+            </div>
+          }
           
           <!-- Notes -->
           @if (selectedRide.notes) {

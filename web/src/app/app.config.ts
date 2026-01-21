@@ -1,5 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {
   heroEnvelope, heroSquares2x2, heroTruck,
   heroLockClosed, heroCurrencyDollar,
@@ -19,6 +20,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    provideHttpClient(withInterceptorsFromDi()),
     provideIcons({
       heroEnvelope, heroBoltSlashSolid,
       heroLockClosed, heroBoltSolid,
