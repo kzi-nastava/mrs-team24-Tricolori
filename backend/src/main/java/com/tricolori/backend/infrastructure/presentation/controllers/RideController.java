@@ -1,6 +1,8 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
+import com.tricolori.backend.core.application.services.RideService;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
+import com.tricolori.backend.infrastructure.security.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -8,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -17,6 +20,8 @@ import java.util.List;
 @RequestMapping("/api/v1/rides")
 @RequiredArgsConstructor
 public class RideController {
+
+    private final RideService rideService;
 
     @PostMapping("/estimate")
     public ResponseEntity<RideEstimationResponse> estimateRide(@Valid @RequestBody RideEstimationRequest request) {
@@ -44,7 +49,7 @@ public class RideController {
 
         return ResponseEntity.ok().build();
     }
-      
+
     @PutMapping("/{id}/stop")
     public ResponseEntity<StopRideResponse> stopRide(@Valid @RequestBody StopRideRequest request, @PathVariable Long id) {
 
@@ -87,21 +92,32 @@ public class RideController {
     @GetMapping("/history/driver")
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<List<RideHistoryResponse>> getDriverHistory(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
+        List<RideHistoryResponse> history = rideService.getDriverHistory(
+                userPrincipal.getId(),
+                startDate,
+                endDate,
+                sortBy,
+                sortDirection
+        );
 
-        return ResponseEntity.ok(List.of());
+        return ResponseEntity.ok(history);
     }
 
     // detailed view for specific ride
     @GetMapping("/{id}/details/driver")
     @PreAuthorize("hasRole('DRIVER')")
-    public ResponseEntity<RideDetailResponse> getDriverRideDetail(@PathVariable Long id) {
-
-        return ResponseEntity.ok().build();
+    public ResponseEntity<RideDetailResponse> getDriverRideDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        RideDetailResponse detail = rideService.getDriverRideDetail(id, userPrincipal.getId());
+        return ResponseEntity.ok(detail);
     }
 
     // report driver inconsistency (passenger during ride)

@@ -1,20 +1,27 @@
 package com.tricolori.backend.infrastructure.presentation.dtos;
 
-import com.tricolori.backend.core.domain.models.Address;
-import com.tricolori.backend.shared.enums.RideStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-public record RideHistoryResponse(
-        Long rideId,
-
-        LocalDateTime startTime,
-        LocalDateTime endTime,
-
-        Address pickupAddress,
-        Address destinationAddress,
-
-        Double price,
-
-        RideStatus rideStatus
-) {}
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class RideHistoryResponse {
+    private Long id;
+    private String passengerName;
+    private String pickupAddress;
+    private String dropoffAddress;
+    private String status;
+    private Double totalPrice;
+    private Double distance;
+    private Integer duration;
+    private LocalDateTime createdAt;
+    private LocalDateTime completedAt;
+    private Integer driverRating;
+    private Integer vehicleRating;
+}
