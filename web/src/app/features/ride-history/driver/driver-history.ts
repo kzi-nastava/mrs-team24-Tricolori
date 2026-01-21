@@ -21,6 +21,8 @@ interface Ride {
   distance: number;
   paymentMethod: string;
   notes?: string;
+  driverRating?: number | null;
+  vehicleRating?: number | null;
 }
 
 @Component({
@@ -82,42 +84,56 @@ export class DriverHistory implements OnInit {
    */
   private mapBackendRidesToUI(backendRides: RideHistoryResponse[]): Ride[] {
     return backendRides.map(ride => {
-      const startDateTime = new Date(ride.startTime);
-      const endDateTime = new Date(ride.endTime);
+      const createdDateTime = new Date(ride.createdAt);
+      const completedDateTime = ride.completedAt ? new Date(ride.completedAt) : null;
       
-      // Calculate duration
-      const durationMs = endDateTime.getTime() - startDateTime.getTime();
-      const hours = Math.floor(durationMs / (1000 * 60 * 60));
-      const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-      const duration = `${hours}h ${minutes}min`;
+      // Calculate duration from duration field (in seconds)
+      const duration = this.formatDuration(ride.duration);
 
       // Format route from addresses
-      const route = this.formatRoute(ride.pickupAddress, ride.destinationAddress);
+      const route = this.formatRoute(ride.pickupAddress, ride.dropoffAddress);
 
       return {
-        id: ride.rideId,
+        id: ride.id,
         route: route,
-        startDate: startDateTime.toISOString().split('T')[0],
-        endDate: endDateTime.toISOString().split('T')[0],
-        price: ride.price,
-        status: this.mapRideStatus(ride.rideStatus),
-        startTime: startDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        endTime: endDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        startDate: createdDateTime.toISOString().split('T')[0],
+        endDate: completedDateTime ? completedDateTime.toISOString().split('T')[0] : createdDateTime.toISOString().split('T')[0],
+        price: ride.totalPrice,
+        status: this.mapRideStatus(ride.status),
+        startTime: createdDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        endTime: completedDateTime ? completedDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
         duration: duration,
-        passengerName: 'N/A', // Will be loaded in detail view
-        passengerPhone: 'N/A',
-        distance: 0, // Will be loaded in detail view
-        paymentMethod: 'N/A'
+        passengerName: ride.passengerName,
+        passengerPhone: 'N/A', // Will be loaded in detail view
+        distance: ride.distance,
+        paymentMethod: 'N/A', // Not available in history response
+        driverRating: ride.driverRating,
+        vehicleRating: ride.vehicleRating
       };
     });
   }
 
   /**
+   * Format duration from seconds to readable string
+   */
+  private formatDuration(seconds: number | null): string {
+    if (!seconds) return 'N/A';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}min`;
+    }
+    return `${minutes}min`;
+  }
+
+  /**
    * Format route from pickup and destination addresses
    */
-  private formatRoute(pickup: any, destination: any): string {
-    const pickupStr = pickup?.street || pickup?.city || 'Unknown';
-    const destStr = destination?.street || destination?.city || 'Unknown';
+  private formatRoute(pickup: string, destination: string): string {
+    const pickupStr = pickup || 'Unknown';
+    const destStr = destination || 'Unknown';
     return `${pickupStr} → ${destStr}`;
   }
 
@@ -170,29 +186,30 @@ export class DriverHistory implements OnInit {
    * Map detailed backend response to UI format
    */
   private mapDetailToUI(detail: RideDetailResponse): Ride {
-    const startDateTime = new Date(detail.startTime);
-    const endDateTime = new Date(detail.endTime);
+    const createdDateTime = new Date(detail.createdAt);
+    const startedDateTime = detail.startedAt ? new Date(detail.startedAt) : null;
+    const completedDateTime = detail.completedAt ? new Date(detail.completedAt) : null;
     
-    const durationMs = endDateTime.getTime() - startDateTime.getTime();
-    const hours = Math.floor(durationMs / (1000 * 60 * 60));
-    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-    const duration = detail.duration || `${hours}h ${minutes}min`;
+    // Use the duration from backend (in seconds)
+    const duration = this.formatDuration(detail.duration);
 
     return {
-      id: detail.rideId,
-      route: this.formatRoute(detail.pickupAddress, detail.destinationAddress),
-      startDate: startDateTime.toISOString().split('T')[0],
-      endDate: endDateTime.toISOString().split('T')[0],
-      price: detail.price,
-      status: this.mapRideStatus(detail.rideStatus),
-      startTime: startDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      endTime: endDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      id: detail.id,
+      route: this.formatRoute(detail.pickupAddress, detail.dropoffAddress),
+      startDate: (startedDateTime || createdDateTime).toISOString().split('T')[0],
+      endDate: (completedDateTime || createdDateTime).toISOString().split('T')[0],
+      price: detail.totalPrice,
+      status: this.mapRideStatus(detail.status),
+      startTime: (startedDateTime || createdDateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      endTime: completedDateTime ? completedDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
       duration: duration,
       passengerName: detail.passengerName || 'N/A',
       passengerPhone: detail.passengerPhone || 'N/A',
       distance: detail.distance || 0,
-      paymentMethod: detail.paymentMethod || 'N/A',
-      notes: detail.notes
+      paymentMethod: 'N/A', // Not available in backend
+      notes: detail.ratingComment || undefined,
+      driverRating: detail.driverRating,
+      vehicleRating: detail.vehicleRating
     };
   }
 

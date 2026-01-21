@@ -2,40 +2,46 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Interface matching your backend DTO
-export interface Address {
-  street?: string;
-  city?: string;
-  country?: string;
-  postalCode?: string;
-  latitude?: number;
-  longitude?: number;
-}
-
+// Interfaces matching your backend DTOs
 export interface RideHistoryResponse {
-  rideId: number;
-  startTime: string;
-  endTime: string;
-  pickupAddress: Address;
-  destinationAddress: Address;
-  price: number;
-  rideStatus: 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  id: number;
+  passengerName: string;
+  pickupAddress: string;
+  dropoffAddress: string;
+  status: string;
+  totalPrice: number;
+  distance: number;
+  duration: number;
+  createdAt: string;
+  completedAt: string;
+  driverRating: number | null;
+  vehicleRating: number | null;
 }
 
 export interface RideDetailResponse {
-  rideId: number;
-  startTime: string;
-  endTime: string;
-  pickupAddress: Address;
-  destinationAddress: Address;
-  price: number;
-  rideStatus: string;
-  duration?: string;
-  passengerName?: string;
-  passengerPhone?: string;
-  distance?: number;
-  paymentMethod?: string;
-  notes?: string;
+  id: number;
+  passengerName: string;
+  passengerPhone: string;
+  driverName: string;
+  vehicleModel: string;
+  vehicleLicensePlate: string;
+  pickupAddress: string;
+  pickupLatitude: number;
+  pickupLongitude: number;
+  dropoffAddress: string;
+  dropoffLatitude: number;
+  dropoffLongitude: number;
+  status: string;
+  totalPrice: number;
+  distance: number;
+  duration: number;
+  createdAt: string;
+  acceptedAt: string;
+  startedAt: string;
+  completedAt: string;
+  driverRating: number | null;
+  vehicleRating: number | null;
+  ratingComment: string | null;
 }
 
 @Injectable({

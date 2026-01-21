@@ -53,10 +53,10 @@
       <!-- Table Header -->
       <div class="grid grid-cols-12 gap-4 bg-gray-50 px-6 py-4 border-b border-gray-200 font-medium text-sm text-gray-700">
         <div class="col-span-3">Route</div>
-        <div class="col-span-2">Start Date</div>
-        <div class="col-span-2">End Date</div>
+        <div class="col-span-2">Date</div>
         <div class="col-span-1">Price</div>
         <div class="col-span-2">Status</div>
+        <div class="col-span-2">Distance</div>
         <div class="col-span-2">Actions</div>
       </div>
       
@@ -80,9 +80,6 @@
               <div class="col-span-2 text-sm text-gray-600">
                 {{ ride.startDate }}
               </div>
-              <div class="col-span-2 text-sm text-gray-600">
-                {{ ride.endDate }}
-              </div>
               <div class="col-span-1 text-sm text-gray-900 font-medium">
                 €{{ ride.price.toFixed(2) }}
               </div>
@@ -90,6 +87,9 @@
                 <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ' + getStatusClass(ride.status)">
                   {{ ride.status }}
                 </span>
+              </div>
+              <div class="col-span-2 text-sm text-gray-600">
+                {{ ride.distance }} km
               </div>
               <div class="col-span-2">
                 <button 
@@ -142,12 +142,12 @@
           <!-- Date & Time -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Start Date</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Start</h3>
               <p class="text-gray-900">{{ selectedRide.startDate }}</p>
               <p class="text-sm text-gray-600 mt-1">{{ selectedRide.startTime }}</p>
             </div>
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">End Date</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">End</h3>
               <p class="text-gray-900">{{ selectedRide.endDate }}</p>
               <p class="text-sm text-gray-600 mt-1">{{ selectedRide.endTime }}</p>
             </div>
@@ -188,18 +188,28 @@
             </div>
           }
           
-          <!-- Payment Method -->
-          @if (selectedRide.paymentMethod !== 'N/A') {
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Payment Method</h3>
-              <p class="text-gray-900">{{ selectedRide.paymentMethod }}</p>
+          <!-- Ratings -->
+          @if (selectedRide.driverRating || selectedRide.vehicleRating) {
+            <div class="grid grid-cols-2 gap-4">
+              @if (selectedRide.driverRating) {
+                <div>
+                  <h3 class="text-sm font-medium text-gray-500 mb-2">Driver Rating</h3>
+                  <p class="text-gray-900">{{ selectedRide.driverRating }} / 5 ⭐</p>
+                </div>
+              }
+              @if (selectedRide.vehicleRating) {
+                <div>
+                  <h3 class="text-sm font-medium text-gray-500 mb-2">Vehicle Rating</h3>
+                  <p class="text-gray-900">{{ selectedRide.vehicleRating }} / 5 ⭐</p>
+                </div>
+              }
             </div>
           }
           
-          <!-- Notes -->
+          <!-- Rating Comments -->
           @if (selectedRide.notes) {
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Notes</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Passenger Feedback</h3>
               <p class="text-gray-900">{{ selectedRide.notes }}</p>
             </div>
           }
@@ -212,10 +222,6 @@
             (click)="closeModal()"
             class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
             Close
-          </button>
-          <button 
-            class="px-6 py-2 bg-[#00acc1] hover:bg-[#008c9e] text-white rounded-lg transition">
-            Download Receipt
           </button>
         </div>
         
