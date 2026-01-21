@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { RideTrackingComponent } from './ride-tracking';
+import { PassengerRideTrackingComponent } from './passenger-ride-tracking';
 
-describe('RideTrackingComponent', () => {
-  let component: RideTrackingComponent;
-  let fixture: ComponentFixture<RideTrackingComponent>;
+describe('PassengerRideTrackingComponent', () => {
+  let component: PassengerRideTrackingComponent;
+  let fixture: ComponentFixture<PassengerRideTrackingComponent>;
   let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RideTrackingComponent, ReactiveFormsModule],
+      imports: [PassengerRideTrackingComponent, ReactiveFormsModule],
       providers: [
         {
           provide: Router,
@@ -21,7 +21,7 @@ describe('RideTrackingComponent', () => {
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(RideTrackingComponent);
+    fixture = TestBed.createComponent(PassengerRideTrackingComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
     fixture.detectChanges();

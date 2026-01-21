@@ -32,6 +32,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/ride-history/driver/driver-history').then(m => m.DriverHistory)
       },
       {
+        path: 'ride-tracking/:id',
+        loadComponent: () => import('./features/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent)
+      },
+      {
         path: 'support',
         loadComponent: () => import('./features/support-chat/driver/driver-support').then(m => m.DriverSupport)
       },
@@ -65,7 +69,7 @@ export const routes: Routes = [
       },
       {
         path: 'ride-tracking/:id',
-        loadComponent: () => import('./features/ride-tracking/ride-tracking').then(m => m.RideTrackingComponent)
+        loadComponent: () => import('./features/ride-tracking/passenger/passenger-ride-tracking').then(m => m.PassengerRideTrackingComponent)
       },
       {
       path: 'notifications',
