@@ -38,6 +38,7 @@ public class SecurityConfig {
                         s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a ->
                         a.requestMatchers("/api/v1/auth/**").permitAll()
+                         .requestMatchers("/api/v1/vehicles/active").permitAll()
                                 .anyRequest().authenticated()
                 );
         
