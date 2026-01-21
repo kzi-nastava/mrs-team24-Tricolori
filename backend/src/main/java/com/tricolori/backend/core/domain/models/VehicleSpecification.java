@@ -30,4 +30,7 @@ public class VehicleSpecification {
     @Column(name = "pet_friendly")
     private boolean petFriendly;
 
+    @Column(length = 150)
+    private String model;
+
 }
