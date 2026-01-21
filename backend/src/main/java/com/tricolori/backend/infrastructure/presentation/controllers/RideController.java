@@ -1,8 +1,10 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
-import com.tricolori.backend.core.application.services.RideService;
+import com.tricolori.backend.core.services.AuthService;
+import com.tricolori.backend.core.services.RideService;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
-import com.tricolori.backend.infrastructure.security.UserPrincipal;
+import com.tricolori.backend.infrastructure.security.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,7 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,16 +25,15 @@ import java.util.List;
 public class RideController {
 
     private final RideService rideService;
+    private final AuthService authenticationService;
 
     @PostMapping("/estimate")
     public ResponseEntity<RideEstimationResponse> estimateRide(@Valid @RequestBody RideEstimationRequest request) {
-
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelRide(@Valid @RequestBody CancelRideRequest request, @PathVariable Long id) {
-
         return ResponseEntity.ok().build();
     }
 
@@ -40,38 +42,30 @@ public class RideController {
             @RequestBody RideHistoryFilter filter,
             Pageable pageable
     ) {
-
         return ResponseEntity.ok(Page.empty());
     }
 
     @GetMapping("/details/{id}")
     public ResponseEntity<RideDetailResponse> getRideDetails(@PathVariable Long id) {
-
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/stop")
     public ResponseEntity<StopRideResponse> stopRide(@Valid @RequestBody StopRideRequest request, @PathVariable Long id) {
-
         return ResponseEntity.ok().build();
     }
 
-    // track ride in real time for passengers
     @GetMapping("/{id}/track")
     public ResponseEntity<RideTrackingResponse> trackRide(@PathVariable Long id) {
-
         return ResponseEntity.ok().build();
     }
 
-    // finish the ride (driver)
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<Void> completeRide(@PathVariable Long id) {
-
         return ResponseEntity.ok().build();
     }
 
-    // leave a rating for driver and vehicle
     @PostMapping("/{id}/rate")
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<Void> rateRide(
@@ -81,10 +75,8 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    // get ride rating status - because of the deadline
     @GetMapping("/{id}/rating-status")
     public ResponseEntity<RideReviewResponse> getRatingStatus(@PathVariable Long id) {
-
         return ResponseEntity.ok().build();
     }
 
@@ -92,14 +84,16 @@ public class RideController {
     @GetMapping("/history/driver")
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<List<RideHistoryResponse>> getDriverHistory(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
+        // Get authenticated user's ID
+        Long driverId = authenticationService.getAuthenticatedUserId();
+
         List<RideHistoryResponse> history = rideService.getDriverHistory(
-                userPrincipal.getId(),
+                driverId,
                 startDate,
                 endDate,
                 sortBy,
@@ -112,15 +106,12 @@ public class RideController {
     // detailed view for specific ride
     @GetMapping("/{id}/details/driver")
     @PreAuthorize("hasRole('DRIVER')")
-    public ResponseEntity<RideDetailResponse> getDriverRideDetail(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserPrincipal userPrincipal
-    ) {
-        RideDetailResponse detail = rideService.getDriverRideDetail(id, userPrincipal.getId());
+    public ResponseEntity<RideDetailResponse> getDriverRideDetail(@PathVariable Long id) {
+        Long driverId = authenticationService.getAuthenticatedUserId();
+        RideDetailResponse detail = rideService.getDriverRideDetail(id, driverId);
         return ResponseEntity.ok(detail);
     }
 
-    // report driver inconsistency (passenger during ride)
     @PostMapping("/{id}/report-inconsistency")
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<Void> reportInconsistency(
@@ -130,22 +121,17 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    // current ride status so admin can monitor
     @GetMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RideStatusResponse> getRideStatus(@PathVariable Long id) {
-
         return ResponseEntity.ok().build();
     }
 
-    // find current driver's ride (for admin)
     @GetMapping("/current/driver/{driverId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RideStatusResponse> getCurrentRideByDriver(@PathVariable Long driverId) {
-
         return ResponseEntity.ok().build();
     }
-
 
     @PostMapping("/order")
     public ResponseEntity<Void> order(@RequestBody OrderRequest request) {
