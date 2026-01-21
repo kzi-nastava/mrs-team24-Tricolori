@@ -27,18 +27,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
-        String token = "dummy-jwt-token";
-        LoginResponse response = new LoginResponse(token);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/register-driver")
     public ResponseEntity<Void> registerDriver(@Valid @RequestBody RegisterDriverRequest request) {
-      
+
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-      
+
     @PostMapping(path = "/register-passenger", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> register(
             @Valid @RequestPart("data") RegisterPassengerRequest request,
@@ -62,7 +59,7 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
-  
+
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
 

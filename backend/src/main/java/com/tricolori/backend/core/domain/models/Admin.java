@@ -15,7 +15,7 @@ import lombok.Setter;
 public class Admin extends Person {
 
     {
-        this.setRole(PersonRole.ADMIN);
+        this.setRole(PersonRole.ROLE_ADMIN);
     }
 
 }
