@@ -45,6 +45,7 @@ export class HomePassenger {
     const dialogRef = this.routesDialog.open(FavoriteRouteSelector, {
       width: '100%',
       maxWidth: '32rem',
+      data: {userId: 2},
       panelClass: 'custom-modal',
       backdropClass: 'custom-backdrop',
       autoFocus: false,
@@ -54,9 +55,9 @@ export class HomePassenger {
     dialogRef.afterClosed().subscribe((result: FavoriteRoute | undefined) => {
       if (result) {
         this.currentRoute.set({
-          from: result.from,
-          stops: result.stops,
-          to: result.to
+          pickup: result.pickup,
+          destination: result.destination,
+          stops: result.stops
         });
       }
     });

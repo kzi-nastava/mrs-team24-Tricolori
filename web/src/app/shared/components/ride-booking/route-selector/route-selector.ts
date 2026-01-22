@@ -1,7 +1,7 @@
 import { Component, effect, inject, input } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FavoriteRouteSelector } from '../favorite-route-selector/favorite-route-selector';
-import { Route } from '../../../model/route';
+import { Address, Route } from '../../../model/route';
 
 @Component({
   selector: 'app-route-selector',
@@ -29,8 +29,8 @@ export class RouteSelector {
       const route = this.selectedRoute();
       if (route) {
         this.routeForm.patchValue({
-          pickup: route.from,
-          destination: route.to
+          pickup: route.pickup.address,
+          destination: route.destination.address
         })
 
         this.populateStops(route.stops || []);
@@ -52,12 +52,12 @@ export class RouteSelector {
     this.stops.removeAt(index);
   }
 
-  populateStops(stopsData: string[]) {
+  populateStops(stopsData: Address[]) {
     // Empty any existing stop:
     this.stops.clear();
     
     stopsData.forEach(stopValue => {
-      this.stops.push(this.fb.control(stopValue, Validators.required));
+      this.stops.push(this.fb.control(stopValue.address, Validators.required));
     });
   }
 }

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,6 +23,8 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+// I saw this on presentation slide 30
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig {
 
     private final AuthEntryPointJwt unauthorizedHandler;
@@ -30,16 +33,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(e ->
-                        e.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(s ->
-                        s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(a ->
-                        a.requestMatchers("/api/v1/auth/**", "/error").permitAll()
-                                .anyRequest().authenticated()
-                );
+
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .exceptionHandling(e ->
+                    e.authenticationEntryPoint(unauthorizedHandler))
+            .sessionManagement(s ->
+                    s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(a -> a
+                .requestMatchers("/api/v1/auth/**", "/error").permitAll()
+                // To access any favorite-route endpoint, we must be Passenger
+                // This can also be done by adding @PreAuthorize("hasRole('ROLE_PASSENGER')")
+                // in FavoriteRoute controller... 
+                .requestMatchers("/api/v1/favorite-routes/**").hasRole("PASSENGER")
+                .anyRequest().permitAll() // replace this last permitAll with authenticated()
+            );
+            // TODO: maybe add session stateless to disable cookies, se presentations slide 19...
         
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
