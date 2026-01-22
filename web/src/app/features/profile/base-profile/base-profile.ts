@@ -27,7 +27,7 @@ export class BaseProfile implements OnInit {
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       homeAddress: ['', [Validators.required]],
-      phoneNumber: ['', [Validators.required /*, Custom phone validation*/]],
+      phoneNumber: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       pfp: ['']
     });
@@ -38,10 +38,6 @@ export class BaseProfile implements OnInit {
   }
 
   ngOnInit(): void {
-      this.loadProfile();
-  }
-
-  loadProfile() {
     this.profileService.getMyProfile().subscribe((profile: ProfileResponse) => {
       this.userProfile.set(profile);
       this.personalForm.patchValue(profile, {emitEvent: false});
@@ -49,7 +45,7 @@ export class BaseProfile implements OnInit {
     });
   }
 
-  get pfpUrl() { return this.personalForm.get('pfpUrl')?.value || 'assets/icons/logo.svg'; }
+  get pfp() { return this.personalForm.get('pfp')?.value || 'assets/icons/logo.svg'; }
 
   private checkChanges() {
     const original = this.userProfile(); 
@@ -72,6 +68,19 @@ export class BaseProfile implements OnInit {
   }
 
   updateProfile() {
-    console.log("AAAA");
+    if (this.personalForm.invalid || !this.hasChanges()) return;
+
+    this.profileService.updateProfile(this.personalForm.value).subscribe({
+      next: (updatedProfile) => {
+        console.log("Stiglo");
+        console.log(updatedProfile)
+        this.userProfile.set(updatedProfile);
+        this.personalForm.patchValue(updatedProfile, {emitEvent: false});
+        this.hasChanges.set(false);
+      },
+      error: (err) => {
+        console.error("Error: ", err);
+      },
+    })
   }
 }
