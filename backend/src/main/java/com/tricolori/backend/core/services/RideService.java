@@ -30,7 +30,7 @@ public class RideService {
             String sortBy,
             String sortDirection
     ) {
-        List<Ride> rides = rideRepository.findDriverRideHistory(driverId, startDate, endDate);
+        List<Ride> rides = rideRepository.findAllByDriverId(driverId);
 
         // Convert to DTOs
         List<RideHistoryResponse> responses = rides.stream()
