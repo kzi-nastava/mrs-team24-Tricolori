@@ -55,7 +55,7 @@ public class TestRideService {
         when(rideRepository.findById(1L)).thenReturn(Optional.of(mockRide));
 
         assertThrows(CancelRideExpiredException.class, () -> {
-            rideService.cancelRide(1L, "driver@test.com", new CancelRideRequest("Reason"));
+            rideService.cancelRide(1L, "passenger@test.com", new CancelRideRequest("Reason"));
         });
 
         verify(rideRepository, never()).save(any());
