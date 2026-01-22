@@ -46,6 +46,7 @@ public class WebSecurityConfiguration {
                 // This can also be done by adding @PreAuthorize("hasRole('ROLE_PASSENGER')")
                 // in FavoriteRoute controller... 
                 .requestMatchers("/api/v1/favorite-routes/**").hasRole("PASSENGER")
+                .requestMatchers("/api/v1/profiles/**").authenticated()
                 .anyRequest().permitAll() // replace this last permitAll with authenticated()
             );
             // TODO: maybe add session stateless to disable cookies, se presentations slide 19...
