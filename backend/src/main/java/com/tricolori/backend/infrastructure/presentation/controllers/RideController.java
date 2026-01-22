@@ -40,6 +40,19 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}/panic")
+    public ResponseEntity<Void> panicRide(
+            @PathVariable Long id,
+            @Valid @RequestBody PanicRideRequest request,
+            Authentication authentication
+    ) {
+
+        String personEmail = authentication.getName();
+        rideService.panicRide(id, personEmail, request);
+
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/history")
     public ResponseEntity<Page<RideHistoryResponse>> getAdminRideHistory(
             @RequestBody RideHistoryFilter filter,
