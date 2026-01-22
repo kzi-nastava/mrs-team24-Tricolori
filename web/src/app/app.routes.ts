@@ -46,7 +46,7 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
+        loadComponent: () => import('./features/profile/driver-profile/driver-profile').then(m => m.DriverProfile)
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
@@ -83,7 +83,7 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
+        loadComponent: () => import('./features/profile/base-profile/base-profile').then(m => m.BaseProfile)
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
@@ -108,7 +108,7 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
+        loadComponent: () => import('./features/profile/base-profile/base-profile').then(m => m.BaseProfile)
       },
       {
         path: 'history',
