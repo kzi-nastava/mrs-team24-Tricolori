@@ -8,6 +8,7 @@ import com.tricolori.backend.core.domain.repositories.RideRepository;
 import com.tricolori.backend.infrastructure.presentation.dtos.RideDetailResponse;
 import com.tricolori.backend.infrastructure.presentation.dtos.RideHistoryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,6 @@ import com.tricolori.backend.core.exceptions.CancelRideExpiredException;
 import com.tricolori.backend.core.exceptions.RideNotFoundException;
 import com.tricolori.backend.infrastructure.presentation.dtos.CancelRideRequest;
 import com.tricolori.backend.shared.enums.RideStatus;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -246,7 +246,7 @@ public class RideService {
                 .sorted(comparator)
                 .collect(Collectors.toList());
     }
-}
+
     @Transactional
     public void cancelRide(Long rideId, String personEmail, CancelRideRequest request) {
 
