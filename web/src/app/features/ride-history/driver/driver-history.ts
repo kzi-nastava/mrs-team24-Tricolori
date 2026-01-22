@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark } from '@ng-icons/heroicons/outline';
 import { RideService, RideHistoryResponse, RideDetailResponse } from '../../../core/services/ride.service';
@@ -31,8 +30,7 @@ interface Ride {
   imports: [
     CommonModule,
     FormsModule,
-    NgIconComponent,
-    HttpClientModule
+    NgIconComponent 
   ],
   providers: [
     provideIcons({ heroEye, heroXMark }),

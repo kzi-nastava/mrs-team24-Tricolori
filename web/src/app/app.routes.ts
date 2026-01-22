@@ -3,6 +3,7 @@ import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { UnregisteredHome } from './features/home/unregistered/unregistered-home';
 import {DriverRideAssignment} from './shared/components/driver-ride-assignment/driver-ride-assignment';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // Public routes
@@ -29,7 +30,9 @@ export const routes: Routes = [
       },
       {
         path: 'history',
-        loadComponent: () => import('./features/ride-history/driver/driver-history').then(m => m.DriverHistory)
+        loadComponent: () => import('./features/ride-history/driver/driver-history').then(m => m.DriverHistory),
+        canActivate: [authGuard]
+
       },
       {
         path: 'ride-tracking/:id',

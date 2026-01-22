@@ -12,16 +12,15 @@ import {
 } from '@ng-icons/heroicons/outline';
 import { heroBoltSolid, heroBoltSlashSolid } from '@ng-icons/heroicons/solid';
 import { ionLocationOutline } from '@ng-icons/ionicons';
-
 import { routes } from './app.routes';
 import { provideIcons } from '@ng-icons/core';
-import { authInterceptor } from './shared/model/auth.interceptor';
+import { authInterceptor } from './shared/model/auth.interceptor'; 
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor])), // Use imported interceptor
     provideIcons({
       heroEnvelope, heroBoltSlashSolid,
       heroLockClosed, heroBoltSolid,

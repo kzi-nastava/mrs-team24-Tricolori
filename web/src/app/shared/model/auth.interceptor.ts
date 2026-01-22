@@ -1,20 +1,24 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('access_token');
+  if (req.url.includes('/api/v1/auth/')) {
+    console.log('🔓 Skipping auth for:', req.url);
+    return next(req);
+  }
 
-  console.log('🔍 Interceptor - Token exists:', !!token);
-  console.log('🔍 Interceptor - Request URL:', req.url);
+  const token = localStorage.getItem('access_token');
+  
+  console.log('🚀 Interceptor for:', req.url);
+  console.log('🔑 Token found:', token ? 'YES' : 'NO');
 
   if (token) {
+    console.log('✅ Adding Authorization header');
     const authReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
+      setHeaders: { Authorization: `Bearer ${token}` }
     });
     return next(authReq);
   }
 
-  console.log('❌ No token - sending request without auth');
+  console.warn('⚠️ No token found');
   return next(req);
 };
