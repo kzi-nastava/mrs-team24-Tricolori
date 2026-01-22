@@ -2,7 +2,7 @@ package com.tricolori.backend.core.services;
 
 import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.core.domain.repositories.RideRepository;
-import com.tricolori.backend.core.exceptions.CancelRideExpired;
+import com.tricolori.backend.core.exceptions.CancelRideExpiredException;
 import com.tricolori.backend.core.exceptions.RideNotFoundException;
 import com.tricolori.backend.infrastructure.presentation.dtos.CancelRideRequest;
 import com.tricolori.backend.shared.enums.RideStatus;
@@ -25,10 +25,7 @@ public class RideService {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RideNotFoundException("Ride not found."));
 
-        LocalDateTime timeNow = LocalDateTime.now();
-        if (timeNow.isAfter(ride.getStartTime().minusMinutes(10))) {
-            throw new CancelRideExpired("Ride cancel option expired. Ride starts within 10 minutes.");
-        }
+
 
         if (ride.getDriver().getEmail().equals(personEmail)) {
             if (request.reason().isBlank()) {
@@ -37,6 +34,10 @@ public class RideService {
             ride.setStatus(RideStatus.CANCELLED_BY_DRIVER);
 
         } else if (ride.containsPassengerWithEmail(personEmail)) {
+            LocalDateTime timeNow = LocalDateTime.now();
+            if (timeNow.isAfter(ride.getStartTime().minusMinutes(10))) {
+                throw new CancelRideExpiredException("Ride cancel option expired. Ride starts within 10 minutes.");
+            }
             ride.setStatus(RideStatus.CANCELLED_BY_PASSENGER);
 
         } else {

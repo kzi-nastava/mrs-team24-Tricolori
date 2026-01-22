@@ -4,7 +4,7 @@ import com.tricolori.backend.core.domain.models.Driver;
 import com.tricolori.backend.core.domain.models.Passenger;
 import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.core.domain.repositories.RideRepository;
-import com.tricolori.backend.core.exceptions.CancelRideExpired;
+import com.tricolori.backend.core.exceptions.CancelRideExpiredException;
 import com.tricolori.backend.core.services.RideService;
 import com.tricolori.backend.infrastructure.presentation.dtos.CancelRideRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ public class TestRideService {
 
         when(rideRepository.findById(1L)).thenReturn(Optional.of(mockRide));
 
-        assertThrows(CancelRideExpired.class, () -> {
+        assertThrows(CancelRideExpiredException.class, () -> {
             rideService.cancelRide(1L, "driver@test.com", new CancelRideRequest("Reason"));
         });
 

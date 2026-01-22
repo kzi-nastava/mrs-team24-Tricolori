@@ -1,7 +1,7 @@
 package com.tricolori.backend.core.exceptions;
 
-public class CancelRideExpired extends RuntimeException {
-    public CancelRideExpired(String message) {
+public class CancelRideExpiredException extends RuntimeException {
+    public CancelRideExpiredException(String message) {
         super(message);
     }
 }
