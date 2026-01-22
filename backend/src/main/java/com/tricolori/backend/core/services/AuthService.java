@@ -21,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -102,6 +103,47 @@ public class AuthService {
 
         token.setUsed(true);
         token.setActivatedAt(java.time.LocalDateTime.now());
+    }
+
+    // Get the authenticated user's ID from the security context
+    public Long getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("No authenticated user found");
+        }
+
+        // Get the Person object from authentication principal
+        // Your AuthTokenFilter sets this when validating the JWT
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof Person) {
+            return ((Person) principal).getId();
+        }
+
+        throw new RuntimeException("Invalid authentication principal type");
+    }
+
+    //Get the authenticated Person object
+    public Person getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("No authenticated user found");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof Person) {
+            return (Person) principal;
+        }
+
+        throw new RuntimeException("Invalid authentication principal type");
+    }
+
+    // Get authenticated User's Email
+    public String getAuthenticatedUserEmail() {
+        return getAuthenticatedUser().getEmail();
     }
 
 }

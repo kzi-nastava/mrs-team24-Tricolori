@@ -13,6 +13,7 @@ export const routes: Routes = [
   { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(m => m.ForgotPassword) },
   { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password/reset-password').then(m => m.ResetPassword) },
   { path: 'password-change', loadComponent: () => import('./features/password-change/password-change').then(m => m.PasswordChange) },
+  { path: 'activate', loadComponent: () => import('./features/auth/activate-account/activate-account').then(m => m.ActivateAccount) },
 
   // Driver routes
   {
@@ -31,7 +32,9 @@ export const routes: Routes = [
       },
       {
         path: 'history',
-        loadComponent: () => import('./features/ride-history/driver/driver-history').then(m => m.DriverHistory)
+        loadComponent: () => import('./features/ride-history/driver/driver-history').then(m => m.DriverHistory),
+        canActivate: [authGuard]
+
       },
       {
         path: 'ride-tracking/:id',

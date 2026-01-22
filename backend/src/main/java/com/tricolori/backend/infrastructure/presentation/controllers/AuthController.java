@@ -39,7 +39,7 @@ public class AuthController {
     @PostMapping(path = "/register-passenger", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> register(
             @Valid @RequestPart("data") RegisterPassengerRequest request,
-            @RequestPart("image") MultipartFile pfp
+            @RequestPart(value = "image", required = false) MultipartFile pfp
     ) {
 
         authService.registerPassenger(request, pfp);
