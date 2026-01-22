@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,9 +17,11 @@ import com.tricolori.backend.infrastructure.presentation.dtos.RouteDto;
 // http://localhost:8080/api/v1/favorite-routes/2
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/v1/favorite-routes")
 public class FavoriteRouteController {
     
+    // TODO: Use something other than userId...
     @GetMapping("/{id}")
     public ResponseEntity<List<RouteDto>> getFavoriteRoutes(@PathVariable("id") Long userId) {
         if (userId == 2) {
@@ -28,7 +31,10 @@ public class FavoriteRouteController {
             mockRoutes.add(new RouteDto(
                 new Address("Bulevar Oslobođenja 10", "Novi Sad", 19.8335, 45.2544),
                 new Address("Knez Mihailova 1", "Beograd", 20.4573, 44.8186),
-                List.of(new Address("Glavna 5", "Inđija", 20.0815, 45.0482))
+                List.of(new Address("Glavna 1", "Inđija", 20.0815, 45.0482), 
+                        new Address("Glavna 2", "Inđija", 20.0815, 45.0482),
+                        new Address("Glavna 3", "Inđija", 20.0815, 45.0482),
+                        new Address("Glavna 4", "Inđija", 20.0815, 45.0482))
             ));
 
             // 2. Niš - Kragujevac
