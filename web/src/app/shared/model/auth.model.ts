@@ -4,6 +4,14 @@ export type PersonRole = 'ROLE_DRIVER' | 'ROLE_PASSENGER' | 'ROLE_ADMIN' | 'ROLE
 
 export type AccountStatus = 'ACTIVE' | 'WAITING_FOR_ACTIVATION' | 'SUSPENDED';
 
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  homeAddress: string;
+  phoneNum: string;
+}
 
 export interface PersonDto {
   id: any;
