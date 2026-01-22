@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ProfileService } from '../../../core/services/profile.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileResponse } from '../../../shared/model/profile.model';
@@ -13,30 +13,65 @@ import { NgIcon } from '@ng-icons/core';
   templateUrl: './base-profile.html',
   styleUrl: './base-profile.css',
 })
-export class BaseProfile {
+export class BaseProfile implements OnInit {
   private profileService = inject(ProfileService);
   private formBuilder = inject(FormBuilder);
 
   personalForm: FormGroup;
 
   userProfile = signal<ProfileResponse | null>(null);
-  editEnabled = signal(false);
-  email = "hello"
+  hasChanges = signal(false);
 
   constructor() {
     this.personalForm = this.formBuilder.group({
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
-      address: ['', [Validators.required]],
-      phone: ['', [Validators.required /*, Custom phone validation*/]],
-    })
+      homeAddress: ['', [Validators.required]],
+      phoneNumber: ['', [Validators.required /*, Custom phone validation*/]],
+      email: ['', [Validators.required, Validators.email]],
+      pfp: ['']
+    });
+
+    this.personalForm.valueChanges.subscribe(() => {
+      this.checkChanges();
+    });
   }
 
-  get editable() {
-    return !!this.editEnabled();
+  ngOnInit(): void {
+      this.loadProfile();
   }
 
-  resetChanges() {}
+  loadProfile() {
+    this.profileService.getMyProfile().subscribe((profile: ProfileResponse) => {
+      this.userProfile.set(profile);
+      this.personalForm.patchValue(profile, {emitEvent: false});
+      this.hasChanges.set(false);
+    });
+  }
 
-  toggleEdit() {}
+  get pfpUrl() { return this.personalForm.get('pfpUrl')?.value || 'assets/icons/logo.svg'; }
+
+  private checkChanges() {
+    const original = this.userProfile(); 
+    if (!original) {
+      this.hasChanges.set(false);
+      return;
+    }
+
+    const current = this.personalForm.value;
+
+    const isChanged = 
+      current.firstName   != original.firstName ||
+      current.lastName    != original.lastName ||
+      current.homeAddress != original.homeAddress ||
+      current.phoneNumber != original.phoneNumber ||
+      current.email       != original.email ||
+      current.pfp         != original.pfp;
+
+    this.hasChanges.set(isChanged);
+  }
+
+  updateProfile() {
+    console.log("AAAA");
+  }
 }

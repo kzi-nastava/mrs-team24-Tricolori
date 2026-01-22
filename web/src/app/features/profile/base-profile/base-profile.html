@@ -2,15 +2,15 @@
     <h2 class="text-2xl text-light-700 px-3">Your Profile</h2>
     <p class="text-gray-500 px-3">Manage your personal information and settings</p>
 
-    <form [formGroup]="personalForm" class="h-full flex flex-col gap-12 mt-6">
+    <form (submit)="updateProfile()" [formGroup]="personalForm" class="h-full flex flex-col gap-12 mt-6">
         <!-- Profile Picture -->
         <div class="flex flex-col gap-4">
             <div class="flex items-center justify-center flex-1 my-4">
                 <div class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 
                             rounded-full overflow-hidden border-4 border-dark-800 flex items-center justify-center bg-gray-300">
                     <img 
-                        src="assets/icons/logo.svg" 
-                        alt="Profile" 
+                        [src]="pfpUrl" 
+                        alt="Profile Picture" 
                         class="w-full h-full object-cover"
                     />
                 </div>
@@ -32,7 +32,7 @@
             </div>
             <input 
                 class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3 w-full" 
-                type="email" readonly [value]="email">
+                type="email" formControlName="email">
         </div>
 
         <!-- Security -->
@@ -64,29 +64,29 @@
                 <p class="text-gray-500 ml-2">First Name</p>
                 <input 
                     class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" 
-                    type="text" formControlName="firstName" [readonly]="!editable">
+                    type="text" formControlName="firstName">
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Last Name</p>
                 <input 
                     class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" 
-                    type="text" formControlName="lastName" [readonly]="!editable">
+                    type="text" formControlName="lastName">
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Phone Number</p>
                 <input 
                     class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" 
-                    type="text" formControlName="phone" [readonly]="!editable">
+                    type="text" formControlName="phoneNumber">
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Home Address</p>
                 <input 
                     class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" 
-                    type="text" formControlName="address" [readonly]="!editable">
+                    type="text" formControlName="homeAddress">
             </div>
         </div>
 
         <!-- Controls -->
-        <button class="bg-light-700 px-10 py-2.5 mx-auto rounded-xl w-fit text-white cursor-pointer">Update Profile</button>
+        <button [disabled]="!hasChanges() || personalForm.invalid" type="submit" class="disabled:bg-dark-300 disabled:cursor-not-allowed bg-light-700 px-10 py-2.5 mx-auto rounded-xl w-fit text-white cursor-pointer">Update Profile</button>
     </form>
 </div>
