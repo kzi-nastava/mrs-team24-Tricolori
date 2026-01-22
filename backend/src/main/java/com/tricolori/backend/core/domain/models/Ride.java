@@ -112,4 +112,13 @@ public class Ride {
         return LocalDateTime.now().isBefore(deadline);
     }
 
+    public boolean containsPassengerWithEmail(String email) {
+        for (Passenger passenger : passengers) {
+            if (passenger.getEmail().equals(email)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
