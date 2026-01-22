@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark } from '@ng-icons/heroicons/outline';
+import { RideService, RideHistoryResponse, RideDetailResponse } from '../../../core/services/ride.service';
 
 interface Ride {
   id: number;
@@ -10,7 +11,7 @@ interface Ride {
   startDate: string;
   endDate: string;
   price: number;
-  status: 'Completed' | 'Cancelled' | 'Pending';
+  status: 'Completed' | 'Cancelled' | 'Pending' | 'In Progress';
   startTime: string;
   endTime: string;
   duration: string;
@@ -19,6 +20,8 @@ interface Ride {
   distance: number;
   paymentMethod: string;
   notes?: string;
+  driverRating?: number | null;
+  vehicleRating?: number | null;
 }
 
 @Component({
@@ -27,144 +30,197 @@ interface Ride {
   imports: [
     CommonModule,
     FormsModule,
-    NgIconComponent
+    NgIconComponent 
   ],
   providers: [
-    provideIcons({ heroEye, heroXMark })
+    provideIcons({ heroEye, heroXMark }),
+    RideService
   ],
   templateUrl: './driver-history.html',
   styleUrls: ['./driver-history.css']
 })
-export class DriverHistory {
-  // Date filter properties
+export class DriverHistory implements OnInit {
   startDate: string = '';
   endDate: string = '';
-  
-  // Modal property
   selectedRide: Ride | null = null;
-  
-  // All rides data
-  allRides: Ride[] = [
-    {
-      id: 1,
-      route: 'Narodnog fronta 23 → Dunavski park',
-      startDate: '2024-12-15',
-      endDate: '2024-12-15',
-      price: 45.50,
-      status: 'Completed',
-      startTime: '09:30 AM',
-      endTime: '11:15 AM',
-      duration: '1h 45min',
-      passengerName: 'Marko Petrović',
-      passengerPhone: '+381 64 123 4567',
-      distance: 89.5,
-      paymentMethod: 'Credit Card',
-      notes: 'Pleasant ride, passenger was on time.'
-    },
-    {
-      id: 2,
-      route: 'Bulevar Oslobođenja 30 → Trg Slobode',
-      startDate: '2024-12-14',
-      endDate: '2024-12-14',
-      price: 32.00,
-      status: 'Completed',
-      startTime: '14:00 PM',
-      endTime: '15:30 PM',
-      duration: '1h 30min',
-      passengerName: 'Ana Jovanović',
-      passengerPhone: '+381 63 987 6543',
-      distance: 72.3,
-      paymentMethod: 'Cash',
-      notes: 'Smooth journey, no issues.'
-    },
-    {
-      id: 3,
-      route: 'Železnička stanica Novi Sad → Limanski park',
-      startDate: '2024-12-13',
-      endDate: '2024-12-13',
-      price: 85.00,
-      status: 'Completed',
-      startTime: '08:00 AM',
-      endTime: '11:45 AM',
-      duration: '3h 45min',
-      passengerName: 'Stefan Nikolić',
-      passengerPhone: '+381 65 555 1234',
-      distance: 237.8,
-      paymentMethod: 'Credit Card',
-      notes: 'Long distance trip, passenger requested one rest stop.'
-    },
-    {
-      id: 4,
-      route: 'Spens (Bulevar cara Lazara) → Petrovaradinska tvrđava',
-      startDate: '2024-12-12',
-      endDate: '2024-12-12',
-      price: 38.50,
-      status: 'Cancelled',
-      startTime: '16:00 PM',
-      endTime: '17:30 PM',
-      duration: '1h 30min',
-      passengerName: 'Jelena Đorđević',
-      passengerPhone: '+381 64 222 3333',
-      distance: 115.2,
-      paymentMethod: 'N/A',
-      notes: 'Ride cancelled by passenger 30 minutes before scheduled time.'
-    },
-    {
-      id: 5,
-      route: 'Grbavica (Danila Kiša 18) → Spens',
-      startDate: '2024-12-11',
-      endDate: '2024-12-11',
-      price: 25.00,
-      status: 'Completed',
-      startTime: '11:00 AM',
-      endTime: '12:00 PM',
-      duration: '1h',
-      passengerName: 'Milan Stojanović',
-      passengerPhone: '+381 66 777 8888',
-      distance: 46.5,
-      paymentMethod: 'Cash'
-    }
-  ];
-  
-  // Filtered rides (initially show all)
-  filteredRides: Ride[] = [...this.allRides];
+  filteredRides: Ride[] = [];
+  isLoading: boolean = false;
+  errorMessage: string = '';
 
-  // Filter method
-  filterByDate(): void {
-    if (!this.startDate && !this.endDate) {
-      // If no dates selected, show all rides
-      this.filteredRides = [...this.allRides];
-      return;
-    }
+  constructor(private rideService: RideService) {}
 
-    this.filteredRides = this.allRides.filter(ride => {
-      const rideDate = new Date(ride.startDate);
-      const start = this.startDate ? new Date(this.startDate) : null;
-      const end = this.endDate ? new Date(this.endDate) : null;
+  ngOnInit(): void {
+    this.loadRideHistory();
+  }
 
-      if (start && end) {
-        return rideDate >= start && rideDate <= end;
-      } else if (start) {
-        return rideDate >= start;
-      } else if (end) {
-        return rideDate <= end;
+  /**
+   * Load ride history from backend
+   */
+  loadRideHistory(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.rideService.getDriverHistory(
+      this.startDate || undefined,
+      this.endDate || undefined
+    ).subscribe({
+      next: (rides) => {
+        this.filteredRides = this.mapBackendRidesToUI(rides);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading ride history:', error);
+        this.errorMessage = 'Failed to load ride history. Please try again.';
+        this.isLoading = false;
+        this.filteredRides = [];
       }
-      
-      return true;
     });
   }
 
-  // View ride details
-  viewRideDetails(rideId: number): void {
-    this.selectedRide = this.allRides.find(ride => ride.id === rideId) || null;
+  /**
+   * Map backend response to UI format
+   */
+  private mapBackendRidesToUI(backendRides: RideHistoryResponse[]): Ride[] {
+    return backendRides.map(ride => {
+      const createdDateTime = new Date(ride.createdAt);
+      const completedDateTime = ride.completedAt ? new Date(ride.completedAt) : null;
+      
+      // Calculate duration from duration field (in seconds)
+      const duration = this.formatDuration(ride.duration);
+
+      // Format route from addresses
+      const route = this.formatRoute(ride.pickupAddress, ride.dropoffAddress);
+
+      return {
+        id: ride.id,
+        route: route,
+        startDate: createdDateTime.toISOString().split('T')[0],
+        endDate: completedDateTime ? completedDateTime.toISOString().split('T')[0] : createdDateTime.toISOString().split('T')[0],
+        price: ride.totalPrice,
+        status: this.mapRideStatus(ride.status),
+        startTime: createdDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        endTime: completedDateTime ? completedDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+        duration: duration,
+        passengerName: ride.passengerName,
+        passengerPhone: 'N/A', // Will be loaded in detail view
+        distance: ride.distance,
+        paymentMethod: 'N/A', // Not available in history response
+        driverRating: ride.driverRating,
+        vehicleRating: ride.vehicleRating
+      };
+    });
   }
 
-  // Close modal
+  /**
+   * Format duration from seconds to readable string
+   */
+  private formatDuration(seconds: number | null): string {
+    if (!seconds) return 'N/A';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}min`;
+    }
+    return `${minutes}min`;
+  }
+
+  /**
+   * Format route from pickup and destination addresses
+   */
+  private formatRoute(pickup: string, destination: string): string {
+    const pickupStr = pickup || 'Unknown';
+    const destStr = destination || 'Unknown';
+    return `${pickupStr} → ${destStr}`;
+  }
+
+  /**
+   * Map backend ride status to UI status
+   */
+  private mapRideStatus(status: string): 'Completed' | 'Cancelled' | 'Pending' | 'In Progress' {
+    switch (status) {
+      case 'COMPLETED':
+        return 'Completed';
+      case 'CANCELLED':
+        return 'Cancelled';
+      case 'IN_PROGRESS':
+        return 'In Progress';
+      case 'PENDING':
+      case 'ACCEPTED':
+        return 'Pending';
+      default:
+        return 'Pending';
+    }
+  }
+
+  /**
+   * Filter rides by date range
+   */
+  filterByDate(): void {
+    this.loadRideHistory();
+  }
+
+  /**
+   * View ride details - load from backend
+   */
+  viewRideDetails(rideId: number): void {
+    this.isLoading = true;
+    
+    this.rideService.getDriverRideDetail(rideId).subscribe({
+      next: (detail) => {
+        this.selectedRide = this.mapDetailToUI(detail);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading ride details:', error);
+        this.errorMessage = 'Failed to load ride details. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  /**
+   * Map detailed backend response to UI format
+   */
+  private mapDetailToUI(detail: RideDetailResponse): Ride {
+    const createdDateTime = new Date(detail.createdAt);
+    const startedDateTime = detail.startedAt ? new Date(detail.startedAt) : null;
+    const completedDateTime = detail.completedAt ? new Date(detail.completedAt) : null;
+    
+    // Use the duration from backend (in seconds)
+    const duration = this.formatDuration(detail.duration);
+
+    return {
+      id: detail.id,
+      route: this.formatRoute(detail.pickupAddress, detail.dropoffAddress),
+      startDate: (startedDateTime || createdDateTime).toISOString().split('T')[0],
+      endDate: (completedDateTime || createdDateTime).toISOString().split('T')[0],
+      price: detail.totalPrice,
+      status: this.mapRideStatus(detail.status),
+      startTime: (startedDateTime || createdDateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      endTime: completedDateTime ? completedDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+      duration: duration,
+      passengerName: detail.passengerName || 'N/A',
+      passengerPhone: detail.passengerPhone || 'N/A',
+      distance: detail.distance || 0,
+      paymentMethod: 'N/A', // Not available in backend
+      notes: detail.ratingComment || undefined,
+      driverRating: detail.driverRating,
+      vehicleRating: detail.vehicleRating
+    };
+  }
+
+  /**
+   * Close modal
+   */
   closeModal(): void {
     this.selectedRide = null;
   }
 
-  // Status class helper
+  /**
+   * Get CSS class for status badge
+   */
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -173,6 +229,8 @@ export class DriverHistory {
         return 'bg-red-100 text-red-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
+      case 'in progress':
+        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
