@@ -1,5 +1,6 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
+import com.tricolori.backend.core.services.RideService;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -18,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RideController {
 
+    private final RideService rideService;
     @PostMapping("/estimate")
     public ResponseEntity<RideEstimationResponse> estimateRide(@Valid @RequestBody RideEstimationRequest request) {
 
@@ -25,7 +28,14 @@ public class RideController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelRide(@Valid @RequestBody CancelRideRequest request, @PathVariable Long id) {
+    public ResponseEntity<Void> cancelRide(
+            @PathVariable Long id,
+            @Valid @RequestBody CancelRideRequest request,
+            Authentication authentication
+    ) {
+
+        String personEmail =  authentication.getName();
+        rideService.cancelRide(id, personEmail, request);
 
         return ResponseEntity.ok().build();
     }
