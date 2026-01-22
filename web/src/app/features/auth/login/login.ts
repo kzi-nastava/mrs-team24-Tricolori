@@ -1,5 +1,5 @@
-import {ChangeDetectorRef, Component} from '@angular/core';
-import { RouterLink } from '@angular/router';
+import {ChangeDetectorRef, Component, inject, OnInit} from '@angular/core';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -28,10 +28,21 @@ import { LoginRequest } from '../../../shared/model/auth.model';
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class Login {
+export class Login implements OnInit {
+  private route = inject(ActivatedRoute);
+
   hidePassword: boolean = true;
   errorMessage: string = '';
   successMessage: string = '';
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['activated']) {
+        this.successMessage = "Account activated successfully! Please log in.";
+        this.cdr.detectChanges();
+      }
+    })
+  }
 
   constructor(private authService: AuthService, private cdr: ChangeDetectorRef) {}
 

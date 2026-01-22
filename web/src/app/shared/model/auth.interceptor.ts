@@ -11,6 +11,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   console.log('🚀 Interceptor for:', req.url);
   console.log('🔑 Token found:', token ? 'YES' : 'NO');
 
+  if (req.url.includes('/api/v1/auth/')) {
+    return next(req);
+  }
+
   if (token) {
     console.log('✅ Adding Authorization header');
     const authReq = req.clone({

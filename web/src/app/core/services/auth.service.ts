@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { LoginRequest, LoginResponse, PersonDto, PersonRole } from '../../shared/model/auth.model';
+import { LoginRequest, LoginResponse, PersonDto, PersonRole, RegisterRequest } from '../../shared/model/auth.model';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -28,6 +28,29 @@ export class AuthService {
       this.currentPersonSubject.next(JSON.parse(storedUser));
       console.log('✅ User restored from localStorage');
     }
+  }
+
+  registerPassenger(data: RegisterRequest, pfp?: File) : Observable<string> {
+    const formData = new FormData();
+
+    const jsonBlob = new Blob([JSON.stringify(data)], {
+      type: 'application/json'
+    });
+
+    formData.append('data', jsonBlob);
+
+    if (pfp) {
+      formData.append('image', pfp);
+    }
+
+    return this.http.post(`${ this.API_URL }/register-passenger`, formData, { responseType: 'text' });
+  }
+
+  activateAccount(token: string) : Observable<string> {
+    return this.http.get(`${ this.API_URL }/activate`, {
+      params: {token},
+      responseType: 'text'
+    });
   }
 
   login(loginRequest: LoginRequest): Observable<LoginResponse> {

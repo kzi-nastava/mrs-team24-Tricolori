@@ -33,7 +33,15 @@ public class RideController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelRide(@Valid @RequestBody CancelRideRequest request, @PathVariable Long id) {
+    public ResponseEntity<Void> cancelRide(
+            @PathVariable Long id,
+            @Valid @RequestBody CancelRideRequest request,
+            Authentication authentication
+    ) {
+
+        String personEmail =  authentication.getName();
+        rideService.cancelRide(id, personEmail, request);
+
         return ResponseEntity.ok().build();
     }
 

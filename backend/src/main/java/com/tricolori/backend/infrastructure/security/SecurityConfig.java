@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,6 +23,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig {
 
     private final AuthEntryPointJwt unauthorizedHandler;
@@ -37,12 +39,14 @@ public class SecurityConfig {
                 .sessionManagement(s ->
                         s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a ->
-                        a.requestMatchers("/api/v1/auth/**").permitAll()
+                        a.requestMatchers("/api/v1/auth/**", "/error").permitAll()        
                          .requestMatchers("/api/v1/vehicles/active").permitAll()
                          .requestMatchers("/api/v1/rides/history/driver/**").hasRole("DRIVER")
                          .requestMatchers("/api/v1/rides/*/details/driver").hasRole("DRIVER")
+                         .requestMatchers("/api/v1/favorite-routes/**").hasRole("PASSENGER")
 
-                                .anyRequest().authenticated()
+
+                                .anyRequest().permitAll()
                 );
         
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
