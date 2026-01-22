@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { LoginRequest, LoginResponse, PersonDto, PersonRole } from '../../shared/model/auth.model';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 
 @Injectable({
@@ -12,7 +13,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router)
 
-  private readonly API_URL = 'http://localhost:8080/api/v1/auth';
+  private readonly API_URL = `${environment.apiUrl}/auth`;
 
   private currentPersonSubject = new BehaviorSubject<PersonDto | null>(null);
   public currentPerson$ = this.currentPersonSubject.asObservable();

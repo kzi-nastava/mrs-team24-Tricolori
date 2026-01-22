@@ -3,6 +3,7 @@ import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { UnregisteredHome } from './features/home/unregistered/unregistered-home';
 import {DriverRideAssignment} from './shared/components/driver-ride-assignment/driver-ride-assignment';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // Public routes
@@ -16,6 +17,7 @@ export const routes: Routes = [
   // Driver routes
   {
     path: 'driver',
+    canActivate: [authGuard],
     children: [
       {
         path: 'home',
@@ -50,6 +52,7 @@ export const routes: Routes = [
   // Passenger routes
   {
     path: 'passenger',
+    canActivate: [authGuard],
     children: [
       {
         path: 'home',
@@ -86,6 +89,7 @@ export const routes: Routes = [
   // Admin routes
   {
     path: 'admin',
+    canActivate: [authGuard],
     children: [
       {
         path: 'home',

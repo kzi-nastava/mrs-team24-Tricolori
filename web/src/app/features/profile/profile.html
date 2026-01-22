@@ -16,9 +16,9 @@
             </div>
             <input 
                 class="bg-gray-100 rounded-2xl p-5 w-full" 
-                type="email" readonly value="joedoe@example.com">
+                type="email" readonly [value]="email">
         </div>
-        <div class="shadowed order-3 row-span-3 col-span-6 lg:col-span-4 bg-white rounded-2xl p-5 flex flex-col gap-4">
+        <form [formGroup]="personalForm" class="shadowed order-3 row-span-3 col-span-6 lg:col-span-4 bg-white rounded-2xl p-5 flex flex-col gap-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-4">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700">
@@ -31,12 +31,12 @@
                     </div>
                 </div>
                 <div class="flex items-center justify-between gap-2">
-                    @if (editEnabled) {
+                    @if (editable) {
                         <button class="bg-light-700 px-4 py-1 rounded-lg text-white cursor-pointer">Save changes</button>
                         <button class="bg-dark-700 px-4 py-1 rounded-lg text-white cursor-pointer" (click)="resetChanges()">X</button>
                     }
                     @else {
-                        <button class="bg-light-700 px-4 py-1 rounded-lg text-white cursor-pointer" (click)="editEnabled = !editEnabled">Edit</button>
+                        <button class="bg-light-700 px-4 py-1 rounded-lg text-white cursor-pointer" (click)="toggleEdit()">Edit</button>
                     }
                 </div>
             </div>
@@ -44,27 +44,27 @@
                 <p class="text-gray-500 ml-2">First Name</p>
                 <input 
                     class="bg-gray-100 rounded-2xl p-5 size-full" 
-                    type="text" [value]="firstName" [readonly]="!editEnabled" #firstNameInput>
+                    type="text" formControlName="firstName" [readonly]="!editable">
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Last Name</p>
                 <input 
                     class="bg-gray-100 rounded-2xl p-5 size-full" 
-                    type="text" [value]="lastName" [readonly]="!editEnabled" #lastNameInput>
+                    type="text" formControlName="lastName" [readonly]="!editable">
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Phone Number</p>
                 <input 
                     class="bg-gray-100 rounded-2xl p-5 size-full" 
-                    type="text" [value]="phoneNumber" [readonly]="!editEnabled" #phoneInput>
+                    type="text" formControlName="phone" [readonly]="!editable">
             </div>
             <div class="flex flex-col">
                 <p class="text-gray-500 ml-2">Home Address</p>
                 <input 
                     class="bg-gray-100 rounded-2xl p-5 size-full" 
-                    type="text" [value]="homeAddress" [readonly]="!editEnabled" #addressInput>
+                    type="text" formControlName="address" [readonly]="!editable">
             </div>
-        </div>
+        </form>
 
         <div class="shadowed order-2 row-span-3 col-span-6 lg:col-span-2 
             bg-white rounded-2xl p-5 flex flex-col justify-between h-full min-h-0">

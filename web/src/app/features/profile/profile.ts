@@ -1,41 +1,77 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { PersonDto } from '../../shared/model/auth.model';
+import { ProfileService } from '../../core/services/profile.service';
+import { ProfileResponse } from '../../shared/model/profile.model';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-profile',
-  imports: [RouterLink],
+  imports: [
+    RouterLink,
+    ReactiveFormsModule
+  ],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile {
-  editEnabled = false;
+export class Profile implements OnInit {
+  private profileService = inject(ProfileService);
 
-  firstName = "Joe";
-  lastName = "Doe";
-  phoneNumber = "+381601234567";
-  homeAddress = "123 Main Street, Belgrade";
+  private formBuilder = inject(FormBuilder);
+  personalForm: FormGroup;
 
-  @ViewChild('firstNameInput') firstNameInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('lastNameInput') lastNameInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('addressInput') addressInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('phoneInput') phoneInput!: ElementRef<HTMLInputElement>;
+  userProfile = signal<ProfileResponse | null>(null);
+  editEnabled = signal(false);
+  email: string = ""
+
+  constructor() {
+    this.personalForm = this.formBuilder.group({
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
+      address: ['', [Validators.required]],
+      phone: ['', [Validators.required /*, Custom phone validation*/]],
+    })
+  }
+
+  ngOnInit(): void {
+    this.loadData();
+  }
+
+  loadData() {
+    this.profileService.getMyProfile().subscribe({
+      next: (data) => {
+        this.userProfile.set(data);
+        this.personalForm.patchValue({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          address: data.homeAddress,
+          phone: data.phoneNumber
+        });
+        this.email = data.email;
+      },
+      error: (err) => console.error(err)
+    })
+  }
+
+  toggleEdit() {
+    this.editEnabled.update(v => !v);
+  }
+
+  get editable() {
+    return !!this.editEnabled();
+  }
 
   resetChanges() {
-    this.editEnabled = false;
+    this.editEnabled.set(false);
 
-    const changed =
-      this.firstName !== this.firstNameInput.nativeElement.value ||
-      this.lastName !== this.lastNameInput.nativeElement.value ||
-      this.phoneNumber !== this.phoneInput.nativeElement.value ||
-      this.homeAddress !== this.addressInput.nativeElement.value;
-
-    if (changed) {
-      this.firstNameInput.nativeElement.value = this.firstName;
-      this.lastNameInput.nativeElement.value = this.lastName;
-      this.phoneInput.nativeElement.value = this.phoneNumber;
-      this.addressInput.nativeElement.value = this.homeAddress;
-
-      // TODO: send change request...
+    const originalData = this.userProfile();
+    if (originalData) {
+      this.personalForm.patchValue({
+        firstName: originalData.firstName,
+        lastName: originalData.lastName,
+        address: originalData.homeAddress,
+        phone: originalData.phoneNumber
+      });
     }
   }
 
