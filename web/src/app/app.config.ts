@@ -8,13 +8,19 @@ import {
   heroEyeSlash, heroPower,
   heroArrowRight, heroUser, heroPhone, heroHome, heroArrowUpTray,
   heroClock, heroInformationCircle, heroChevronDown, heroChevronUp,
-  heroArrowsUpDown
+  heroArrowsUpDown, heroHashtag
 } from '@ng-icons/heroicons/outline';
 import { heroBoltSolid, heroBoltSlashSolid } from '@ng-icons/heroicons/solid';
-import { ionLocationOutline } from '@ng-icons/ionicons';
+import { ionLocationOutline, ionCarOutline } from '@ng-icons/ionicons';
 import { routes } from './app.routes';
 import { provideIcons } from '@ng-icons/core';
-import { authInterceptor } from './shared/model/auth.interceptor'; 
+import { authInterceptor } from './shared/model/auth.interceptor';
+import { matAssistantPhotoOutline } from '@ng-icons/material-icons/outline'
+import { bootstrapClock, bootstrap123, bootstrapType } from '@ng-icons/bootstrap-icons'
+import { mynaBaby } from '@ng-icons/mynaui/outline'
+import { phosphorDog } from '@ng-icons/phosphor-icons/regular'
+import { boxCar } from '@ng-icons/boxicons/regular'
+import { hugeCar03 } from '@ng-icons/huge-icons'
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,7 +35,10 @@ export const appConfig: ApplicationConfig = {
       heroArrowRight, heroSquares2x2, heroTruck,
       heroUser, heroArrowUpTray, heroHome, heroPhone,
       heroClock, heroInformationCircle, heroChevronDown,
-      heroChevronUp, heroArrowsUpDown, ionLocationOutline
+      heroChevronUp, heroArrowsUpDown, ionLocationOutline,
+      matAssistantPhotoOutline, bootstrapClock, heroHashtag,
+      mynaBaby, phosphorDog, bootstrap123, ionCarOutline,
+      boxCar, bootstrapType, hugeCar03
     })
   ]
 };

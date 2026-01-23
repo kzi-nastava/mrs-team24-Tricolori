@@ -5,15 +5,15 @@ import { ProfileResponse } from '../../../shared/model/profile.model';
 import { NgIcon } from '@ng-icons/core';
 
 @Component({
-  selector: 'app-base-profile',
+  selector: 'app-driver-profile',
   imports: [
     ReactiveFormsModule,
     NgIcon
   ],
-  templateUrl: './base-profile.html',
-  styleUrl: './base-profile.css',
+  templateUrl: './driver-profile.html',
+  styleUrl: './driver-profile.css',
 })
-export class BaseProfile implements OnInit {
+export class DriverProfile  implements OnInit {
   private profileService = inject(ProfileService);
   private formBuilder = inject(FormBuilder);
 
@@ -68,17 +68,7 @@ export class BaseProfile implements OnInit {
   }
 
   updateProfile() {
-    if (this.personalForm.invalid || !this.hasChanges()) return;
-
-    this.profileService.updateProfile(this.personalForm.value).subscribe({
-      next: (updatedProfile) => {
-        this.userProfile.set(updatedProfile);
-        this.personalForm.patchValue(updatedProfile, {emitEvent: false});
-        this.hasChanges.set(false);
-      },
-      error: (err) => {
-        console.error("Error: ", err);
-      },
-    })
+    console.log("AAAA");
   }
 }
+
