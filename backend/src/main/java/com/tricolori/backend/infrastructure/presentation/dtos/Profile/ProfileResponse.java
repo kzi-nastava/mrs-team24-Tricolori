@@ -1,7 +1,7 @@
 package com.tricolori.backend.infrastructure.presentation.dtos.Profile;
 
 import com.tricolori.backend.core.domain.models.Person;
-import com.tricolori.backend.infrastructure.presentation.dtos.VehicleDto;
+import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +32,7 @@ public class ProfileResponse
             person.getPhoneNum(),
             person.getPfpUrl(),
             null, // Explicitly null, for now
-            null  // Explicitly null, for now
+            0.0  // Explicitly null, for now
         );
     }
 }

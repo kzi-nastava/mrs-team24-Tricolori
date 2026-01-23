@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.core.services.ProfileService;
+import com.tricolori.backend.core.services.VehicleService;
 import com.tricolori.backend.infrastructure.presentation.dtos.Profile.ProfileRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Profile.ProfileResponse;
 
@@ -20,12 +21,23 @@ import com.tricolori.backend.infrastructure.presentation.dtos.Profile.ProfileRes
 public class ProfileController {
     @Autowired
     private ProfileService profileService;
+
+    @Autowired
+    private VehicleService vehicleService;
     // TODO: handle profile picture update... 
 
     @GetMapping("/me")
     public ResponseEntity<ProfileResponse> getUserProfile(@AuthenticationPrincipal Person user) {
         ProfileResponse response = ProfileResponse.fromPerson(user);
-        // TODO: If user is driver, load data about daily activity...
+        
+        boolean isDriver = user.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_DRIVER"));
+
+        if(isDriver) {
+            vehicleService.fillDriverVehicleData(user, response);
+        }
+
+        // TODO: add activity hours...
         return ResponseEntity.ok(response);
     }
 

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ProfileService } from '../../../core/services/profile.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileResponse } from '../../../shared/model/profile.model';
@@ -21,6 +21,9 @@ export class DriverProfile  implements OnInit {
 
   userProfile = signal<ProfileResponse | null>(null);
   hasChanges = signal(false);
+
+  vehicle = computed(() => this.userProfile()?.vehicle);
+  activeHours = computed(() => this.userProfile()?.activeHours);
 
   constructor() {
     this.personalForm = this.formBuilder.group({

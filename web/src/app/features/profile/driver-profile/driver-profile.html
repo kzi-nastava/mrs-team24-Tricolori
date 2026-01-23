@@ -106,7 +106,7 @@
                     <ng-icon name="boxCar" size="1.5rem"/>
                     <p>Model</p>
                 </div>
-                <p class="text-lg">Volkswagen Passat</p>
+                <p class="text-lg">{{ vehicle()?.model }}</p>
             </div>
 
             <!-- Vehicle type -->
@@ -115,7 +115,7 @@
                     <ng-icon name="bootstrapType" size="1.5rem" />
                     <p class="text-sm">Type</p>
                 </div>
-                <p class="text-xl">Standard</p>
+                <p class="text-xl">{{ vehicle()?.type }}</p>
             </div>
 
             <!-- Plate number -->
@@ -124,7 +124,7 @@
                     <ng-icon name="heroHashtag" size="1.5rem"/>
                     <p>Licence plate</p>
                 </div>
-                <p class="text-lg">NS 123-AB</p>
+                <p class="text-lg">{{ vehicle()?.plateNumber }}</p>
             </div>
 
             <!-- Number of seats -->
@@ -133,7 +133,7 @@
                     <ng-icon name="bootstrap123" size="1.5rem" />
                     <p class="text-sm">Seat number</p>
                 </div>
-                <p class="text-xl">Standard</p>
+                <p class="text-xl">{{ vehicle()?.numSeats }}</p>
             </div>
 
             <!-- Baby friendly -->
@@ -142,7 +142,7 @@
                     <ng-icon name="mynaBaby" size="1.5rem" />
                     <p class="text-sm">Does it drive babies?</p>
                 </div>
-                <p class="text-xl">Yes</p>
+                <p class="text-xl">{{ vehicle()?.babyFriendly ? "Yes" : "No"}}</p>
             </div>
 
             <!-- Pet friendly -->
@@ -151,7 +151,7 @@
                     <ng-icon name="phosphorDog" size="1.5rem" />
                     <p class="text-sm">Does it drive pets?</p>
                 </div>
-                <p class="text-xl">Yes</p>
+                <p class="text-xl">{{ vehicle()?.petFriendly ? "Yes" : "No"}}</p>
             </div>
         </div>
         <div class="bg-deep-100 rounded-2xl p-5 size-full">

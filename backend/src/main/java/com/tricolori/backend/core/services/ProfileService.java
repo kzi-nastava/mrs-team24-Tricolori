@@ -2,6 +2,7 @@ package com.tricolori.backend.core.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.core.domain.repositories.PersonRepository;
@@ -13,6 +14,7 @@ public class ProfileService {
     @Autowired
     private PersonRepository personRepository;
 
+    @Transactional
     public ProfileResponse updateMyProfile(Person currentPerson, ProfileRequest request) {
         // TODO: add custom exception...
         Person dbPerson = personRepository.findById(currentPerson.getId())
