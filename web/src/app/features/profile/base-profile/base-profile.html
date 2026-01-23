@@ -4,22 +4,10 @@
 
     <form (submit)="updateProfile()" [formGroup]="personalForm" class="flex flex-col gap-12 mt-6">
         <!-- Profile Picture -->
-        <div class="flex flex-col gap-4">
-            <div class="flex items-center justify-center flex-1 my-4">
-                <div class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 
-                            rounded-full overflow-hidden border-4 border-dark-800 flex items-center justify-center bg-gray-300">
-                    <img 
-                        [src]="pfp" 
-                        (error)="handlePfpError($event)"
-                        alt="Profile Picture" 
-                        class="w-full h-full object-cover"
-                    />
-                </div>
-            </div>
-            <button class="bg-light-700 px-10 py-2.5 mx-auto rounded-xl w-fit text-white cursor-pointer">
-                Upload Picture
-            </button>
-        </div>
+        <app-pfp-picker 
+            [pfpSrc]="userProfile()?.pfp" 
+            (fileSelected)="handleNewFile($event)"
+            #pfpPicker />
 
         <!-- Email -->
         <div class="flex flex-col gap-4">
