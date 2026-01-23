@@ -17,37 +17,10 @@
     </div>
 
     @if(step == 1) {
-        <div class="flex flex-col gap-12">
-            <div class="flex flex-col gap-4">
-                <div class="flex items-center gap-3 w-full pb-3 pl-2 pr-2">
-                    <ng-icon name="matAccountCircleOutline" size="2.5rem" style="color: var(--color-light-700);"/>
-                    <div>
-                        <h3 class="text-xl text-light-700">Driver's Profile Picture</h3>
-                        <p class="text-gray-400 text-sm">Others will be able to see driver's profile picture</p>
-                    </div>
-                </div>
-                <!-- Pfp picker -->
-                <app-pfp-picker 
-                    (fileSelected)="handleNewFile($event)"
-                    #pfpPicker />
-            </div>
-
-            <!-- Driver information -->
-            <div class="flex flex-col gap-4">
-                <div class="flex items-center gap-3 w-full pb-3 pl-2 pr-2">
-                    <ng-icon name="heroUser" size="2.5rem" style="color: var(--color-light-700);"/>
-                    <div>
-                        <h3 class="text-xl text-light-700">Driver's Information</h3>
-                        <p class="text-gray-400 text-sm">Driver personal information</p>
-                    </div>
-                </div>
-                <app-step-one-form
-                    [oldStepData]="savedStepOneData"
-                    (newStepData)="handleStepOne($event)"
-                />                
-            </div>
-            
-        </div>
+        <app-step-one-form
+            [oldStepData]="savedStepOneData"
+            (newStepData)="handleStepOne($event)"
+        />
     }
 
     @else {

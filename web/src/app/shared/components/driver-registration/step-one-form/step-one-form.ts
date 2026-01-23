@@ -1,11 +1,15 @@
-import { Component, effect, input, output } from '@angular/core';
+import { Component, effect, input, output, signal, viewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StepOneDriverRegistrationData } from '../../../model/driver-registration';
+import { NgIcon } from '@ng-icons/core';
+import { PfpPicker } from '../../pfp-picker/pfp-picker';
 
 @Component({
   selector: 'app-step-one-form',
   imports: [
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgIcon,
+    PfpPicker
   ],
   templateUrl: './step-one-form.html',
   styleUrl: './step-one-form.css',
@@ -16,6 +20,9 @@ export class StepOneForm {
 
   oldStepData = input<StepOneDriverRegistrationData | undefined>();
   newStepData = output<StepOneDriverRegistrationData>();
+
+  pfpPicker = viewChild<PfpPicker>('pfpPicker')
+  selectedFile = signal<File | null>(null);
 
   constructor() {
     this.firstStepForm = new FormGroup({
@@ -29,6 +36,7 @@ export class StepOneForm {
       const data = this.oldStepData();
       if (data) {
         this.firstStepForm.patchValue(data);
+        this.selectedFile.set(data.pfpFile);
       }
     });
   }
@@ -40,7 +48,17 @@ export class StepOneForm {
 
   completeStep() {
     this.firstStepForm.markAllAsTouched();
-    if (this.firstStepForm.valid)
-      this.newStepData.emit(this.firstStepForm.value);
+    if (this.firstStepForm.valid) {
+      const stepData: StepOneDriverRegistrationData = {
+        ...this.firstStepForm.value,
+        pfpFile: this.selectedFile()
+      };
+      
+      this.newStepData.emit(stepData);
+    }
+  }
+
+  handleNewFile(file: File) {
+    this.selectedFile.set(file);
   }
 }
