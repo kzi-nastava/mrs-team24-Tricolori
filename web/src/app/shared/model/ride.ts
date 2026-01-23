@@ -1,5 +1,5 @@
 import { Route } from "./route";
-import { VehicleType } from "./vehicle";
+import { VehicleType } from "./vehicle.model";
 
 export interface RideOptions {
     vehicleType: VehicleType;
