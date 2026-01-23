@@ -16,7 +16,15 @@
                     />
                 </div>
             </div>
-            <button class="bg-light-700 px-10 py-2.5 mx-auto rounded-xl w-fit text-white cursor-pointer">
+            <input 
+                type="file" 
+                #fileInput 
+                (change)="onFileSelected($event)" 
+                accept="image/*" 
+                style="display: none;"
+            >
+            <button type="button" class="bg-light-700 px-10 py-2.5 mx-auto rounded-xl w-fit text-white cursor-pointer"
+                (click)="fileInput.click()">
                 Upload Picture
             </button>
         </div>

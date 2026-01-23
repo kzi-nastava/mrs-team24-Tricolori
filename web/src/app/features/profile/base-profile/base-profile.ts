@@ -23,6 +23,10 @@ export class BaseProfile implements OnInit {
   userProfile = signal<ProfileResponse | null>(null);
   hasChanges = signal(false);
 
+  // Handling pfp selection:
+  selectedFile: File | null = null;
+  imagePreviewSrc = signal<string | null>(null);
+
   constructor() {
     this.personalForm = this.formBuilder.group({
       firstName: ['', [Validators.required]],
@@ -42,14 +46,66 @@ export class BaseProfile implements OnInit {
     this.profileService.getMyProfile().subscribe((profile: ProfileResponse) => {
       // TODO: remove this test data:
       profile.activeHours = 3;
-      
+
       this.userProfile.set(profile);
       this.personalForm.patchValue(profile, {emitEvent: false});
       this.hasChanges.set(false);
     });
   }
 
-  get pfp() { return this.personalForm.get('pfp')?.value || environment.defaultPfp; }
+  handlePfpError(event: any) {
+    event.target.src = environment.defaultPfp;
+  }
+
+  updateProfile() {
+    if (this.personalForm.invalid || !this.hasChanges()) return;
+
+    // Disable potential multiple requests immediately:
+    this.hasChanges.set(false);
+
+    // Check for pfp selection:
+    if (this.selectedFile) {
+      const formData = new FormData();
+      formData.append("pfp", this.selectedFile);
+
+      this.profileService.uploadPfp(formData).subscribe({
+        next: (response) => {
+          this.personalForm.patchValue({ pfp: response.url }, {emitEvent: false});
+          // Create request:
+          this.sendUpdateRequest();
+        },
+        error: err => console.error("Error: ", err)
+      });
+    } else {
+      this.sendUpdateRequest();
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if(file) {
+      if (file.size > 5 * 1024 * 1024) {
+          alert("File is too large (max 5MB)");
+          return;
+      }
+
+      this.selectedFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreviewSrc.set(reader.result as string);
+        this.hasChanges.set(true);
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  get pfp() { 
+    const previewSrc = this.imagePreviewSrc();
+    if(previewSrc) return previewSrc;
+
+    return this.personalForm.get('pfp')?.value || environment.defaultPfp; 
+  }
 
   private checkChanges() {
     const original = this.userProfile(); 
@@ -60,7 +116,7 @@ export class BaseProfile implements OnInit {
 
     const current = this.personalForm.value;
 
-    const isChanged = 
+    const textChanged = 
       current.firstName   != original.firstName ||
       current.lastName    != original.lastName ||
       current.homeAddress != original.homeAddress ||
@@ -68,21 +124,20 @@ export class BaseProfile implements OnInit {
       current.email       != original.email ||
       current.pfp         != original.pfp;
 
-    this.hasChanges.set(isChanged);
+    const fileChanged = this.selectedFile !== null;
+
+    this.hasChanges.set(textChanged || fileChanged);
   }
 
-  handlePfpError(event: any) {
-    event.target.src = environment.defaultPfp;
-  }
-
-  updateProfile() {
-    if (this.personalForm.invalid || !this.hasChanges()) return;
-
+  private sendUpdateRequest() {
     this.profileService.updateProfile(this.personalForm.value).subscribe({
       next: (updatedProfile) => {
         this.userProfile.set(updatedProfile);
         this.personalForm.patchValue(updatedProfile, {emitEvent: false});
         this.hasChanges.set(false);
+
+        this.selectedFile = null;
+        this.imagePreviewSrc.set(null);
       },
       error: (err) => {
         console.error("Error: ", err);

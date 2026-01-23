@@ -18,4 +18,8 @@ export class ProfileService {
   updateProfile(request: ProfileRequest) : Observable<ProfileResponse> {
     return this.http.put<ProfileResponse>(`${this.API_URL}/me`, request);
   }
+
+  uploadPfp(data: FormData): Observable<{url: string}> {
+    return this.http.post<{url: string}>(`${this.API_URL}/upload-pfp`, data);
+  }
 }
