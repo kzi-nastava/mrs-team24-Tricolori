@@ -16,7 +16,6 @@ export class ProfileService {
   }
 
   updateProfile(request: ProfileRequest) : Observable<ProfileResponse> {
-    console.log(request);
     return this.http.put<ProfileResponse>(`${this.API_URL}/me`, request);
   }
 }

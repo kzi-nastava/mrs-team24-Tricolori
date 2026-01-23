@@ -89,4 +89,7 @@
         <!-- Controls -->
         <button [disabled]="!hasChanges() || personalForm.invalid" type="submit" class="disabled:bg-dark-300 disabled:cursor-not-allowed bg-light-700 px-10 py-2.5 mx-auto rounded-xl w-fit text-white cursor-pointer">Update Profile</button>
     </form>
+
+    <!-- Driver Profile contains additional Information -->
+    <ng-content></ng-content>
 </div>
