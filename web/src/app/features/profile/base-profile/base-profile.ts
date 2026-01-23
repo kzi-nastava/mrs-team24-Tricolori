@@ -1,15 +1,17 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { ProfileService } from '../../../core/services/profile.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileResponse } from '../../../shared/model/profile.model';
 import { NgIcon } from '@ng-icons/core';
 import { environment } from '../../../../environments/environment';
+import { PfpPicker } from '../../../shared/components/pfp-picker/pfp-picker';
 
 @Component({
   selector: 'app-base-profile',
   imports: [
     ReactiveFormsModule,
-    NgIcon
+    NgIcon,
+    PfpPicker
   ],
   templateUrl: './base-profile.html',
   styleUrl: './base-profile.css',
@@ -21,12 +23,10 @@ export class BaseProfile implements OnInit {
   personalForm: FormGroup;
 
   userProfile = signal<ProfileResponse | null>(null);
+  selectedFile = signal<File | null>(null);
   hasChanges = signal(false);
 
-  // Handling pfp selection:
-  selectedFile: File | null = null;
-  imagePreviewSrc = signal<string | null>(null);
-  fileToLarge = signal<boolean>(false);
+  pfpPicker = viewChild<PfpPicker>('pfpPicker');
 
   constructor() {
     this.personalForm = this.formBuilder.group({
@@ -54,20 +54,17 @@ export class BaseProfile implements OnInit {
     });
   }
 
-  handlePfpError(event: any) {
-    event.target.src = environment.defaultPfp;
-  }
-
   updateProfile() {
     if (this.personalForm.invalid || !this.hasChanges()) return;
 
     // Disable potential multiple requests immediately:
     this.hasChanges.set(false);
+    const fileToUpload = this.selectedFile();
 
     // Check for pfp selection:
-    if (this.selectedFile) {
+    if (fileToUpload) {
       const formData = new FormData();
-      formData.append("pfp", this.selectedFile);
+      formData.append("pfp", fileToUpload);
 
       this.profileService.uploadPfp(formData).subscribe({
         next: (response) => {
@@ -82,39 +79,14 @@ export class BaseProfile implements OnInit {
     }
   }
 
-  onFileSelected(event: any) {
-    const file: File = event.target.files[0];
-    if(file) {
-      if (file.size > 5 * 1024 * 1024) {
-          this.fileToLarge.set(true);
-          return;
-      }
-
-      this.fileToLarge.set(false);
-      this.selectedFile = file;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreviewSrc.set(reader.result as string);
-        this.hasChanges.set(true);
-      }
-      reader.readAsDataURL(file);
-    }
-  }
-
-  get pfp() { 
-    const previewSrc = this.imagePreviewSrc();
-    if(previewSrc) return previewSrc;
-
-    return this.personalForm.get('pfp')?.value || environment.defaultPfp; 
+  handleNewFile(file: File) {
+    this.selectedFile.set(file);
+    this.hasChanges.set(true);
   }
 
   private checkChanges() {
     const original = this.userProfile(); 
-    if (!original) {
-      this.hasChanges.set(false);
-      return;
-    }
+    if (!original) return;
 
     const current = this.personalForm.value;
 
@@ -123,10 +95,9 @@ export class BaseProfile implements OnInit {
       current.lastName    != original.lastName ||
       current.homeAddress != original.homeAddress ||
       current.phoneNumber != original.phoneNumber ||
-      current.email       != original.email ||
-      current.pfp         != original.pfp;
+      current.email       != original.email
 
-    const fileChanged = this.selectedFile !== null;
+    const fileChanged = this.selectedFile() !== null;
 
     this.hasChanges.set(textChanged || fileChanged);
   }
@@ -136,11 +107,11 @@ export class BaseProfile implements OnInit {
       next: (updatedProfile) => {
         this.userProfile.set(updatedProfile);
         this.personalForm.patchValue(updatedProfile, {emitEvent: false});
+        
+        // Reset everything:
+        this.selectedFile.set(null);
+        this.pfpPicker()?.reset();
         this.hasChanges.set(false);
-
-        this.selectedFile = null;
-        this.imagePreviewSrc.set(null);
-        this.fileToLarge.set(false);
       },
       error: (err) => {
         console.error("Error: ", err);
