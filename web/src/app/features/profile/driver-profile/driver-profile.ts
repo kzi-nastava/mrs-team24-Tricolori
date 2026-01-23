@@ -71,7 +71,18 @@ export class DriverProfile  implements OnInit {
   }
 
   updateProfile() {
-    console.log("AAAA");
+    if (this.personalForm.invalid || !this.hasChanges()) return;
+
+    this.profileService.updateProfile(this.personalForm.value).subscribe({
+      next: (updatedProfile) => {
+        this.userProfile.set(updatedProfile);
+        this.personalForm.patchValue(updatedProfile, {emitEvent: false});
+        this.hasChanges.set(false);
+      },
+      error: (err) => {
+        console.error("Error: ", err);
+      },
+    })
   }
 }
 
