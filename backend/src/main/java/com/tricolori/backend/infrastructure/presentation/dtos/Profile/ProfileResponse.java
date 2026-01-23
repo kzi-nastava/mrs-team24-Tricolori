@@ -1,5 +1,6 @@
 package com.tricolori.backend.infrastructure.presentation.dtos.Profile;
 
+import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleDto;
 
 import lombok.AllArgsConstructor;
@@ -21,4 +22,17 @@ public class ProfileResponse
     private String pfp;
     private VehicleDto vehicle; // null for non-drivers
     private Double activeHours;  // null for non-drivers
+
+    public static ProfileResponse fromPerson(Person person) {
+        return new ProfileResponse(
+            person.getEmail(),
+            person.getFirstName(),
+            person.getLastName(),
+            person.getHomeAddress(),
+            person.getPhoneNum(),
+            person.getPfpUrl(),
+            null, // Explicitly null, for now
+            0.0  // Explicitly null, for now
+        );
+    }
 }
