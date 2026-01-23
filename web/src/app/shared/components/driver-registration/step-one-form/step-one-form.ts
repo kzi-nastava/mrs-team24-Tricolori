@@ -38,7 +38,7 @@ export class StepOneForm {
   get phone() { return this.firstStepForm.get('phone')!; }
   get address() { return this.firstStepForm.get('address')!; }
 
-  submit() {
+  completeStep() {
     this.firstStepForm.markAllAsTouched();
     if (this.firstStepForm.valid)
       this.newStepData.emit(this.firstStepForm.value);

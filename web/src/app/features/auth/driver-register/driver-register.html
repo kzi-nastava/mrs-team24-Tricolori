@@ -1,10 +1,10 @@
-<div class="container font-sans mx-auto p-3">
+<div class="max-w-xl font-sans mx-auto p-3">
     <div>
         <h2 class="text-5xl text-light-800 text-center">Register a driver on Cuber</h2>
         <p class="text-gray-400 text-center">Add a new driver to the system</p>
     </div>
 
-    <div class="flex items-center justify-center mb-12 mt-5">
+    <div class="flex items-center justify-center mb-12 mt-6">
         <div class="flex flex-col items-center">
             <div [class]="step == 1 ? selectedStepClasses : otherStepClasses">1</div>
             <p [class]="step == 1 ? selectedTextClasses : otherTextClasses">Driver Info</p>
@@ -17,31 +17,36 @@
     </div>
 
     @if(step == 1) {
-        <div class="grid h-full grid-cols-2 gap-8">
-            <div class="shadowed order-1 col-span-2 lg:col-span-1 bg-white rounded-2xl p-5 flex flex-col gap-4">
-                <div class="flex items-center gap-4 border-b-3 border-base-600 w-full pb-3 pl-2 pr-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                    </svg>
-                    <h3 class="text-xl text-light-700">Driver's Information</h3>
+        <div class="flex flex-col gap-12">
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-3 w-full pb-3 pl-2 pr-2">
+                    <ng-icon name="matAccountCircleOutline" size="2.5rem" style="color: var(--color-light-700);"/>
+                    <div>
+                        <h3 class="text-xl text-light-700">Driver's Profile Picture</h3>
+                        <p class="text-gray-400 text-sm">Others will be able to see driver's profile picture</p>
+                    </div>
+                </div>
+                <!-- Pfp picker -->
+                <app-pfp-picker 
+                    (fileSelected)="handleNewFile($event)"
+                    #pfpPicker />
+            </div>
+
+            <!-- Driver information -->
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-3 w-full pb-3 pl-2 pr-2">
+                    <ng-icon name="heroUser" size="2.5rem" style="color: var(--color-light-700);"/>
+                    <div>
+                        <h3 class="text-xl text-light-700">Driver's Information</h3>
+                        <p class="text-gray-400 text-sm">Driver personal information</p>
+                    </div>
                 </div>
                 <app-step-one-form
                     [oldStepData]="savedStepOneData"
                     (newStepData)="handleStepOne($event)"
                 />                
             </div>
-            <div class="shadowed order-2 col-span-2 lg:col-span-1 
-                bg-white rounded-2xl p-5 flex flex-col justify-between h-full min-h-0">
-                <h3 class="text-xl text-light-700">Profile Picture (optional)</h3>
-                <div class="flex items-center justify-center flex-1 mt-4 mb-4">
-                    <div class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden border-4 border-dark-800 flex items-center justify-center bg-gray-300">
-                    <img src="assets/icons/logo.svg" alt="Profile Picture" class="w-full h-full object-cover"/></div>
-                </div>
-                <div class="flex flex-col gap-3">
-                    <p class="text-gray-500 text-center">Picture must be in .jpg or .png format</p>
-                    <button class="bg-light-700 py-2.5 rounded-xl w-fit px-6 mx-auto text-white cursor-pointer hover:bg-light-800 transition">Upload Picture</button>
-                </div>
-            </div>
+            
         </div>
     }
 

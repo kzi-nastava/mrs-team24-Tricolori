@@ -15,7 +15,7 @@ import { ionLocationOutline, ionCarOutline } from '@ng-icons/ionicons';
 import { routes } from './app.routes';
 import { provideIcons } from '@ng-icons/core';
 import { authInterceptor } from './shared/model/auth.interceptor';
-import { matAssistantPhotoOutline } from '@ng-icons/material-icons/outline'
+import { matAssistantPhotoOutline, matAccountCircleOutline } from '@ng-icons/material-icons/outline'
 import { bootstrapClock, bootstrap123, bootstrapType } from '@ng-icons/bootstrap-icons'
 import { mynaBaby } from '@ng-icons/mynaui/outline'
 import { phosphorDog } from '@ng-icons/phosphor-icons/regular'
@@ -38,7 +38,7 @@ export const appConfig: ApplicationConfig = {
       heroChevronUp, heroArrowsUpDown, ionLocationOutline,
       matAssistantPhotoOutline, bootstrapClock, heroHashtag,
       mynaBaby, phosphorDog, bootstrap123, ionCarOutline,
-      boxCar, bootstrapType, hugeCar03
+      boxCar, bootstrapType, hugeCar03, matAccountCircleOutline
     })
   ]
 };
