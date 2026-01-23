@@ -2,6 +2,8 @@ package com.tricolori.backend.infrastructure.presentation.mappers;
 
 import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.infrastructure.presentation.dtos.PersonDto;
+import com.tricolori.backend.infrastructure.presentation.dtos.Profile.ProfileResponse;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -15,4 +17,9 @@ public interface PersonMapper {
     @Mapping(target = "createdAt", ignore = true)
     Person toEntity(PersonDto personDto);
 
+    @Mapping(source = "phoneNum", target = "phoneNumber")
+    @Mapping(source = "pfpUrl", target = "pfp")
+    @Mapping(target = "vehicle", ignore = true)
+    @Mapping(target = "activeHours", constant = "0.0")
+    ProfileResponse toProfileResponse(Person person);
 }

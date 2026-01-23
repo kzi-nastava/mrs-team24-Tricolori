@@ -9,10 +9,12 @@ import com.tricolori.backend.core.domain.repositories.VehicleRepository;
 import com.tricolori.backend.infrastructure.presentation.dtos.Profile.ProfileResponse;
 import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleDto;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class VehicleService {
-    @Autowired
-    private VehicleRepository vehicleRepository;
+    private final VehicleRepository vehicleRepository;
 
     public void fillDriverVehicleData(Person currentUser, ProfileResponse response) {
         vehicleRepository.findByDriverId(currentUser.getId()).ifPresent(vehicle -> {

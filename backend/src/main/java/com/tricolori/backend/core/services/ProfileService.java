@@ -1,24 +1,28 @@
 package com.tricolori.backend.core.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.core.domain.repositories.PersonRepository;
+import com.tricolori.backend.core.exceptions.PersonNotFoundException;
 import com.tricolori.backend.infrastructure.presentation.dtos.Profile.ProfileRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Profile.ProfileResponse;
 
+import com.tricolori.backend.infrastructure.presentation.mappers.PersonMapper;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ProfileService {
-    @Autowired
-    private PersonRepository personRepository;
+    private final PersonRepository personRepository;
+    private final PersonMapper personMapper;
 
     @Transactional
     public ProfileResponse updateMyProfile(Person currentPerson, ProfileRequest request) {
-        // TODO: add custom exception...
         Person dbPerson = personRepository.findById(currentPerson.getId())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new PersonNotFoundException("Person not found"));
 
         // Update fields based on request:
         dbPerson.setFirstName(request.getFirstName());
@@ -29,6 +33,6 @@ public class ProfileService {
 
         // Save changes to DB:
         Person savedPerson = personRepository.save(dbPerson);
-        return ProfileResponse.fromPerson(savedPerson);
+        return personMapper.toProfileResponse(savedPerson);
     }
 }
