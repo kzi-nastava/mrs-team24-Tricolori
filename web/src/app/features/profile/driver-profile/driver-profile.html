@@ -81,7 +81,7 @@
             <div class="flex justify-between items-center">
                 <div class="flex flex-col">
                     <p>Total Active Time</p>
-                    <p class="text-3xl"><strong>5.5 hours</strong></p>
+                    <p class="text-3xl"><strong>{{ activeHours() || 0 }} hours</strong></p>
                 </div>
                 <div class="bg-white rounded-full flex items-center justify-center p-4">
                     <ng-icon name="bootstrapClock" size="2rem" style="color: var(--color-light-700);" />
@@ -89,11 +89,12 @@
             </div>
             <div>
                 <div class="flex justify-between mb-1">
-                    <p>Daily Goal: 8 hours</p>
-                    <p>69%</p>
+                    <p>Daily Goal: {{ WORK_GOAL }} hours</p>
+                    <p>{{ activityPercentage() }}%</p>
                 </div>
-                <div class="rounded-3xl bg-white progress">
-                    <div class="rounded-3xl bg-light-600 progress-bar h-5"></div>
+                <div class="rounded-3xl bg-white w-full p-px">
+                    <div class="rounded-3xl bg-light-600 h-5 transition-all duration-500"
+                         [style.width.%]="progressBarWidth()"></div>
                 </div>
             </div>
         </div>

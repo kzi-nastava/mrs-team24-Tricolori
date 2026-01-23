@@ -40,6 +40,9 @@ export class BaseProfile implements OnInit {
 
   ngOnInit(): void {
     this.profileService.getMyProfile().subscribe((profile: ProfileResponse) => {
+      // TODO: remove this test data:
+      profile.activeHours = 3;
+      
       this.userProfile.set(profile);
       this.personalForm.patchValue(profile, {emitEvent: false});
       this.hasChanges.set(false);
