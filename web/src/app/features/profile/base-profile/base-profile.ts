@@ -140,6 +140,7 @@ export class BaseProfile implements OnInit {
 
         this.selectedFile = null;
         this.imagePreviewSrc.set(null);
+        this.fileToLarge.set(false);
       },
       error: (err) => {
         console.error("Error: ", err);
