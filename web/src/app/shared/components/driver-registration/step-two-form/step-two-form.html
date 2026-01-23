@@ -1,73 +1,129 @@
-<form [formGroup]="secondStepForm" (ngSubmit)="handleSubmit()" class="flex flex-col gap-4">
-    <div class="flex flex-col">
-        <label class="text-gray-500 ml-2">Driver's email address:</label>
-        <input type="email" formControlName="email" placeholder="john@example.com" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none"/>
-        <p class="text-sm text-gray-400 ml-3 mt-1">Driver will receive an email to set their password</p>
-        <div class="flex flex-col gap-0 pl-3 text-deep-300">
-            @if(email.hasError('required') && (email.dirty || email.touched)) {
-                <p>Driver's email can't be empty</p>
-            }
-            @if(email.hasError('email') && (email.dirty || email.touched)) {
-                <p>You must enter a valid email address</p>
-            }
-        </div>
-    </div>
-    <div class="grid grid-cols-2 grid-rows-2 gap-4">
-        <div class="flex flex-col">
-            <label class="text-gray-500 ml-2">Vehicle model:</label>
-            <input formControlName="vehicleModel" type="text" placeholder="Toyota Corolla" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
-            <div class="flex flex-col gap-0 pl-3 text-deep-300">
-                @if(vehicleModel.hasError('required') && (vehicleModel.dirty || vehicleModel.touched)) {
-                    <p>Vehicle model can't be empty</p>
-                }
-            </div>
-        </div>
-        <div class="flex flex-col">
-            <label class="text-gray-500 ml-2">Vehicle type:</label>
-            <input formControlName="vehicleType" type="text" placeholder="Standard" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
-            <div class="flex flex-col gap-0 pl-3 text-deep-300">
-                @if(vehicleType.hasError('required') && (vehicleType.dirty || vehicleType.touched)) {
-                    <p>Vehicle type can't be empty</p>
-                }
+<div class="flex flex-col gap-12">
+    <div class="flex flex-col gap-4">
+        <!-- Header -->
+        <div class="flex items-center gap-3 w-full pb-3 pl-2 pr-2">
+            <ng-icon name="hugeCar03" size="2.5rem" style="color: var(--color-light-700);" />
+            <div>
+                <h3 class="text-xl text-light-700">Car & Account Information</h3>
+                <p class="text-gray-400 text-sm">Vehicle data and Email</p>
             </div>
         </div>
 
-        <div class="flex flex-col">
-            <label class="text-gray-500 ml-2">Registration plate:</label>
-            <input formControlName="registrationPlate" type="text" placeholder="ABC-1234" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
-            <div class="flex flex-col gap-0 pl-3 text-deep-300">
-                @if(registrationPlate.hasError('required') && (registrationPlate.dirty || registrationPlate.touched)) {
-                    <p>Vehicle's registration plate can't be empty</p>
-                }
-            </div>
-        </div>
-
-        <div class="flex flex-col">
-            <label class="text-gray-500 ml-2">Number of seats:</label>
-            <input formControlName="seatNumber" type="number" placeholder="4" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+        <!-- Vehicle data and Email -->
+        <form [formGroup]="secondStepForm" (ngSubmit)="handleSubmit()" class="flex flex-col gap-4">
+            <div class="flex flex-col">
+                <p class="text-gray-400 ml-2">Driver's email address:</p>
+                <input type="email" formControlName="email" placeholder="john@example.com" class="bg-gray-100 rounded-2xl p-5 size-full focus:ring-2 focus:ring-base-600 outline-none"/>
+                
+                <!-- Info text -->
+                <p class="text-sm text-gray-400 ml-3 mt-1">Driver will receive an email to set their password</p>
                 <div class="flex flex-col gap-0 pl-3 text-deep-300">
-                @if(seatNumber.hasError('required') && (seatNumber.dirty || seatNumber.touched)) {
-                    <p>Number of seats can't be empty</p>
-                }
-                @if(seatNumber.hasError('min') && (seatNumber.dirty || seatNumber.touched)) {
-                    <p>At least one passenger seat</p>
-                }
+                    @if(email.hasError('required') && (email.dirty || email.touched)) {
+                        <p>Driver's email can't be empty</p>
+                    }
+                    @if(email.hasError('email') && (email.dirty || email.touched)) {
+                        <p>You must enter a valid email address</p>
+                    }
+                </div>
             </div>
-        </div>
+            <div class="grid grid-cols-2 grid-rows-2 gap-4">
+                <!-- Model -->
+                <div class="flex flex-col">
+                    <p class="text-gray-400 ml-2">Vehicle model:</p>
+                    <input formControlName="vehicleModel" type="text" placeholder="Toyota Corolla" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                    <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                        @if(vehicleModel.hasError('required') && (vehicleModel.dirty || vehicleModel.touched)) {
+                            <p>Vehicle model can't be empty</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Type -->
+                <!-- <div class="flex flex-col">
+                    <label class="text-gray-400 ml-2">Vehicle type:</label>
+                    <input formControlName="vehicleType" type="text" placeholder="Standard" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                    <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                        @if(vehicleType.hasError('required') && (vehicleType.dirty || vehicleType.touched)) {
+                            <p>Vehicle type can't be empty</p>
+                        }
+                    </div>
+                </div> -->
+
+                <div class="flex flex-col">
+                    <label class="text-gray-400 ml-2">Vehicle type:</label>
+                    <select formControlName="vehicleType"
+                            class="w-full h-full pl-5 appearance-none bg-gray-100 border text-lg border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-base-600 cursor-pointer">
+                        @for (type of vehicleTypes; track type.id) {
+                            <option [value]="type.id" class="text-gray-500 bg-white">{{type.icon}} {{ type.label }}</option>
+                        }
+                    </select>
+                    <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                        @if(vehicleType.hasError('required') && (vehicleType.dirty || vehicleType.touched)) {
+                            <p>Vehicle type can't be empty</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Registration plate -->
+                <div class="flex flex-col">
+                    <label class="text-gray-400 ml-2">Registration plate:</label>
+                    <input formControlName="registrationPlate" type="text" placeholder="ABC-1234" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                    <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                        @if(registrationPlate.hasError('required') && (registrationPlate.dirty || registrationPlate.touched)) {
+                            <p>Vehicle's registration plate can't be empty</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Seat number -->
+                <div class="flex flex-col">
+                    <label class="text-gray-400 ml-2">Number of seats:</label>
+                    <input formControlName="seatNumber" type="number" placeholder="4" class="bg-gray-100 rounded-2xl p-5 focus:ring-2 focus:ring-base-600 outline-none">
+                        <div class="flex flex-col gap-0 pl-3 text-deep-300">
+                        @if(seatNumber.hasError('required') && (seatNumber.dirty || seatNumber.touched)) {
+                            <p>Number of seats can't be empty</p>
+                        }
+                        @if(seatNumber.hasError('min') && (seatNumber.dirty || seatNumber.touched)) {
+                            <p>At least one passenger seat</p>
+                        }
+                    </div>
+                </div>
+            </div>
+            <h4 class="text-light-700 ml-2">Additional Information</h4>
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Baby friendly -->
+                <label class="flex items-center gap-4 p-4 bg-gray-100 rounded-2xl cursor-pointer transition-all group border"
+                    [class.border-base-600]="babyFriendly.value"
+                    [class.border-gray-100]="!babyFriendly.value">
+                    <input type="checkbox" formControlName="babyFriendly" class="hidden">
+                    <div class="flex items-center justify-center transition-all">
+                        <ng-icon name="mynaBaby" size="1.75rem" [style]="babyFriendly.value ? 'color: var(--color-base-600);' : 'color: gray;'"/>
+                    </div>
+                    <span class="flex-1 transition-colors"
+                            [class.text-base-600]="babyFriendly.value"
+                            [class.text-gray-500]="!babyFriendly.value">
+                        Baby friendly
+                    </span>
+                </label>
+
+                <label class="flex items-center gap-4 p-4 bg-gray-100 rounded-2xl cursor-pointer transition-all group border"
+                    [class.border-base-600]="petFriendly.value"
+                    [class.border-gray-100]="!petFriendly.value">
+                    <input type="checkbox" formControlName="petFriendly" class="hidden">
+                    <div class="flex items-center justify-center transition-all">
+                        <ng-icon name="phosphorDog" size="1.75rem" [style]="petFriendly.value ? 'color: var(--color-base-600);' : 'color: gray;'"/>
+                    </div>
+                    <span class="flex-1 transition-colors"
+                            [class.text-base-600]="petFriendly.value"
+                            [class.text-gray-500]="!petFriendly.value">
+                        Pet friendly
+                    </span>
+                </label>
+            </div>
+            <div class="flex items-center justify-around mt-6 gap-3">
+                <div (click)="goBack()" class="bg-base-600 py-2.5 rounded-xl w-fit px-8 mx-auto text-white cursor-pointer hover:bg-base-700 transition">Previous Step</div>
+                <button [disabled]="secondStepForm.invalid" type="submit" class="disabled:bg-dark-300 disabled:cursor-not-allowed bg-light-700 py-2.5 rounded-xl w-fit px-8 mx-auto text-white cursor-pointer hover:bg-light-800 transition">Register Driver</button>
+            </div>
+        </form>
     </div>
-    <h4 class="text-light-700 ml-2">Additional Information</h4>
-    <div class="grid grid-cols-2 gap-3">
-        <div class="flex items-center gap-4 bg-gray-100 rounded-2xl p-4 hover:bg-gray-200 transition">
-            <input formControlName="babyFriendly" type="checkbox" class="w-5 h-5 text-base-600 focus:ring-base-600 rounded">
-            <p class="text-gray-700">Vehicle drives babies</p>
-        </div>
-        <div class="flex items-center gap-4 bg-gray-100 rounded-2xl p-4 hover:bg-gray-200 transition">
-            <input formControlName="petFriendly" type="checkbox" class="w-5 h-5 text-base-600 focus:ring-base-600 rounded">
-            <p class="text-gray-700">Vehicle drives pets</p>
-        </div>
-    </div>
-    <div class="flex items-center justify-around mt-6 gap-3">
-        <div (click)="goBack()" class="bg-base-600 py-2.5 rounded-xl w-fit px-8 mx-auto text-white cursor-pointer hover:bg-base-700 transition">Previous Step</div>
-        <button type="submit" class="bg-light-700 py-2.5 rounded-xl w-fit px-8 mx-auto text-white cursor-pointer hover:bg-light-800 transition">Register Driver</button>
-    </div>
-</form>
+</div>

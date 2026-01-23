@@ -13,8 +13,6 @@ import { PfpPicker } from '../../../shared/components/pfp-picker/pfp-picker';
     ReactiveFormsModule,
     StepOneForm,
     StepTwoForm,
-    NgIcon,
-    PfpPicker
 ],
   templateUrl: './driver-register.html',
   styleUrl: './driver-register.css',
@@ -60,9 +58,6 @@ export class DriverRegister {
     this.savedStepTwoData = undefined;
     
     this.step = 1;
-  }
-
-  handleNewFile(file: File) {
   }
 
   prevStep(data: StepTwoDriverRegistrationData) {

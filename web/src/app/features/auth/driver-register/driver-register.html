@@ -22,20 +22,11 @@
             (newStepData)="handleStepOne($event)"
         />
     }
-
     @else {
-        <div class="flex flex-col gap-8 max-w-2xl mx-auto">
-            <div class="shadowed bg-white rounded-2xl p-5 flex flex-col gap-5">
-                <div class="flex items-center gap-4 border-b-3 border-base-600 w-full pb-3 pl-2 pr-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-light-700"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0ZM19 17a2 2 0 11-4 0 2 2 0 014 0ZM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1" /></svg>
-                    <h3 class="text-xl text-light-700">Car & Account Information</h3>
-                </div>
-                <app-step-two-form 
-                    [oldStepData]="savedStepTwoData"
-                    (newStepData)="handleStepTwo($event)"
-                    (back)="prevStep($event)"
-                />
-            </div>
-        </div>
+        <app-step-two-form 
+            [oldStepData]="savedStepTwoData"
+            (newStepData)="handleStepTwo($event)"
+            (back)="prevStep($event)"
+        />
     }
 </div>
