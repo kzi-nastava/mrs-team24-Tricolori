@@ -21,16 +21,16 @@ export class StepTwoForm {
   back = output<StepTwoDriverRegistrationData>();
 
   vehicleTypes = [
-    { id: 'standard', label: 'Standard', icon: '🚗' },
-    { id: 'business', label: 'Business', icon: '💼' },
-    { id: 'van', label: 'Van', icon: '🚐' }
+    { id: 'STANDARD', label: 'Standard', icon: '🚗' },
+    { id: 'LUXURY', label: 'Luxury', icon: '✨' },
+    { id: 'VAN', label: 'Van', icon: '🚐' }
   ];
 
   constructor() {
     this.secondStepForm = new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
       vehicleModel: new FormControl('', [Validators.required]),
-      vehicleType: new FormControl('', [Validators.required]),
+      vehicleType: new FormControl(this.vehicleTypes[0].id, [Validators.required]),
       registrationPlate: new FormControl('', [Validators.required]),
       seatNumber: new FormControl('', [Validators.required, Validators.min(1)]),
       petFriendly: new FormControl(false),
