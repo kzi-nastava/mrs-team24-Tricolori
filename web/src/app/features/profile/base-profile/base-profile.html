@@ -10,6 +10,7 @@
                             rounded-full overflow-hidden border-4 border-dark-800 flex items-center justify-center bg-gray-300">
                     <img 
                         [src]="pfp" 
+                        (error)="handlePfpError($event)"
                         alt="Profile Picture" 
                         class="w-full h-full object-cover"
                     />

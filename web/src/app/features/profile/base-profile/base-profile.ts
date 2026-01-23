@@ -3,6 +3,7 @@ import { ProfileService } from '../../../core/services/profile.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileResponse } from '../../../shared/model/profile.model';
 import { NgIcon } from '@ng-icons/core';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-base-profile',
@@ -45,7 +46,7 @@ export class BaseProfile implements OnInit {
     });
   }
 
-  get pfp() { return this.personalForm.get('pfp')?.value || 'assets/icons/logo.svg'; }
+  get pfp() { return this.personalForm.get('pfp')?.value || environment.defaultPfp; }
 
   private checkChanges() {
     const original = this.userProfile(); 
@@ -65,6 +66,10 @@ export class BaseProfile implements OnInit {
       current.pfp         != original.pfp;
 
     this.hasChanges.set(isChanged);
+  }
+
+  handlePfpError(event: any) {
+    event.target.src = environment.defaultPfp;
   }
 
   updateProfile() {
