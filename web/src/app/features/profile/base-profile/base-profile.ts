@@ -26,6 +26,7 @@ export class BaseProfile implements OnInit {
   // Handling pfp selection:
   selectedFile: File | null = null;
   imagePreviewSrc = signal<string | null>(null);
+  fileToLarge = signal<boolean>(false);
 
   constructor() {
     this.personalForm = this.formBuilder.group({
@@ -85,10 +86,11 @@ export class BaseProfile implements OnInit {
     const file: File = event.target.files[0];
     if(file) {
       if (file.size > 5 * 1024 * 1024) {
-          alert("File is too large (max 5MB)");
+          this.fileToLarge.set(true);
           return;
       }
 
+      this.fileToLarge.set(false);
       this.selectedFile = file;
 
       const reader = new FileReader();

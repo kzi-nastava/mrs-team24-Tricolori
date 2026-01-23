@@ -16,6 +16,9 @@
                     />
                 </div>
             </div>
+            @if(fileToLarge()) {
+                <p class="text-deep-300 text-center">File is too large (max 5MB)</p>
+            }
             <input 
                 type="file" 
                 #fileInput 
