@@ -1,6 +1,5 @@
 package com.tricolori.backend.core.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tricolori.backend.core.domain.models.Person;
