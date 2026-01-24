@@ -52,13 +52,13 @@ export class DriverRegister {
 
     const fileToUpload = pfpFile || null;
     // Send request:
-    /*this.authService.registerDriver(finalRequest, fileToUpload).subscribe({
+    this.authService.registerDriver(finalRequest, fileToUpload).subscribe({
       next: (res) => { 
         console.log("Success!", res);
         // TODO: add toast to signalize
       },
       error: (err) => { console.log("Error: ", err) }
-    })*/
+    })
 
     // Because I use @if, components will be recreated, but this time
     // since saved data is undefined, they will be brand new, empty...

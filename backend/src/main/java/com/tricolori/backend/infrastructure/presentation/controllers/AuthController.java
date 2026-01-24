@@ -35,9 +35,9 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> registerDriver(
         @Valid @RequestPart("dataRequest") AdminDriverRegistrationRequest request,
-        @RequestPart(value = "pfpFile", required = false) MultipartFile pfpFile
+        @RequestPart(value = "pfpFile", required = false) MultipartFile pfp
     ) {
-        authService.registerDriver(request, pfpFile);
+        authService.registerDriver(request, pfp);
 
         return ResponseEntity.status(HttpStatus.CREATED)
             .body("Successfully registered a new driver. Registration's final step will be sent to driver's email.");
