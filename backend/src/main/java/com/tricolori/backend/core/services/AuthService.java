@@ -124,6 +124,7 @@ public class AuthService {
         driver.setHomeAddress(request.address());
         driver.setPhoneNum(request.phone());
         driver.setAccountStatus(AccountStatus.WAITING_FOR_ACTIVATION);
+        driver.setPassword(passwordEncoder.encode("ABCdefg123"));
         driver.setVehicle(vehicle);
 
         Driver savedDriver = driverRepository.save(driver);

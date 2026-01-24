@@ -31,14 +31,14 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(path = "/register-driver", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> registerDriver(
         @Valid @RequestPart("dataRequest") AdminDriverRegistrationRequest request,
         @RequestPart(value = "pfpFile", required = false) MultipartFile pfpFile
     ) {
         authService.registerDriver(request, pfpFile);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED)
             .body("Successfully registered a new driver. Registration's final step will be sent to driver's email.");
     }

@@ -70,6 +70,7 @@ export class AuthService {
       formData.append('pfpFile', pfpFile);
     }
 
+    console.log(formData);
     return this.http.post(`${this.API_URL}/register-driver`, formData, { responseType: 'text' }); 
   }
 

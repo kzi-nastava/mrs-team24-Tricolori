@@ -53,6 +53,7 @@ public class VehicleService {
 
         vehicle.setSpecification(specs);
         vehicle.setPlateNum(registrationPlate);
+        vehicle.setModel(specs.getModel());
 
         return vehicleRepository.save(vehicle);
     }
