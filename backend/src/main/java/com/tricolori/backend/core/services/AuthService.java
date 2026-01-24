@@ -17,6 +17,7 @@ import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
 import com.tricolori.backend.infrastructure.presentation.dtos.PersonDto;
 import com.tricolori.backend.infrastructure.presentation.dtos.RegisterPassengerRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Auth.AdminDriverRegistrationRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.Auth.DriverPasswordSetupRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Auth.RegisterVehicleSpecification;
 import com.tricolori.backend.infrastructure.presentation.mappers.PersonMapper;
 import com.tricolori.backend.infrastructure.presentation.mappers.VehicleMapper;
@@ -70,6 +71,34 @@ public class AuthService {
         PersonDto personDto = personMapper.toDto(person);
 
         return new LoginResponse(token, personDto);
+    }
+
+    @Transactional
+    public void driverPasswordSetup(DriverPasswordSetupRequest request) {
+        RegistrationToken token = registrationTokenRepository.findByToken(request.token())
+        .orElseThrow(() -> {
+            // TODO: add custom exception...
+            throw new IllegalArgumentException("Token doesn't exist");
+        });
+
+        if (token.isExpired()) {
+            throw new RuntimeException("Token expired");
+        }
+
+        // Load person...
+        Driver driver = driverRepository.findById(token.getPerson().getId())
+        .orElseThrow(() -> {
+            // TODO: add custom exception...
+            throw new IllegalArgumentException("User doesn't exist");
+        });
+
+        // and update status and password:
+        driver.setPassword(passwordEncoder.encode(request.password()));
+        driver.setAccountStatus(AccountStatus.ACTIVE);
+        driverRepository.save(driver);
+
+        // Delete request:
+        registrationTokenRepository.delete(token);
     }
 
     @Transactional

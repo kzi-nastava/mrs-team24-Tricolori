@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import com.tricolori.backend.infrastructure.presentation.dtos.RegisterPassengerRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.ResetPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Auth.AdminDriverRegistrationRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.Auth.DriverPasswordSetupRequest;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,13 +35,22 @@ public class AuthController {
     @PostMapping(path = "/register-driver", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> registerDriver(
-        @Valid @RequestPart("dataRequest") AdminDriverRegistrationRequest request,
-        @RequestPart(value = "pfpFile", required = false) MultipartFile pfp
+        @Valid @RequestPart("data") AdminDriverRegistrationRequest request,
+        @RequestPart(value = "image", required = false) MultipartFile pfp
     ) {
         authService.registerDriver(request, pfp);
 
         return ResponseEntity.status(HttpStatus.CREATED)
             .body("Successfully registered a new driver. Registration's final step will be sent to driver's email.");
+    }
+
+    @PostMapping("/driver-activate")
+    public ResponseEntity<String> driverPasswordSetup(
+        @Valid @RequestBody DriverPasswordSetupRequest request
+    ) {
+        authService.driverPasswordSetup(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body("Driver registration completed.");
     }
 
     @PostMapping(path = "/register-passenger", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
