@@ -62,7 +62,7 @@ public class Person implements UserDetails {
     @Email
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Length(min = 8)
     private String password;
 

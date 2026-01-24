@@ -4,7 +4,6 @@ import com.tricolori.backend.core.services.AuthService;
 import com.tricolori.backend.infrastructure.presentation.dtos.ForgotPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
-import com.tricolori.backend.infrastructure.presentation.dtos.RegisterDriverRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import com.tricolori.backend.infrastructure.presentation.dtos.RegisterPassengerRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.ResetPasswordRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.Auth.AdminDriverRegistrationRequest;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
     private final AuthService authService;
 
     @PostMapping("/login")
@@ -30,10 +31,16 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    @PostMapping("/register-driver")
-    public ResponseEntity<Void> registerDriver(@Valid @RequestBody RegisterDriverRequest request) {
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping(path = "/register-driver", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> registerDriver(
+        @Valid @RequestPart("dataRequest") AdminDriverRegistrationRequest request,
+        @RequestPart(value = "pfpFile", required = false) MultipartFile pfpFile
+    ) {
+        authService.registerDriver(request, pfpFile);
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body("Successfully registered a new driver. Registration's final step will be sent to driver's email.");
     }
 
     @PostMapping(path = "/register-passenger", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
