@@ -45,6 +45,77 @@ public class EmailService {
         }
     }
 
+    public void sendDriverRegistrationEmail(String toEmail, String firstName, String token) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Finish Your Driver Registration");
+
+            String activationLink = frontendUrl + "/password-setup?token=" + token;
+
+            String htmlContent = buildDriverRegistrationEmailHtml(firstName, activationLink);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Activation email sent to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            log.error("Failed to send activation email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send activation email", e);
+        }
+    }
+
+    private String buildDriverRegistrationEmailHtml(String firstName, String activationLink) {
+    return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #00acc1 0%%, #0097a7 100%%); 
+                          color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+                .button { display: inline-block; padding: 12px 30px; background: #00acc1; 
+                          color: white; text-decoration: none; border-radius: 5px; 
+                          font-weight: bold; margin: 20px 0; }
+                .button:hover { background: #008ba3; }
+                .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+                .role-badge { background: #e0f7fa; color: #00838f; padding: 5px 10px; 
+                              border-radius: 4px; font-weight: bold; font-size: 14px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Welcome to the Cuber Team!</h1>
+                </div>
+                <div class="content">
+                    <h2>Hi %s,</h2>
+                    <p>Congratulations! You have been successfully registered as a <span class="role-badge">Driver</span>.</p>
+                    <p>You are just <strong>one step away</strong> from getting on the road. All you need to do is set up your password to secure your account.</p>
+                    <p>Click the button below to choose your password and activate your profile:</p>
+                    <center>
+                        <a href="%s" class="button">Set Password & Activate Account</a>
+                    </center>
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; color: #00acc1;">%s</p>
+                    <p><strong>Important:</strong> This activation link will expire in 24 hours.</p>
+                    <p>We are excited to have you on board!</p>
+                    <p>Best regards,<br>The Cuber App Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated email. Please do not reply to this message.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """.formatted(firstName, activationLink, activationLink);
+}
+
     private String buildActivationEmailHtml(String firstName, String activationLink) {
         return """
             <!DOCTYPE html>

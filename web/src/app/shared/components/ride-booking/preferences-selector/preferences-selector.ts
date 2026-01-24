@@ -4,6 +4,7 @@ import { NgIcon } from '@ng-icons/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
 import { SchedulePicker } from '../schedule-picker/schedule-picker';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-preferences-selector',
@@ -17,6 +18,7 @@ import { SchedulePicker } from '../schedule-picker/schedule-picker';
 })
 export class PreferencesSelector {
   private fb = inject(FormBuilder);
+  readonly vehicleTypes = environment.vehicleTypes;
 
   selectedType = signal('standard');
   scheduled = input<Date>();
@@ -31,13 +33,6 @@ export class PreferencesSelector {
   get isScheduled(): boolean {
     return !!this.scheduledTime?.value;
   }
-
-  // TODO: use global level vehicle types...
-  vehicleTypes = [
-    { id: 'standard', label: 'Standard', icon: '🚗' },
-    { id: 'business', label: 'Business', icon: '💼' },
-    { id: 'van', label: 'Van', icon: '🚐' }
-  ];
 
   constructor() {
     this.preferencesForm = this.fb.group({

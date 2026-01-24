@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { LoginRequest, LoginResponse, PersonDto, PersonRole, RegisterRequest } from '../../shared/model/auth.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { AdminDriverRegistrationRequest } from '../../shared/model/driver-registration';
 
 @Injectable({
   providedIn: 'root'
@@ -52,6 +53,25 @@ export class AuthService {
       params: {token},
       responseType: 'text'
     });
+  }
+
+  // Admin's Driver registration:
+  registerDriver(dataRequest: AdminDriverRegistrationRequest, pfpFile: File | null | undefined) 
+    : Observable<string>
+  {
+    const formData = new FormData();
+
+    const jsonBlob = new Blob([JSON.stringify(dataRequest)], {
+      type: 'application/json'
+    });
+    formData.append('dataRequest', jsonBlob);
+
+    if (pfpFile) {
+      formData.append('pfpFile', pfpFile);
+    }
+
+    console.log(formData);
+    return this.http.post(`${this.API_URL}/register-driver`, formData, { responseType: 'text' }); 
   }
 
   login(loginRequest: LoginRequest): Observable<LoginResponse> {

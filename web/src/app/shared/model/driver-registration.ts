@@ -1,7 +1,3 @@
-export interface DriverRegistrationData 
-  extends StepOneDriverRegistrationData, StepTwoDriverRegistrationData
-{}
-
 export interface StepOneDriverRegistrationData {
   firstName: string;
   lastName: string;
@@ -11,6 +7,20 @@ export interface StepOneDriverRegistrationData {
 }
 
 export interface StepTwoDriverRegistrationData {
+  email: string;
+  vehicleModel: string;
+  vehicleType: string;
+  registrationPlate: string;
+  seatNumber: number;
+  petFriendly: boolean;
+  babyFriendly: boolean;
+}
+
+export interface AdminDriverRegistrationRequest {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
   email: string;
   vehicleModel: string;
   vehicleType: string;
