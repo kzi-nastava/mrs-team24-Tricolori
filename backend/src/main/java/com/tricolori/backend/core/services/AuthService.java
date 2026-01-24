@@ -25,6 +25,9 @@ import com.tricolori.backend.shared.enums.AccountStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.UUID;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -124,7 +127,7 @@ public class AuthService {
         driver.setHomeAddress(request.address());
         driver.setPhoneNum(request.phone());
         driver.setAccountStatus(AccountStatus.WAITING_FOR_ACTIVATION);
-        driver.setPassword(passwordEncoder.encode("ABCdefg123"));
+        driver.setPassword(passwordEncoder.encode("Temp1-" + UUID.randomUUID().toString()));
         driver.setVehicle(vehicle);
 
         Driver savedDriver = driverRepository.save(driver);
