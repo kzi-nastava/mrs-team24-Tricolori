@@ -7,6 +7,7 @@ export interface StepOneDriverRegistrationData {
   lastName: string;
   phone: string;
   address: string;
+  pfpFile: File | null;
 }
 
 export interface StepTwoDriverRegistrationData {

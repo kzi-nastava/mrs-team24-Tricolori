@@ -1,11 +1,13 @@
 import { Component, effect, input, output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StepTwoDriverRegistrationData } from '../../../model/driver-registration';
+import { NgIcon } from '@ng-icons/core';
 
 @Component({
   selector: 'app-step-two-form',
   imports: [
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgIcon
   ],
   templateUrl: './step-two-form.html',
   styleUrl: './step-two-form.css',
@@ -18,11 +20,17 @@ export class StepTwoForm {
   newStepData = output<StepTwoDriverRegistrationData>();
   back = output<StepTwoDriverRegistrationData>();
 
+  vehicleTypes = [
+    { id: 'STANDARD', label: 'Standard', icon: '🚗' },
+    { id: 'LUXURY', label: 'Luxury', icon: '✨' },
+    { id: 'VAN', label: 'Van', icon: '🚐' }
+  ];
+
   constructor() {
     this.secondStepForm = new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
       vehicleModel: new FormControl('', [Validators.required]),
-      vehicleType: new FormControl('', [Validators.required]),
+      vehicleType: new FormControl(this.vehicleTypes[0].id, [Validators.required]),
       registrationPlate: new FormControl('', [Validators.required]),
       seatNumber: new FormControl('', [Validators.required, Validators.min(1)]),
       petFriendly: new FormControl(false),

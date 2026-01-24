@@ -4,6 +4,7 @@ import { NgIcon } from '@ng-icons/core';
 import { DriverRegistrationData, StepOneDriverRegistrationData, StepTwoDriverRegistrationData } from '../../../shared/model/driver-registration';
 import { StepOneForm } from '../../../shared/components/driver-registration/step-one-form/step-one-form';
 import { StepTwoForm } from '../../../shared/components/driver-registration/step-two-form/step-two-form';
+import { PfpPicker } from '../../../shared/components/pfp-picker/pfp-picker';
 
 @Component({
   selector: 'app-driver-register',
@@ -11,7 +12,7 @@ import { StepTwoForm } from '../../../shared/components/driver-registration/step
     FormsModule,
     ReactiveFormsModule,
     StepOneForm,
-    StepTwoForm
+    StepTwoForm,
 ],
   templateUrl: './driver-register.html',
   styleUrl: './driver-register.css',

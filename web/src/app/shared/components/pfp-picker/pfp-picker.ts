@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -9,11 +9,25 @@ import { environment } from '../../../../environments/environment';
 })
 export class PfpPicker {
   pfpSrc = input<string | undefined>(undefined);
+  initialFile = input<File | undefined | null>(undefined);
+
   fileSelected = output<File>();
 
   private internalPreview = signal<string | null>(null);
   fileToLarge = signal(false);
 
+  constructor() {
+    effect(() => {
+      const file = this.initialFile();
+      if (file) {
+        this.loadFilePreview(file);
+      }
+    });
+  }
+
+  get pfp() {
+    return this.internalPreview() || this.pfpSrc() || environment.defaultPfp;
+  }
 
   handlePfpError(event: any) {
     event.target.src = environment.defaultPfp;
@@ -28,21 +42,21 @@ export class PfpPicker {
       }
 
       this.fileToLarge.set(false);
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.internalPreview.set(reader.result as string);
-        this.fileSelected.emit(file);
-      }
-      reader.readAsDataURL(file);
+      this.loadFilePreview(file);
+      this.fileSelected.emit(file);
     }
-  }
-
-  get pfp() {
-    return this.internalPreview() || this.pfpSrc() || environment.defaultPfp;
   }
 
   reset() {
     this.internalPreview.set(null);
     this.fileToLarge.set(false);
+  }
+
+  private loadFilePreview(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.internalPreview.set(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   }
 }

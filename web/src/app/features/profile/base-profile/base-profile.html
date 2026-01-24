@@ -2,12 +2,21 @@
     <h2 class="text-2xl text-light-700 px-3">Your Profile</h2>
     <p class="text-gray-500 px-3">Manage your personal information and settings</p>
 
-    <form (submit)="updateProfile()" [formGroup]="personalForm" class="flex flex-col gap-12 mt-6">
+    <form (submit)="updateProfile()" [formGroup]="personalForm" class="flex flex-col gap-12 mt-12">
         <!-- Profile Picture -->
-        <app-pfp-picker 
-            [pfpSrc]="userProfile()?.pfp" 
-            (fileSelected)="handleNewFile($event)"
-            #pfpPicker />
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <ng-icon name="matAccountCircleOutline" size="2.5rem" style="color: var(--color-light-700);"/>
+                <div>
+                    <h3 class="text-lg text-light-700">Profile Picture</h3>
+                    <p class="text-gray-400 text-sm">Others can see your profile picture</p>
+                </div>
+            </div>
+            <app-pfp-picker 
+                [pfpSrc]="userProfile()?.pfp" 
+                (fileSelected)="handleNewFile($event)"
+                #pfpPicker />
+        </div>
 
         <!-- Email -->
         <div class="flex flex-col gap-4">
