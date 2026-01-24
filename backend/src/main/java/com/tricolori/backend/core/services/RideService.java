@@ -1,16 +1,10 @@
 package com.tricolori.backend.core.services;
 
-import com.tricolori.backend.core.domain.models.Panic;
-import com.tricolori.backend.core.domain.models.Person;
-import com.tricolori.backend.core.domain.models.Address;
-import com.tricolori.backend.core.domain.models.Passenger;
-import com.tricolori.backend.core.domain.models.Review;
-import com.tricolori.backend.core.domain.models.Ride;
+import com.tricolori.backend.core.domain.models.*;
 import com.tricolori.backend.core.domain.repositories.RideRepository;
-import com.tricolori.backend.infrastructure.presentation.dtos.RideDetailResponse;
-import com.tricolori.backend.infrastructure.presentation.dtos.RideHistoryResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.*;
+import com.tricolori.backend.shared.enums.VehicleType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,28 +16,23 @@ import java.util.stream.Collectors;
 import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.core.domain.repositories.PanicRepository;
 import com.tricolori.backend.core.domain.repositories.PersonRepository;
-import com.tricolori.backend.core.domain.repositories.RideRepository;
 import com.tricolori.backend.core.exceptions.CancelRideExpiredException;
 import com.tricolori.backend.core.exceptions.PersonNotFoundException;
 import com.tricolori.backend.core.exceptions.RideNotFoundException;
-import com.tricolori.backend.infrastructure.presentation.dtos.CancelRideRequest;
-import com.tricolori.backend.infrastructure.presentation.dtos.PanicRideRequest;
 import com.tricolori.backend.shared.enums.RideStatus;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-
 public class RideService {
 
     private final RideRepository rideRepository;
     private final PersonRepository personRepository;
     private final PanicRepository panicRepository;
+    private PriceList priceList;
 
     public List<RideHistoryResponse> getDriverHistory(
             Long driverId,
@@ -308,6 +297,33 @@ public class RideService {
 
         panicRepository.save(panic);
         rideRepository.save(ride);
+    }
+
+    @Transactional
+    public StopRideResponse stopRide(Long rideId, Person driver, StopRideRequest request) {
+
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride not found."));
+
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new AccessDeniedException("You are not authorized to stop this ride.");
+        }
+
+        // TODO: update route in some map service
+        Route updatedRoute = ride.getRoute();
+
+        ride.stop(updatedRoute);
+        ride.setPrice(calculatePrice(ride));
+
+        rideRepository.save(ride);
+
+        return new StopRideResponse(ride.getPrice());
+    }
+
+    public Double calculatePrice(Ride ride) {
+        VehicleType vehicleType =  ride.getVehicleSpecification().getType();
+        return priceList.getPriceForVehicleType(vehicleType)
+                + ride.getRoute().getDistanceKm() * priceList.getKmPrice();
     }
 
 }
