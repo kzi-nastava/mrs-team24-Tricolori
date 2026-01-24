@@ -31,8 +31,8 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(path = "/register-driver", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> registerDriver(
         @Valid @RequestPart("dataRequest") AdminDriverRegistrationRequest request,
         @RequestPart(value = "pfpFile", required = false) MultipartFile pfpFile

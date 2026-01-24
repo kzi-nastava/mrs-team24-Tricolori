@@ -8,5 +8,7 @@ export const environment = {
         { id: 'STANDARD', label: 'Standard', icon: '🚗' },
         { id: 'LUXURY', label: 'Luxury', icon: '✨' },
         { id: 'VAN', label: 'Van', icon: '🚐' }
-    ]
+    ],
+    excludeTokenEndpoints: ['api/v1/auth'],
+    sendTokenAuthEndpoints: ['api/v1/auth/register-driver']
 };
