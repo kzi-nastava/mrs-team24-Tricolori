@@ -29,3 +29,8 @@ export interface AdminDriverRegistrationRequest {
   petFriendly: boolean;
   babyFriendly: boolean;
 }
+
+export interface DriverPasswordSetupRequest {
+  token: string;
+  password: string;
+}
