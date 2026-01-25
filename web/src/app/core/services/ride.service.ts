@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // Interfaces matching your backend DTOs
@@ -48,7 +48,7 @@ export interface RideDetailResponse {
   providedIn: 'root'
 })
 export class RideService {
-  private apiUrl = 'http://localhost:8080/api/v1/rides'; 
+  private apiUrl = 'http://localhost:8080/api/v1/rides';
 
   constructor(private http: HttpClient) {}
 
@@ -80,5 +80,9 @@ export class RideService {
    */
   getDriverRideDetail(rideId: number): Observable<RideDetailResponse> {
     return this.http.get<RideDetailResponse>(`${this.apiUrl}/${rideId}/details/driver`);
+  }
+
+  cancelRide(rideId: number, reason: string) : Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${rideId}/cancel`, { reason: reason });
   }
 }
