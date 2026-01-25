@@ -55,6 +55,12 @@ export class AuthService {
     });
   }
 
+  verifyRegistrationToken(token: string): Observable<string> {
+    return this.http.get(`${this.API_URL}/verify-token/${token}`, {
+      responseType: 'text'
+    });
+  }
+
   // Admin's Driver registration:
   registerDriver(dataRequest: AdminDriverRegistrationRequest, pfpFile: File | null | undefined) 
     : Observable<string>
