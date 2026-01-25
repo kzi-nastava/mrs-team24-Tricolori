@@ -7,5 +7,6 @@ public enum RideStatus {
     PANIC,
     CANCELLED_BY_DRIVER,
     CANCELLED_BY_PASSENGER,
-    DECLINED
+    DECLINED,
+    STOPPED
 }

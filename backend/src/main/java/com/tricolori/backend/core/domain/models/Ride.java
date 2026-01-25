@@ -121,4 +121,9 @@ public class Ride {
         return false;
     }
 
+    public void stop(Route updatedRoute) {
+        route = updatedRoute;
+        status = RideStatus.STOPPED;
+        endTime = LocalDateTime.now();
+    }
 }

@@ -1,5 +1,6 @@
 package com.tricolori.backend.core.domain.models;
 
+import com.tricolori.backend.shared.enums.VehicleType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,5 +37,19 @@ public class PriceList {
 
     @Column(name = "km_price")
     private double kmPrice;
+
+    public Double getPriceForVehicleType(VehicleType type) {
+        switch (type) {
+            case LUXURY -> {
+                return luxuryPrice;
+            }
+            case VAN -> {
+                return vanPrice;
+            }
+            default -> {
+                return standardPrice;
+            }
+        }
+    }
 
 }

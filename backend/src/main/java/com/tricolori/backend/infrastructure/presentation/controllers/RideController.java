@@ -1,5 +1,6 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
+import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.core.services.AuthService;
 import com.tricolori.backend.core.services.RideService;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
@@ -13,6 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,8 +74,13 @@ public class RideController {
     }
 
     @PutMapping("/{id}/stop")
-    public ResponseEntity<StopRideResponse> stopRide(@Valid @RequestBody StopRideRequest request, @PathVariable Long id) {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<StopRideResponse> stopRide(
+            @PathVariable Long id,
+            @Valid @RequestBody StopRideRequest request,
+            @AuthenticationPrincipal Person person
+    ) {
+
+        return ResponseEntity.ok(rideService.stopRide(id, person, request));
     }
 
     @GetMapping("/{id}/track")
