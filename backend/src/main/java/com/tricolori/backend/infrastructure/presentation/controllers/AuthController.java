@@ -8,11 +8,15 @@ import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import com.tricolori.backend.infrastructure.presentation.dtos.RegisterPassengerRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.ResetPasswordRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Auth.AdminDriverRegistrationRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Auth.DriverPasswordSetupRequest;
+import com.tricolori.backend.shared.enums.RegistrationTokenVerificationStatus;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +48,8 @@ public class AuthController {
             .body("Successfully registered a new driver. Registration's final step will be sent to driver's email.");
     }
 
+
+
     @PostMapping("/driver-activate")
     public ResponseEntity<String> driverPasswordSetup(
         @Valid @RequestBody DriverPasswordSetupRequest request
@@ -52,6 +58,15 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body("Driver registration completed.");
     }
+
+    @GetMapping("/verify-token/{token}")
+    public ResponseEntity<String> verifyToken(@PathVariable String token) {
+        RegistrationTokenVerificationStatus status = authService.verifyToken(token);
+        
+        return ResponseEntity.ok(status.toString());
+    }
+
+
 
     @PostMapping(path = "/register-passenger", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> register(
