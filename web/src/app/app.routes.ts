@@ -4,6 +4,8 @@ import { Register } from './features/auth/register/register';
 import { UnregisteredHome } from './features/home/unregistered/unregistered-home';
 import {DriverRideAssignment} from './shared/components/driver-ride-assignment/driver-ride-assignment';
 import { authGuard } from './core/guards/auth.guard';
+import { RideBooking } from './shared/components/ride-booking/ride-booking';
+import { HomePassenger } from './features/home/passenger/passenger-home';
 
 export const routes: Routes = [
   // Public routes
@@ -59,8 +61,22 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'home',
-        loadComponent: () => import('./features/home/passenger/passenger-home').then(m => m.HomePassenger)
+        path: '',
+        component: HomePassenger,
+        children: [
+          /*{
+            path: 'ride-wait/:id',
+            // loadComponent: () => import('./shared/components/ride-wait/ride-wait').then(m => m.RideWait)
+          },*/
+          {
+            path: 'ride-booking', component: RideBooking
+          },
+          {
+            path: '',
+            redirectTo: 'ride-booking',
+            pathMatch: 'full'
+          }
+        ]
       },
       {
         path: 'support',
