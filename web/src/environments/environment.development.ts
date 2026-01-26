@@ -10,5 +10,7 @@ export const environment = {
         { id: 'VAN', label: 'Van', icon: '🚐' }
     ],
     excludeTokenEndpoints: ['api/v1/auth'],
-    sendTokenAuthEndpoints: ['api/v1/auth/register-driver']
+    sendTokenAuthEndpoints: ['api/v1/auth/register-driver'],
+    nsLat: 45.267136,
+    nsLon: 19.833549
 };

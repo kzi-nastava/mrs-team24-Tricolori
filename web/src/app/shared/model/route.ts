@@ -1,14 +1,13 @@
-export interface Address {
+export interface Stop {
   address: string;
-  city: string;
   longitude: number;
   latitude: number;
 }
 
 export interface Route {
-    pickup: Address;
-    destination: Address;
-    stops?: Address[];
+    pickup: Stop;
+    destination: Stop;
+    stops?: Stop[];
 }
 
 export interface FavoriteRoute extends Route {
