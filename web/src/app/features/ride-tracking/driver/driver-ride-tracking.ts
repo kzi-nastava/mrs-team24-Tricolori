@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroArrowLeft,
@@ -14,30 +13,15 @@ import {
 } from '@ng-icons/heroicons/outline';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
+import {PanicRequest, RideDetails} from '../../../shared/model/ride';
+import {Location} from '../../../shared/model/location';
+import {RideService} from '../../../core/services/ride.service';
 
-interface RideDetails {
-  id: string;
-  pickup: string;
-  destination: string;
-  pickupCoords: [number, number];
-  destinationCoords: [number, number];
-  driverName: string;
-  vehicleType: string;
-  licensePlate: string;
-  totalDistance: number;
-  estimatedDuration: number;
-}
-
-interface VehiclePosition {
-  lat: number;
-  lng: number;
-  timestamp: Date;
-}
 
 @Component({
   selector: 'app-driver-ride-tracking',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
+  imports: [CommonModule, NgIconComponent],
   providers: [
     provideIcons({
       heroArrowLeft,
@@ -52,10 +36,6 @@ interface VehiclePosition {
   templateUrl: './driver-ride-tracking.html'
 })
 export class DriverRideTrackingComponent implements OnInit, OnDestroy {
-  reportForm: FormGroup;
-  showReportForm = signal<boolean>(false);
-  isSubmittingReport = signal<boolean>(false);
-  reportSubmitted = signal<boolean>(false);
   panicTriggered = signal<boolean>(false);
 
   estimatedArrival = signal<number>(8);
@@ -63,7 +43,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
   // Mock ride details
   rideDetails = signal<RideDetails>({
-    id: 'ride-123',
+    id: 1,
     pickup: 'Trg Slobode 1',
     destination: 'Kisačka 71',
     pickupCoords: [45.2671, 19.8335],
@@ -76,10 +56,9 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   });
 
   // Current vehicle position (simulated)
-  vehiclePosition = signal<VehiclePosition>({
+  vehicleLocation = signal<Location>({
     lat: 45.2671,
     lng: 19.8335,
-    timestamp: new Date()
   });
 
   progressPercentage = computed(() => {
@@ -96,18 +75,9 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   private currentPointIndex = 0;
 
   constructor(
-    private fb: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute
-  ) {
-    this.reportForm = this.fb.group({
-      description: ['', [
-        Validators.required,
-        Validators.minLength(10),
-        Validators.maxLength(500)
-      ]]
-    });
-  }
+    private rideService: RideService
+  ) {}
 
   ngOnInit(): void {
     // Initialize map after view is ready
@@ -194,10 +164,9 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
         // Start vehicle at the first point
         if (this.routePoints.length > 0) {
           const startPoint = this.routePoints[0];
-          this.vehiclePosition.set({
+          this.vehicleLocation.set({
             lat: startPoint.lat,
             lng: startPoint.lng,
-            timestamp: new Date()
           });
 
           // Add vehicle marker at starting position
@@ -277,10 +246,9 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     const nextPoint = this.routePoints[this.currentPointIndex];
 
     // Update position
-    this.vehiclePosition.set({
+    this.vehicleLocation.set({
       lat: nextPoint.lat,
-      lng: nextPoint.lng,
-      timestamp: new Date()
+      lng: nextPoint.lng
     });
 
     // Update marker on map
@@ -298,46 +266,6 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     this.estimatedArrival.set(Math.max(0, Math.ceil(remainingTime)));
   }
 
-  toggleReportForm(): void {
-    this.showReportForm.update(value => !value);
-    if (!this.showReportForm()) {
-      this.reportForm.reset();
-    }
-  }
-
-  submitReport(): void {
-    if (this.reportForm.invalid || this.isSubmittingReport()) {
-      return;
-    }
-
-    this.isSubmittingReport.set(true);
-
-    const reportData = {
-      rideId: this.rideDetails().id,
-      description: this.reportForm.value.description,
-      timestamp: new Date(),
-      vehiclePosition: this.vehiclePosition()
-    };
-
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Submitting route inconsistency report:', reportData);
-
-      // In real app, call report service:
-      // this.reportService.submitInconsistency(reportData).subscribe(...)
-
-      this.isSubmittingReport.set(false);
-      this.reportSubmitted.set(true);
-      this.showReportForm.set(false);
-      this.reportForm.reset();
-
-      // Hide success message after 5 seconds
-      setTimeout(() => {
-        this.reportSubmitted.set(false);
-      }, 5000);
-    }, 1500);
-  }
-
   /**
    * Triggers panic alert - sends emergency notification to central dispatch
    * and updates vehicle marker to red with pulsing animation
@@ -347,24 +275,23 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       return; // Already triggered
     }
 
-    this.panicTriggered.set(true);
+    const panicRequest : PanicRequest = { vehicleLocation: this.vehicleLocation() }
 
-    const panicData = {
-      rideId: this.rideDetails().id,
-      passengerId: 'current-user-id', // TODO: Get from auth service
-      driverId: 'driver-id', // TODO: Get from ride details
-      timestamp: new Date(),
-      location: this.vehiclePosition(),
-      vehicleInfo: {
-        type: this.rideDetails().vehicleType,
-        licensePlate: this.rideDetails().licensePlate,
-        driverName: this.rideDetails().driverName
+    this.rideService.ridePanic(this.rideDetails().id, panicRequest).subscribe({
+      next: () => {
+        this.panicTriggered.set(true);
+        this.stopTracking();
+        this.updateVehicleMarker();
+        console.log('🚨 Panic request triggered!');
+      },
+      error: (err) => {
+        console.error(err);
       }
-    };
+    })
+  }
 
-    console.log('🚨 PANIC ALERT TRIGGERED:', panicData);
-
-    // Update vehicle marker to emergency state (red with pulse)
+  // Update vehicle marker to emergency state (red with pulse)
+  private updateVehicleMarker() {
     if (this.vehicleMarker && this.map) {
       const panicIcon = this.createVehicleIcon(true);
       this.vehicleMarker.setIcon(panicIcon);
@@ -375,23 +302,6 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       );
       this.vehicleMarker.openPopup();
     }
-
-    // TODO: Send panic alert to backend
-    // this.emergencyService.triggerPanic(panicData).subscribe({
-    //   next: (response) => {
-    //     console.log('Panic alert sent successfully:', response);
-    //   },
-    //   error: (error) => {
-    //     console.error('Failed to send panic alert:', error);
-    //     // Show error notification to user
-    //   }
-    // });
-
-    // TODO: Establish WebSocket connection for real-time emergency tracking
-    // this.websocketService.sendEmergencyAlert(panicData);
-
-    // TODO: Trigger sound/visual alerts on admin dashboard
-    // This will be handled by the backend sending notifications to all admins
   }
 
   handleBack(): void {
