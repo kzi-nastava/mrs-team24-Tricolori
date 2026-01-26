@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from "../../../environments/environment";
 
 // Interfaces matching your backend DTOs
 export interface RideHistoryResponse {
@@ -48,7 +49,7 @@ export interface RideDetailResponse {
   providedIn: 'root'
 })
 export class RideService {
-  private apiUrl = 'http://localhost:8080/api/v1/rides';
+  readonly API_URL = `${environment.apiUrl}/rides`;
 
   constructor(private http: HttpClient) {}
 
@@ -72,17 +73,17 @@ export class RideService {
       params = params.set('endDate', endDate);
     }
 
-    return this.http.get<RideHistoryResponse[]>(`${this.apiUrl}/history/driver`, { params });
+    return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
   }
 
   /**
    * Get detailed information for a specific ride
    */
   getDriverRideDetail(rideId: number): Observable<RideDetailResponse> {
-    return this.http.get<RideDetailResponse>(`${this.apiUrl}/${rideId}/details/driver`);
+    return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/driver`);
   }
 
   cancelRide(rideId: number, reason: string) : Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${rideId}/cancel`, { reason: reason });
+    return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
 }
