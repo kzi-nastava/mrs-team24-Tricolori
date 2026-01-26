@@ -1,42 +1,26 @@
 package com.tricolori.backend.core.services;
 
-import com.tricolori.backend.core.domain.models.Panic;
-import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.core.domain.models.*;
-import com.tricolori.backend.core.domain.repositories.RideRepository;
-import com.tricolori.backend.infrastructure.presentation.dtos.*;
-import com.tricolori.backend.shared.enums.VehicleType;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.core.domain.repositories.PanicRepository;
 import com.tricolori.backend.core.domain.repositories.PersonRepository;
+import com.tricolori.backend.core.domain.repositories.RideRepository;
 import com.tricolori.backend.core.exceptions.CancelRideExpiredException;
 import com.tricolori.backend.core.exceptions.PersonNotFoundException;
 import com.tricolori.backend.core.exceptions.RideNotFoundException;
-import com.tricolori.backend.infrastructure.presentation.dtos.Ride.PassengerRideDetailResponse;
-import com.tricolori.backend.infrastructure.presentation.dtos.Ride.PassengerRideHistoryResponse;
-import com.tricolori.backend.infrastructure.presentation.dtos.Ride.RideDetailResponse;
-import com.tricolori.backend.infrastructure.presentation.dtos.Ride.RideHistoryResponse;
-import com.tricolori.backend.infrastructure.presentation.mappers.RideMapper;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.*;
+import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleLocationResponse;
+import com.tricolori.backend.infrastructure.presentation.mappers.RideMapper;
 import com.tricolori.backend.shared.enums.RideStatus;
+import com.tricolori.backend.shared.enums.VehicleType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,213 +31,169 @@ public class RideService {
     private final PersonRepository personRepository;
     private final PanicRepository panicRepository;
     private final RideMapper rideMapper;
+    private final ReviewService reviewService;
+    private final PriceListService priceListService;
+    private final InconsistencyReportService inconsistencyReportService;
 
-    // ==================== DRIVER HISTORY ====================
-    private PriceList priceList;
+    // ================= driver =================
 
-    public List<RideHistoryResponse> getDriverHistory(
+    public Page<RideHistoryResponse> getDriverHistory(
             Long driverId,
-            LocalDate startDate,
-            LocalDate endDate,
-            String sortBy,
-            String sortDirection
+            Pageable pageable
     ) {
-        List<Ride> rides = rideRepository.findAllByDriverId(driverId);
-
-        // Apply date filtering
-        List<Ride> filteredRides = applyDateFilter(rides, startDate, endDate);
-
-        // Convert to DTOs using MapStruct
-        List<RideHistoryResponse> responses = filteredRides.stream()
-                .map(rideMapper::toDriverHistoryResponse)
-                .collect(Collectors.toList());
-
-        // Apply sorting
-        return applySortingToDriverHistory(responses, sortBy, sortDirection);
+        return rideRepository
+                .findAllDriverRides(driverId, pageable)
+                .map(rideMapper::toDriverHistoryResponse);
     }
 
-    public RideDetailResponse getDriverRideDetail(Long rideId, Long driverId) {
-        Ride ride = findRideById(rideId);
+    public RideDetailResponse getDriverRideDetail(
+            Long rideId,
+            Long driverId
+    ) {
+        Ride ride = getRideOrThrow(rideId);
         validateDriverAccess(ride, driverId);
-        return rideMapper.toDriverDetailResponse(ride);
+
+        RideDetailResponse response =
+                rideMapper.toDriverDetailResponse(ride);
+
+        response.setDriverRating(
+                round(reviewService.getAverageDriverRating(rideId))
+        );
+        response.setVehicleRating(
+                round(reviewService.getAverageVehicleRating(rideId))
+        );
+
+        return response;
     }
-
-    // ==================== PASSENGER HISTORY ====================
-
-    public List<PassengerRideHistoryResponse> getPassengerHistory(
-            Long passengerId,
-            LocalDate startDate,
-            LocalDate endDate,
-        // Get addresses from route
-        Stop pickupAddress = ride.getRoute() != null ? ride.getRoute().getPickupStop() : null;
-        Stop dropoffAddress = ride.getRoute() != null ? ride.getRoute().getDestinationStop() : null;
-
-        // Calculate average ratings from reviews
-        Integer avgDriverRating = null;
-        Integer avgVehicleRating = null;
-        if (ride.getReviews() != null && !ride.getReviews().isEmpty()) {
-            avgDriverRating = (int) Math.round(
-                    ride.getReviews().stream()
-                            .filter(r -> r.getDriverRating() != null)
-                            .mapToInt(Review::getDriverRating)
-                            .average()
-                            .orElse(0.0)
-            );
-            avgVehicleRating = (int) Math.round(
-                    ride.getReviews().stream()
-                            .filter(r -> r.getVehicleRating() != null)
-                            .mapToInt(Review::getVehicleRating)
-                            .average()
-                            .orElse(0.0)
-            );
-            // Set to null if no ratings found
-            if (avgDriverRating == 0) avgDriverRating = null;
-            if (avgVehicleRating == 0) avgVehicleRating = null;
-        }
-
-        // Convert duration from seconds to seconds (keep as is) or calculate if needed
-        Integer duration = ride.getRoute() != null && ride.getRoute().getEstimatedTimeSeconds() != null
-                ? ride.getRoute().getEstimatedTimeSeconds().intValue()
-                : null;
-
-        return RideHistoryResponse.builder()
-                .id(ride.getId())
-                .passengerName(passengerName)
-                .pickupAddress(pickupAddress != null ? pickupAddress.getAddress() : null)
-                .dropoffAddress(dropoffAddress != null ? dropoffAddress.getAddress() : null)
-                .status(ride.getStatus() != null ? ride.getStatus().toString() : null)
-                .totalPrice(ride.getPrice())
-                .distance(ride.getRoute() != null ? ride.getRoute().getDistanceKm() : null)
-                .duration(duration)
-                .createdAt(ride.getCreatedAt())
-                .completedAt(ride.getEndTime())
-                .driverRating(avgDriverRating)
-                .vehicleRating(avgVehicleRating)
-                .build();
-    }
-
-    private RideDetailResponse mapToDetailResponse(Ride ride) {
-        Passenger mainPassenger = ride.getMainPassenger();
-        String passengerName = mainPassenger != null
-                ? mainPassenger.getFirstName() + " " + mainPassenger.getLastName()
-                : "Unknown";
-        String passengerPhone = mainPassenger != null ? mainPassenger.getPhoneNum() : null;
-
-        String driverName = ride.getDriver() != null
-                ? ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName()
-                : "Unknown";
-
-        String vehicleModel = ride.getVehicleSpecification() != null
-                ? ride.getVehicleSpecification().getModel()
-                : null;
-        String vehicleLicensePlate = ride.getDriver() != null && ride.getDriver().getVehicle() != null
-                ? ride.getDriver().getVehicle().getPlateNum()
-                : null;
-
-        // Get addresses from route
-        Stop pickupAddress = ride.getRoute() != null ? ride.getRoute().getPickupStop() : null;
-        Stop dropoffAddress = ride.getRoute() != null ? ride.getRoute().getDestinationStop() : null;
-
-        // Calculate average ratings from reviews
-        Integer avgDriverRating = null;
-        Integer avgVehicleRating = null;
-        String ratingComment = null;
-        if (ride.getReviews() != null && !ride.getReviews().isEmpty()) {
-            avgDriverRating = (int) Math.round(
-                    ride.getReviews().stream()
-                            .filter(r -> r.getDriverRating() != null)
-                            .mapToInt(Review::getDriverRating)
-                            .average()
-                            .orElse(0.0)
-            );
-            avgVehicleRating = (int) Math.round(
-                    ride.getReviews().stream()
-                            .filter(r -> r.getVehicleRating() != null)
-                            .mapToInt(Review::getVehicleRating)
-                            .average()
-                            .orElse(0.0)
-            );
-            // Set to null if no ratings found
-            if (avgDriverRating == 0) avgDriverRating = null;
-            if (avgVehicleRating == 0) avgVehicleRating = null;
-
-            // Get the first review comment as representative
-            ratingComment = ride.getReviews().stream()
-                    .filter(r -> r.getComment() != null && !r.getComment().isEmpty())
-                    .map(Review::getComment)
-                    .findFirst()
-                    .orElse(null);
-        }
-
-        // Convert duration from seconds to seconds (keep as is)
-        Integer duration = ride.getRoute() != null && ride.getRoute().getEstimatedTimeSeconds() != null
-                ? ride.getRoute().getEstimatedTimeSeconds().intValue()
-                : null;
-
-        return RideDetailResponse.builder()
-                .id(ride.getId())
-                .passengerName(passengerName)
-                .passengerPhone(passengerPhone)
-                .driverName(driverName)
-                .vehicleModel(vehicleModel)
-                .vehicleLicensePlate(vehicleLicensePlate)
-                .pickupAddress(pickupAddress != null ? pickupAddress.getAddress() : null)
-                .pickupLatitude(pickupAddress != null ? pickupAddress.getLocation().getLatitude() : null)
-                .pickupLongitude(pickupAddress != null ? pickupAddress.getLocation().getLongitude() : null)
-                .dropoffAddress(dropoffAddress != null ? dropoffAddress.getAddress() : null)
-                .dropoffLatitude(dropoffAddress != null ? dropoffAddress.getLocation().getLatitude() : null)
-                .dropoffLongitude(dropoffAddress != null ? dropoffAddress.getLocation().getLongitude() : null)
-                .status(ride.getStatus() != null ? ride.getStatus().toString() : null)
-                .totalPrice(ride.getPrice())
-                .distance(ride.getRoute() != null ? ride.getRoute().getDistanceKm() : null)
-                .duration(duration)
-                .createdAt(ride.getCreatedAt())
-                .acceptedAt(ride.getScheduledFor())
-                .startedAt(ride.getStartTime())
-                .completedAt(ride.getEndTime())
-                .driverRating(avgDriverRating)
-                .vehicleRating(avgVehicleRating)
-                .ratingComment(ratingComment)
-                .build();
-    }
-
-    private List<RideHistoryResponse> applySorting(
-            List<RideHistoryResponse> responses,
-            String sortBy,
-            String sortDirection
-    ) {
-        List<Ride> rides = rideRepository.findByPassengerIdOrderByCreatedAtDesc(passengerId);
-
-        // Apply date filtering
-        List<Ride> filteredRides = applyDateFilter(rides, startDate, endDate);
-
-        // Convert to DTOs using MapStruct
-        List<PassengerRideHistoryResponse> responses = filteredRides.stream()
-                .map(rideMapper::toPassengerHistoryResponse)
-                .collect(Collectors.toList());
-
-        // Apply sorting
-        return applySortingToPassengerHistory(responses, sortBy, sortDirection);
-    }
-
-    public PassengerRideDetailResponse getPassengerRideDetail(Long rideId, Long passengerId) {
-        Ride ride = findRideById(rideId);
-        validatePassengerAccess(ride, passengerId);
-        return rideMapper.toPassengerDetailResponse(ride);
-    }
-
-    // ==================== RIDE ACTIONS ====================
 
     @Transactional
-    public void cancelRide(Long rideId, String personEmail, CancelRideRequest request) {
-        Ride ride = findRideById(rideId);
+    public void completeRide(Long rideId, Long driverId) {
+        Ride ride = getRideOrThrow(rideId);
+
+        // security check
+        if (ride.getDriver() == null || !ride.getDriver().getId().equals(driverId)) {
+            throw new AccessDeniedException("not authorized to complete this ride");
+        }
+
+        // state validation (optional but recommended)
+        if (ride.getStatus() != RideStatus.ONGOING) {
+            throw new IllegalStateException("ride is not in progress");
+        }
+
+        // complete ride
+        ride.setStatus(RideStatus.FINISHED);
+        ride.setEndTime(LocalDateTime.now());
+
+        // calculate final price
+        ride.setPrice(calculatePrice(ride));
+
+        rideRepository.save(ride);
+    }
+
+    // ================= passenger =================
+
+    public Page<PassengerRideHistoryResponse> getPassengerHistory(
+            Long passengerId,
+            Pageable pageable
+    ) {
+        return rideRepository
+                .findAllPassengerRides(passengerId, pageable)
+                .map(rideMapper::toPassengerHistoryResponse);
+    }
+
+    public PassengerRideDetailResponse getPassengerRideDetail(
+            Long rideId,
+            Long passengerId
+    ) {
+        Ride ride = getRideOrThrow(rideId);
+        validatePassengerAccess(ride, passengerId);
+
+        PassengerRideDetailResponse response =
+                rideMapper.toPassengerDetailResponse(ride);
+
+        response.setDriverRating(
+                round(reviewService.getAverageDriverRating(rideId))
+        );
+        response.setVehicleRating(
+                round(reviewService.getAverageVehicleRating(rideId))
+        );
+
+        return response;
+    }
+
+    public RideTrackingResponse trackRide(Long rideId) {
+        Ride ride = getRideOrThrow(rideId);
+
+        Integer estimatedMinutes =
+                ride.getRoute() != null && ride.getRoute().getEstimatedTimeSeconds() != null
+                        ? (int) Math.round(ride.getRoute().getEstimatedTimeSeconds() / 60.0)
+                        : null;
+
+        LocalDateTime estimatedArrival =
+                ride.getStartTime() != null && estimatedMinutes != null
+                        ? ride.getStartTime().plusMinutes(estimatedMinutes)
+                        : null;
+
+        VehicleLocationResponse currentLocation =
+                ride.getDriver() != null && ride.getDriver().getVehicle().getLocation() != null
+                        ? new VehicleLocationResponse(
+                        ride.getDriver().getVehicle().getId(),
+                        ride.getDriver().getVehicle().getPlateNum(),
+                        ride.getDriver().getVehicle().getLocation().getLatitude(),
+                        ride.getDriver().getVehicle().getLocation().getLongitude(),
+                        ride.getDriver().getVehicle().isAvailable()
+                )
+                        : null;
+
+        return new RideTrackingResponse(
+                ride.getId(),
+                ride.getStatus().name(),
+                currentLocation,
+                null,               // route dto (no mapper yet)
+                estimatedMinutes,
+                estimatedArrival,
+                ride.getScheduledFor(),
+                ride.getStartTime(),
+                ride.getPrice(),
+                null,               // driver dto (no mapper yet)
+                null                // passenger dto list (no mapper yet)
+        );
+    }
+
+    // ================= admin ========================
+    public RideStatusResponse getRideStatus(Long rideId) {
+        Ride ride = getRideOrThrow(rideId);
+        return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
+    }
+
+    public RideStatusResponse getCurrentRideByDriver(Long driverId) {
+        Ride ride = rideRepository.findCurrentRideByDriver(driverId)
+                .orElseThrow(() ->
+                        new RideNotFoundException("no active ride for this driver")
+                );
+
+        return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
+    }
+
+
+
+
+    // ================= ride actions =================
+
+    @Transactional
+    public void cancelRide(
+            Long rideId,
+            String personEmail,
+            CancelRideRequest request
+    ) {
+        Ride ride = getRideOrThrow(rideId);
 
         if (isDriver(ride, personEmail)) {
-            handleDriverCancellation(ride, request);
+            cancelByDriver(ride, request);
         } else if (isPassenger(ride, personEmail)) {
-            handlePassengerCancellation(ride, request);
+            cancelByPassenger(ride, request);
         } else {
-            throw new AccessDeniedException("You are not authorized to cancel this ride.");
+            throw new AccessDeniedException("not authorized");
         }
 
         ride.setCancellationReason(request.reason());
@@ -261,20 +201,23 @@ public class RideService {
     }
 
     @Transactional
-    public void panicRide(Long rideId, String personEmail, PanicRideRequest request) {
+    public void panicRide(
+            Long rideId,
+            String personEmail,
+            PanicRideRequest request
+    ) {
+        Ride ride = getRideOrThrow(rideId);
 
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RideNotFoundException("Ride not found."));
+        boolean isParticipant =
+                ride.getDriver().getEmail().equals(personEmail)
+                        || ride.containsPassengerWithEmail(personEmail);
 
-        boolean isDriver = ride.getDriver().getEmail().equals(personEmail);
-        boolean isPassenger = ride.containsPassengerWithEmail(personEmail);
-
-        if (!isDriver && !isPassenger) {
-            throw new AccessDeniedException("You are not part of this ride.");
+        if (!isParticipant) {
+            throw new AccessDeniedException("not part of this ride");
         }
 
         Person person = personRepository.findByEmail(personEmail)
-                .orElseThrow(() -> new PersonNotFoundException("Person not found."));
+                .orElseThrow(() -> new PersonNotFoundException("person not found"));
 
         ride.setStatus(RideStatus.PANIC);
         ride.setEndTime(LocalDateTime.now());
@@ -288,16 +231,36 @@ public class RideService {
         rideRepository.save(ride);
     }
 
-    // ==================== HELPER METHODS ====================
+    @Transactional
+    public StopRideResponse stopRide(
+            Long rideId,
+            Person driver,
+            StopRideRequest request
+    ) {
+        Ride ride = getRideOrThrow(rideId);
 
-    private Ride findRideById(Long rideId) {
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new AccessDeniedException("not authorized");
+        }
+
+        Route updatedRoute = ride.getRoute(); // placeholder
+        ride.stop(updatedRoute);
+        ride.setPrice(calculatePrice(ride));
+
+        rideRepository.save(ride);
+        return new StopRideResponse(ride.getPrice());
+    }
+
+    // ================= helpers =================
+
+    private Ride getRideOrThrow(Long rideId) {
         return rideRepository.findById(rideId)
-                .orElseThrow(() -> new RideNotFoundException("Ride not found."));
+                .orElseThrow(() -> new RideNotFoundException("ride not found"));
     }
 
     private void validateDriverAccess(Ride ride, Long driverId) {
         if (ride.getDriver() == null || !ride.getDriver().getId().equals(driverId)) {
-            throw new AccessDeniedException("Unauthorized access to ride");
+            throw new AccessDeniedException("unauthorized");
         }
     }
 
@@ -306,7 +269,7 @@ public class RideService {
                 .anyMatch(p -> p.getId().equals(passengerId));
 
         if (!isPassenger) {
-            throw new AccessDeniedException("Unauthorized access to ride");
+            throw new AccessDeniedException("unauthorized");
         }
     }
 
@@ -318,151 +281,33 @@ public class RideService {
         return ride.containsPassengerWithEmail(email);
     }
 
-    private void handleDriverCancellation(Ride ride, CancelRideRequest request) {
+    private void cancelByDriver(Ride ride, CancelRideRequest request) {
         if (request.reason().isBlank()) {
-            throw new IllegalArgumentException("Cancellation reason must be provided.");
+            throw new IllegalArgumentException("reason required");
         }
         ride.setStatus(RideStatus.CANCELLED_BY_DRIVER);
     }
 
-    private void handlePassengerCancellation(Ride ride, CancelRideRequest request) {
-        LocalDateTime timeNow = LocalDateTime.now();
-        if (timeNow.isAfter(ride.getStartTime().minusMinutes(10))) {
-            throw new CancelRideExpiredException("Ride cancel option expired. Ride starts within 10 minutes.");
+    private void cancelByPassenger(Ride ride, CancelRideRequest request) {
+        if (LocalDateTime.now().isAfter(ride.getStartTime().minusMinutes(10))) {
+            throw new CancelRideExpiredException("cancel expired");
         }
         ride.setStatus(RideStatus.CANCELLED_BY_PASSENGER);
     }
 
-    private List<Ride> applyDateFilter(List<Ride> rides, LocalDate startDate, LocalDate endDate) {
-        if (startDate == null && endDate == null) {
-            return rides;
-        }
+    private Double calculatePrice(Ride ride) {
+        VehicleType type = ride.getVehicleSpecification().getType();
 
-        return rides.stream()
-                .filter(ride -> {
-                    LocalDate rideDate = ride.getCreatedAt().toLocalDate();
-                    boolean afterStart = startDate == null || !rideDate.isBefore(startDate);
-                    boolean beforeEnd = endDate == null || !rideDate.isAfter(endDate);
-                    return afterStart && beforeEnd;
-                })
-                .collect(Collectors.toList());
+        Double basePrice =
+                priceListService.calculateBasePrice(type);
+
+        Double kmPrice =
+                priceListService.getKmPrice();
+
+        return basePrice + ride.getRoute().getDistanceKm() * kmPrice;
     }
 
-    private List<RideHistoryResponse> applySortingToDriverHistory(
-            List<RideHistoryResponse> responses,
-            String sortBy,
-            String sortDirection
-    ) {
-        if ("createdAt".equals(sortBy) && "DESC".equals(sortDirection)) {
-            return responses; // Already sorted by default
-        }
-
-        Comparator<RideHistoryResponse> comparator = getDriverHistoryComparator(sortBy);
-
-        if ("DESC".equalsIgnoreCase(sortDirection)) {
-            comparator = comparator.reversed();
-        }
-
-        return responses.stream()
-                .sorted(comparator)
-                .collect(Collectors.toList());
+    private Integer round(Double value) {
+        return value != null ? (int) Math.round(value) : null;
     }
-
-    private Comparator<RideHistoryResponse> getDriverHistoryComparator(String sortBy) {
-        return switch (sortBy) {
-            case "totalPrice" -> Comparator.comparing(
-                    RideHistoryResponse::getTotalPrice,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-            case "distance" -> Comparator.comparing(
-                    RideHistoryResponse::getDistance,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-            case "status" -> Comparator.comparing(
-                    RideHistoryResponse::getStatus,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-            case "completedAt" -> Comparator.comparing(
-                    RideHistoryResponse::getCompletedAt,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-            default -> Comparator.comparing(
-                    RideHistoryResponse::getCreatedAt,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-        };
-    }
-
-    private List<PassengerRideHistoryResponse> applySortingToPassengerHistory(
-            List<PassengerRideHistoryResponse> responses,
-            String sortBy,
-            String sortDirection
-    ) {
-        if ("createdAt".equals(sortBy) && "DESC".equals(sortDirection)) {
-            return responses; // Already sorted by default
-        }
-
-        Comparator<PassengerRideHistoryResponse> comparator = getPassengerHistoryComparator(sortBy);
-
-        if ("DESC".equalsIgnoreCase(sortDirection)) {
-            comparator = comparator.reversed();
-        }
-
-        return responses.stream()
-                .sorted(comparator)
-                .collect(Collectors.toList());
-    }
-
-    private Comparator<PassengerRideHistoryResponse> getPassengerHistoryComparator(String sortBy) {
-        return switch (sortBy) {
-            case "totalPrice" -> Comparator.comparing(
-                    PassengerRideHistoryResponse::getTotalPrice,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-            case "distance" -> Comparator.comparing(
-                    PassengerRideHistoryResponse::getDistance,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-            case "status" -> Comparator.comparing(
-                    PassengerRideHistoryResponse::getStatus,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-            case "completedAt" -> Comparator.comparing(
-                    PassengerRideHistoryResponse::getCompletedAt,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-            default -> Comparator.comparing(
-                    PassengerRideHistoryResponse::getCreatedAt,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
-        };
-    }
-}
-    @Transactional
-    public StopRideResponse stopRide(Long rideId, Person driver, StopRideRequest request) {
-
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RideNotFoundException("Ride not found."));
-
-        if (!ride.getDriver().getId().equals(driver.getId())) {
-            throw new AccessDeniedException("You are not authorized to stop this ride.");
-        }
-
-        // TODO: update route in some map service
-        Route updatedRoute = ride.getRoute();
-
-        ride.stop(updatedRoute);
-        ride.setPrice(calculatePrice(ride));
-
-        rideRepository.save(ride);
-
-        return new StopRideResponse(ride.getPrice());
-    }
-
-    public Double calculatePrice(Ride ride) {
-        VehicleType vehicleType =  ride.getVehicleSpecification().getType();
-        return priceList.getPriceForVehicleType(vehicleType)
-                + ride.getRoute().getDistanceKm() * priceList.getKmPrice();
-    }
-
 }
