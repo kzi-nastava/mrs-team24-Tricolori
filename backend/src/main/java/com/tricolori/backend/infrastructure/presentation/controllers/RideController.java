@@ -54,8 +54,8 @@ public class RideController {
             Authentication authentication
     ) {
 
-        String personEmail = authentication.getName();
-        rideService.panicRide(id, personEmail, request);
+//        String personEmail = authentication.getName();
+//        rideService.panicRide(id, personEmail, request);
 
         return ResponseEntity.ok().build();
     }

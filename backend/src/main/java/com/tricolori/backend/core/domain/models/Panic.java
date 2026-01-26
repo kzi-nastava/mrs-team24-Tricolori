@@ -35,5 +35,5 @@ public class Panic {
 
     @Embedded
     @Column(name = "vehicle_location")
-    private Address vehicleLocation;
+    private Location vehicleLocation;
 }
