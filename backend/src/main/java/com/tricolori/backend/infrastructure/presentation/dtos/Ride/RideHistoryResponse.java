@@ -13,15 +13,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RideHistoryResponse {
     private Long id;
-    private String passengerName;
     private String pickupAddress;
-    private String dropoffAddress;
+    private String destinationAddress;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private Double price;
     private String status;
-    private Double totalPrice;
-    private Double distance;
-    private Integer duration;
-    private LocalDateTime createdAt;
-    private LocalDateTime completedAt;
-    private Integer driverRating;
-    private Integer vehicleRating;
 }

@@ -3,8 +3,7 @@ package com.tricolori.backend.infrastructure.presentation.controllers;
 import com.tricolori.backend.core.services.AuthService;
 import com.tricolori.backend.core.services.RideService;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
-import com.tricolori.backend.infrastructure.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,7 +12,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -97,7 +95,7 @@ public class RideController {
     }
 
     @GetMapping("/{id}/rating-status")
-    public ResponseEntity<RideReviewResponse> getRatingStatus(@PathVariable Long id) {
+    public ResponseEntity<RideRatingResponse> getRatingStatus(@PathVariable Long id) {
         return ResponseEntity.ok().build();
     }
 
