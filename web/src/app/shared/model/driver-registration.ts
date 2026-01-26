@@ -29,3 +29,15 @@ export interface AdminDriverRegistrationRequest {
   petFriendly: boolean;
   babyFriendly: boolean;
 }
+
+export interface DriverPasswordSetupRequest {
+  token: string;
+  password: string;
+}
+
+export enum RegistrationTokenStatus {
+  VALID = 'VALID',
+  EXPIRED = 'EXPIRED_NEW_SENT',
+  ACTIVE = 'ALREADY_ACTIVE',
+  INVALID = 'INVALID'
+}

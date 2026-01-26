@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { LoginRequest, LoginResponse, PersonDto, PersonRole, RegisterRequest } from '../../shared/model/auth.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { AdminDriverRegistrationRequest } from '../../shared/model/driver-registration';
+import { AdminDriverRegistrationRequest, DriverPasswordSetupRequest } from '../../shared/model/driver-registration';
 
 @Injectable({
   providedIn: 'root'
@@ -55,6 +55,12 @@ export class AuthService {
     });
   }
 
+  verifyRegistrationToken(token: string): Observable<string> {
+    return this.http.get(`${this.API_URL}/verify-token/${token}`, {
+      responseType: 'text'
+    });
+  }
+
   // Admin's Driver registration:
   registerDriver(dataRequest: AdminDriverRegistrationRequest, pfpFile: File | null | undefined) 
     : Observable<string>
@@ -64,14 +70,20 @@ export class AuthService {
     const jsonBlob = new Blob([JSON.stringify(dataRequest)], {
       type: 'application/json'
     });
-    formData.append('dataRequest', jsonBlob);
+    formData.append('data', jsonBlob);
 
     if (pfpFile) {
-      formData.append('pfpFile', pfpFile);
+      formData.append('image', pfpFile);
     }
 
     console.log(formData);
     return this.http.post(`${this.API_URL}/register-driver`, formData, { responseType: 'text' }); 
+  }
+
+  driverPasswordSetup(request: DriverPasswordSetupRequest) 
+    : Observable<string>
+  {
+    return this.http.post(`${this.API_URL}/driver-activate`, request, { responseType: 'text' });
   }
 
   login(loginRequest: LoginRequest): Observable<LoginResponse> {

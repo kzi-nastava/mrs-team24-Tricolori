@@ -17,15 +17,20 @@ import com.tricolori.backend.infrastructure.presentation.dtos.LoginResponse;
 import com.tricolori.backend.infrastructure.presentation.dtos.PersonDto;
 import com.tricolori.backend.infrastructure.presentation.dtos.RegisterPassengerRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Auth.AdminDriverRegistrationRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.Auth.DriverPasswordSetupRequest;
 import com.tricolori.backend.infrastructure.presentation.dtos.Auth.RegisterVehicleSpecification;
 import com.tricolori.backend.infrastructure.presentation.mappers.PersonMapper;
 import com.tricolori.backend.infrastructure.presentation.mappers.VehicleMapper;
 import com.tricolori.backend.infrastructure.security.JwtUtil;
 import com.tricolori.backend.shared.enums.AccountStatus;
+import com.tricolori.backend.shared.enums.RegistrationTokenVerificationStatus;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -73,6 +78,34 @@ public class AuthService {
     }
 
     @Transactional
+    public void driverPasswordSetup(DriverPasswordSetupRequest request) {
+        RegistrationToken token = registrationTokenRepository.findByToken(request.token())
+        .orElseThrow(() -> {
+            // TODO: add custom exception...
+            throw new IllegalArgumentException("Token doesn't exist");
+        });
+
+        if (token.isExpired()) {
+            throw new RuntimeException("Token expired");
+        }
+
+        // Load person...
+        Driver driver = driverRepository.findById(token.getPerson().getId())
+        .orElseThrow(() -> {
+            // TODO: add custom exception...
+            throw new IllegalArgumentException("User doesn't exist");
+        });
+
+        // and update status and password:
+        driver.setPassword(passwordEncoder.encode(request.password()));
+        driver.setAccountStatus(AccountStatus.ACTIVE);
+        driverRepository.save(driver);
+
+        // Delete request:
+        registrationTokenRepository.delete(token);
+    }
+
+    @Transactional
     public void registerPassenger(RegisterPassengerRequest request, MultipartFile pfp) {
 
         if (personRepository.existsByEmail(request.email())) {
@@ -106,6 +139,47 @@ public class AuthService {
     }
 
     @Transactional
+    public RegistrationTokenVerificationStatus verifyToken(String tokenValue) {
+        Optional<RegistrationToken> tokenOpt = registrationTokenRepository.findByToken(tokenValue);
+        if (tokenOpt.isEmpty()) {
+            return RegistrationTokenVerificationStatus.INVALID;
+        }
+        RegistrationToken token = tokenOpt.get();
+
+        // Load person...
+        Optional<Driver> driverOpt = driverRepository.findById(token.getPerson().getId());
+        if (driverOpt.isEmpty()) {
+            return RegistrationTokenVerificationStatus.INVALID;
+        }
+        Driver driver = driverOpt.get();
+
+        if (driver.getAccountStatus() == AccountStatus.ACTIVE) {
+            registrationTokenRepository.delete(token);
+            return RegistrationTokenVerificationStatus.ALREADY_ACTIVE;
+        }
+
+        if (token.isExpired()) {
+            registrationTokenRepository.delete(token);
+            // Generate registration token:
+            RegistrationToken newToken = RegistrationToken.createForPerson(driver);
+            registrationTokenRepository.save(newToken);
+
+            // Send driver registration mail:
+            emailService.sendDriverRegistrationEmail(
+                driver.getEmail(),
+                driver.getFirstName(),
+                newToken.getToken()
+            );   
+
+            return RegistrationTokenVerificationStatus.EXPIRED_NEW_SENT;
+        }
+
+        return RegistrationTokenVerificationStatus.VALID;
+    }
+
+
+
+    @Transactional
     public void registerDriver(AdminDriverRegistrationRequest request, MultipartFile pfpFile) {
         if (personRepository.existsByEmail(request.email())) {
             // TODO: add custom exception...
@@ -133,8 +207,10 @@ public class AuthService {
         Driver savedDriver = driverRepository.save(driver);
 
         // Generate and save pfp:
-        String pfpUrl = cloudinaryService.uploadProfilePicture(pfpFile, savedDriver.getId());
-        savedDriver.setPfpUrl(pfpUrl);
+        if (pfpFile != null) {
+            String pfpUrl = cloudinaryService.uploadProfilePicture(pfpFile, savedDriver.getId());
+            savedDriver.setPfpUrl(pfpUrl);
+        }
 
         // Generate registration token:
         RegistrationToken token = RegistrationToken.createForPerson(savedDriver);
