@@ -1,36 +1,77 @@
 <form [formGroup]="routeForm" class="flex flex-col gap-2 w-full max-w-lg">
-    <!-- Pickup Location -->
-    <div class="flex flex-col">
+    
+    <div [formGroupName]="'pickup'" class="flex flex-col relative">
         <p class="text-gray-400 pl-2">Pickup Location</p>
         <div class="relative">
-        <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <div class="size-3 rounded-full bg-dark"></div>
+            <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <div class="size-3 rounded-full bg-dark"></div>
+            </div>
+            <input formControlName="address" 
+                placeholder="Bulevar kralja Petra 3"
+                autocomplete="off"
+                class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
         </div>
-        <input formControlName="pickup" 
-            placeholder="Bulevar kralja Petra 3"
-            class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
-        </div>
+
+        @if (suggestions['pickup']; as results) {
+            @if (results.length > 0) {
+                <div class="absolute top-full left-0 z-50 w-full bg-white border border-gray-200 rounded-2xl mt-1 shadow-xl overflow-hidden">
+                    @for (res of results; track res) {
+                        <div (click)="selectSuggestion(res, 'pickup')" 
+                             class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-none border-gray-100 text-sm">
+                            <span class="font-medium">
+                                {{ res.properties.street || res.properties.name }} 
+                                {{ res.properties.housenumber || '' }}
+                            </span>
+                            @if (res.properties.city) {
+                                <span class="text-gray-400 text-xs">, {{ res.properties.city }}</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+
         <div class="flex flex-col gap-0 pl-3 text-deep-300">
-            @if(pickup.hasError('required') && (pickup.dirty || pickup.touched)) {
-                <p>Pickup location is required</p>
+            @if(pickup.get('address')?.hasError('required') && (pickup.dirty || pickup.touched)) {
+                <p class="text-xs mt-1">Pickup location is required</p>
             }
         </div>
     </div>
 
-
     <div formArrayName="stops" class="flex flex-col gap-3.5 overflow-y-auto max-h-72 py-1">
-        @for (stop of stops.controls; track stop; let i = $index) {
-            <div class="w-full">
+        @for (stopGroup of stops.controls; track stopGroup; let i = $index) {
+            <div [formGroupName]="i" class="w-full relative">
                 <p class="text-gray-400 pl-2">Stop {{ i + 1 }}</p>
                 <div class="flex items-center gap-3">
                     <div class="relative flex-1">
                         <div class="absolute inset-y-0 left-4 flex items-center">
                             <div class="size-3 rounded-full bg-base-600"></div>
                         </div>
-                        <input [formControlName]="i" placeholder="Enter stop address"
+                        <input formControlName="address" 
+                            placeholder="Enter stop address"
+                            autocomplete="off"
                             class="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600 transition-all">
+                        
+                        @if (suggestions[i.toString()]; as stopResults) {
+                            @if (stopResults.length > 0) {
+                                <div class="absolute top-full left-0 z-50 w-full bg-white border border-gray-200 rounded-2xl mt-1 shadow-xl overflow-hidden">
+                                    @for (res of stopResults; track res) {
+                                        <div (click)="selectSuggestion(res, i.toString(), true)" 
+                                             class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-none border-gray-100 text-sm">
+                                            <span class="font-medium">
+                                                {{ res.properties.street || res.properties.name }} 
+                                                {{ res.properties.housenumber || '' }}
+                                            </span>
+                                            @if (res.properties.city) {
+                                                <span class="text-gray-400 text-xs">, {{ res.properties.city }}</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
                     </div>
-                    <button 
+                    <button type="button"
                         (click)="removeStop(i)"
                         class="bg-deep-300 hover:bg-deep-400 transition-colors p-4 rounded-2xl text-white cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,25 +83,45 @@
         }
     </div>
 
-    <!-- Add routes button -->
     <button type="button" (click)="addStop()" 
-            class="w-full py-3 border border-gray-400 border-dashed rounded-2xl text-base-700 font-medium hover:bg-gray-100 cursor-pointer text-center">
-        Add Stop
+            class="w-full py-3 border border-gray-400 border-dashed rounded-2xl text-base-700 font-medium hover:bg-gray-100 cursor-pointer text-center mt-2">
+        + Add Stop
     </button>
 
-    <div class="flex flex-col">
+    <div [formGroupName]="'destination'" class="flex flex-col relative">
         <p class="text-gray-400 pl-2">Destination</p>
         <div class="relative">
-        <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <div class="size-3 rounded-full bg-light-600"></div>
+            <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <div class="size-3 rounded-full bg-light-600"></div>
+            </div>
+            <input formControlName="address" 
+                placeholder="Laze Teleckog 13"
+                autocomplete="off"
+                class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
         </div>
-        <input formControlName="destination" 
-            placeholder="Laze Teleckog 13"
-            class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
-        </div>
+
+        @if (suggestions['destination']; as destResults) {
+            @if (destResults.length > 0) {
+                <div class="absolute top-full left-0 z-50 w-full bg-white border border-gray-200 rounded-2xl mt-1 shadow-xl overflow-hidden">
+                    @for (res of destResults; track res) {
+                        <div (click)="selectSuggestion(res, 'destination')" 
+                             class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-none border-gray-100 text-sm">
+                            <span class="font-medium">
+                                {{ res.properties.street || res.properties.name }} 
+                                {{ res.properties.housenumber || '' }}
+                            </span>
+                            @if (res.properties.city) {
+                                <span class="text-gray-400 text-xs">, {{ res.properties.city }}</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+
         <div class="flex flex-col gap-0 pl-3 text-deep-300">
-            @if(destination.hasError('required') && (destination.dirty || destination.touched)) {
-                <p>Destination location is required</p>
+            @if(destination.get('address')?.hasError('required') && (destination.dirty || destination.touched)) {
+                <p class="text-xs mt-1">Destination location is required</p>
             }
         </div>
     </div>
