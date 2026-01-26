@@ -1,5 +1,7 @@
 package com.tricolori.backend.infrastructure.presentation.dtos;
 
+import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleLocationResponse;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
