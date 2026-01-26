@@ -8,12 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Embeddable
 @Data @NoArgsConstructor @AllArgsConstructor
-public class Address {
-
-    @Column(nullable = false)
-    private String address;
-
-    private String city;
+public class Location {
 
     @Column(nullable = false)
     private Double longitude;

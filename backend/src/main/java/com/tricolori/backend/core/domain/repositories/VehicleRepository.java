@@ -21,6 +21,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     @Query("SELECT d.vehicle FROM Driver d WHERE d.id = :driverId")
     Optional<Vehicle> findByDriverId(@Param("driverId") Long driverId);
 
-    @Query("SELECT v FROM Vehicle v WHERE v.available = true AND v.latitude IS NOT NULL AND v.longitude IS NOT NULL")
+    @Query("SELECT v FROM Vehicle v WHERE v.available = true " +
+            "AND v.location.latitude IS NOT NULL " +
+            "AND v.location.longitude IS NOT NULL")
     List<Vehicle> findAllActiveWithLocation();
 }

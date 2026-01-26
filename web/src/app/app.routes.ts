@@ -14,6 +14,7 @@ export const routes: Routes = [
   { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password/reset-password').then(m => m.ResetPassword) },
   { path: 'password-change', loadComponent: () => import('./features/password-change/password-change').then(m => m.PasswordChange) },
   { path: 'activate', loadComponent: () => import('./features/auth/activate-account/activate-account').then(m => m.ActivateAccount) },
+  { path: 'password-setup', loadComponent: () => import('./features/auth/password-setup/password-setup').then(m => m.PasswordSetup) },
 
   // Driver routes
   {
@@ -92,7 +93,7 @@ export const routes: Routes = [
   // Admin routes
   {
     path: 'admin',
-    // canActivate: [authGuard],
+    canActivate: [authGuard],
     children: [
       {
         path: 'home',

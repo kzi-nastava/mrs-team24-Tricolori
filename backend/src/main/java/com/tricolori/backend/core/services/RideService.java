@@ -2,10 +2,22 @@ package com.tricolori.backend.core.services;
 
 import com.tricolori.backend.core.domain.models.Panic;
 import com.tricolori.backend.core.domain.models.Person;
+import com.tricolori.backend.core.domain.models.*;
+import com.tricolori.backend.core.domain.repositories.RideRepository;
+import com.tricolori.backend.infrastructure.presentation.dtos.*;
+import com.tricolori.backend.shared.enums.VehicleType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.core.domain.repositories.PanicRepository;
 import com.tricolori.backend.core.domain.repositories.PersonRepository;
-import com.tricolori.backend.core.domain.repositories.RideRepository;
 import com.tricolori.backend.core.exceptions.CancelRideExpiredException;
 import com.tricolori.backend.core.exceptions.PersonNotFoundException;
 import com.tricolori.backend.core.exceptions.RideNotFoundException;
@@ -16,7 +28,6 @@ import com.tricolori.backend.infrastructure.presentation.dtos.Ride.RideHistoryRe
 import com.tricolori.backend.infrastructure.presentation.mappers.RideMapper;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
 import com.tricolori.backend.shared.enums.RideStatus;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +49,7 @@ public class RideService {
     private final RideMapper rideMapper;
 
     // ==================== DRIVER HISTORY ====================
+    private PriceList priceList;
 
     public List<RideHistoryResponse> getDriverHistory(
             Long driverId,
@@ -72,6 +84,141 @@ public class RideService {
             Long passengerId,
             LocalDate startDate,
             LocalDate endDate,
+        // Get addresses from route
+        Stop pickupAddress = ride.getRoute() != null ? ride.getRoute().getPickupStop() : null;
+        Stop dropoffAddress = ride.getRoute() != null ? ride.getRoute().getDestinationStop() : null;
+
+        // Calculate average ratings from reviews
+        Integer avgDriverRating = null;
+        Integer avgVehicleRating = null;
+        if (ride.getReviews() != null && !ride.getReviews().isEmpty()) {
+            avgDriverRating = (int) Math.round(
+                    ride.getReviews().stream()
+                            .filter(r -> r.getDriverRating() != null)
+                            .mapToInt(Review::getDriverRating)
+                            .average()
+                            .orElse(0.0)
+            );
+            avgVehicleRating = (int) Math.round(
+                    ride.getReviews().stream()
+                            .filter(r -> r.getVehicleRating() != null)
+                            .mapToInt(Review::getVehicleRating)
+                            .average()
+                            .orElse(0.0)
+            );
+            // Set to null if no ratings found
+            if (avgDriverRating == 0) avgDriverRating = null;
+            if (avgVehicleRating == 0) avgVehicleRating = null;
+        }
+
+        // Convert duration from seconds to seconds (keep as is) or calculate if needed
+        Integer duration = ride.getRoute() != null && ride.getRoute().getEstimatedTimeSeconds() != null
+                ? ride.getRoute().getEstimatedTimeSeconds().intValue()
+                : null;
+
+        return RideHistoryResponse.builder()
+                .id(ride.getId())
+                .passengerName(passengerName)
+                .pickupAddress(pickupAddress != null ? pickupAddress.getAddress() : null)
+                .dropoffAddress(dropoffAddress != null ? dropoffAddress.getAddress() : null)
+                .status(ride.getStatus() != null ? ride.getStatus().toString() : null)
+                .totalPrice(ride.getPrice())
+                .distance(ride.getRoute() != null ? ride.getRoute().getDistanceKm() : null)
+                .duration(duration)
+                .createdAt(ride.getCreatedAt())
+                .completedAt(ride.getEndTime())
+                .driverRating(avgDriverRating)
+                .vehicleRating(avgVehicleRating)
+                .build();
+    }
+
+    private RideDetailResponse mapToDetailResponse(Ride ride) {
+        Passenger mainPassenger = ride.getMainPassenger();
+        String passengerName = mainPassenger != null
+                ? mainPassenger.getFirstName() + " " + mainPassenger.getLastName()
+                : "Unknown";
+        String passengerPhone = mainPassenger != null ? mainPassenger.getPhoneNum() : null;
+
+        String driverName = ride.getDriver() != null
+                ? ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName()
+                : "Unknown";
+
+        String vehicleModel = ride.getVehicleSpecification() != null
+                ? ride.getVehicleSpecification().getModel()
+                : null;
+        String vehicleLicensePlate = ride.getDriver() != null && ride.getDriver().getVehicle() != null
+                ? ride.getDriver().getVehicle().getPlateNum()
+                : null;
+
+        // Get addresses from route
+        Stop pickupAddress = ride.getRoute() != null ? ride.getRoute().getPickupStop() : null;
+        Stop dropoffAddress = ride.getRoute() != null ? ride.getRoute().getDestinationStop() : null;
+
+        // Calculate average ratings from reviews
+        Integer avgDriverRating = null;
+        Integer avgVehicleRating = null;
+        String ratingComment = null;
+        if (ride.getReviews() != null && !ride.getReviews().isEmpty()) {
+            avgDriverRating = (int) Math.round(
+                    ride.getReviews().stream()
+                            .filter(r -> r.getDriverRating() != null)
+                            .mapToInt(Review::getDriverRating)
+                            .average()
+                            .orElse(0.0)
+            );
+            avgVehicleRating = (int) Math.round(
+                    ride.getReviews().stream()
+                            .filter(r -> r.getVehicleRating() != null)
+                            .mapToInt(Review::getVehicleRating)
+                            .average()
+                            .orElse(0.0)
+            );
+            // Set to null if no ratings found
+            if (avgDriverRating == 0) avgDriverRating = null;
+            if (avgVehicleRating == 0) avgVehicleRating = null;
+
+            // Get the first review comment as representative
+            ratingComment = ride.getReviews().stream()
+                    .filter(r -> r.getComment() != null && !r.getComment().isEmpty())
+                    .map(Review::getComment)
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        // Convert duration from seconds to seconds (keep as is)
+        Integer duration = ride.getRoute() != null && ride.getRoute().getEstimatedTimeSeconds() != null
+                ? ride.getRoute().getEstimatedTimeSeconds().intValue()
+                : null;
+
+        return RideDetailResponse.builder()
+                .id(ride.getId())
+                .passengerName(passengerName)
+                .passengerPhone(passengerPhone)
+                .driverName(driverName)
+                .vehicleModel(vehicleModel)
+                .vehicleLicensePlate(vehicleLicensePlate)
+                .pickupAddress(pickupAddress != null ? pickupAddress.getAddress() : null)
+                .pickupLatitude(pickupAddress != null ? pickupAddress.getLocation().getLatitude() : null)
+                .pickupLongitude(pickupAddress != null ? pickupAddress.getLocation().getLongitude() : null)
+                .dropoffAddress(dropoffAddress != null ? dropoffAddress.getAddress() : null)
+                .dropoffLatitude(dropoffAddress != null ? dropoffAddress.getLocation().getLatitude() : null)
+                .dropoffLongitude(dropoffAddress != null ? dropoffAddress.getLocation().getLongitude() : null)
+                .status(ride.getStatus() != null ? ride.getStatus().toString() : null)
+                .totalPrice(ride.getPrice())
+                .distance(ride.getRoute() != null ? ride.getRoute().getDistanceKm() : null)
+                .duration(duration)
+                .createdAt(ride.getCreatedAt())
+                .acceptedAt(ride.getScheduledFor())
+                .startedAt(ride.getStartTime())
+                .completedAt(ride.getEndTime())
+                .driverRating(avgDriverRating)
+                .vehicleRating(avgVehicleRating)
+                .ratingComment(ratingComment)
+                .build();
+    }
+
+    private List<RideHistoryResponse> applySorting(
+            List<RideHistoryResponse> responses,
             String sortBy,
             String sortDirection
     ) {
@@ -290,4 +437,32 @@ public class RideService {
             );
         };
     }
+}
+    @Transactional
+    public StopRideResponse stopRide(Long rideId, Person driver, StopRideRequest request) {
+
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride not found."));
+
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new AccessDeniedException("You are not authorized to stop this ride.");
+        }
+
+        // TODO: update route in some map service
+        Route updatedRoute = ride.getRoute();
+
+        ride.stop(updatedRoute);
+        ride.setPrice(calculatePrice(ride));
+
+        rideRepository.save(ride);
+
+        return new StopRideResponse(ride.getPrice());
+    }
+
+    public Double calculatePrice(Ride ride) {
+        VehicleType vehicleType =  ride.getVehicleSpecification().getType();
+        return priceList.getPriceForVehicleType(vehicleType)
+                + ride.getRoute().getDistanceKm() * priceList.getKmPrice();
+    }
+
 }

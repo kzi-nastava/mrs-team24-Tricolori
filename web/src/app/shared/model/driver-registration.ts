@@ -1,7 +1,3 @@
-export interface DriverRegistrationData 
-  extends StepOneDriverRegistrationData, StepTwoDriverRegistrationData
-{}
-
 export interface StepOneDriverRegistrationData {
   firstName: string;
   lastName: string;
@@ -18,4 +14,30 @@ export interface StepTwoDriverRegistrationData {
   seatNumber: number;
   petFriendly: boolean;
   babyFriendly: boolean;
+}
+
+export interface AdminDriverRegistrationRequest {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  email: string;
+  vehicleModel: string;
+  vehicleType: string;
+  registrationPlate: string;
+  seatNumber: number;
+  petFriendly: boolean;
+  babyFriendly: boolean;
+}
+
+export interface DriverPasswordSetupRequest {
+  token: string;
+  password: string;
+}
+
+export enum RegistrationTokenStatus {
+  VALID = 'VALID',
+  EXPIRED = 'EXPIRED_NEW_SENT',
+  ACTIVE = 'ALREADY_ACTIVE',
+  INVALID = 'INVALID'
 }

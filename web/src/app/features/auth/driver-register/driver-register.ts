@@ -1,10 +1,11 @@
-import { Component, model } from '@angular/core';
+import { Component, inject, model, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
-import { DriverRegistrationData, StepOneDriverRegistrationData, StepTwoDriverRegistrationData } from '../../../shared/model/driver-registration';
+import { AdminDriverRegistrationRequest, StepOneDriverRegistrationData, StepTwoDriverRegistrationData } from '../../../shared/model/driver-registration';
 import { StepOneForm } from '../../../shared/components/driver-registration/step-one-form/step-one-form';
 import { StepTwoForm } from '../../../shared/components/driver-registration/step-two-form/step-two-form';
 import { PfpPicker } from '../../../shared/components/pfp-picker/pfp-picker';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-driver-register',
@@ -20,7 +21,9 @@ import { PfpPicker } from '../../../shared/components/pfp-picker/pfp-picker';
 
 
 export class DriverRegister {
-  step: number;
+  private authService = inject(AuthService);
+
+  step = signal(1);
   
   savedStepOneData?: StepOneDriverRegistrationData;
   savedStepTwoData?: StepTwoDriverRegistrationData;
@@ -31,37 +34,42 @@ export class DriverRegister {
   otherStepClasses = "w-10 h-10 border-2 border-gray-200 text-gray-400 rounded-full flex items-center justify-center font-bold";
   otherTextClasses = "text-xs mt-2 text-gray-400 font-medium";
 
-  constructor() {
-    this.step = 1;
-  }
-
   handleStepOne(data: StepOneDriverRegistrationData) {
     this.savedStepOneData = data;
-    this.step = 2;
+    this.step.set(2);
   }
 
   handleStepTwo(data: StepTwoDriverRegistrationData) {
     this.savedStepTwoData = data;
-    
-    const finalData: DriverRegistrationData = {
-      ...this.savedStepOneData!,
-      ...this.savedStepTwoData!
+
+    const { pfpFile, ...personalData } = this.savedStepOneData!;
+
+    const finalRequest: AdminDriverRegistrationRequest = {
+      ...personalData,
+      ...this.savedStepTwoData!,
+      vehicleType: (data.vehicleType as any).id || data.vehicleType 
     };
 
-    console.log('Data ready for backend:', finalData);
-
-    // Reset Logic:
+    const fileToUpload = pfpFile || null;
+    // Send request:
+    this.authService.registerDriver(finalRequest, fileToUpload).subscribe({
+      next: (res) => { 
+        console.log("Success!", res);
+        // TODO: add toast to signalize
+      },
+      error: (err) => { console.log("Error: ", err) }
+    })
 
     // Because I use @if, components will be recreated, but this time
     // since saved data is undefined, they will be brand new, empty...
     this.savedStepOneData = undefined;
     this.savedStepTwoData = undefined;
-    
-    this.step = 1;
+    this.step.set(1);
+
   }
 
   prevStep(data: StepTwoDriverRegistrationData) {
     this.savedStepTwoData = data;
-    this.step = 1;
+    this.step.set(1);
   }
 }

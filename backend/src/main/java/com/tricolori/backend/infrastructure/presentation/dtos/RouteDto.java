@@ -2,11 +2,11 @@ package com.tricolori.backend.infrastructure.presentation.dtos;
 
 import java.util.List;
 
-import com.tricolori.backend.core.domain.models.Address;
+import com.tricolori.backend.core.domain.models.Stop;
 
 public record RouteDto(
-    Address pickup,
-    Address destination,
-    List<Address> stops     // order in list determines the order in stops
+        Stop pickupStop,
+        Stop destinationStop,
+        List<Stop> stops     // order in list determines the order in stops
 ) 
 {}

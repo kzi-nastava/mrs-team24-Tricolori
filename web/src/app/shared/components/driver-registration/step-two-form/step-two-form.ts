@@ -2,6 +2,7 @@ import { Component, effect, input, output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StepTwoDriverRegistrationData } from '../../../model/driver-registration';
 import { NgIcon } from '@ng-icons/core';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-step-two-form',
@@ -14,17 +15,12 @@ import { NgIcon } from '@ng-icons/core';
 })
 
 export class StepTwoForm {
+  readonly vehicleTypes = environment.vehicleTypes;
   secondStepForm: FormGroup;
 
   oldStepData = input<StepTwoDriverRegistrationData | undefined>();
   newStepData = output<StepTwoDriverRegistrationData>();
   back = output<StepTwoDriverRegistrationData>();
-
-  vehicleTypes = [
-    { id: 'STANDARD', label: 'Standard', icon: '🚗' },
-    { id: 'LUXURY', label: 'Luxury', icon: '✨' },
-    { id: 'VAN', label: 'Van', icon: '🚐' }
-  ];
 
   constructor() {
     this.secondStepForm = new FormGroup({
