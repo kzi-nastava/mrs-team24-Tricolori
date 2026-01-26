@@ -26,7 +26,7 @@ public class Route {
             joinColumns = @JoinColumn(name = "route_id")
     )
     @OrderColumn(name = "stop_index")
-    private List<Address> stops = new ArrayList<>();
+    private List<Stop> stops = new ArrayList<>();
 
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -38,12 +38,12 @@ public class Route {
     @Column(name = "estimated_time_seconds")
     private Long estimatedTimeSeconds;
 
-    public Address getPickupAddress() {
+    public Stop getPickupStop() {
         if (stops.isEmpty()) return null;
         return stops.getFirst();
     }
 
-    public Address getDestinationAddress() {
+    public Stop getDestinationStop() {
         if (stops.isEmpty()) return null;
         return stops.getLast();
     }

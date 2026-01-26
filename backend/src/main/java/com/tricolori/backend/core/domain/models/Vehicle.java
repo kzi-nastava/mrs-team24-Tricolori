@@ -33,8 +33,7 @@ public class Vehicle {
     )
     private VehicleSpecification specification;
 
-    private Double longitude;
-
-    private Double latitude;
+    @Embedded
+    private Location location;
 
 }
