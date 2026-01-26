@@ -75,6 +75,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/ride-rating/ride-rating').then(m => m.RideRatingComponent)
       },
       {
+        path: 'ride-wait/:id',
+        loadComponent: () => import('./shared/components/ride-wait/ride-wait').then(m => m.RideWait)
+      },
+      {
         path: 'ride-tracking/:id',
         loadComponent: () => import('./features/ride-tracking/passenger/passenger-ride-tracking').then(m => m.PassengerRideTrackingComponent)
       },
