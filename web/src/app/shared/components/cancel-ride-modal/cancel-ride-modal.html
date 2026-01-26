@@ -1,0 +1,38 @@
+@if (isVisible()) {
+  <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" (click)="onClose.emit()"></div>
+
+    <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl border border-slate-100 overflow-hidden">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-slate-800">Cancel Ride</h2>
+          <button (click)="onClose.emit()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+            <ng-icon name="heroXMark" class="w-5 h-5 text-slate-500"></ng-icon>
+          </button>
+        </div>
+
+        <p class="text-sm text-slate-500 mb-4">Please provide a reason for cancelling this ride assignment.</p>
+
+        <textarea
+          [(ngModel)]="reason"
+          placeholder="E.g., Vehicle trouble, traffic, etc..."
+          class="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-xl
+          text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all resize-none"
+        ></textarea>
+      </div>
+
+      <div class="p-6 bg-slate-50 flex gap-3">
+        <button (click)="onClose.emit()"
+                class="flex-1 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-all">
+          GO BACK
+        </button>
+        <button (click)="handleConfirm()"
+                [disabled]="!reason().trim()"
+                class="flex-1 px-4 py-3 text-sm font-bold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-lg shadow-red-100 transition-all active:scale-95">
+          CONFIRM CANCEL
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
