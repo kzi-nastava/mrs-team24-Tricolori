@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -13,15 +13,17 @@ import { heroXMark } from '@ng-icons/heroicons/outline';
 })
 export class CancelRideModalComponent {
   isVisible = input<boolean>(false);
-  @Output() onClose = new EventEmitter<void>();
-  @Output() onConfirm = new EventEmitter<string>();
 
-  reason: string = '';
+  onClose = output<void>();
+  onConfirm = output<string>();
+
+  reason = signal('');
 
   handleConfirm() {
-    if (this.reason.trim()) {
-      this.onConfirm.emit(this.reason);
-      this.reason = ''; // reset
+    const reasonValue = this.reason().trim();
+    if (reasonValue) {
+      this.onConfirm.emit(reasonValue);
+      this.reason.set('');
     }
   }
 }
