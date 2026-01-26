@@ -75,8 +75,8 @@ public class RideService {
                 : "Unknown";
 
         // Get addresses from route
-        Address pickupAddress = ride.getRoute() != null ? ride.getRoute().getPickupAddress() : null;
-        Address dropoffAddress = ride.getRoute() != null ? ride.getRoute().getDestinationAddress() : null;
+        Stop pickupAddress = ride.getRoute() != null ? ride.getRoute().getPickupStop() : null;
+        Stop dropoffAddress = ride.getRoute() != null ? ride.getRoute().getDestinationStop() : null;
 
         // Calculate average ratings from reviews
         Integer avgDriverRating = null;
@@ -141,8 +141,8 @@ public class RideService {
                 : null;
 
         // Get addresses from route
-        Address pickupAddress = ride.getRoute() != null ? ride.getRoute().getPickupAddress() : null;
-        Address dropoffAddress = ride.getRoute() != null ? ride.getRoute().getDestinationAddress() : null;
+        Stop pickupAddress = ride.getRoute() != null ? ride.getRoute().getPickupStop() : null;
+        Stop dropoffAddress = ride.getRoute() != null ? ride.getRoute().getDestinationStop() : null;
 
         // Calculate average ratings from reviews
         Integer avgDriverRating = null;
@@ -188,11 +188,11 @@ public class RideService {
                 .vehicleModel(vehicleModel)
                 .vehicleLicensePlate(vehicleLicensePlate)
                 .pickupAddress(pickupAddress != null ? pickupAddress.getAddress() : null)
-                .pickupLatitude(pickupAddress != null ? pickupAddress.getLatitude() : null)
-                .pickupLongitude(pickupAddress != null ? pickupAddress.getLongitude() : null)
+                .pickupLatitude(pickupAddress != null ? pickupAddress.getLocation().getLatitude() : null)
+                .pickupLongitude(pickupAddress != null ? pickupAddress.getLocation().getLongitude() : null)
                 .dropoffAddress(dropoffAddress != null ? dropoffAddress.getAddress() : null)
-                .dropoffLatitude(dropoffAddress != null ? dropoffAddress.getLatitude() : null)
-                .dropoffLongitude(dropoffAddress != null ? dropoffAddress.getLongitude() : null)
+                .dropoffLatitude(dropoffAddress != null ? dropoffAddress.getLocation().getLatitude() : null)
+                .dropoffLongitude(dropoffAddress != null ? dropoffAddress.getLocation().getLongitude() : null)
                 .status(ride.getStatus() != null ? ride.getStatus().toString() : null)
                 .totalPrice(ride.getPrice())
                 .distance(ride.getRoute() != null ? ride.getRoute().getDistanceKm() : null)
