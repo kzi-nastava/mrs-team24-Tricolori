@@ -37,7 +37,7 @@ public class RideController {
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelRide(
             @PathVariable Long id,
-            @Valid @RequestBody CancelRideRequest request,
+            @RequestBody CancelRideRequest request,
             Authentication authentication
     ) {
 

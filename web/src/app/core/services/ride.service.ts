@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import {HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
 import {PanicRequest} from '../../shared/model/ride';
 import {environment} from '../../../environments/environment';
 
@@ -86,5 +87,8 @@ export class RideService {
 
   ridePanic(rideId: number, panicRequest: PanicRequest): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/panic`, panicRequest);
+    
+  cancelRide(rideId: number, reason: string) : Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
 }
