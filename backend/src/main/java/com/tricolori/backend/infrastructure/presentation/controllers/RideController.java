@@ -1,6 +1,7 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
 import com.tricolori.backend.core.domain.models.Person;
+import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.core.services.AuthService;
 import com.tricolori.backend.core.services.InconsistencyReportService;
 import com.tricolori.backend.core.services.ReviewService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -180,6 +182,22 @@ public class RideController {
                 rideService.getCurrentRideByDriver(driverId);
 
         return ResponseEntity.ok(response);
+    }
+
+    // TODO: REMOVE AFTER TESTING
+    @PostMapping("/create/passenger")
+    public ResponseEntity<?> createRide(@RequestBody CreateRideRequest request) {
+        // Hard-coded passenger ID for testing
+        Long passengerId = 14L;
+
+        Ride ride = rideService.createRide(request, passengerId);
+        return ResponseEntity.ok(Map.of(
+                "rideId", ride.getId(),
+                "status", ride.getStatus(),
+                "price", ride.getPrice(),
+                "distance", ride.getRoute().getDistanceKm(),
+                "estimatedTime", ride.getRoute().getEstimatedTimeSeconds()
+        ));
     }
 
     @PostMapping("/order")
