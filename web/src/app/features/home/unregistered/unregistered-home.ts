@@ -78,34 +78,25 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Load vehicles from backend
-loadVehicles(): void {
-  console.log('🚗 Starting to load vehicles...');
-  this.isLoadingVehicles.set(true);
-  this.vehicleService.getActiveVehicles().subscribe({
-    next: (vehicles) => {
-      console.log('✅ Vehicles loaded successfully:', vehicles);
-      console.log('📊 Number of vehicles:', vehicles.length);
-      console.log('🔍 First vehicle details:', vehicles[0]);
-      
-      this.vehicles.set(vehicles);
-      this.isLoadingVehicles.set(false);
-      
-      console.log('🗺️ Map initialized?', !!this.mapService.getMap());
-      
-      // Refresh markers if map is already initialized
-      if (this.mapService.getMap()) {
-        console.log('🔄 Refreshing vehicle markers...');
-        this.refreshVehicleMarkers();
+  loadVehicles(): void {
+    this.isLoadingVehicles.set(true);
+    this.vehicleService.getActiveVehicles().subscribe({
+      next: (vehicles) => {
+        this.vehicles.set(vehicles);
+        this.isLoadingVehicles.set(false);
+        
+        // Refresh markers if map is already initialized
+        if (this.mapService.getMap()) {
+          this.refreshVehicleMarkers();
+        }
+      },
+      error: (error) => {
+        console.error('Error loading vehicles:', error);
+        this.isLoadingVehicles.set(false);
+        this.errorMessage.set('Failed to load vehicles. Please try again.');
       }
-    },
-    error: (error) => {
-      console.error('❌ Error loading vehicles:', error);
-      console.error('📋 Error details:', JSON.stringify(error, null, 2));
-      this.isLoadingVehicles.set(false);
-      this.errorMessage.set('Failed to load vehicles. Please try again.');
-    }
-  });
-}
+    });
+  }
 
   // Refresh vehicle markers
   refreshVehicleMarkers(): void {
@@ -140,39 +131,27 @@ loadVehicles(): void {
 
   // Vehicle markers
   private addVehicleMarkers(): void {
-  console.log('📍 Adding vehicle markers...');
-  const map = this.mapService.getMap();
-  console.log('🗺️ Map object:', map);
-  console.log('🚗 Total vehicles to add:', this.vehicles().length);
-  
-  this.vehicles().forEach((vehicle, index) => {
-    console.log(`🚙 Adding marker ${index + 1}:`, {
-      id: vehicle.vehicleId,
-      model: vehicle.model,
-      lat: vehicle.latitude,
-      lng: vehicle.longitude,
-      available: vehicle.available
-    });
+    const map = this.mapService.getMap();
     
-    const iconColor = vehicle.available ? '#10b981' : '#ef4444';
-    const marker = L.circleMarker([vehicle.latitude, vehicle.longitude], {
-      radius: 8,
-      fillColor: iconColor,
-      color: '#ffffff',
-      weight: 2,
-      fillOpacity: 0.8
-    }).addTo(map);
+    this.vehicles().forEach((vehicle) => {
+      const iconColor = vehicle.available ? '#10b981' : '#ef4444';
+      const marker = L.circleMarker([vehicle.latitude, vehicle.longitude], {
+        radius: 15,           
+        fillColor: iconColor,
+        color: '#ffffff',
+        weight: 3,            
+        fillOpacity: 0.9      
+      }).addTo(map);
 
-    const statusText = vehicle.available ? 'Available' : 'Occupied';
-    marker.bindPopup(`
-      <strong>${vehicle.model}</strong><br>
-      Plate: ${vehicle.plateNum}<br>
-      Status: ${statusText}
-    `);
-  });
-  
-  console.log('✅ All markers added successfully!');
-}
+      const statusText = vehicle.available ? 'Available' : 'Occupied';
+      marker.bindPopup(`
+        <strong>${vehicle.model}</strong><br>
+        Plate: ${vehicle.plateNum}<br>
+        Status: ${statusText}
+      `);
+    });
+  }
+
   // Estimation
   async onEstimate(data: { pickup: string, destination: string }): Promise<void> {
     this.errorMessage.set('');
