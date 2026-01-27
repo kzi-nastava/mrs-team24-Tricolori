@@ -71,60 +71,73 @@ export class DriverHistory implements OnInit {
   // ================= load history =================
 
   loadRideHistory(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.cdr.detectChanges();
+  this.isLoading = true;
+  this.errorMessage = '';
+  this.cdr.detectChanges();
 
-    this.rideService
-      .getDriverHistory(
-        this.startDate || undefined,
-        this.endDate || undefined
-      )
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        })
-      )
-      .subscribe({
-        next: (rides) => {
-          this.allRides = this.mapBackendRidesToUI(rides);
-          this.applyFilters();
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.errorMessage = 'Failed to load ride history. Please try again.';
-          this.allRides = [];
-          this.filteredRides = [];
-          this.cdr.detectChanges();
-        }
-      });
-  }
+  this.rideService
+    .getDriverHistory(undefined, undefined)
+    .pipe(
+      finalize(() => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      })
+    )
+    .subscribe({
+      next: (rides) => {
+        this.allRides = this.mapBackendRidesToUI(rides);
+        this.applyFilters(); // ⬅️ KLJUČNO
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load ride history.';
+        this.allRides = [];
+        this.filteredRides = [];
+      }
+    });
+}
 
   // ================= filtering =================
 
   applyFilters(): void {
-    let result = [...this.allRides];
+  let result = [...this.allRides];
 
-    // Status filter
-    if (this.statusFilter !== 'all') {
-      result = result.filter(ride => 
-        ride.status.toLowerCase() === this.statusFilter.toLowerCase()
-      );
-    }
-
-    // Search filter
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      result = result.filter(ride => 
-        ride.passengerName.toLowerCase().includes(query) ||
-        ride.route.toLowerCase().includes(query)
-      );
-    }
-
-    this.filteredRides = result;
-    this.cdr.detectChanges();
+  // ===== DATE FILTER =====
+  if (this.startDate) {
+    const start = new Date(this.startDate);
+    result = result.filter(ride => {
+      const rideDate = new Date(ride.startDate);
+      return rideDate >= start;
+    });
   }
+
+  if (this.endDate) {
+    const end = new Date(this.endDate);
+    end.setHours(23, 59, 59, 999); // uključi ceo dan
+    result = result.filter(ride => {
+      const rideDate = new Date(ride.startDate);
+      return rideDate <= end;
+    });
+  }
+
+  // ===== STATUS FILTER =====
+  if (this.statusFilter !== 'all') {
+    result = result.filter(ride =>
+      ride.status.toLowerCase() === this.statusFilter.toLowerCase()
+    );
+  }
+
+  // ===== SEARCH FILTER =====
+  if (this.searchQuery.trim()) {
+    const query = this.searchQuery.toLowerCase();
+    result = result.filter(ride =>
+      ride.passengerName.toLowerCase().includes(query) ||
+      ride.route.toLowerCase().includes(query)
+    );
+  }
+
+  this.filteredRides = result;
+  this.cdr.detectChanges();
+}
 
   onStatusFilterChange(): void {
     this.applyFilters();
@@ -137,6 +150,8 @@ export class DriverHistory implements OnInit {
   clearFilters(): void {
     this.statusFilter = 'all';
     this.searchQuery = '';
+    this.startDate = '';
+    this.endDate = '';
     this.applyFilters();
   }
 
@@ -312,7 +327,7 @@ export class DriverHistory implements OnInit {
   // ================= helpers =================
 
   filterByDate(): void {
-    this.loadRideHistory();
+    this.applyFilters();
   }
 
   closeModal(): void {
