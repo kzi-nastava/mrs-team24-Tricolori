@@ -8,3 +8,19 @@ export interface VehicleDto {
   babyFriendly: boolean;
   petFriendly: boolean;
 }
+
+export interface VehicleSpecification {
+  capacity?: number;
+  type?: string;
+  // Add other fields from your VehicleSpecificationDto as needed
+}
+
+export interface Vehicle {
+  vehicleId: number;
+  model: string;
+  plateNum: string;
+  latitude: number;
+  longitude: number;
+  available: boolean;
+  specification?: VehicleSpecification;
+}
