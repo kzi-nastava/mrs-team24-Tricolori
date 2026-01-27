@@ -3,18 +3,24 @@ package com.tricolori.backend.core.services;
 import com.tricolori.backend.core.domain.models.*;
 import com.tricolori.backend.core.domain.repositories.RideRepository;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.OrderRequest;
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.RideEstimations;
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.RidePreferences;
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.RideRoute;
 import com.tricolori.backend.shared.enums.VehicleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.core.domain.repositories.PanicRepository;
+import com.tricolori.backend.core.domain.repositories.PassengerRepository;
 import com.tricolori.backend.core.domain.repositories.PersonRepository;
 import com.tricolori.backend.core.exceptions.CancelRideExpiredException;
 import com.tricolori.backend.core.exceptions.PersonNotFoundException;
@@ -31,7 +37,13 @@ public class RideService {
 
     private final RideRepository rideRepository;
     private final PersonRepository personRepository;
+    private final PassengerRepository passengerRepository;
     private final PanicRepository panicRepository;
+
+    private final PassengerService passengerService;
+    private final DriverService driverService;
+    private final RouteService routeService;
+
     private PriceList priceList;
 
     public List<RideHistoryResponse> getDriverHistory(
@@ -318,6 +330,40 @@ public class RideService {
         rideRepository.save(ride);
 
         return new StopRideResponse(ride.getPrice());
+    }
+
+    @Transactional
+    public void rideOrder(OrderRequest request) {
+        RidePreferences preferences = request.preferences();
+        RideEstimations estimations = request.estimations();
+        RideRoute routeData = request.route();
+
+        Ride ride = new Ride();
+        ride.setCreatedAt(request.createdAt());
+        ride.setScheduledFor(preferences.scheduledFor());
+        // TODO: Set start time after we find driver...
+        // TODO: Set end time after we find driver...
+        ride.setStatus(RideStatus.CREATED);
+        ride.setPrice(calculatePrice(
+            preferences.vehicleType(), estimations.distanceKilometers() 
+        ));
+
+        Route route = routeService.createRoute(routeData.pickup(), routeData.destination(), routeData.stops());
+        ride.setRoute(route);
+
+        // Find passengers by email:
+        ride.setPassengers(passengerService.getTrackingPassengers(request.trackers()));
+
+        // Finding the driver:
+        Driver driver = driverService.findDriverForRide(ride);
+        ride.setDriver(driver);
+        ride.setVehicleSpecification(driver.getVehicle().getSpecification());
+
+        rideRepository.save(ride);
+    }
+
+    public Double calculatePrice(VehicleType type, double kilometers) {
+        return priceList.getPriceForVehicleType(type) + kilometers * priceList.getKmPrice();
     }
 
     public Double calculatePrice(Ride ride) {

@@ -2,6 +2,7 @@ package com.tricolori.backend.core.services;
 
 import org.springframework.stereotype.Service;
 
+import com.tricolori.backend.core.domain.models.Location;
 import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.core.domain.models.Vehicle;
 import com.tricolori.backend.core.domain.models.VehicleSpecification;
@@ -54,6 +55,7 @@ public class VehicleService {
         vehicle.setSpecification(specs);
         vehicle.setPlateNum(registrationPlate);
         vehicle.setModel(specs.getModel());
+        vehicle.setLocation(new Location(1.0, 1.0));
 
         return vehicleRepository.save(vehicle);
     }

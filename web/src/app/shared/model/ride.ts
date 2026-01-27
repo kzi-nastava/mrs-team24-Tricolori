@@ -6,13 +6,19 @@ export interface RideOptions {
     vehicleType: VehicleType;
     petFriendly: boolean;
     babyFriendly: boolean;
-    schedule?: Date;
+    schedule: Date | null;
 }
 
 export interface RideRequest {
     route: Route;
+    estimation: Estimation;
     preferences: RideOptions;
     trackers: string[];
+}
+
+export interface Estimation {
+  distanceKilometers: number;
+  durationMinutes: number;
 }
 
 export interface PanicRequest {

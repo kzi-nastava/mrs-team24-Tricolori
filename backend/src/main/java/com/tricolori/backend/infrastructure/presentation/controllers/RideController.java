@@ -4,6 +4,8 @@ import com.tricolori.backend.core.domain.models.Person;
 import com.tricolori.backend.core.services.AuthService;
 import com.tricolori.backend.core.services.RideService;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.OrderRequest;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -159,8 +161,13 @@ public class RideController {
     }
 
     @PostMapping("/order")
-    public ResponseEntity<Void> order(@RequestBody OrderRequest request) {
-        return ResponseEntity.ok().build();
+    @PreAuthorize("hasRole('PASSENGER')")
+    public ResponseEntity<String> order(
+        @AuthenticationPrincipal Person passenger,
+        @RequestBody OrderRequest request
+    ) {
+        rideService.rideOrder(request);
+        return ResponseEntity.ok(request.toString());
     }
 
     @PutMapping("/{id}/start")

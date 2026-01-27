@@ -1,7 +1,8 @@
+import { Location } from "./location";
+
 export interface Stop {
   address: string;
-  longitude: number;
-  latitude: number;
+  location: Location
 }
 
 export interface Route {

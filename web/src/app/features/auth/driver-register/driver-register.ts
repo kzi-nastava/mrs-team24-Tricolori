@@ -51,6 +51,8 @@ export class DriverRegister {
     };
 
     const fileToUpload = pfpFile || null;
+
+    console.log("REQ", finalRequest, "FILE", fileToUpload);
     // Send request:
     this.authService.registerDriver(finalRequest, fileToUpload).subscribe({
       next: (res) => { 

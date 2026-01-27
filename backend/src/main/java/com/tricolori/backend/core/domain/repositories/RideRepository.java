@@ -1,5 +1,6 @@
 package com.tricolori.backend.core.domain.repositories;
 
+import com.tricolori.backend.core.domain.models.Driver;
 import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.shared.enums.RideStatus;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +25,10 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     List<Ride> findByDriverIdOrderByCreatedAtDesc(Long driverId);
 
     List<Ride> findByStatus(RideStatus status);
+
+    List<Ride> findAllByDriverAndStatusIn(Driver driver, Collection<RideStatus> statuses);
+
+    List<Ride> findAllByStatusIn(Collection<RideStatus> statuses);
 
     @Query("SELECT r FROM Ride r WHERE r.driver.id = :driverId AND r.status IN ('ACCEPTED', 'IN_PROGRESS') ORDER BY r.createdAt DESC")
     Optional<Ride> findCurrentRideByDriver(@Param("driverId") Long driverId);
