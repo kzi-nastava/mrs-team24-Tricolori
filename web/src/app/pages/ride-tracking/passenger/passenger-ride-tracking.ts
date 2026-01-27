@@ -10,8 +10,10 @@ import {
   heroExclamationTriangle,
   heroCheckCircle,
   heroPhone,
-  heroExclamationCircle
+  heroExclamationCircle,
+  heroStar
 } from '@ng-icons/heroicons/outline';
+import { heroStarSolid } from '@ng-icons/heroicons/solid';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
 import { forkJoin } from 'rxjs';
@@ -54,17 +56,28 @@ interface Location {
       heroExclamationTriangle,
       heroCheckCircle,
       heroPhone,
-      heroExclamationCircle
+      heroExclamationCircle,
+      heroStar,
+      heroStarSolid
     })
   ],
   templateUrl: './passenger-ride-tracking.html'
 })
 export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   reportForm: FormGroup;
+  ratingForm: FormGroup;
   showReportForm = signal<boolean>(false);
   isSubmittingReport = signal<boolean>(false);
   reportSubmitted = signal<boolean>(false);
   panicTriggered = signal<boolean>(false);
+  
+  // Ride completion modal
+  showCompletionModal = signal<boolean>(false);
+  isSubmittingRating = signal<boolean>(false);
+  driverRating = signal<number>(0);
+  vehicleRating = signal<number>(0);
+  finalPrice = signal<number>(0);
+  actualDuration = signal<number>(0);
 
   estimatedArrival = signal<number>(0);
   remainingDistance = signal<number>(0);
@@ -87,6 +100,11 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
     lng: 0,
   });
 
+  passengerLocation = signal<Location>({
+    lat: 0,
+    lng: 0,
+  });
+
   progressPercentage = computed(() => {
     const total = this.rideDetails().totalDistance;
     const remaining = this.remainingDistance();
@@ -98,8 +116,14 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   private map: L.Map | null = null;
   private routeControl: any = null;
   private vehicleMarker: L.Marker | null = null;
+  private passengerMarker: L.Marker | null = null;
   private updateInterval: any = null;
+  private mockMovementInterval: any = null;
   private isInitialized = false;
+  private routeCoordinates: [number, number][] = [];
+  private currentRouteIndex: number = 0;
+  private totalRouteDistance: number = 0;
+  private rideStartTime: Date | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -114,20 +138,26 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
         Validators.maxLength(500)
       ]]
     });
+
+    this.ratingForm = this.fb.group({
+      comment: ['', [Validators.maxLength(500)]]
+    });
   }
 
   ngOnInit(): void {
-  this.route.params.subscribe(params => {
-    this.rideId = +params['id'] || 6; // use route param or default to 6 for testing
-    if (this.rideId) {
-      this.loadInitialData();
-      this.startTracking();
-    }
-  });
-}
+    this.route.params.subscribe(params => {
+      this.rideId = +params['id'] || 6;
+      if (this.rideId) {
+        this.rideStartTime = new Date();
+        this.loadInitialData();
+        this.startTracking();
+      }
+    });
+  }
 
   ngOnDestroy(): void {
     this.stopTracking();
+    this.stopMockMovement();
 
     if (this.routeControl && this.map) {
       this.map.removeControl(this.routeControl);
@@ -140,8 +170,166 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load initial data - combine ride details and tracking
+   * Start mock vehicle movement simulation using actual route coordinates
    */
+  private startMockMovement(): void {
+    if (this.routeCoordinates.length === 0) {
+      console.warn('No route coordinates available for mock movement');
+      return;
+    }
+
+    this.currentRouteIndex = 0;
+    
+    const [initialLat, initialLng] = this.routeCoordinates[0];
+    this.vehicleLocation.set({ lat: initialLat, lng: initialLng });
+    this.updateVehiclePosition();
+    
+    // Calculate how many points to skip to cover 1/10 of the route each interval
+    const totalPoints = this.routeCoordinates.length;
+    const jumpSize = Math.ceil(totalPoints / 10);
+    
+    this.mockMovementInterval = setInterval(() => {
+      this.currentRouteIndex += jumpSize;
+      
+      if (this.currentRouteIndex >= this.routeCoordinates.length) {
+        console.log('🏁 Mock vehicle reached destination');
+        this.estimatedArrival.set(0);
+        this.remainingDistance.set(0);
+        this.stopMockMovement();
+        this.handleRideCompletion();
+        return;
+      }
+
+      const [lat, lng] = this.routeCoordinates[this.currentRouteIndex];
+      
+      this.vehicleLocation.set({ lat, lng });
+      this.updateVehiclePosition();
+      this.updateProgressMetrics();
+
+      this.rideService.updateVehicleLocation(this.rideId, {
+        latitude: lat,
+        longitude: lng
+      }).subscribe({
+        next: () => console.log(`🚗 Vehicle location updated (${this.currentRouteIndex}/${this.routeCoordinates.length - 1}) - ${Math.round((this.currentRouteIndex / this.routeCoordinates.length) * 100)}% complete`),
+        error: (err) => console.error('Error updating vehicle location:', err)
+      });
+    }, 5000); // Move every 5 seconds, jumping 1/10 of the route
+  }
+
+  /**
+   * Handle ride completion - show modal with price and duration
+   */
+  private handleRideCompletion(): void {
+    // Calculate actual duration
+    if (this.rideStartTime) {
+      const durationMs = new Date().getTime() - this.rideStartTime.getTime();
+      const durationMinutes = Math.round(durationMs / 1000 / 60);
+      this.actualDuration.set(durationMinutes);
+    }
+
+    // Get final price from ride details (in production, fetch from backend)
+    this.rideService.getPassengerRideDetail(this.rideId).subscribe({
+      next: (detail) => {
+        this.finalPrice.set(detail.totalPrice);
+        this.showCompletionModal.set(true);
+      },
+      error: (err) => {
+        console.error('Error fetching ride details:', err);
+        // Show modal anyway with estimated price
+        this.finalPrice.set(this.rideDetails().totalDistance * 100); // Rough estimate
+        this.showCompletionModal.set(true);
+      }
+    });
+  }
+
+  /**
+   * Update ETA and remaining distance based on current progress
+   */
+  private updateProgressMetrics(): void {
+    let remainingDist = 0;
+    for (let i = this.currentRouteIndex; i < this.routeCoordinates.length - 1; i++) {
+      remainingDist += this.calculateDistance(
+        this.routeCoordinates[i],
+        this.routeCoordinates[i + 1]
+      );
+    }
+    this.remainingDistance.set(parseFloat(remainingDist.toFixed(2)));
+
+    // Calculate remaining time
+    const totalDistance = this.totalRouteDistance;
+    const totalTimeSeconds = this.rideDetails().estimatedDuration;
+    
+    if (totalDistance > 0 && totalTimeSeconds > 0) {
+      const remainingTimeSeconds = Math.round((remainingDist / totalDistance) * totalTimeSeconds);
+      const remainingTimeMinutes = Math.round(remainingTimeSeconds / 60);
+      this.estimatedArrival.set(Math.max(0, remainingTimeMinutes));
+    }
+  }
+
+  /**
+   * Calculate distance between two coordinates in kilometers (Haversine formula)
+   */
+  private calculateDistance(coord1: [number, number], coord2: [number, number]): number {
+    const [lat1, lon1] = coord1;
+    const [lat2, lon2] = coord2;
+    
+    const R = 6371;
+    const dLat = this.toRad(lat2 - lat1);
+    const dLon = this.toRad(lon2 - lon1);
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  private toRad(degrees: number): number {
+    return degrees * (Math.PI / 180);
+  }
+
+  private stopMockMovement(): void {
+    if (this.mockMovementInterval) {
+      clearInterval(this.mockMovementInterval);
+      this.mockMovementInterval = null;
+    }
+  }
+
+  /**
+   * Extract route coordinates from Leaflet Routing Control
+   */
+  private extractRouteCoordinates(): void {
+    if (!this.routeControl) {
+      console.warn('Route control not initialized');
+      return;
+    }
+
+    this.routeControl.on('routesfound', (e: any) => {
+      const routes = e.routes;
+      if (routes && routes.length > 0) {
+        const route = routes[0];
+        
+        this.routeCoordinates = route.coordinates.map((coord: any) => 
+          [coord.lat, coord.lng] as [number, number]
+        );
+
+        this.totalRouteDistance = 0;
+        for (let i = 0; i < this.routeCoordinates.length - 1; i++) {
+          this.totalRouteDistance += this.calculateDistance(
+            this.routeCoordinates[i],
+            this.routeCoordinates[i + 1]
+          );
+        }
+
+        console.log(`📍 Extracted ${this.routeCoordinates.length} route points from OSRM`);
+        console.log(`📏 Total route distance: ${this.totalRouteDistance.toFixed(2)} km`);
+        
+        setTimeout(() => this.startMockMovement(), 1000);
+      }
+    });
+  }
+
   private loadInitialData(): void {
     forkJoin({
       details: this.rideService.getPassengerRideDetail(this.rideId),
@@ -152,7 +340,10 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
         this.updateTrackingData(result.tracking);
         
         if (!this.isInitialized) {
-          setTimeout(() => this.initMap(), 100);
+          setTimeout(() => {
+            this.initMap();
+            this.extractRouteCoordinates();
+          }, 100);
           this.isInitialized = true;
         }
       },
@@ -162,9 +353,6 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Update ride details from detail response (static info)
-   */
   private updateRideDetailsFromDetail(detail: RideDetailResponse): void {
     this.rideDetails.set({
       id: detail.id,
@@ -176,18 +364,19 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
       vehicleType: detail.vehicleModel,
       licensePlate: detail.vehicleLicensePlate,
       totalDistance: detail.distance,
-      estimatedDuration: detail.duration
+      estimatedDuration: detail.duration // THIS IS IN SECONDS from backend
     });
+
+    // Set initial ETA in minutes
+    const initialEtaMinutes = Math.round(detail.duration / 60);
+    this.estimatedArrival.set(initialEtaMinutes);
+    this.remainingDistance.set(detail.distance); // Already in KM from backend
   }
 
-  /**
-   * Poll tracking data (called repeatedly)
-   */
   private loadTrackingData(): void {
     this.rideService.trackRide(this.rideId).subscribe({
       next: (response: RideTrackingResponse) => {
         this.updateTrackingData(response);
-        this.updateVehiclePosition();
       },
       error: (error) => {
         console.error('Error loading tracking data:', error);
@@ -195,58 +384,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Update tracking data (dynamic info - location, ETA, etc.)
-   */
   private updateTrackingData(response: RideTrackingResponse): void {
-    // Update estimated arrival
-    this.estimatedArrival.set(response.estimatedTimeMinutes || 0);
-    
-    // Calculate remaining distance
-    // Use route data from backend if available, otherwise estimate from time
-    let totalDistance = this.rideDetails().totalDistance;
-    
-    // If route is present in tracking response, use its distance
-    if (response.route && response.route.distanceKm) {
-      totalDistance = response.route.distanceKm;
-      
-      // Update ride details with route info if we have it
-      if (response.route.pickupAddress && response.route.destinationAddress) {
-        this.rideDetails.update(current => ({
-          ...current,
-          pickup: response.route!.pickupAddress,
-          destination: response.route!.destinationAddress,
-          pickupCoords: [response.route!.pickupLatitude, response.route!.pickupLongitude],
-          destinationCoords: [response.route!.destinationLatitude, response.route!.destinationLongitude],
-          totalDistance: response.route!.distanceKm
-        }));
-      }
-    }
-
-    // Calculate remaining distance based on time progress
-    if (totalDistance > 0 && this.rideDetails().estimatedDuration > 0) {
-      const timeElapsed = this.rideDetails().estimatedDuration - (response.estimatedTimeMinutes || 0);
-      const progressPercent = (timeElapsed / this.rideDetails().estimatedDuration) * 100;
-      const remainingDist = totalDistance * (1 - progressPercent / 100);
-      this.remainingDistance.set(Math.max(0, parseFloat(remainingDist.toFixed(2))));
-    }
-
-    // Update vehicle location
-    if (response.currentLocation) {
-      this.vehicleLocation.set({
-        lat: response.currentLocation.latitude,
-        lng: response.currentLocation.longitude
-      });
-
-      // Update vehicle info
-      this.rideDetails.update(current => ({
-        ...current,
-        licensePlate: response.currentLocation?.plateNum || current.licensePlate,
-        vehicleType: response.currentLocation?.model || current.vehicleType
-      }));
-    }
-
-    // Update driver info if present
     if (response.driver) {
       this.rideDetails.update(current => ({
         ...current,
@@ -254,10 +392,10 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
       }));
     }
 
-    // Check for panic mode
     if (response.status === 'PANIC' && !this.panicTriggered()) {
       this.panicTriggered.set(true);
       this.stopTracking();
+      this.stopMockMovement();
       this.updateVehicleMarker();
     }
   }
@@ -299,8 +437,6 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
       iconAnchor: [11, 11]
     });
 
-    const vehicleIcon = this.createVehicleIcon(this.panicTriggered());
-
     this.routeControl = L.Routing.control({
       waypoints: [
         L.latLng(ride.pickupCoords[0], ride.pickupCoords[1]),
@@ -322,16 +458,6 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
         return L.marker(waypoint.latLng, { icon });
       }
     } as any).addTo(this.map);
-
-    const vehicleLoc = this.vehicleLocation();
-    if (vehicleLoc.lat !== 0 && vehicleLoc.lng !== 0) {
-      this.vehicleMarker = L.marker([vehicleLoc.lat, vehicleLoc.lng], {
-        icon: vehicleIcon,
-        zIndexOffset: 1000
-      }).addTo(this.map!);
-
-      this.vehicleMarker.bindPopup(`<b>Driver Location</b><br>${ride.driverName}`);
-    }
   }
 
   private createVehicleIcon(isPanic: boolean): L.DivIcon {
@@ -390,6 +516,45 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Rating methods
+  setDriverRating(rating: number): void {
+    this.driverRating.set(rating);
+  }
+
+  setVehicleRating(rating: number): void {
+    this.vehicleRating.set(rating);
+  }
+
+  submitRating(): void {
+    if (this.isSubmittingRating()) return;
+
+    this.isSubmittingRating.set(true);
+
+    const ratingRequest = {
+      driverRating: this.driverRating(),
+      vehicleRating: this.vehicleRating(),
+      comment: this.ratingForm.value.comment || ''
+    };
+
+    // Call rating API
+    this.rideService.rateRide(this.rideId, ratingRequest).subscribe({
+      next: () => {
+        this.isSubmittingRating.set(false);
+        this.showCompletionModal.set(false);
+        this.router.navigate(['/passenger/rate']);
+      },
+      error: (err) => {
+        console.error('Error submitting rating:', err);
+        this.isSubmittingRating.set(false);
+      }
+    });
+  }
+
+  skipRating(): void {
+    this.showCompletionModal.set(false);
+    this.router.navigate(['/passenger/home']);
+  }
+
   toggleReportForm(): void {
     this.showReportForm.update(value => !value);
     if (!this.showReportForm()) {
@@ -442,6 +607,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
       next: () => {
         this.panicTriggered.set(true);
         this.stopTracking();
+        this.stopMockMovement();
         this.updateVehicleMarker();
         console.log('🚨 Panic alert sent to central dispatch');
       },

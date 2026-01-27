@@ -1,6 +1,7 @@
 package com.tricolori.backend.controller;
 
 import com.tricolori.backend.dto.ride.*;
+import com.tricolori.backend.entity.Location;
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.entity.Ride;
 import com.tricolori.backend.service.AuthService;
@@ -178,11 +179,24 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RideStatusResponse> getRideStatus(@PathVariable Long id) {
-        RideStatusResponse response = rideService.getRideStatus(id);
-        return ResponseEntity.ok(response);
+    @PutMapping("/{rideId}/passenger-location")
+    public ResponseEntity<Void> updatePassengerLocation(
+            @PathVariable Long rideId,
+            @Valid @RequestBody Location location
+    ) {
+        rideService.updatePassengerLocation(rideId, location.getLatitude(), location.getLongitude());
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{rideId}/vehicle-location")
+    public ResponseEntity<Void> updateVehicleLocation(
+            @PathVariable Long rideId,
+            @Valid @RequestBody Location location
+    ) {
+        rideService.updateVehicleLocation(rideId, location.getLatitude(), location.getLongitude());
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/current/driver/{driverId}")

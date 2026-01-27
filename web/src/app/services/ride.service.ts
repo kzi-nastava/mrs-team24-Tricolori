@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
 import { PanicRequest, StopRideRequest, StopRideResponse } from '../model/ride';
 import { environment } from '../../environments/environment';
 import {
@@ -52,6 +51,12 @@ export interface RideDetailResponse {
   ratingComment: string | null;
 }
 
+export interface RideRatingRequest {
+  driverRating: number;
+  vehicleRating: number;
+  comment: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -70,14 +75,14 @@ export class RideService {
     let params = new HttpParams()
       .set('sortBy', sortBy)
       .set('sortDirection', sortDirection);
-
+    
     if (startDate) {
       params = params.set('startDate', startDate);
     }
     if (endDate) {
       params = params.set('endDate', endDate);
     }
-
+    
     return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
   }
 
@@ -94,6 +99,21 @@ export class RideService {
   // Track a ride in real-time - get current status, location, and estimates
   trackRide(rideId: number): Observable<RideTrackingResponse> {
     return this.http.get<RideTrackingResponse>(`${this.API_URL}/${rideId}/track`);
+  }
+
+  // Update passenger location during ride
+  updatePassengerLocation(rideId: number, location: { latitude: number; longitude: number }): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/passenger-location`, location);
+  }
+
+  // Update vehicle location during ride (for testing/simulation)
+  updateVehicleLocation(rideId: number, location: { latitude: number; longitude: number }): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/vehicle-location`, location);
+  }
+
+  // Rate a completed ride
+  rateRide(rideId: number, request: RideRatingRequest): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/${rideId}/rate`, request);
   }
 
   // Trigger panic alert for a ride
