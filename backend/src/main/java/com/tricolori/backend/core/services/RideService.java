@@ -58,6 +58,7 @@ public class RideService {
     private final DriverService driverService;
     
     private PriceList priceList;
+
     private final VehicleSpecificationRepository vehicleSpecificationRepository;
     private final RideMapper rideMapper;
     private final ReviewService reviewService;
@@ -328,7 +329,7 @@ public class RideService {
         return new StopRideResponse(ride.getPrice());
     }
 
-    /*@Transactional
+    @Transactional
     public void rideOrder(OrderRequest request) {
         RidePreferences preferences = request.preferences();
         RideEstimations estimations = request.estimations();
@@ -351,12 +352,12 @@ public class RideService {
         ride.setPassengers(passengerService.getTrackingPassengers(request.trackers()));
 
         // Finding the driver:
-        Driver driver = driverService.findDriverForRide(ride);
+        Driver driver = driverService.findDriverForRide(routeData.pickup().getLocation(), preferences);
         ride.setDriver(driver);
         ride.setVehicleSpecification(driver.getVehicle().getSpecification());
 
         rideRepository.save(ride);
-    }*/
+    }
 
     // ================= helpers =================
 
@@ -412,6 +413,10 @@ public class RideService {
                 priceListService.getKmPrice();
 
         return basePrice + ride.getRoute().getDistanceKm() * kmPrice;
+    }
+
+    private Double calculatePrice(VehicleType type, double kilometers) {
+        return priceListService.calculateBasePrice(type) + kilometers * priceListService.getKmPrice();
     }
 
     private Integer round(Double value) {

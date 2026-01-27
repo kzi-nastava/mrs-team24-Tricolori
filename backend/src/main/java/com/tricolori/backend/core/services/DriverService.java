@@ -1,6 +1,7 @@
 package com.tricolori.backend.core.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -11,10 +12,11 @@ import org.springframework.stereotype.Service;
 import com.tricolori.backend.core.domain.models.Driver;
 import com.tricolori.backend.core.domain.models.Location;
 import com.tricolori.backend.core.domain.models.Ride;
+import com.tricolori.backend.core.domain.models.VehicleSpecification;
 import com.tricolori.backend.core.domain.repositories.DriverRepository;
 import com.tricolori.backend.core.domain.repositories.RideRepository;
-import com.tricolori.backend.core.exceptions.AllDriversReachedWorkingLimitException;
 import com.tricolori.backend.core.exceptions.NoActiveDriversException;
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.RidePreferences;
 import com.tricolori.backend.shared.enums.RideStatus;
 
 import lombok.RequiredArgsConstructor;
@@ -25,32 +27,56 @@ public class DriverService {
     private final DriverRepository repository;
     private final RideRepository rideRepository;
 
-    public Driver findDriverForRide(Ride newRide) {
+    public Driver findDriverForRide(Location pickup, RidePreferences preferences) {
+        // 1. Uzmi sve aktivne vozače
         List<Driver> activeDrivers = repository.getAllCurrentlyActiveDrivers();
         if (activeDrivers.isEmpty()) {
-            throw new NoActiveDriversException();
+            throw new NoActiveDriversException("Trenutno nema aktivnih vozaca.");
         }
 
-        List<Driver> driversBelowDailyLimit = activeDrivers.stream()
+        // 2. Filtriraj vozače: Radno vreme + Specifikacija vozila (preferences)
+        List<Driver> eligibleDrivers = activeDrivers.stream()
             .filter(this::isWorkTimeValid)
+            .filter(d -> matchesPreferences(d, preferences)) // <-- NOVO
             .toList();
 
-        if (driversBelowDailyLimit.isEmpty()) {
-            throw new AllDriversReachedWorkingLimitException();
+        if (eligibleDrivers.isEmpty()) {
+            throw new NoActiveDriversException("Nema vozača koji ispunjavaju kriterijume (tip vozila/oprema).");
         }
 
-        List<Driver> freeDrivers = getTrulyFreeDrivers(driversBelowDailyLimit);
+        // 3. Traži potpuno slobodne vozače među onima koji ispunjavaju uslove
+        List<Driver> freeDrivers = getTrulyFreeDrivers(eligibleDrivers);
         if (!freeDrivers.isEmpty()) {
-            return findClosestToLocation(freeDrivers, newRide.getRoute().getPickupStop().getLocation());
+            return findClosestToLocation(freeDrivers, pickup);
         }
 
-        Driver bestBusyDriver = findBestBusyDriver(driversBelowDailyLimit, newRide);
+        // 4. Ako su svi zauzeti, traži onoga koji završava uskoro (i ispunjava preferences)
+        Driver bestBusyDriver = findBestBusyDriver(eligibleDrivers, pickup);
 
         if (bestBusyDriver != null) {
             return bestBusyDriver;
         }
 
-        throw new NoActiveDriversException("There are no available drivers.");
+        throw new NoActiveDriversException("Svi odgovarajući vozači su trenutno zauzeti.");
+    }
+
+    // Pomoćna metoda za proveru preferencija
+    private boolean matchesPreferences(Driver driver, RidePreferences prefs) {
+        VehicleSpecification spec = driver.getVehicle().getSpecification();
+
+        if (spec.getType() != prefs.vehicleType()) {
+            return false;
+        }
+
+        if (prefs.petFriendly() && !spec.isPetFriendly()) {
+            return false;
+        }
+
+        if (prefs.babyFriendly() && !spec.isBabyFriendly()) {
+            return false;
+        }
+
+        return true;
     }
 
     private List<Driver> getTrulyFreeDrivers(List<Driver> candidates) {
@@ -65,7 +91,7 @@ public class DriverService {
             .toList();
     }
 
-    private Driver findBestBusyDriver(List<Driver> candidates, Ride newRide) {
+    private Driver findBestBusyDriver(List<Driver> candidates, Location pickup) {
         return candidates.stream()
             .filter(d -> {
                 List<Ride> driverRides = rideRepository.findAllByDriverAndStatusIn(d, 
@@ -80,8 +106,7 @@ public class DriverService {
             })
             .min(Comparator.comparingDouble(d -> {
                 Ride currentRide = getCurrentOngoingRide(d);
-                return Location.calculateDistance(currentRide.getRoute().getDestinationStop().getLocation(), 
-                    newRide.getRoute().getPickupStop().getLocation());
+                return Location.calculateDistance(currentRide.getRoute().getDestinationStop().getLocation(), pickup);
             }))
             .orElse(null);
     }
@@ -95,8 +120,17 @@ public class DriverService {
     }
 
     private boolean isEndingInTenMinutes(Ride ride) {
-        // TODO...
-        return true; 
+        if (ride.getStartTime() == null || ride.getRoute().getEstimatedTimeSeconds() == null) {
+            return false;
+        }
+
+        LocalDateTime estimatedArrivalTime = ride.getStartTime()
+                .plusSeconds(ride.getRoute().getEstimatedTimeSeconds());
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime tenMinutesFromNow = now.plusMinutes(10);
+
+        return estimatedArrivalTime.isBefore(tenMinutesFromNow);
     }
 
     private Driver findClosestToLocation(List<Driver> drivers, Location pickupLoc) {

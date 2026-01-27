@@ -132,8 +132,11 @@ export class RouteSelector implements OnInit, OnDestroy {
   private createStopGroup(stopData?: Stop): FormGroup {
     return this.fb.group({
       address: [stopData?.address || '', Validators.required],
-      longitude: [stopData?.location.lng || null],
-      latitude: [stopData?.location.lat || null]
+      // Pravimo ugnježdenu grupu da odgovara interfejsu
+      location: this.fb.group({
+        lng: [stopData?.location?.lng || null],
+        lat: [stopData?.location?.lat || null]
+      })
     });
   }
 }

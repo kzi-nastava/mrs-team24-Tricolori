@@ -1,4 +1,4 @@
-export type VehicleType = 'standard' | 'luxury' | 'van'
+export type VehicleType = 'STANDARD' | 'LUXURY' | 'VAN'
 
 export interface VehicleDto {
   model: string;

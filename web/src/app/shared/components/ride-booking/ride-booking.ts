@@ -123,7 +123,8 @@ export class RideBooking implements OnInit, AfterViewInit {
       routeSelector.routeForm.markAllAsTouched();
     }
 
-    const routeVal: Route = routeSelector.routeForm.getRawValue();
+    const routeVal = routeSelector.routeForm.getRawValue();
+    console.log(routeVal)
 
     const estimation = await this.estimationService.calculateRoute(
       { lat: routeVal.pickup.location.lat, lng: routeVal.pickup.location.lng },
@@ -146,14 +147,15 @@ export class RideBooking implements OnInit, AfterViewInit {
       }
     }
 
-    /*this.rideService.bookRide(rideRequest).subscribe({
+
+    this.rideService.bookRide(rideRequest).subscribe({
       next: (response) => {
         console.log(response);
       },
       error: (err) => {
         console.log(err);
       }
-    })*/
+    })
 
     // Draw route on map:
     const esitmation = await this.estimationService.calculateRoute(

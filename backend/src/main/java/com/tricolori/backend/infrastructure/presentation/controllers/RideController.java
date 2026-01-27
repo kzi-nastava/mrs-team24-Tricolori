@@ -187,7 +187,7 @@ public class RideController {
     }
 
     // TODO: REMOVE AFTER TESTING
-    @PostMapping("/create/passenger")
+    /*@PostMapping("/create/passenger")
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<?> createRide(@RequestBody CreateRideRequest request) {
         // Hard-coded passenger ID for testing
@@ -201,17 +201,17 @@ public class RideController {
                 "distance", ride.getRoute().getDistanceKm(),
                 "estimatedTime", ride.getRoute().getEstimatedTimeSeconds()
         ));
-    }
+    }*/
 
-    /*@PostMapping("/order")
-    @PreAuthorize("hasRole('PASSENGER')")
+    @PostMapping("/order")
+    // @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<String> order(
         @AuthenticationPrincipal Person passenger,
         @RequestBody OrderRequest request
     ) {
         rideService.rideOrder(request);
         return ResponseEntity.ok(request.toString());
-    }*/
+    }
 
     @PutMapping("/{id}/start")
     public ResponseEntity<Void> startRide(@PathVariable Long id) {
