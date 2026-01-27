@@ -1,22 +1,24 @@
 import { Routes } from '@angular/router';
-import { Login } from './features/auth/login/login';
-import { Register } from './features/auth/register/register';
-import { UnregisteredHome } from './features/home/unregistered/unregistered-home';
-import {DriverRideAssignment} from './shared/components/driver-ride-assignment/driver-ride-assignment';
-import { authGuard } from './core/guards/auth.guard';
-import { RideBooking } from './shared/components/ride-booking/ride-booking';
-import { HomePassenger } from './features/home/passenger/passenger-home';
+import { Login } from './pages/auth/login/login';
+import { Register } from './pages/auth/register/register';
+import { UnregisteredHome } from './pages/home/unregistered/unregistered-home';
+import {DriverRideAssignment} from './pages/home/driver/components/driver-ride-assignment/driver-ride-assignment';
+import { authGuard } from './guards/auth.guard';
+import { RideBooking } from './pages/home/passenger/components/ride-booking/ride-booking';
+import { HomePassenger } from './pages/home/passenger/passenger-home';
+import {NavigationPassenger} from './components/nav-bar/navigation-passenger/navigation-passenger';
+import {NavigationDriver} from './components/nav-bar/navigation-driver/navigation-driver';
 
 export const routes: Routes = [
   // Public routes
   { path: '', component: UnregisteredHome },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
-  { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(m => m.ForgotPassword) },
-  { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password/reset-password').then(m => m.ResetPassword) },
-  { path: 'password-change', loadComponent: () => import('./features/password-change/password-change').then(m => m.PasswordChange) },
-  { path: 'activate', loadComponent: () => import('./features/auth/activate-account/activate-account').then(m => m.ActivateAccount) },
-  { path: 'password-setup', loadComponent: () => import('./features/auth/password-setup/password-setup').then(m => m.PasswordSetup) },
+  { path: 'forgot-password', loadComponent: () => import('./pages/auth/forgot-password/forgot-password').then(m => m.ForgotPassword) },
+  { path: 'reset-password', loadComponent: () => import('./pages/auth/reset-password/reset-password').then(m => m.ResetPassword) },
+  { path: 'password-change', loadComponent: () => import('./pages/password-change/password-change').then(m => m.PasswordChange) },
+  { path: 'activate', loadComponent: () => import('./pages/auth/activate-account/activate-account').then(m => m.ActivateAccount) },
+  { path: 'password-setup', loadComponent: () => import('./pages/auth/password-setup/password-setup').then(m => m.PasswordSetup) },
 
   // Driver routes
   {
@@ -25,7 +27,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'home',
-        loadComponent: () => import('./features/home/driver/driver-home').then(m => m.HomeDriver),
+        loadComponent: () => import('./pages/home/driver/driver-home').then(m => m.HomeDriver),
         children: [
           // { path: 'waiting', component: WaitingComponent },
           { path: 'ride-assign/:id', component: DriverRideAssignment },
@@ -35,21 +37,21 @@ export const routes: Routes = [
       },
       {
         path: 'history',
-        loadComponent: () => import('./features/ride-history/driver/driver-history').then(m => m.DriverHistory),
+        loadComponent: () => import('./pages/ride-history/driver/driver-history').then(m => m.DriverHistory),
         canActivate: [authGuard]
 
       },
       {
         path: 'ride-tracking/:id',
-        loadComponent: () => import('./features/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent)
+        loadComponent: () => import('./pages/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent)
       },
       {
         path: 'support',
-        loadComponent: () => import('./features/support-chat/driver/driver-support').then(m => m.DriverSupport)
+        loadComponent: () => import('./pages/support-chat/driver/driver-support').then(m => m.DriverSupport)
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/profile/driver-profile/driver-profile').then(m => m.DriverProfile)
+        loadComponent: () => import('./pages/profile/driver-profile/driver-profile').then(m => m.DriverProfile)
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
@@ -66,7 +68,7 @@ export const routes: Routes = [
         children: [
           {
             path: 'ride-wait/:id',
-            loadComponent: () => import('./shared/components/ride-wait/ride-wait').then(m => m.RideWait)
+            loadComponent: () => import('./pages/home/passenger/components/ride-wait/ride-wait').then(m => m.RideWait)
           },
           {
             path: 'ride-booking', component: RideBooking
@@ -80,27 +82,27 @@ export const routes: Routes = [
       },
       {
         path: 'support',
-        loadComponent: () => import('./features/support-chat/passenger/passenger-support').then(m => m.PassengerSupport)
+        loadComponent: () => import('./pages/support-chat/passenger/passenger-support').then(m => m.PassengerSupport)
       },
       {
         path: 'history',
-        loadComponent: () => import('./features/ride-history/passenger/passenger-history').then(m => m.PassengerHistory)
+        loadComponent: () => import('./pages/ride-history/passenger/passenger-history').then(m => m.PassengerHistory)
       },
       {
         path: 'ride-rating/:id',
-        loadComponent: () => import('./features/ride-rating/ride-rating').then(m => m.RideRatingComponent)
+        loadComponent: () => import('./pages/ride-rating/ride-rating').then(m => m.RideRatingComponent)
       },
       {
         path: 'ride-tracking/:id',
-        loadComponent: () => import('./features/ride-tracking/passenger/passenger-ride-tracking').then(m => m.PassengerRideTrackingComponent)
+        loadComponent: () => import('./pages/ride-tracking/passenger/passenger-ride-tracking').then(m => m.PassengerRideTrackingComponent)
       },
       {
       path: 'notifications',
-      loadComponent: () => import('./features/notifications/passenger/passenger-notifications').then(m => m.PassengerNotificationsComponent)
+      loadComponent: () => import('./pages/notifications/passenger/passenger-notifications').then(m => m.PassengerNotificationsComponent)
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/profile/base-profile/base-profile').then(m => m.BaseProfile)
+        loadComponent: () => import('./pages/profile/base-profile/base-profile').then(m => m.BaseProfile)
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
@@ -113,35 +115,35 @@ export const routes: Routes = [
     children: [
       {
         path: 'home',
-        loadComponent: () => import('./features/home/admin/admin-home').then(m => m.AdminHome)
+        loadComponent: () => import('./pages/home/admin/admin-home').then(m => m.AdminHome)
       },
       {
         path: 'support',
-        loadComponent: () => import('./features/support-chat/admin/admin-support').then(m => m.AdminSupport)
+        loadComponent: () => import('./pages/support-chat/admin/admin-support').then(m => m.AdminSupport)
       },
       {
         path: 'ride-supervision',
-        loadComponent: () => import('./features/ride-supervision/admin-ride-supervision').then(m => m.AdminRideSupervisionComponent)
+        loadComponent: () => import('./pages/ride-supervision/admin-ride-supervision').then(m => m.AdminRideSupervisionComponent)
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/profile/base-profile/base-profile').then(m => m.BaseProfile)
+        loadComponent: () => import('./pages/profile/base-profile/base-profile').then(m => m.BaseProfile)
       },
       {
         path: 'history',
-        loadComponent: () => import('./features/ride-history/admin/admin-history').then(m => m.AdminRideHistoryComponent)
+        loadComponent: () => import('./pages/ride-history/admin/admin-history').then(m => m.AdminRideHistoryComponent)
       },
       {
         path: 'notifications',
-        loadComponent: () => import('./features/notifications/admin/admin-notifications').then(m => m.AdminNotificationsComponent)
+        loadComponent: () => import('./pages/notifications/admin/admin-notifications').then(m => m.AdminNotificationsComponent)
       },
       {
         path: 'driver-register',
-        loadComponent: () => import('./features/auth/driver-register/driver-register').then(m => m.DriverRegister)
+        loadComponent: () => import('./pages/auth/driver-register/driver-register').then(m => m.DriverRegister)
       },
       {
         path: 'pricelist',
-        loadComponent: () => import('./features/pricelist/pricelist-admin').then(m => m.PricelistAdmin)
+        loadComponent: () => import('./pages/pricelist/pricelist-admin').then(m => m.PricelistAdmin)
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
