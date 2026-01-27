@@ -55,7 +55,7 @@ public class InconsistencyReportService {
     }
 
     public List<InconsistencyReport> getReportsForDriver(Long driverId) {
-        return inconsistencyReportRepository.findAllByRide_Driver_Id(driverId);
+        return inconsistencyReportRepository.findAllByRideDriverId(driverId);
     }
 
     public List<InconsistencyReport> getReportsByPassenger(Long passengerId) {

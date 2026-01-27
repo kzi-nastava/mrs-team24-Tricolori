@@ -11,9 +11,7 @@ import java.util.Optional;
 @Repository
 public interface RouteRepository extends JpaRepository<Route, Long> {
 
-    /**
-     * Pronalazi rutu po route geometry (polyline je unique identifier)
-     */
+    // finds route by its geometry (as encoded polyline)
     @Query("SELECT r FROM Route r WHERE r.routeGeometry = :geometry")
     Optional<Route> findByRouteGeometry(@Param("geometry") String geometry);
 }

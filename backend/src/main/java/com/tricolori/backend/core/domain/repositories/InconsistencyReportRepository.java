@@ -15,6 +15,6 @@ public interface InconsistencyReportRepository
 
     // all reports created by a passenger
     List<InconsistencyReport> findAllByReporterId(Long reporterId);
-
-    List<InconsistencyReport> findAllByRide_Driver_Id(Long driverId);
+    // all reports for rides where the driver has the given id
+    List<InconsistencyReport> findAllByRideDriverId(Long driverId);
 }

@@ -42,7 +42,7 @@ public class OSRMService {
         OSRMRouteResponse response = restTemplate.getForObject(url, OSRMRouteResponse.class);
 
         if (response == null || !"Ok".equals(response.getCode())) {
-            throw new RuntimeException("OSRM nije vratio validnu rutu");
+            throw new RuntimeException("OSRM did not return a valid route. ");
         }
 
         return response;
