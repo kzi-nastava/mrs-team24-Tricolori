@@ -143,6 +143,7 @@ public class RideService {
                 ride.getDriver() != null && ride.getDriver().getVehicle().getLocation() != null
                         ? new VehicleLocationResponse(
                         ride.getDriver().getVehicle().getId(),
+                        ride.getDriver().getVehicle().getModel(),
                         ride.getDriver().getVehicle().getPlateNum(),
                         ride.getDriver().getVehicle().getLocation().getLatitude(),
                         ride.getDriver().getVehicle().getLocation().getLongitude(),

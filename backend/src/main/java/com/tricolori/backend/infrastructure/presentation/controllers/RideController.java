@@ -101,23 +101,27 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
+    // passenger leaves a rating for previous ride
     @PostMapping("/{id}/rate")
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<Void> rateRide(
             @PathVariable Long id,
-            @Valid @RequestBody RideRatingRequest request
+            @Valid @RequestBody RideRatingRequest request,
+            @AuthenticationPrincipal Person passenger
     ) {
-        Long passengerId = authenticationService.getAuthenticatedUserId();
-        reviewService.rateRide(id, passengerId, request);
+        reviewService.rateRide(id, passenger.getId(), request);
         return ResponseEntity.ok().build();
     }
 
+    // checks whether the ride can be rated or already has been
     @GetMapping("/{id}/rating-status")
     @PreAuthorize("hasRole('PASSENGER')")
-    public ResponseEntity<RideRatingResponse> getRatingStatus(@PathVariable Long id) {
-        Long passengerId = authenticationService.getAuthenticatedUserId();
-        reviewService.getRatingStatus(id, passengerId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<RideRatingResponse> getRatingStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Person passenger
+    ) {
+        RideRatingResponse response = reviewService.getRatingStatus(id, passenger.getId());
+        return ResponseEntity.ok(response);
     }
 
     // get driver's ride history
@@ -146,6 +150,15 @@ public class RideController {
     public ResponseEntity<RideDetailResponse> getDriverRideDetail(@PathVariable Long id) {
         Long driverId = authenticationService.getAuthenticatedUserId();
         RideDetailResponse detail = rideService.getDriverRideDetail(id, driverId);
+        return ResponseEntity.ok(detail);
+    }
+
+    // detailed view for specific ride (for passenger)
+    @GetMapping("/{id}/details/passenger")
+    @PreAuthorize("hasRole('PASSENGER')")
+    public ResponseEntity<PassengerRideDetailResponse> getPassengerRideDetail(@PathVariable Long id) {
+        Long passengerId = authenticationService.getAuthenticatedUserId();
+        PassengerRideDetailResponse detail = rideService.getPassengerRideDetail(id, passengerId);
         return ResponseEntity.ok(detail);
     }
 

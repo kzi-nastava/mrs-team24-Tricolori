@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import {PanicRequest, StopRideRequest, StopRideResponse} from '../../shared/model/ride';
@@ -79,10 +79,17 @@ export class RideService {
   }
 
   /**
-   * Get detailed information for a specific ride
+   * Get detailed information for a specific ride (for driver)
    */
   getDriverRideDetail(rideId: number): Observable<RideDetailResponse> {
     return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/driver`);
+  }
+
+  /**
+   * Get detailed information for a specific ride (for passenger)
+   */
+  getPassengerRideDetail(rideId: number): Observable<RideDetailResponse> {
+    return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/passenger`);
   }
 
   ridePanic(rideId: number, panicRequest: PanicRequest): Observable<void> {

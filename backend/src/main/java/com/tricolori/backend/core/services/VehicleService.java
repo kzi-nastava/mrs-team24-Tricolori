@@ -1,6 +1,6 @@
 package com.tricolori.backend.core.services;
 
-import com.tricolori.backend.infrastructure.presentation.dtos.VehicleLocationResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleLocationResponse;
 import com.tricolori.backend.infrastructure.presentation.dtos.VehicleSpecificationDto;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -73,14 +73,7 @@ public class VehicleService {
                         vehicle.getPlateNum(),
                         vehicle.getLocation().getLatitude(),
                         vehicle.getLocation().getLongitude(),
-                        vehicle.isAvailable(),
-                        vehicle.getSpecification() != null ?
-                                new VehicleSpecificationDto(
-                                        vehicle.getSpecification().getType().name(),
-                                        vehicle.getSpecification().getNumSeats(),
-                                        vehicle.getSpecification().isBabyFriendly(),
-                                        vehicle.getSpecification().isPetFriendly()
-                                ) : null
+                        vehicle.isAvailable()
                 ))
                 .collect(Collectors.toList());
     }

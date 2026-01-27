@@ -86,7 +86,7 @@ export class PassengerHistory {
       ratingExpired: false
     },
     {
-      id: 2,
+      id: 5,
       route: 'Bulevar Oslobođenja 30 → Trg Slobode',
       startDate: '2024-12-14',
       endDate: '2024-12-14',
@@ -106,7 +106,7 @@ export class PassengerHistory {
       ratingExpired: false
     },
     {
-      id: 3,
+      id: 4,
       route: 'Železnička stanica → Limanski park',
       startDate: '2024-12-13',
       endDate: '2024-12-13',

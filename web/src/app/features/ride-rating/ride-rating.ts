@@ -17,9 +17,12 @@ import {
 import { heroStarSolid as heroStarSolidFill } from '@ng-icons/heroicons/solid';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
+import { RatingService, RideRatingRequest } from '../../core/services/rating.service'; 
+import { RideService, RideDetailResponse } from '../../core/services/ride.service';
+import { catchError, of, forkJoin } from 'rxjs';
 
 interface RideDetails {
-  id: string;
+  id: number;
   pickup: string;
   destination: string;
   pickupCoords: [number, number];
@@ -60,31 +63,22 @@ export class RideRatingComponent implements OnInit, OnDestroy {
   isSubmitting = signal<boolean>(false);
   isSubmitted = signal<boolean>(false);
   isExpired = signal<boolean>(false);
+  isLoading = signal<boolean>(true);
   hoursRemaining = signal<number>(72);
+  errorMessage = signal<string>('');
 
-  // Mock ride details - using Novi Sad locations
-  rideDetails = signal<RideDetails>({
-    id: 'ride-123',
-    pickup: 'Trg Slobode 1',
-    destination: 'Kisačka 71',
-    pickupCoords: [45.2671, 19.8335], // Trg Slobode
-    destinationCoords: [45.2550, 19.8450], // Kisačka 71
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    driverName: 'Marko Petrović',
-    vehicleType: 'Economy - Toyota Corolla',
-    distance: 2.3,
-    duration: 8,
-    price: 276,
-    completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
-  });
+  rideDetails = signal<RideDetails | null>(null);
 
   private map: L.Map | null = null;
   private routeControl: any = null;
+  private rideId: number = 0;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private ratingService: RatingService,
+    private rideService: RideService
   ) {
     this.ratingForm = this.fb.group({
       driverRating: [0, [Validators.required, Validators.min(1), Validators.max(5)]],
@@ -94,14 +88,25 @@ export class RideRatingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Check if rating period has expired (3 days = 72 hours)
-    this.checkRatingExpiry();
+    // Get ride ID from route params
+    const rideIdParam = this.route.snapshot.paramMap.get('id');
     
-    // Initialize map after view is ready
-    setTimeout(() => this.initMap(), 100);
+    if (!rideIdParam) {
+      console.error('No ride ID provided');
+      this.router.navigate(['/passenger/history']);
+      return;
+    }
 
-    // Load existing rating if any
-    this.loadExistingRating();
+    this.rideId = parseInt(rideIdParam, 10);
+
+    if (isNaN(this.rideId)) {
+      console.error('Invalid ride ID');
+      this.router.navigate(['/passenger/history']);
+      return;
+    }
+
+    // Load both rating status and ride details
+    this.loadRideData();
   }
 
   ngOnDestroy(): void {
@@ -115,26 +120,82 @@ export class RideRatingComponent implements OnInit, OnDestroy {
     }
   }
 
-  private checkRatingExpiry(): void {
-    const ride = this.rideDetails();
-    const now = new Date();
-    const completedAt = new Date(ride.completedAt);
-    const hoursSinceCompleted = (now.getTime() - completedAt.getTime()) / (1000 * 60 * 60);
-    
-    this.hoursRemaining.set(Math.max(0, 72 - Math.floor(hoursSinceCompleted)));
-    
-    if (hoursSinceCompleted > 72) {
-      this.isExpired.set(true);
-    }
+  private loadRideData(): void {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    // Load both rating status and ride details in parallel
+    forkJoin({
+      ratingStatus: this.ratingService.getRatingStatus(this.rideId).pipe(
+        catchError(error => {
+          console.error('Error loading rating status:', error);
+          return of(null);
+        })
+      ),
+      rideDetails: this.rideService.getPassengerRideDetail(this.rideId).pipe(
+        catchError(error => {
+          console.error('Error loading ride details:', error);
+          return of(null);
+        })
+      )
+    }).subscribe(({ ratingStatus, rideDetails }) => {
+      this.isLoading.set(false);
+
+      // Handle rating status
+      if (ratingStatus) {
+        this.isSubmitted.set(ratingStatus.alreadyRated);
+        this.isExpired.set(ratingStatus.deadlinePassed);
+        
+        if (!ratingStatus.canRate && !ratingStatus.alreadyRated) {
+          this.isExpired.set(true);
+        }
+
+        // Calculate hours remaining
+        if (ratingStatus.deadline) {
+          const deadline = new Date(ratingStatus.deadline);
+          const now = new Date();
+          const hoursLeft = Math.max(0, Math.floor((deadline.getTime() - now.getTime()) / (1000 * 60 * 60)));
+          this.hoursRemaining.set(hoursLeft);
+        }
+      }
+
+      // Handle ride details
+      if (rideDetails) {
+        this.setRideDetails(rideDetails);
+        
+        // Initialize map after ride details are loaded
+        setTimeout(() => this.initMap(), 100);
+      } else {
+        this.errorMessage.set('Failed to load ride information. Please try again.');
+      }
+
+      // If both failed, show error and redirect
+      if (!ratingStatus && !rideDetails) {
+        this.errorMessage.set('Failed to load ride information');
+        setTimeout(() => {
+          this.router.navigate(['/passenger/history']);
+        }, 3000);
+      }
+    });
   }
 
-  private loadExistingRating(): void {
-    // In real app, check if user already rated this ride
-    // For now, simulate this check
-    const hasRated = false; // Replace with actual API call
-    if (hasRated) {
-      this.isSubmitted.set(true);
-    }
+  private setRideDetails(details: RideDetailResponse): void {
+    const rideData: RideDetails = {
+      id: details.id,
+      pickup: details.pickupAddress,
+      destination: details.dropoffAddress,
+      pickupCoords: [details.pickupLatitude, details.pickupLongitude],
+      destinationCoords: [details.dropoffLatitude, details.dropoffLongitude],
+      date: new Date(details.startedAt || details.createdAt),
+      driverName: details.driverName,
+      vehicleType: `${details.vehicleModel}`,
+      distance: details.distance,
+      duration: details.duration,
+      price: details.totalPrice,
+      completedAt: new Date(details.completedAt)
+    };
+
+    this.rideDetails.set(rideData);
   }
 
   private initMap(): void {
@@ -142,6 +203,7 @@ export class RideRatingComponent implements OnInit, OnDestroy {
     if (!mapElement) return;
 
     const ride = this.rideDetails();
+    if (!ride) return;
     
     // Calculate center point
     const centerLat = (ride.pickupCoords[0] + ride.destinationCoords[0]) / 2;
@@ -191,18 +253,25 @@ export class RideRatingComponent implements OnInit, OnDestroy {
       }
     } as any).addTo(this.map);
 
-    // Update ride details when route is calculated
+    // Optionally update ride details when route is calculated
+    // (Only if you want to override backend distance/duration with map calculations)
     this.routeControl.on('routesfound', (e: any) => {
       const summary = e.routes[0].summary;
       const distanceKm = summary.totalDistance / 1000;
       const durationMin = Math.round(summary.totalTime / 60);
 
-      // Update the ride details with calculated values if needed
-      this.rideDetails.update(details => ({
-        ...details,
-        distance: parseFloat(distanceKm.toFixed(1)),
-        duration: durationMin
-      }));
+      // You can choose to update with calculated values or keep backend values
+      // Uncomment below if you want to use map-calculated values:
+      /*
+      this.rideDetails.update(details => {
+        if (!details) return details;
+        return {
+          ...details,
+          distance: parseFloat(distanceKm.toFixed(1)),
+          duration: durationMin
+        };
+      });
+      */
     });
   }
 
@@ -237,29 +306,48 @@ export class RideRatingComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting.set(true);
+    this.errorMessage.set('');
 
-    const ratingData = {
-      rideId: this.rideDetails().id,
+    const ratingData: RideRatingRequest = {
       driverRating: this.ratingForm.value.driverRating,
       vehicleRating: this.ratingForm.value.vehicleRating,
-      comment: this.ratingForm.value.comment || ''
+      comment: this.ratingForm.value.comment || undefined
     };
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Submitting rating:', ratingData);
-      
-      // In real app, call rating service:
-      // this.ratingService.submitRating(ratingData).subscribe(...)
-      
-      this.isSubmitting.set(false);
-      this.isSubmitted.set(true);
+    this.ratingService.submitRating(this.rideId, ratingData)
+      .pipe(
+        catchError(error => {
+          console.error('Error submitting rating:', error);
+          
+          // Handle different error scenarios
+          if (error.status === 403) {
+            this.errorMessage.set('You are not authorized to rate this ride');
+          } else if (error.status === 404) {
+            this.errorMessage.set('Ride not found');
+          } else if (error.status === 400) {
+            // Could be already rated or ride cannot be reviewed
+            this.errorMessage.set(error.error?.message || 'This ride cannot be rated');
+          } else {
+            this.errorMessage.set('Failed to submit rating. Please try again.');
+          }
+          
+          this.isSubmitting.set(false);
+          console.log('Working good');
+          return of(null);
+        })
+      )
+      .subscribe(response => {
+        if (response !== null) {
+          // Success
+          this.isSubmitting.set(false);
+          this.isSubmitted.set(true);
 
-      // Redirect after 2 seconds to ride history
-      setTimeout(() => {
-        this.router.navigate(['/passenger/history']);
-      }, 2000);
-    }, 1500);
+          // Redirect after 2 seconds to ride history
+          setTimeout(() => {
+            this.router.navigate(['/passenger/history']);
+          }, 2000);
+        }
+      });
   }
 
   skipRating(): void {

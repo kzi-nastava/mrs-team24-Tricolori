@@ -1,13 +1,18 @@
 package com.tricolori.backend.infrastructure.presentation.dtos.Vehicle;
 
-import com.tricolori.backend.infrastructure.presentation.dtos.VehicleSpecificationDto;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.List;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class VehicleLocationResponse {
 
-public record VehicleLocationResponse(
-        Long vehicleId,
-        String plateNum,
-        Double latitude,
-        Double longitude,
-        boolean available
-) {}
+    private Long vehicleId;
+    private String model;
+    private String plateNum;
+    private Double latitude;
+    private Double longitude;
+    private boolean available;
+}
