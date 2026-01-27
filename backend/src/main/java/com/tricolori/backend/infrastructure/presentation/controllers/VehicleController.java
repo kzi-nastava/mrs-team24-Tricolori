@@ -1,7 +1,7 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
 import com.tricolori.backend.core.services.VehicleService;
-import com.tricolori.backend.infrastructure.presentation.dtos.VehicleLocationResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleLocationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
