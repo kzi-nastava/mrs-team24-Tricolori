@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class RideService {
     private final RideMapper rideMapper;
     private final ReviewService reviewService;
     private final PriceListService priceListService;
+    private final RouteService routeService;
     private final InconsistencyReportService inconsistencyReportService;
 
     // ================= driver =================
@@ -158,6 +161,52 @@ public class RideService {
                 null,               // driver dto (no mapper yet)
                 null                // passenger dto list (no mapper yet)
         );
+    }
+
+    @Transactional
+    public Ride createRide(CreateRideRequest request, Long passengerId) {
+        Person passenger = personRepository.findById(passengerId)
+                .orElseThrow(() -> new PersonNotFoundException("Passenger not found"));
+
+        List<Stop> stops = new ArrayList<>();
+
+        stops.add(new Stop(
+                request.getPickupAddress(),
+                new Location(request.getPickupLongitude(), request.getPickupLatitude())
+        ));
+
+//        if (request.getIntermediateStops() != null && !request.getIntermediateStops().isEmpty()) {
+//            for (IntermediateStopRequest stopReq : request.getIntermediateStops()) {
+//                stops.add(new Stop(
+//                        stopReq.getAddress(),
+//                        new Location(stopReq.getLongitude(), stopReq.getLatitude())
+//                ));}}
+
+
+        stops.add(new Stop(
+                request.getDestinationAddress(),
+                new Location(request.getDestinationLongitude(), request.getDestinationLatitude())
+        ));
+
+        Route route = routeService.findOrCreateRoute(stops);
+
+        Ride ride = new Ride();
+        ride.setRoute(route);
+        ride.setPassengers(List.of((Passenger) passenger));
+        ride.setStatus(RideStatus.SCHEDULED);
+        ride.setScheduledFor(request.getScheduledFor() != null
+                ? request.getScheduledFor()
+                : LocalDateTime.now());
+
+        VehicleSpecification vehicleSpec = new VehicleSpecification();
+        vehicleSpec.setType(request.getVehicleType());
+        vehicleSpec.setBabyFriendly(request.isBabyFriendly());
+        vehicleSpec.setPetFriendly(request.isPetFriendly());
+        ride.setVehicleSpecification(vehicleSpec);
+
+        ride.setPrice(calculatePrice(ride));
+
+        return rideRepository.save(ride);
     }
 
     // ================= admin ========================
