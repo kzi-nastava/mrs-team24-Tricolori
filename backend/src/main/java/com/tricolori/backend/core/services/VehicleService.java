@@ -1,5 +1,8 @@
 package com.tricolori.backend.core.services;
 
+import com.tricolori.backend.infrastructure.presentation.dtos.VehicleLocationResponse;
+import com.tricolori.backend.infrastructure.presentation.dtos.VehicleSpecificationDto;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.tricolori.backend.core.domain.models.Person;
@@ -12,6 +15,9 @@ import com.tricolori.backend.infrastructure.presentation.dtos.Profile.ProfileRes
 import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleDto;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,5 +62,26 @@ public class VehicleService {
         vehicle.setModel(specs.getModel());
 
         return vehicleRepository.save(vehicle);
+    }
+
+    public List<VehicleLocationResponse> getAllActiveVehicles() {
+        return vehicleRepository.findAllWithLocation()
+                .stream()
+                .map(vehicle -> new VehicleLocationResponse(
+                        vehicle.getId(),
+                        vehicle.getModel(),
+                        vehicle.getPlateNum(),
+                        vehicle.getLocation().getLatitude(),
+                        vehicle.getLocation().getLongitude(),
+                        vehicle.isAvailable(),
+                        vehicle.getSpecification() != null ?
+                                new VehicleSpecificationDto(
+                                        vehicle.getSpecification().getType().name(),
+                                        vehicle.getSpecification().getNumSeats(),
+                                        vehicle.getSpecification().isBabyFriendly(),
+                                        vehicle.getSpecification().isPetFriendly()
+                                ) : null
+                ))
+                .collect(Collectors.toList());
     }
 }

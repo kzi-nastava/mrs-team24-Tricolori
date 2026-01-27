@@ -25,4 +25,9 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
             "AND v.location.latitude IS NOT NULL " +
             "AND v.location.longitude IS NOT NULL")
     List<Vehicle> findAllActiveWithLocation();
+
+    @Query("SELECT v FROM Vehicle v WHERE " +
+            "v.location.latitude IS NOT NULL " +
+            "AND v.location.longitude IS NOT NULL")
+    List<Vehicle> findAllWithLocation();
 }
