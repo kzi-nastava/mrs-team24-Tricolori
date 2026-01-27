@@ -1,5 +1,3 @@
-export type VehicleType = 'standard' | 'luxury' | 'van'
-
 export interface VehicleDto {
   model: string;
   type: string;
@@ -9,10 +7,13 @@ export interface VehicleDto {
   petFriendly: boolean;
 }
 
+export type VehicleType = 'STANDARD' | 'LUXURY' | 'VAN';
+
 export interface VehicleSpecification {
-  capacity?: number;
-  type?: string;
-  // Add other fields from your VehicleSpecificationDto as needed
+  type: VehicleType;
+  seats: number;
+  babyTransport: boolean;
+  petTransport: boolean;
 }
 
 export interface Vehicle {
@@ -22,5 +23,5 @@ export interface Vehicle {
   latitude: number;
   longitude: number;
   available: boolean;
-  specification?: VehicleSpecification;
+  specification: VehicleSpecification;
 }
