@@ -88,7 +88,7 @@ export class RideService {
   ridePanic(rideId: number, panicRequest: PanicRequest): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/panic`, panicRequest);
   }
-    
+
   cancelRide(rideId: number, reason: string) : Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
