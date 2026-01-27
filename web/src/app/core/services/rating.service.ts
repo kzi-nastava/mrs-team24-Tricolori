@@ -13,7 +13,7 @@ export interface RideRatingResponse {
   canRate: boolean;
   alreadyRated: boolean;
   deadlinePassed: boolean;
-  deadline: string; // ISO datetime string
+  deadline: string; 
 }
 
 @Injectable({

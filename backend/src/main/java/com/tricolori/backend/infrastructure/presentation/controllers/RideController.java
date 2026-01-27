@@ -153,6 +153,15 @@ public class RideController {
         return ResponseEntity.ok(detail);
     }
 
+    // detailed view for specific ride (for passenger)
+    @GetMapping("/{id}/details/passenger")
+    @PreAuthorize("hasRole('PASSENGER')")
+    public ResponseEntity<PassengerRideDetailResponse> getPassengerRideDetail(@PathVariable Long id) {
+        Long passengerId = authenticationService.getAuthenticatedUserId();
+        PassengerRideDetailResponse detail = rideService.getPassengerRideDetail(id, passengerId);
+        return ResponseEntity.ok(detail);
+    }
+
     @PostMapping("/{id}/report-inconsistency")
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<Void> reportInconsistency(
