@@ -64,10 +64,10 @@ export const routes: Routes = [
         path: '',
         component: HomePassenger,
         children: [
-          /*{
+          {
             path: 'ride-wait/:id',
-            // loadComponent: () => import('./shared/components/ride-wait/ride-wait').then(m => m.RideWait)
-          },*/
+            loadComponent: () => import('./shared/components/ride-wait/ride-wait').then(m => m.RideWait)
+          },
           {
             path: 'ride-booking', component: RideBooking
           },

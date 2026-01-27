@@ -1,57 +1,64 @@
 package com.tricolori.backend.core.services;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import com.tricolori.backend.core.domain.models.Location;
 import com.tricolori.backend.core.domain.models.Route;
 import com.tricolori.backend.core.domain.models.Stop;
 import com.tricolori.backend.core.domain.repositories.RouteRepository;
-import com.tricolori.backend.core.exceptions.NoRouteGeometryException;
-
+import com.tricolori.backend.infrastructure.external.osrm.dto.OSRMRouteResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class RouteService {
-    private final RouteRepository repository;
-    private final RestTemplate restTemplate;
 
-    public static final String OSRM_PUBLIC_URL = "https://router.project-osrm.org/route/v1/driving/";
+    private final RouteRepository routeRepository;
+    private final OSRMService osrmService;
 
-    // All I need for route are stops...
-    public Route createRoute(Stop pickup, Stop destination, List<Stop> stops) {
+    // finds or crates a route based on stops, uses polyline as identifier
+    @Transactional
+    public Route findOrCreateRoute(List<Stop> stops) {
+        if (stops == null || stops.size() < 2) {
+            throw new IllegalArgumentException("At least two stops are needed - start and destination");
+        }
+
+        List<Location> locations = stops.stream()
+                .map(Stop::getLocation)
+                .collect(Collectors.toList());
+
+        OSRMRouteResponse osrmResponse = osrmService.getRoute(locations);
+        OSRMRouteResponse.OSRMRoute osrmRoute = osrmResponse.getRoutes().get(0);
+        String geometry = osrmRoute.getGeometry();
+
+        Optional<Route> existingRoute = routeRepository.findByRouteGeometry(geometry);
+
+        if (existingRoute.isPresent()) {
+            log.info("Found cached route with geometry: {}", geometry.substring(0, 20) + "...");
+            return existingRoute.get();
+        }
+
+        log.info("Creating new route with geometry: {}", geometry.substring(0, 20) + "...");
+        return createNewRoute(stops, osrmRoute);
+    }
+
+    private Route createNewRoute(List<Stop> stops, OSRMRouteResponse.OSRMRoute osrmRoute) {
         Route route = new Route();
-        List<Stop> allStops = new ArrayList<>();
-        allStops.add(pickup); allStops.addAll(stops); allStops.add(destination);
-        route.setStops(allStops);
-        
-        // Connecting stops into string format: lon,lat;lon,lat
-        StringBuilder coordsBuilder = new StringBuilder();
-        coordsBuilder.append(pickup.toCoordinates());
-        for (Stop stop : stops) {
-            coordsBuilder.append(stop.toCoordinates());
-            coordsBuilder.append(';');
-        }
-        coordsBuilder.append(destination.toCoordinates());
+        route.setStops(stops);
+        route.setRouteGeometry(osrmRoute.getGeometry()); // encoded polyline
+        route.setDistanceKm(osrmRoute.getDistance() / 1000.0); // iz metara u kilometre
+        route.setEstimatedTimeSeconds(osrmRoute.getDuration().longValue());
 
-        String finalUrl = OSRM_PUBLIC_URL + coordsBuilder.toString() + "?overview=full&geometries=polyline";
+        return routeRepository.save(route);
+    }
 
-        JsonNode response = restTemplate.getForObject(finalUrl, JsonNode.class);        
-        if (response == null || !response.has("routes")) {
-            throw new NoRouteGeometryException();
-        }
-        
-        JsonNode bestRoute = response.get("routes").get(0);
-
-        // 3. Setovanje podataka u tvoj model
-        route.setDistanceKm(bestRoute.get("distance").asDouble() / 1000.0);
-        route.setEstimatedTimeSeconds(bestRoute.get("duration").asLong());
-        route.setRouteGeometry(bestRoute.get("geometry").asText());
-        
-        return repository.save(route);
+    public Optional<Route> findById(Long id) {
+        return routeRepository.findById(id);
     }
 }

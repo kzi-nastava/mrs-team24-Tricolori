@@ -1,4 +1,9 @@
-package com.tricolori.backend.infrastructure.presentation.dtos;
+package com.tricolori.backend.infrastructure.presentation.dtos.Ride;
+
+import com.tricolori.backend.infrastructure.presentation.dtos.DriverDto;
+import com.tricolori.backend.infrastructure.presentation.dtos.PassengerDto;
+import com.tricolori.backend.infrastructure.presentation.dtos.RouteDto;
+import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleLocationResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;

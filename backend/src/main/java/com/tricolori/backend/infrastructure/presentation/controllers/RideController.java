@@ -1,11 +1,15 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
 import com.tricolori.backend.core.domain.models.Person;
+import com.tricolori.backend.core.domain.models.Ride;
 import com.tricolori.backend.core.services.AuthService;
+import com.tricolori.backend.core.services.InconsistencyReportService;
+import com.tricolori.backend.core.services.ReviewService;
 import com.tricolori.backend.core.services.RideService;
 import com.tricolori.backend.infrastructure.presentation.dtos.*;
 import com.tricolori.backend.infrastructure.presentation.dtos.Ride.OrderRequest;
 
+import com.tricolori.backend.infrastructure.presentation.dtos.Ride.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -26,6 +31,8 @@ import java.util.List;
 public class RideController {
 
     private final RideService rideService;
+    private final ReviewService reviewService;
+    private final InconsistencyReportService inconsistencyReportService;
     private final AuthService authenticationService;
 
     @PostMapping("/estimate")
@@ -84,12 +91,15 @@ public class RideController {
 
     @GetMapping("/{id}/track")
     public ResponseEntity<RideTrackingResponse> trackRide(@PathVariable Long id) {
-        return ResponseEntity.ok().build();
+        RideTrackingResponse response = rideService.trackRide(id);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<Void> completeRide(@PathVariable Long id) {
+        Long driverId = authenticationService.getAuthenticatedUserId();
+        rideService.completeRide(id, driverId);
         return ResponseEntity.ok().build();
     }
 
@@ -99,11 +109,16 @@ public class RideController {
             @PathVariable Long id,
             @Valid @RequestBody RideRatingRequest request
     ) {
+        Long passengerId = authenticationService.getAuthenticatedUserId();
+        reviewService.rateRide(id, passengerId, request);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/rating-status")
-    public ResponseEntity<RideReviewResponse> getRatingStatus(@PathVariable Long id) {
+    @PreAuthorize("hasRole('PASSENGER')")
+    public ResponseEntity<RideRatingResponse> getRatingStatus(@PathVariable Long id) {
+        Long passengerId = authenticationService.getAuthenticatedUserId();
+        reviewService.getRatingStatus(id, passengerId);
         return ResponseEntity.ok().build();
     }
 
@@ -116,16 +131,13 @@ public class RideController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
-        // Get authenticated user's ID
         Long driverId = authenticationService.getAuthenticatedUserId();
 
-        List<RideHistoryResponse> history = rideService.getDriverHistory(
-                driverId,
-                startDate,
-                endDate,
-                sortBy,
-                sortDirection
-        );
+        Pageable pageable = Pageable.unpaged();
+
+        List<RideHistoryResponse> history =
+                rideService.getDriverHistory(driverId, pageable)
+                        .getContent();
 
         return ResponseEntity.ok(history);
     }
@@ -145,22 +157,53 @@ public class RideController {
             @PathVariable Long id,
             @Valid @RequestBody InconsistencyReportRequest request
     ) {
+        Long passengerId = authenticationService.getAuthenticatedUserId();
+
+        inconsistencyReportService.reportInconsistency(
+                id,
+                passengerId,
+                request
+        );
+
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RideStatusResponse> getRideStatus(@PathVariable Long id) {
-        return ResponseEntity.ok().build();
+        RideStatusResponse response = rideService.getRideStatus(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/current/driver/{driverId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RideStatusResponse> getCurrentRideByDriver(@PathVariable Long driverId) {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<RideStatusResponse> getCurrentRideByDriver(
+            @PathVariable Long driverId
+    ) {
+        RideStatusResponse response =
+                rideService.getCurrentRideByDriver(driverId);
+
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/order")
+    // TODO: REMOVE AFTER TESTING
+    @PostMapping("/create/passenger")
+    @PreAuthorize("hasRole('PASSENGER')")
+    public ResponseEntity<?> createRide(@RequestBody CreateRideRequest request) {
+        // Hard-coded passenger ID for testing
+        Long passengerId = 14L;
+
+        Ride ride = rideService.createRide(request, passengerId);
+        return ResponseEntity.ok(Map.of(
+                "rideId", ride.getId(),
+                "status", ride.getStatus(),
+                "price", ride.getPrice(),
+                "distance", ride.getRoute().getDistanceKm(),
+                "estimatedTime", ride.getRoute().getEstimatedTimeSeconds()
+        ));
+    }
+
+    /*@PostMapping("/order")
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<String> order(
         @AuthenticationPrincipal Person passenger,
@@ -168,7 +211,7 @@ public class RideController {
     ) {
         rideService.rideOrder(request);
         return ResponseEntity.ok(request.toString());
-    }
+    }*/
 
     @PutMapping("/{id}/start")
     public ResponseEntity<Void> startRide(@PathVariable Long id) {
