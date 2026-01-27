@@ -33,9 +33,6 @@ public interface RideMapper {
      */
     @Mapping(target = "passengerName", expression = "java(getPassengerFullName(ride))")
     @Mapping(target = "passengerPhone", expression = "java(getPassengerPhone(ride))")
-    @Mapping(target = "driverName", expression = "java(getDriverFullName(ride))")
-    @Mapping(target = "vehicleModel", expression = "java(getVehicleModel(ride))")
-    @Mapping(target = "vehicleLicensePlate", expression = "java(getVehicleLicensePlate(ride))")
     @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
     @Mapping(target = "pickupLatitude", expression = "java(getPickupLatitude(ride))")
     @Mapping(target = "pickupLongitude", expression = "java(getPickupLongitude(ride))")
@@ -45,7 +42,7 @@ public interface RideMapper {
     @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
     @Mapping(source = "price", target = "totalPrice")
     @Mapping(target = "distance", expression = "java(getDistance(ride))")
-    @Mapping(target = "duration", expression = "java(getDurationInMinutes(ride))")
+    @Mapping(target = "duration", expression = "java(getDuration(ride))")
     @Mapping(target = "driverRating", expression = "java(getAverageDriverRating(ride))")
     @Mapping(target = "vehicleRating", expression = "java(getAverageVehicleRating(ride))")
     @Mapping(target = "ratingComment", expression = "java(getFirstRatingComment(ride))")
@@ -80,7 +77,7 @@ public interface RideMapper {
     @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
     @Mapping(source = "price", target = "totalPrice")
     @Mapping(target = "distance", expression = "java(getDistance(ride))")
-    @Mapping(target = "duration", expression = "java(getDurationInMinutes(ride))")
+    @Mapping(target = "duration", expression = "java(getDuration(ride))")
     @Mapping(target = "driverRating", expression = "java(getAverageDriverRating(ride))")
     @Mapping(target = "vehicleRating", expression = "java(getAverageVehicleRating(ride))")
     @Mapping(target = "ratingComment", expression = "java(getFirstRatingComment(ride))")
@@ -166,11 +163,11 @@ public interface RideMapper {
         return ride.getRoute() != null ? ride.getRoute().getDistanceKm() : null;
     }
 
-    default Integer getDurationInMinutes(Ride ride) {
+    default Integer getDuration(Ride ride) {
         if (ride.getRoute() == null || ride.getRoute().getEstimatedTimeSeconds() == null) {
             return null;
         }
-        return (int) Math.round(ride.getRoute().getEstimatedTimeSeconds() / 60.0);
+        return (int) Math.round(ride.getRoute().getEstimatedTimeSeconds());
     }
 
     default Integer getAverageDriverRating(Ride ride) {

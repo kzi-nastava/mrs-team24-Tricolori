@@ -15,9 +15,6 @@ public class RideDetailResponse {
     private Long id;
     private String passengerName;
     private String passengerPhone;
-    private String driverName;
-    private String vehicleModel;
-    private String vehicleLicensePlate;
     private String pickupAddress;
     private Double pickupLatitude;
     private Double pickupLongitude;

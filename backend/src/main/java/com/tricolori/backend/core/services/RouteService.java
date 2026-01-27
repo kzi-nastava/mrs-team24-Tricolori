@@ -26,7 +26,7 @@ public class RouteService {
     @Transactional
     public Route findOrCreateRoute(List<Stop> stops) {
         if (stops == null || stops.size() < 2) {
-            throw new IllegalArgumentException("Potrebna su minimum 2 stop-a (start i destination)");
+            throw new IllegalArgumentException("At least two stops are needed - start and destination");
         }
 
         List<Location> locations = stops.stream()
@@ -40,11 +40,11 @@ public class RouteService {
         Optional<Route> existingRoute = routeRepository.findByRouteGeometry(geometry);
 
         if (existingRoute.isPresent()) {
-            log.info("Pronađena keširana ruta sa geometry: {}", geometry.substring(0, 20) + "...");
+            log.info("Found cached route with geometry: {}", geometry.substring(0, 20) + "...");
             return existingRoute.get();
         }
 
-        log.info("Kreiram novu rutu sa geometry: {}", geometry.substring(0, 20) + "...");
+        log.info("Creating new route with geometry: {}", geometry.substring(0, 20) + "...");
         return createNewRoute(stops, osrmRoute);
     }
 
