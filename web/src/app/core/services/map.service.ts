@@ -21,7 +21,6 @@ const destinationIcon = L.divIcon({
   providedIn: 'root',
 })
 export class MapService {
-
   private map!: L.Map;
   private routeLayer?: L.Polyline;
   private pickupMarker?: L.Marker;

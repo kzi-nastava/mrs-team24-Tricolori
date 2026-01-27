@@ -123,8 +123,10 @@ public class AuthService {
 
         Passenger savedPassenger = passengerRepository.save(passenger);
 
-        String pfpUrl = cloudinaryService.uploadProfilePicture(pfp, savedPassenger.getId());
-        savedPassenger.setPfpUrl(pfpUrl);
+        if (pfp != null) {
+            String pfpUrl = cloudinaryService.uploadProfilePicture(pfp, savedPassenger.getId());
+            savedPassenger.setPfpUrl(pfpUrl);
+        }
 
         // Generate activation token
         ActivationToken token = ActivationToken.createForPerson(savedPassenger);
