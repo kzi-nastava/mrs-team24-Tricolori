@@ -22,6 +22,10 @@ public interface RideMapper {
     @Mapping(source = "createdAt", target = "startDate")
     @Mapping(source = "endTime", target = "endDate")
     @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
+    @Mapping(
+            target = "distance",
+            expression = "java(getRouteDistanceKm(ride))"
+    )
     RideHistoryResponse toDriverHistoryResponse(Ride ride);
 
     /**
@@ -198,6 +202,14 @@ public interface RideMapper {
     @Named("statusToString")
     default String statusToString(Enum<?> status) {
         return status != null ? status.name() : null;
+    }
+
+    @Named("routeDistanceKm")
+    default Double getRouteDistanceKm(Ride ride) {
+        if (ride == null || ride.getRoute() == null) {
+            return null;
+        }
+        return ride.getRoute().getDistanceKm();
     }
 
 }

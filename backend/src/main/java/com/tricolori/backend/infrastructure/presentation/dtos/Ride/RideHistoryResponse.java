@@ -18,5 +18,6 @@ public class RideHistoryResponse {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Double price;
+    private Double distance;
     private String status;
 }
