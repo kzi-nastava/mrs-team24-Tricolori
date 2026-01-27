@@ -2,8 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import {PanicRequest, StopRideRequest, StopRideResponse} from '../model/ride';
-import {environment} from '../../environments/environment';
+import { PanicRequest, StopRideRequest, StopRideResponse } from '../model/ride';
+import { environment } from '../../environments/environment';
+import {
+  RideTrackingResponse,
+  InconsistencyReportRequest,
+  PanicRideRequest
+} from '../model/ride-tracking';
 
 // Interfaces matching your backend DTOs
 export interface RideHistoryResponse {
@@ -55,9 +60,7 @@ export class RideService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Get driver's ride history with optional date filtering
-   */
+  // Get driver's ride history with optional date filtering
   getDriverHistory(
     startDate?: string,
     endDate?: string,
@@ -78,30 +81,38 @@ export class RideService {
     return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
   }
 
-  /**
-   * Get detailed information for a specific ride (for driver)
-   */
+  // Get detailed information for a specific ride (for driver)
   getDriverRideDetail(rideId: number): Observable<RideDetailResponse> {
     return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/driver`);
   }
 
-  /**
-   * Get detailed information for a specific ride (for passenger)
-   */
+  // Get detailed information for a specific ride (for passenger)
   getPassengerRideDetail(rideId: number): Observable<RideDetailResponse> {
     return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/passenger`);
   }
 
-  ridePanic(rideId: number, panicRequest: PanicRequest): Observable<void> {
+  // Track a ride in real-time - get current status, location, and estimates
+  trackRide(rideId: number): Observable<RideTrackingResponse> {
+    return this.http.get<RideTrackingResponse>(`${this.API_URL}/${rideId}/track`);
+  }
+
+  // Trigger panic alert for a ride
+  ridePanic(rideId: number, panicRequest: PanicRideRequest): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/panic`, panicRequest);
   }
 
-  cancelRide(rideId: number, reason: string) : Observable<void> {
+  // Cancel a ride with a reason
+  cancelRide(rideId: number, reason: string): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
 
-  stopRide(rideId: number, stopRideRequest: StopRideRequest) : Observable<StopRideResponse> {
+  // Stop a ride (driver action)
+  stopRide(rideId: number, stopRideRequest: StopRideRequest): Observable<StopRideResponse> {
     return this.http.put<StopRideResponse>(`${this.API_URL}/${rideId}/stop`, stopRideRequest);
   }
 
+  // Report route inconsistency
+  reportInconsistency(rideId: number, request: InconsistencyReportRequest): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/${rideId}/report-inconsistency`, request);
+  }
 }
