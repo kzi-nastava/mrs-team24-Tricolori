@@ -332,6 +332,7 @@ export class RideRatingComponent implements OnInit, OnDestroy {
           }
           
           this.isSubmitting.set(false);
+          console.log('Working good');
           return of(null);
         })
       )
