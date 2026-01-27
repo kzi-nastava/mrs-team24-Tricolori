@@ -7,6 +7,7 @@
     
     <!-- Subtitle -->
     <p class="text-gray-600 mb-6">View all your completed rides and details</p>
+
     
     <!-- Error Message -->
     @if (errorMessage) {
@@ -81,7 +82,7 @@
                 {{ ride.startDate }}
               </div>
               <div class="col-span-1 text-sm text-gray-900 font-medium">
-                €{{ ride.price.toFixed(2) }}
+              {{ ride.price ? ride.price.toFixed(2) : '0.00' }} RSD
               </div>
               <div class="col-span-2">
                 <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ' + getStatusClass(ride.status)">
@@ -89,7 +90,7 @@
                 </span>
               </div>
               <div class="col-span-2 text-sm text-gray-600">
-                {{ ride.distance }} km
+              {{ ride.distance ? (ride.distance.toFixed(2) + ' km') : '0.00 km' }}
               </div>
               <div class="col-span-2">
                 <button 

@@ -1,9 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark } from '@ng-icons/heroicons/outline';
-import { RideService, RideHistoryResponse, RideDetailResponse } from '../../../core/services/ride.service';
+import { finalize } from 'rxjs/operators';
+
+import {
+  RideService,
+  RideHistoryResponse,
+  RideDetailResponse
+} from '../../../core/services/ride.service';
 
 interface Ride {
   id: number;
@@ -27,200 +33,214 @@ interface Ride {
 @Component({
   selector: 'app-driver-history',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    NgIconComponent 
-  ],
-  providers: [
-    provideIcons({ heroEye, heroXMark }),
-    RideService
-  ],
+  imports: [CommonModule, FormsModule, NgIconComponent],
+  providers: [provideIcons({ heroEye, heroXMark })],
   templateUrl: './driver-history.html',
   styleUrls: ['./driver-history.css']
 })
 export class DriverHistory implements OnInit {
-  startDate: string = '';
-  endDate: string = '';
+  startDate = '';
+  endDate = '';
   selectedRide: Ride | null = null;
   filteredRides: Ride[] = [];
-  isLoading: boolean = false;
-  errorMessage: string = '';
+  isLoading = false;
+  errorMessage = '';
 
-  constructor(private rideService: RideService) {}
+  constructor(
+    private rideService: RideService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadRideHistory();
   }
 
-  /**
-   * Load ride history from backend
-   */
+  // ================= load history =================
+
   loadRideHistory(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.detectChanges();
 
-    this.rideService.getDriverHistory(
-      this.startDate || undefined,
-      this.endDate || undefined
-    ).subscribe({
-      next: (rides) => {
-        this.filteredRides = this.mapBackendRidesToUI(rides);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading ride history:', error);
-        this.errorMessage = 'Failed to load ride history. Please try again.';
-        this.isLoading = false;
-        this.filteredRides = [];
-      }
-    });
+    this.rideService
+      .getDriverHistory(
+        this.startDate || undefined,
+        this.endDate || undefined
+      )
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (rides) => {
+          this.filteredRides = this.mapBackendRidesToUI(rides);
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to load ride history. Please try again.';
+          this.filteredRides = [];
+          this.cdr.detectChanges();
+        }
+      });
   }
 
-  /**
-   * Map backend response to UI format
-   */
-  private mapBackendRidesToUI(backendRides: RideHistoryResponse[]): Ride[] {
-    return backendRides.map(ride => {
-      const createdDateTime = new Date(ride.createdAt);
-      const completedDateTime = ride.completedAt ? new Date(ride.completedAt) : null;
-      
-      // Calculate duration from duration field (in seconds)
-      const duration = this.formatDuration(ride.duration);
+  // ================= mapping =================
 
-      // Format route from addresses
-      const route = this.formatRoute(ride.pickupAddress, ride.dropoffAddress);
+  private mapBackendRidesToUI(backendRides: RideHistoryResponse[]): Ride[] {
+    return backendRides.map((ride) => {
+      const start = ride.startDate
+        ? new Date(ride.startDate)
+        : new Date();
+
+      const end = ride.endDate
+        ? new Date(ride.endDate)
+        : null;
 
       return {
         id: ride.id,
-        route: route,
-        startDate: createdDateTime.toISOString().split('T')[0],
-        endDate: completedDateTime ? completedDateTime.toISOString().split('T')[0] : createdDateTime.toISOString().split('T')[0],
-        price: ride.totalPrice,
+        route: this.formatRoute(
+          ride.pickupAddress,
+          ride.destinationAddress
+        ),
+        startDate: start.toISOString().split('T')[0],
+        endDate: end
+          ? end.toISOString().split('T')[0]
+          : start.toISOString().split('T')[0],
+        price: ride.price ?? 0,
         status: this.mapRideStatus(ride.status),
-        startTime: createdDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        endTime: completedDateTime ? completedDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-        duration: duration,
-        passengerName: ride.passengerName,
-        passengerPhone: 'N/A', // Will be loaded in detail view
-        distance: ride.distance,
-        paymentMethod: 'N/A', // Not available in history response
-        driverRating: ride.driverRating,
-        vehicleRating: ride.vehicleRating
+        startTime: start.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        endTime: end
+          ? end.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : 'N/A',
+        duration: 'N/A',
+        passengerName: ride.passengerName ?? 'N/A',
+        passengerPhone: 'N/A',
+        distance: ride.distance ?? 0,
+        paymentMethod: 'N/A',
+        driverRating: ride.driverRating ?? null,
+        vehicleRating: ride.vehicleRating ?? null
       };
     });
   }
 
-  /**
-   * Format duration from seconds to readable string
-   */
+  // ================= details =================
+
+  viewRideDetails(rideId: number): void {
+    this.isLoading = true;
+    this.cdr.detectChanges();
+
+    this.rideService
+      .getDriverRideDetail(rideId)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (detail) => {
+          this.selectedRide = this.mapDetailToUI(detail);
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to load ride details. Please try again.';
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  private mapDetailToUI(detail: RideDetailResponse): Ride {
+    const created = new Date(detail.createdAt);
+
+    const started = detail.startedAt
+      ? new Date(detail.startedAt)
+      : null;
+
+    const completed = detail.completedAt
+      ? new Date(detail.completedAt)
+      : null;
+
+    return {
+      id: detail.id,
+      route: this.formatRoute(
+        detail.pickupAddress,
+        detail.dropoffAddress
+      ),
+      startDate: (started || created).toISOString().split('T')[0],
+      endDate: (completed || created).toISOString().split('T')[0],
+      price: detail.totalPrice ?? 0,
+      status: this.mapRideStatus(detail.status),
+      startTime: (started || created).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      endTime: completed
+        ? completed.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        : 'N/A',
+      duration: this.formatDuration(detail.duration),
+      passengerName: detail.passengerName ?? 'N/A',
+      passengerPhone: detail.passengerPhone ?? 'N/A',
+      distance: detail.distance ?? 0,
+      paymentMethod: 'N/A',
+      notes: detail.ratingComment ?? undefined,
+      driverRating: detail.driverRating ?? null,
+      vehicleRating: detail.vehicleRating ?? null
+    };
+  }
+
+  // ================= helpers =================
+
+  filterByDate(): void {
+    this.loadRideHistory();
+  }
+
+  closeModal(): void {
+    this.selectedRide = null;
+    this.cdr.detectChanges();
+  }
+
   private formatDuration(seconds: number | null): string {
     if (!seconds) return 'N/A';
-    
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}min`;
-    }
-    return `${minutes}min`;
+
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+
+    return hours > 0
+      ? `${hours}h ${minutes % 60}min`
+      : `${minutes}min`;
   }
 
-  /**
-   * Format route from pickup and destination addresses
-   */
   private formatRoute(pickup: string, destination: string): string {
-    const pickupStr = pickup || 'Unknown';
-    const destStr = destination || 'Unknown';
-    return `${pickupStr} → ${destStr}`;
+    return `${pickup || 'Unknown'} → ${destination || 'Unknown'}`;
   }
 
-  /**
-   * Map backend ride status to UI status
-   */
-  private mapRideStatus(status: string): 'Completed' | 'Cancelled' | 'Pending' | 'In Progress' {
+  private mapRideStatus(
+    status: string
+  ): 'Completed' | 'Cancelled' | 'Pending' | 'In Progress' {
     switch (status) {
       case 'COMPLETED':
+      case 'FINISHED':
         return 'Completed';
       case 'CANCELLED':
         return 'Cancelled';
       case 'IN_PROGRESS':
         return 'In Progress';
-      case 'PENDING':
-      case 'ACCEPTED':
-        return 'Pending';
       default:
         return 'Pending';
     }
   }
 
-  /**
-   * Filter rides by date range
-   */
-  filterByDate(): void {
-    this.loadRideHistory();
-  }
-
-  /**
-   * View ride details - load from backend
-   */
-  viewRideDetails(rideId: number): void {
-    this.isLoading = true;
-    
-    this.rideService.getDriverRideDetail(rideId).subscribe({
-      next: (detail) => {
-        this.selectedRide = this.mapDetailToUI(detail);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading ride details:', error);
-        this.errorMessage = 'Failed to load ride details. Please try again.';
-        this.isLoading = false;
-      }
-    });
-  }
-
-  /**
-   * Map detailed backend response to UI format
-   */
-  private mapDetailToUI(detail: RideDetailResponse): Ride {
-    const createdDateTime = new Date(detail.createdAt);
-    const startedDateTime = detail.startedAt ? new Date(detail.startedAt) : null;
-    const completedDateTime = detail.completedAt ? new Date(detail.completedAt) : null;
-    
-    // Use the duration from backend (in seconds)
-    const duration = this.formatDuration(detail.duration);
-
-    return {
-      id: detail.id,
-      route: this.formatRoute(detail.pickupAddress, detail.dropoffAddress),
-      startDate: (startedDateTime || createdDateTime).toISOString().split('T')[0],
-      endDate: (completedDateTime || createdDateTime).toISOString().split('T')[0],
-      price: detail.totalPrice,
-      status: this.mapRideStatus(detail.status),
-      startTime: (startedDateTime || createdDateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      endTime: completedDateTime ? completedDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-      duration: duration,
-      passengerName: detail.passengerName || 'N/A',
-      passengerPhone: detail.passengerPhone || 'N/A',
-      distance: detail.distance || 0,
-      paymentMethod: 'N/A', // Not available in backend
-      notes: detail.ratingComment || undefined,
-      driverRating: detail.driverRating,
-      vehicleRating: detail.vehicleRating
-    };
-  }
-
-  /**
-   * Close modal
-   */
-  closeModal(): void {
-    this.selectedRide = null;
-  }
-
-  /**
-   * Get CSS class for status badge
-   */
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
       case 'completed':
