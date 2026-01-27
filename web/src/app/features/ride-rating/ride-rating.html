@@ -9,6 +9,19 @@
       <h2 class="text-xl font-semibold text-base-900 m-0">Rate Your Ride</h2>
     </div>
 
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div class="flex items-start gap-3">
+          <ng-icon name="heroExclamationCircle" class="w-5 h-5 text-red-600 mt-0.5"></ng-icon>
+          <div>
+            <h3 class="text-sm font-semibold text-red-900 m-0 mb-1">Error</h3>
+            <p class="text-xs text-red-700 m-0">{{ errorMessage() }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
     @if (isExpired()) {
       <!-- Expired State -->
       <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -96,6 +109,9 @@
           @if (driverRating() > 0) {
             <p class="text-xs text-center text-gray-600 m-0">{{ getRatingText(driverRating()) }}</p>
           }
+          @if (ratingForm.get('driverRating')?.invalid && ratingForm.get('driverRating')?.touched) {
+            <p class="text-xs text-red-600 text-center mt-2 m-0">Please rate the driver</p>
+          }
         </div>
 
         <!-- Vehicle Rating -->
@@ -116,6 +132,9 @@
           </div>
           @if (vehicleRating() > 0) {
             <p class="text-xs text-center text-gray-600 m-0">{{ getRatingText(vehicleRating()) }}</p>
+          }
+          @if (ratingForm.get('vehicleRating')?.invalid && ratingForm.get('vehicleRating')?.touched) {
+            <p class="text-xs text-red-600 text-center mt-2 m-0">Please rate the vehicle</p>
           }
         </div>
 

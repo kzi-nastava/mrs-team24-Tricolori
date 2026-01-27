@@ -17,6 +17,8 @@ import {
 import { heroStarSolid as heroStarSolidFill } from '@ng-icons/heroicons/solid';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
+import { RatingService, RideRatingRequest } from '../../core/services/rating.service'; 
+import { catchError, of } from 'rxjs';
 
 interface RideDetails {
   id: string;
@@ -61,6 +63,7 @@ export class RideRatingComponent implements OnInit, OnDestroy {
   isSubmitted = signal<boolean>(false);
   isExpired = signal<boolean>(false);
   hoursRemaining = signal<number>(72);
+  errorMessage = signal<string>('');
 
   // Mock ride details - using Novi Sad locations
   rideDetails = signal<RideDetails>({
@@ -80,11 +83,13 @@ export class RideRatingComponent implements OnInit, OnDestroy {
 
   private map: L.Map | null = null;
   private routeControl: any = null;
+  private rideId: string = '';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private ratingService: RatingService
   ) {
     this.ratingForm = this.fb.group({
       driverRating: [0, [Validators.required, Validators.min(1), Validators.max(5)]],
@@ -94,14 +99,20 @@ export class RideRatingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Check if rating period has expired (3 days = 72 hours)
-    this.checkRatingExpiry();
+    // Get ride ID from route params
+    this.rideId = this.route.snapshot.paramMap.get('id') || '';
+    
+    if (!this.rideId) {
+      console.error('No ride ID provided');
+      this.router.navigate(['/passenger/history']);
+      return;
+    }
+
+    // Load rating status from backend
+    this.loadRatingStatus();
     
     // Initialize map after view is ready
     setTimeout(() => this.initMap(), 100);
-
-    // Load existing rating if any
-    this.loadExistingRating();
   }
 
   ngOnDestroy(): void {
@@ -115,26 +126,33 @@ export class RideRatingComponent implements OnInit, OnDestroy {
     }
   }
 
-  private checkRatingExpiry(): void {
-    const ride = this.rideDetails();
-    const now = new Date();
-    const completedAt = new Date(ride.completedAt);
-    const hoursSinceCompleted = (now.getTime() - completedAt.getTime()) / (1000 * 60 * 60);
-    
-    this.hoursRemaining.set(Math.max(0, 72 - Math.floor(hoursSinceCompleted)));
-    
-    if (hoursSinceCompleted > 72) {
-      this.isExpired.set(true);
-    }
-  }
+  private loadRatingStatus(): void {
+    this.ratingService.getRatingStatus(this.rideId)
+      .pipe(
+        catchError(error => {
+          console.error('Error loading rating status:', error);
+          this.errorMessage.set('Failed to load rating information');
+          return of(null);
+        })
+      )
+      .subscribe(status => {
+        if (status) {
+          this.isSubmitted.set(status.alreadyRated);
+          this.isExpired.set(status.deadlinePassed);
+          
+          if (!status.canRate && !status.alreadyRated) {
+            this.isExpired.set(true);
+          }
 
-  private loadExistingRating(): void {
-    // In real app, check if user already rated this ride
-    // For now, simulate this check
-    const hasRated = false; // Replace with actual API call
-    if (hasRated) {
-      this.isSubmitted.set(true);
-    }
+          // Calculate hours remaining
+          if (status.deadline) {
+            const deadline = new Date(status.deadline);
+            const now = new Date();
+            const hoursLeft = Math.max(0, Math.floor((deadline.getTime() - now.getTime()) / (1000 * 60 * 60)));
+            this.hoursRemaining.set(hoursLeft);
+          }
+        }
+      });
   }
 
   private initMap(): void {
@@ -237,29 +255,47 @@ export class RideRatingComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting.set(true);
+    this.errorMessage.set('');
 
-    const ratingData = {
-      rideId: this.rideDetails().id,
+    const ratingData: RideRatingRequest = {
       driverRating: this.ratingForm.value.driverRating,
       vehicleRating: this.ratingForm.value.vehicleRating,
-      comment: this.ratingForm.value.comment || ''
+      comment: this.ratingForm.value.comment || undefined
     };
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Submitting rating:', ratingData);
-      
-      // In real app, call rating service:
-      // this.ratingService.submitRating(ratingData).subscribe(...)
-      
-      this.isSubmitting.set(false);
-      this.isSubmitted.set(true);
+    this.ratingService.submitRating(this.rideId, ratingData)
+      .pipe(
+        catchError(error => {
+          console.error('Error submitting rating:', error);
+          
+          // Handle different error scenarios
+          if (error.status === 403) {
+            this.errorMessage.set('You are not authorized to rate this ride');
+          } else if (error.status === 404) {
+            this.errorMessage.set('Ride not found');
+          } else if (error.status === 400) {
+            // Could be already rated or ride cannot be reviewed
+            this.errorMessage.set(error.error?.message || 'This ride cannot be rated');
+          } else {
+            this.errorMessage.set('Failed to submit rating. Please try again.');
+          }
+          
+          this.isSubmitting.set(false);
+          return of(null);
+        })
+      )
+      .subscribe(response => {
+        if (response !== null) {
+          // Success
+          this.isSubmitting.set(false);
+          this.isSubmitted.set(true);
 
-      // Redirect after 2 seconds to ride history
-      setTimeout(() => {
-        this.router.navigate(['/passenger/history']);
-      }, 2000);
-    }, 1500);
+          // Redirect after 2 seconds to ride history
+          setTimeout(() => {
+            this.router.navigate(['/passenger/history']);
+          }, 2000);
+        }
+      });
   }
 
   skipRating(): void {
