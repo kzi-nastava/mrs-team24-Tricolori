@@ -2,23 +2,23 @@ import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import {PanicRequest} from '../../shared/model/ride';
+import {PanicRequest, StopRideRequest, StopRideResponse} from '../../shared/model/ride';
 import {environment} from '../../../environments/environment';
 
 // Interfaces matching your backend DTOs
 export interface RideHistoryResponse {
   id: number;
-  passengerName?: string;  
+  passengerName?: string;
   pickupAddress: string;
-  destinationAddress: string;  
+  destinationAddress: string;
   status: string;
-  price: number;  
-  distance?: number;  
-  duration?: number;  
-  startDate: string;  
-  endDate: string | null;  
-  driverRating?: number | null;  
-  vehicleRating?: number | null;  
+  price: number;
+  distance?: number;
+  duration?: number;
+  startDate: string;
+  endDate: string | null;
+  driverRating?: number | null;
+  vehicleRating?: number | null;
 }
 
 export interface RideDetailResponse {
@@ -88,8 +88,13 @@ export class RideService {
   ridePanic(rideId: number, panicRequest: PanicRequest): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/panic`, panicRequest);
   }
-    
+
   cancelRide(rideId: number, reason: string) : Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
+
+  stopRide(rideId: number, stopRideRequest: StopRideRequest) : Observable<StopRideResponse> {
+    return this.http.put<StopRideResponse>(`${this.API_URL}/${rideId}/stop`, stopRideRequest);
+  }
+
 }

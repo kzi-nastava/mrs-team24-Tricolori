@@ -31,3 +31,11 @@ export interface RideDetails {
   totalDistance: number;
   estimatedDuration: number;
 }
+
+export interface StopRideRequest {
+  location: Location
+}
+
+export interface StopRideResponse {
+  updatedPrice: number
+}
