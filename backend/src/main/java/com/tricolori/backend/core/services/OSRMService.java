@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class OSRMService {
 
     private final RestTemplate restTemplate;
-    // TODO: change base url
+    // TODO: download and host our own OSRM instance for production use - download just map of Serbia
     private static final String OSRM_BASE_URL = "http://router.project-osrm.org";
 
     // accepts a list of at least 2 locations and returns geometry
