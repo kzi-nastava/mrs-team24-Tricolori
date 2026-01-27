@@ -30,5 +30,35 @@ export class DriverProfile extends BaseProfile {
   progressBarWidth = computed(() => {
     return Math.min(this.activityPercentage(), 100);
   });
+
+  protected override sendUpdateRequest() {
+    this.profileService.requestProfileChanges(this.personalForm.value).subscribe({
+      next: (res) => {
+        alert("Poslat zahtjev za izmjenu profila")
+        console.log("[Request Profile Changes]:", res);
+        // Reset everything:
+        this.selectedFile.set(null);
+        this.pfpPicker()?.reset();
+        this.hasChanges.set(false);
+      },
+      error: (err) => {
+        console.error("Error: ", err);
+      },
+    });
+    /*this.profileService.updateProfile(this.personalForm.value).subscribe({
+      next: (updatedProfile) => {
+        this.userProfile.set(updatedProfile);
+        this.personalForm.patchValue(updatedProfile, {emitEvent: false});
+
+        // Reset everything:
+        this.selectedFile.set(null);
+        this.pfpPicker()?.reset();
+        this.hasChanges.set(false);
+      },
+      error: (err) => {
+        console.error("Error: ", err);
+      },
+    })*/
+  }
 }
 

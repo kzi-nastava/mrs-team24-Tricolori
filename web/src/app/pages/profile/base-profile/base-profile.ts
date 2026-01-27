@@ -17,8 +17,8 @@ import { PfpPicker } from '../../../components/pfp-picker/pfp-picker';
   styleUrl: './base-profile.css',
 })
 export class BaseProfile implements OnInit {
-  private profileService = inject(ProfileService);
-  private formBuilder = inject(FormBuilder);
+  protected profileService = inject(ProfileService);
+  protected formBuilder = inject(FormBuilder);
 
   personalForm: FormGroup;
 
@@ -102,7 +102,7 @@ export class BaseProfile implements OnInit {
     this.hasChanges.set(textChanged || fileChanged);
   }
 
-  private sendUpdateRequest() {
+  protected sendUpdateRequest() {
     this.profileService.updateProfile(this.personalForm.value).subscribe({
       next: (updatedProfile) => {
         this.userProfile.set(updatedProfile);
