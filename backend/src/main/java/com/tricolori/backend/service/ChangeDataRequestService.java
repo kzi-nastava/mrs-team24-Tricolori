@@ -27,4 +27,8 @@ public class ChangeDataRequestService {
 
         repository.save(changeRequest);
     }
+
+    public boolean driverHasPendingRequest(Driver driver) {
+        return repository.findAllPending().size() != 0;
+    }
 }

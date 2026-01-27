@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.Person;
+import com.tricolori.backend.exception.DriverHasPendingProfileRequestException;
 import com.tricolori.backend.exception.PersonNotFoundException;
 import com.tricolori.backend.repository.DriverRepository;
 import com.tricolori.backend.repository.PersonRepository;
@@ -89,8 +90,14 @@ public class ProfileController {
 
         Driver driver = driverRepository.findById(dbPerson.getId())
             .orElseThrow(() -> new PersonNotFoundException("Driver not found"));
+
+        if (requestService.driverHasPendingRequest(driver)) {
+            throw new DriverHasPendingProfileRequestException();
+        }
         
         requestService.createRequest(driver, request);
         return ResponseEntity.ok().build();
     }
+
+    
 }
