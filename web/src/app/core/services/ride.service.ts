@@ -8,17 +8,17 @@ import {environment} from '../../../environments/environment';
 // Interfaces matching your backend DTOs
 export interface RideHistoryResponse {
   id: number;
-  passengerName: string;
+  passengerName?: string;  
   pickupAddress: string;
-  dropoffAddress: string;
+  destinationAddress: string;  
   status: string;
-  totalPrice: number;
-  distance: number;
-  duration: number;
-  createdAt: string;
-  completedAt: string;
-  driverRating: number | null;
-  vehicleRating: number | null;
+  price: number;  
+  distance?: number;  
+  duration?: number;  
+  startDate: string;  
+  endDate: string | null;  
+  driverRating?: number | null;  
+  vehicleRating?: number | null;  
 }
 
 export interface RideDetailResponse {

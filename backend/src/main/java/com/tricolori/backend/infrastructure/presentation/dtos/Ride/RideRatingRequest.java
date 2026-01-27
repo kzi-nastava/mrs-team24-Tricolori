@@ -1,4 +1,4 @@
-package com.tricolori.backend.infrastructure.presentation.dtos;
+package com.tricolori.backend.infrastructure.presentation.dtos.Ride;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

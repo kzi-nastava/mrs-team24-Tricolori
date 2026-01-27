@@ -1,4 +1,4 @@
-package com.tricolori.backend.infrastructure.presentation.dtos;
+package com.tricolori.backend.infrastructure.presentation.dtos.Ride;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,17 +11,13 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RideHistoryResponse {
+public class PassengerRideHistoryResponse {
     private Long id;
-    private String passengerName;
     private String pickupAddress;
-    private String dropoffAddress;
-    private String status;
-    private Double totalPrice;
-    private Double distance;
-    private Integer duration;
+    private String destinationAddress;
     private LocalDateTime createdAt;
-    private LocalDateTime completedAt;
+    private Double totalPrice;
+    private String status;
     private Integer driverRating;
     private Integer vehicleRating;
 }
