@@ -1,6 +1,7 @@
 package com.tricolori.backend.infrastructure.presentation.controllers;
 
-import com.tricolori.backend.infrastructure.presentation.dtos.Vehicle.VehicleLocationResponse;
+import com.tricolori.backend.core.services.VehicleService;
+import com.tricolori.backend.infrastructure.presentation.dtos.VehicleLocationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +13,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VehicleController {
 
+    private final VehicleService vehicleService;
+
     // get all active vehicles to display on home page
     @GetMapping("/active")
     public ResponseEntity<List<VehicleLocationResponse>> getAllActiveVehicles() {
-
-        return ResponseEntity.ok(List.of());
+        List<VehicleLocationResponse> vehicles = vehicleService.getAllActiveVehicles();
+        return ResponseEntity.ok(vehicles);
     }
 
     // get real time location of a vehicle for tracking

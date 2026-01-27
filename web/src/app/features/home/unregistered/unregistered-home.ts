@@ -15,10 +15,12 @@ import {
   RideEstimationResult
 } from '../../../shared/components/ride-estimation/ride-estimation-result/ride-estimation-result';
 
-import {EstimateResults, EstimationState, Vehicle} from '../../../shared/model/ride-estimation';
+import {EstimateResults, EstimationState} from '../../../shared/model/ride-estimation';
+import {Vehicle} from '../../../shared/model/vehicle.model';
 import {MapService} from '../../../core/services/map.service';
 import {GeocodingService} from '../../../core/services/geocoding.service';
 import {EstimationService} from '../../../core/services/estimation.service';
+import {VehicleService} from '../../../core/services/vehicle.service';
 
 @Component({
   selector: 'app-unregistered-home',
@@ -36,24 +38,17 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
   private mapService = inject(MapService);
   private geocodingService = inject(GeocodingService);
   private estimationService = inject(EstimationService);
+  private vehicleService = inject(VehicleService);
 
   // State
   currentState = signal<EstimationState>('INITIAL');
   errorMessage = signal<string>('');
   estimateResults = signal<EstimateResults | null>(null);
+  isLoadingVehicles = signal<boolean>(false);
 
-  vehicles = signal<Vehicle[]>([
-    { id: 1, lat: 45.2705, lng: 19.8250, status: 'available' },
-    { id: 2, lat: 45.2640, lng: 19.8402, status: 'occupied' },
-    { id: 3, lat: 45.2608, lng: 19.8301, status: 'available' },
-    { id: 4, lat: 45.2732, lng: 19.8454, status: 'available' },
-    { id: 5, lat: 45.2689, lng: 19.8206, status: 'occupied' },
-    { id: 6, lat: 45.2650, lng: 19.8380, status: 'available' },
-    { id: 7, lat: 45.2720, lng: 19.8290, status: 'occupied' },
-    { id: 8, lat: 45.2595, lng: 19.8350, status: 'available' },
-  ]);
+  vehicles = signal<Vehicle[]>([]);
 
-  availableDrivers = computed(() => this.vehicles().filter(v => v.status === 'available').length);
+  availableDrivers = computed(() => this.vehicles().filter(v => v.available).length);
   averageRating = signal(4.9);
 
   ngOnInit(): void {
@@ -66,6 +61,9 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
     });
+
+    // Load vehicles on init
+    this.loadVehicles();
   }
 
   ngAfterViewInit(): void {
@@ -77,6 +75,33 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.mapService.destroyMap();
+  }
+
+  // Load vehicles from backend
+  loadVehicles(): void {
+    this.isLoadingVehicles.set(true);
+    this.vehicleService.getActiveVehicles().subscribe({
+      next: (vehicles) => {
+        this.vehicles.set(vehicles);
+        this.isLoadingVehicles.set(false);
+        
+        // Refresh markers if map is already initialized
+        if (this.mapService.getMap()) {
+          this.refreshVehicleMarkers();
+        }
+      },
+      error: (error) => {
+        console.error('Error loading vehicles:', error);
+        this.isLoadingVehicles.set(false);
+        this.errorMessage.set('Failed to load vehicles. Please try again.');
+      }
+    });
+  }
+
+  // Refresh vehicle markers
+  refreshVehicleMarkers(): void {
+    this.mapService.clearMap();
+    this.addVehicleMarkers();
   }
 
   // Navigation
@@ -107,17 +132,23 @@ export class UnregisteredHome implements OnInit, AfterViewInit, OnDestroy {
   // Vehicle markers
   private addVehicleMarkers(): void {
     const map = this.mapService.getMap();
-    this.vehicles().forEach(vehicle => {
-      const iconColor = vehicle.status === 'available' ? '#10b981' : '#ef4444';
-      const marker = L.circleMarker([vehicle.lat, vehicle.lng], {
-        radius: 8,
+    
+    this.vehicles().forEach((vehicle) => {
+      const iconColor = vehicle.available ? '#10b981' : '#ef4444';
+      const marker = L.circleMarker([vehicle.latitude, vehicle.longitude], {
+        radius: 15,           
         fillColor: iconColor,
         color: '#ffffff',
-        weight: 2,
-        fillOpacity: 0.8
+        weight: 3,            
+        fillOpacity: 0.9      
       }).addTo(map);
 
-      marker.bindPopup(`<strong>Vehicle #${vehicle.id}</strong><br>Status: ${vehicle.status}`);
+      const statusText = vehicle.available ? 'Available' : 'Occupied';
+      marker.bindPopup(`
+        <strong>${vehicle.model}</strong><br>
+        Plate: ${vehicle.plateNum}<br>
+        Status: ${statusText}
+      `);
     });
   }
 
