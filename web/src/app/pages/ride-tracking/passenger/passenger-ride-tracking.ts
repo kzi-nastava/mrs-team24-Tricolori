@@ -117,14 +117,14 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.rideId = +params['id'];
-      if (this.rideId) {
-        this.loadInitialData();
-        this.startTracking();
-      }
-    });
-  }
+  this.route.params.subscribe(params => {
+    this.rideId = +params['id'] || 6; // use route param or default to 6 for testing
+    if (this.rideId) {
+      this.loadInitialData();
+      this.startTracking();
+    }
+  });
+}
 
   ngOnDestroy(): void {
     this.stopTracking();

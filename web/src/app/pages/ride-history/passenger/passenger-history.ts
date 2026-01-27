@@ -214,6 +214,5 @@ export class PassengerHistory {
   // DELETE AFTER TESTING
   // Navigate to test ride tracking
   startTestRide() {
-  this.router.navigate(['/passenger/ride-tracking', 'test-ride-123']);
-  }
+  this.router.navigate(['/passenger/ride-tracking', 6]);  }
 }
