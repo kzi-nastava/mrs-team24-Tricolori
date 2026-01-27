@@ -9,11 +9,12 @@ import {
   heroExclamationTriangle,
   heroCheckCircle,
   heroPhone,
-  heroExclamationCircle
+  heroExclamationCircle,
+  heroStopCircle
 } from '@ng-icons/heroicons/outline';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
-import {PanicRequest, RideDetails} from '../../../shared/model/ride';
+import {PanicRequest, RideDetails, StopRideRequest, StopRideResponse} from '../../../shared/model/ride';
 import {Location} from '../../../shared/model/location';
 import {RideService} from '../../../core/services/ride.service';
 
@@ -30,7 +31,8 @@ import {RideService} from '../../../core/services/ride.service';
       heroExclamationTriangle,
       heroCheckCircle,
       heroPhone,
-      heroExclamationCircle
+      heroExclamationCircle,
+      heroStopCircle
     })
   ],
   templateUrl: './driver-ride-tracking.html'
@@ -303,6 +305,35 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       this.vehicleMarker.openPopup();
     }
   }
+
+  stopTriggered = signal<boolean>(false);
+
+  triggerStop() : void {
+    if (this.stopTriggered()) {
+      return; // stop already triggered
+    }
+
+    const stopRideRequest : StopRideRequest = { location : this.vehicleLocation() }
+
+    this.rideService.stopRide(this.rideDetails().id, stopRideRequest).subscribe({
+      next: (response) => {
+        this.handleStop(response);
+        this.handleBack();
+      },
+      error: (err) => {
+        console.error("Failed stopping the ride: ", err);
+      }
+    })
+  }
+
+  private handleStop(response: StopRideResponse) : void {
+    this.stopTriggered.set(true);
+    this.stopTracking();
+    this.estimatedArrival.set(0);
+    this.remainingDistance.set(0);
+    console.log('Successfully stopped the ride. Updated price: ', response.updatedPrice);
+  }
+
 
   handleBack(): void {
     this.router.navigate(['/driver/home']);

@@ -67,6 +67,19 @@
     <!-- Spacer to push buttons to bottom -->
     <div class="flex-1"></div>
 
+    <!-- Stop Ride Button -->
+    <button
+      (click)="triggerStop()"
+      [disabled]="stopTriggered() || panicTriggered()"
+      class="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-lg transition-all font-medium text-sm shadow-md active:scale-95">
+      <ng-icon name="heroStopCircle" class="w-5 h-5"></ng-icon>
+      @if (stopTriggered()) {
+        <span>Stopping Ride...</span>
+      } @else {
+        <span>STOP RIDE</span>
+      }
+    </button>
+
     <!-- Panic Button -->
     <button
       (click)="triggerPanic()"
