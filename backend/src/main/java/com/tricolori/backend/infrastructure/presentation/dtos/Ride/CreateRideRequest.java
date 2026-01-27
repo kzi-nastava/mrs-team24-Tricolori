@@ -1,9 +1,11 @@
 package com.tricolori.backend.infrastructure.presentation.dtos.Ride;
 
+import com.tricolori.backend.infrastructure.presentation.dtos.StopDto;
 import com.tricolori.backend.shared.enums.VehicleType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class CreateRideRequest {
@@ -16,8 +18,7 @@ public class CreateRideRequest {
     private Double destinationLatitude;
     private Double destinationLongitude;
 
-    // Intermediate stops (optional)
-//    private List<IntermediateStopRequest> intermediateStops;
+    private List<StopDto> stops;
 
     private VehicleType vehicleType;
     private boolean babyFriendly;

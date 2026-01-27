@@ -4,6 +4,7 @@ import com.tricolori.backend.core.domain.models.*;
 import com.tricolori.backend.core.domain.repositories.PanicRepository;
 import com.tricolori.backend.core.domain.repositories.PersonRepository;
 import com.tricolori.backend.core.domain.repositories.RideRepository;
+import com.tricolori.backend.core.domain.repositories.VehicleSpecificationRepository;
 import com.tricolori.backend.core.exceptions.CancelRideExpiredException;
 import com.tricolori.backend.core.exceptions.PersonNotFoundException;
 import com.tricolori.backend.core.exceptions.RideNotFoundException;
@@ -32,6 +33,7 @@ public class RideService {
     private final RideRepository rideRepository;
     private final PersonRepository personRepository;
     private final PanicRepository panicRepository;
+    private final VehicleSpecificationRepository vehicleSpecificationRepository;
     private final RideMapper rideMapper;
     private final ReviewService reviewService;
     private final PriceListService priceListService;
@@ -175,13 +177,14 @@ public class RideService {
                 new Location(request.getPickupLongitude(), request.getPickupLatitude())
         ));
 
-//        if (request.getIntermediateStops() != null && !request.getIntermediateStops().isEmpty()) {
-//            for (IntermediateStopRequest stopReq : request.getIntermediateStops()) {
-//                stops.add(new Stop(
-//                        stopReq.getAddress(),
-//                        new Location(stopReq.getLongitude(), stopReq.getLatitude())
-//                ));}}
-
+        if (request.getStops() != null && !request.getStops().isEmpty()) {
+            for (StopDto stopReq : request.getStops()) {
+                stops.add(new Stop(
+                        stopReq.getAddress(),
+                        new Location(stopReq.getLongitude(), stopReq.getLatitude())
+                ));
+            }
+        }
 
         stops.add(new Stop(
                 request.getDestinationAddress(),
@@ -189,6 +192,10 @@ public class RideService {
         ));
 
         Route route = routeService.findOrCreateRoute(stops);
+
+        // hard coded id 13
+        VehicleSpecification vehicleSpec = vehicleSpecificationRepository.findById(13L)
+                .orElseThrow(() -> new RuntimeException("VehicleSpecification not found"));
 
         Ride ride = new Ride();
         ride.setRoute(route);
@@ -198,10 +205,6 @@ public class RideService {
                 ? request.getScheduledFor()
                 : LocalDateTime.now());
 
-        VehicleSpecification vehicleSpec = new VehicleSpecification();
-        vehicleSpec.setType(request.getVehicleType());
-        vehicleSpec.setBabyFriendly(request.isBabyFriendly());
-        vehicleSpec.setPetFriendly(request.isPetFriendly());
         ride.setVehicleSpecification(vehicleSpec);
 
         ride.setPrice(calculatePrice(ride));

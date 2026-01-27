@@ -186,6 +186,7 @@ public class RideController {
 
     // TODO: REMOVE AFTER TESTING
     @PostMapping("/create/passenger")
+    @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<?> createRide(@RequestBody CreateRideRequest request) {
         // Hard-coded passenger ID for testing
         Long passengerId = 14L;
