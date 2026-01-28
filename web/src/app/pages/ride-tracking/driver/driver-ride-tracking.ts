@@ -10,7 +10,9 @@ import {
   heroCheckCircle,
   heroPhone,
   heroExclamationCircle,
-  heroStopCircle
+  heroStopCircle,
+  heroXMark,
+  heroUser
 } from '@ng-icons/heroicons/outline';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
@@ -32,7 +34,9 @@ import {RideService} from '../../../services/ride.service';
       heroCheckCircle,
       heroPhone,
       heroExclamationCircle,
-      heroStopCircle
+      heroStopCircle,
+      heroXMark,
+      heroUser
     })
   ],
   templateUrl: './driver-ride-tracking.html'
@@ -42,6 +46,14 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
   estimatedArrival = signal<number>(8);
   remainingDistance = signal<number>(2.3);
+
+  // Modal state
+  showCompletionModal = signal<boolean>(false);
+  completedRideInfo = signal<{
+    distance: number;
+    duration: number;
+    price: number;
+  } | null>(null);
 
   // Mock ride details
   rideDetails = signal<RideDetails>({
@@ -54,7 +66,21 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     vehicleType: 'Economy - Toyota Corolla',
     licensePlate: 'NS-123-AB',
     totalDistance: 2.3,
-    estimatedDuration: 8
+    estimatedDuration: 8,
+    passengers: [
+      {
+        id: 1,
+        name: 'Ana Jovanović',
+        phone: '+381 64 123 4567',
+        email: 'ana.jovanovic@email.com'
+      },
+      {
+        id: 2,
+        name: 'Petar Nikolić',
+        phone: '+381 63 987 6543',
+        email: 'petar.nikolic@email.com'
+      }
+    ]
   });
 
   // Current vehicle position (simulated)
@@ -213,7 +239,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     // Simulate vehicle movement every 5 seconds
     this.updateInterval = setInterval(() => {
       this.updateVehiclePosition();
-    }, 5000);
+    }, 3000);
   }
 
   private stopTracking(): void {
@@ -242,6 +268,9 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       this.stopTracking();
       this.remainingDistance.set(0);
       this.estimatedArrival.set(0);
+      
+      // Show completion modal
+      this.showRideCompletionModal();
       return;
     }
 
@@ -266,6 +295,41 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
     this.remainingDistance.set(Math.max(0, parseFloat(remainingDist.toFixed(2))));
     this.estimatedArrival.set(Math.max(0, Math.ceil(remainingTime)));
+  }
+
+  /**
+   * Shows the ride completion modal with ride details
+   */
+  private showRideCompletionModal(): void {
+    const ride = this.rideDetails();
+    
+    // Calculate final price (you can adjust this logic based on your pricing model)
+    const basePrice = 150; // Base price in RSD
+    const pricePerKm = 80;
+    const finalPrice = basePrice + (ride.totalDistance * pricePerKm);
+
+    this.completedRideInfo.set({
+      distance: ride.totalDistance,
+      duration: ride.estimatedDuration,
+      price: Math.round(finalPrice)
+    });
+
+    this.showCompletionModal.set(true);
+  }
+
+  /**
+   * Closes the completion modal
+   */
+  closeCompletionModal(): void {
+    this.showCompletionModal.set(false);
+  }
+
+  /**
+   * Closes modal and navigates to home
+   */
+  closeAndNavigateHome(): void {
+    this.closeCompletionModal();
+    this.handleBack();
   }
 
   /**

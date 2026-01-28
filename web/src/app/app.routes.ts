@@ -27,11 +27,11 @@ export const routes: Routes = [
     children: [
       {
         path: 'home',
-        loadComponent: () => import('./pages/home/driver/driver-home').then(m => m.HomeDriver),
+        loadComponent: () => import('./pages/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent),
         children: [
           // { path: 'waiting', component: WaitingComponent },
           { path: 'ride-assign/:id', component: DriverRideAssignment },
-          // { path: 'active-ride/:id', component: ActiveRideComponent },
+          // { path: 'active-ride/:id', component: DriverRideTrackingComponent },
           // { path: '', redirectTo: 'waiting', pathMatch: 'full' }
         ]
       },

@@ -1,145 +1,290 @@
-<div class="flex flex-col lg:flex-row w-full h-[calc(100vh-64px)] bg-gray-100">
-  <!-- Tracking Panel -->
-  <div class="w-full lg:w-1/4 bg-white shadow-lg p-6 overflow-y-auto z-10 lg:h-full flex flex-col">
-    <!-- Header -->
-    <div class="flex items-center gap-3 mb-6">
-      <button (click)="handleBack()" class="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg text-gray-700 font-medium text-sm">
-        <ng-icon name="heroArrowLeft" class="w-4 h-4"></ng-icon> Back
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white shadow-sm sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <button
+        (click)="handleBack()"
+        class="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
+      >
+        <ng-icon name="heroArrowLeft" size="24"></ng-icon>
+        <span class="font-medium">Back</span>
       </button>
-      <h2 class="text-xl font-semibold text-base-900 m-0">Track Your Ride</h2>
+      <h1 class="text-xl font-bold text-gray-900">Active Ride</h1>
+      <div class="w-20"></div>
     </div>
+  </div>
 
-    <!-- Ride Status -->
-    <div class="bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg p-4 mb-6">
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
-          <ng-icon name="heroClock" class="w-6 h-6 text-white"></ng-icon>
+  <!-- Map Container -->
+  <div class="relative z-0">
+    <div id="trackingMap" class="w-full h-[400px] relative z-0"></div>
+    
+    <!-- Progress Bar Overlay -->
+    <div class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm p-2 shadow-lg z-30">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-gray-700">Trip Progress</span>
+          <span class="text-sm font-bold text-cyan-600">{{ progressPercentage() }}%</span>
         </div>
-        <div class="flex-1">
-          <p class="text-xs text-teal-700 m-0 mb-1">Estimated Arrival</p>
-          <p class="text-2xl font-bold text-teal-900 m-0">{{ estimatedArrival() }} min</p>
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div
+            class="bg-cyan-600 h-2.5 rounded-full transition-all duration-500"
+            [style.width.%]="progressPercentage()"
+          ></div>
         </div>
       </div>
-      <div class="flex items-center gap-2 text-xs text-teal-700">
-        <ng-icon name="heroMapPin" class="w-4 h-4"></ng-icon>
-        <span>{{ remainingDistance() }} km remaining</span>
-      </div>
     </div>
+  </div>
 
-    <!-- Ride Details -->
-    <div class="bg-gray-50 rounded-lg p-4 mb-6">
-      <h3 class="text-sm font-semibold text-base-900 mb-3 m-0">Ride Details</h3>
-
-      <div class="space-y-3">
-        <div class="flex items-start gap-3">
-          <ng-icon name="heroMapPin" class="w-4 h-4 text-teal-600 mt-1"></ng-icon>
-          <div class="flex-1">
-            <p class="text-xs text-gray-500 m-0 mb-1">Pickup</p>
-            <p class="text-sm text-gray-900 m-0">{{ rideDetails().pickup }}</p>
+  <!-- Ride Information -->
+  <div class="max-w-7xl mx-auto px-4 py-6 space-y-4 relative z-20">
+    <!-- Trip Stats -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-cyan-100 p-3 rounded-full">
+            <ng-icon name="heroClock" size="24" class="text-cyan-600"></ng-icon>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">ETA</p>
+            <p class="text-xl font-bold text-gray-900">{{ estimatedArrival() }} min</p>
           </div>
         </div>
-
-        <div class="flex items-start gap-3">
-          <ng-icon name="heroMapPin" class="w-4 h-4 text-red-600 mt-1"></ng-icon>
-          <div class="flex-1">
-            <p class="text-xs text-gray-500 m-0 mb-1">Destination</p>
-            <p class="text-sm text-gray-900 m-0">{{ rideDetails().destination }}</p>
+        <div class="flex items-center gap-3">
+          <div class="bg-pink-100 p-3 rounded-full">
+            <ng-icon name="heroMapPin" size="24" class="text-pink-600"></ng-icon>
           </div>
-        </div>
-
-        <div class="flex items-center justify-between pt-2 border-t border-gray-200">
-          <span class="text-xs text-gray-500">Driver</span>
-          <span class="text-sm font-medium text-gray-900">{{ rideDetails().driverName }}</span>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">Vehicle</span>
-          <span class="text-sm font-medium text-gray-900">{{ rideDetails().vehicleType }}</span>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-500">License Plate</span>
-          <span class="text-sm font-medium text-gray-900">{{ rideDetails().licensePlate }}</span>
+          <div>
+            <p class="text-sm text-gray-500">Distance</p>
+            <p class="text-xl font-bold text-gray-900">{{ remainingDistance() }} km</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Spacer to push buttons to bottom -->
-    <div class="flex-1"></div>
+    <!-- Route Details -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Route Details</h2>
+      <div class="space-y-4">
+        <div class="flex items-start gap-3">
+          <div class="bg-cyan-500 w-3 h-3 rounded-full mt-1.5"></div>
+          <div class="flex-1">
+            <p class="text-sm text-gray-500">Pickup</p>
+            <p class="font-medium text-gray-900">{{ rideDetails().pickup }}</p>
+          </div>
+        </div>
+        <div class="border-l-2 border-gray-200 ml-1.5 h-6"></div>
+        <div class="flex items-start gap-3">
+          <div class="bg-pink-500 w-3 h-3 rounded-full mt-1.5"></div>
+          <div class="flex-1">
+            <p class="text-sm text-gray-500">Destination</p>
+            <p class="font-medium text-gray-900">{{ rideDetails().destination }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Stop Ride Button -->
-    <button
-      (click)="triggerStop()"
-      [disabled]="stopTriggered() || panicTriggered()"
-      class="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-lg transition-all font-medium text-sm shadow-md active:scale-95">
-      <ng-icon name="heroStopCircle" class="w-5 h-5"></ng-icon>
-      @if (stopTriggered()) {
-        <span>Stopping Ride...</span>
-      } @else {
-        <span>STOP RIDE</span>
-      }
-    </button>
+    <!-- Passenger Info -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">
+        Passenger{{ (rideDetails().passengers?.length ?? 0) > 1 ? 's' : '' }}
+      </h2>
+      <div class="space-y-4">
+        @if (rideDetails().passengers && rideDetails().passengers!.length > 0) {
+          @for (passenger of rideDetails().passengers; track passenger.id) {
+            <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <div class="bg-cyan-100 p-3 rounded-full flex-shrink-0">
+                <ng-icon name="heroUser" size="24" class="text-cyan-600"></ng-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 mb-2">{{ passenger.name }}</h3>
+                <div class="space-y-1">
+                  <a 
+                    href="tel:{{ passenger.phone }}"
+                    class="flex items-center gap-2 text-sm text-gray-600 hover:text-cyan-600 transition-colors group"
+                  >
+                    <ng-icon name="heroPhone" size="16" class="text-gray-400 group-hover:text-cyan-600"></ng-icon>
+                    <span>{{ passenger.phone }}</span>
+                  </a>
+                  @if (passenger.email) {
+                    <p class="text-sm text-gray-500">{{ passenger.email }}</p>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        } @else {
+          <p class="text-gray-500 text-center py-4">No passenger information available</p>
+        }
+      </div>
+    </div>
 
-    <!-- Panic Button -->
-    <button
-      (click)="triggerPanic()"
-      [disabled]="panicTriggered()"
-      class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium text-sm shadow-lg">
-      <ng-icon name="heroExclamationTriangle" class="w-5 h-5"></ng-icon>
-      @if (panicTriggered()) {
-        <span>PANIC Alert Sent</span>
-      } @else {
-        <span>PANIC</span>
-      }
-    </button>
+    <!-- Action Buttons -->
+    <div class="grid grid-cols-2 gap-4">
+      <button
+        (click)="triggerPanic()"
+        [disabled]="panicTriggered()"
+        [class.opacity-50]="panicTriggered()"
+        [class.cursor-not-allowed]="panicTriggered()"
+        class="bg-red-600 hover:bg-red-700 disabled:hover:bg-red-600 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
+      >
+        <ng-icon name="heroExclamationTriangle" size="24"></ng-icon>
+        <span>{{ panicTriggered() ? 'Emergency Alert Sent' : 'Emergency Alert' }}</span>
+      </button>
+
+      <button
+        (click)="triggerStop()"
+        [disabled]="stopTriggered()"
+        [class.opacity-50]="stopTriggered()"
+        [class.cursor-not-allowed]="stopTriggered()"
+        class="bg-orange-600 hover:bg-orange-700 disabled:hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
+      >
+        <ng-icon name="heroStopCircle" size="24"></ng-icon>
+        <span>{{ stopTriggered() ? 'Ride Stopped' : 'Stop Ride' }}</span>
+      </button>
+    </div>
 
     @if (panicTriggered()) {
-      <!-- Panic Confirmation -->
-      <div class="bg-red-50 border-2 border-red-500 rounded-lg p-4 mt-3 animate-pulse">
-        <div class="flex items-start gap-3">
-          <ng-icon name="heroExclamationCircle" class="w-6 h-6 text-red-600 mt-0.5"></ng-icon>
+      <div class="bg-red-50 border-l-4 border-red-600 p-4 rounded-r-lg">
+        <div class="flex items-center gap-3">
+          <ng-icon name="heroExclamationCircle" size="24" class="text-red-600"></ng-icon>
           <div>
-            <h3 class="text-sm font-bold text-red-900 m-0 mb-1">Emergency Alert Active</h3>
-            <p class="text-xs text-red-700 m-0">Central dispatch has been notified. Help is on the way.</p>
+            <p class="font-semibold text-red-900">Emergency Alert Active</p>
+            <p class="text-sm text-red-700">Central dispatch has been notified of your location</p>
           </div>
         </div>
       </div>
     }
-
   </div>
 
-  <!-- Map Container -->
-  <div class="w-full lg:w-3/4 h-[50vh] lg:h-full relative">
-    <div id="trackingMap" class="w-full h-full"></div>
-
-    <!-- Live Updates Indicator -->
-    <div class="absolute top-6 left-6 bg-white rounded-lg shadow-lg px-4 py-3 z-10 flex items-center gap-3">
-      <div class="relative">
-        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-        <div class="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping"></div>
-      </div>
-      <div>
-        <p class="text-xs font-semibold text-gray-900 m-0">Live Tracking</p>
-        <p class="text-xs text-gray-600 m-0">Updates every 5 seconds</p>
-      </div>
-    </div>
-
-    <!-- Trip Progress -->
-    <div class="absolute top-6 right-6 bg-white rounded-lg shadow-lg p-4 z-10">
-      <h3 class="text-sm font-semibold text-base-900 mb-2 m-0">Trip Progress</h3>
-      <div class="space-y-2">
-        <div class="flex items-center gap-2">
-          <ng-icon name="heroMapPin" class="w-4 h-4 text-gray-600"></ng-icon>
-          <span class="text-xs text-gray-700">{{ rideDetails().totalDistance }} km total</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-          <div
-            class="bg-teal-500 h-2 rounded-full transition-all duration-500"
-            [style.width.%]="progressPercentage()">
+  <!-- Ride Completion Modal -->
+  @if (showCompletionModal()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fadeIn">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-[#00acc1] to-[#00838f] p-6 text-white relative">
+          <button
+            (click)="closeCompletionModal()"
+            class="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+          >
+            <ng-icon name="heroXMark" size="24"></ng-icon>
+          </button>
+          <div class="flex items-center gap-3 mb-2">
+            <div class="bg-white/20 p-3 rounded-full">
+              <ng-icon name="heroCheckCircle" size="32"></ng-icon>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold">Ride Completed!</h2>
+              <p class="text-white/90 text-sm">Great job, driver</p>
+            </div>
           </div>
         </div>
-        <p class="text-xs text-center text-gray-700 m-0">{{ progressPercentage() }}% complete</p>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-4">
+          @if (completedRideInfo(); as info) {
+            <!-- Trip Summary -->
+            <div class="space-y-3">
+              <h3 class="font-semibold text-gray-900 text-lg">Trip Summary</h3>
+              
+              <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                <!-- Distance -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="bg-cyan-100 p-2 rounded-lg">
+                      <ng-icon name="heroMapPin" size="20" class="text-cyan-600"></ng-icon>
+                    </div>
+                    <span class="text-gray-600">Distance</span>
+                  </div>
+                  <span class="font-bold text-gray-900 text-lg">{{ info.distance }} km</span>
+                </div>
+
+                <!-- Duration -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                      <ng-icon name="heroClock" size="20" class="text-purple-600"></ng-icon>
+                    </div>
+                    <span class="text-gray-600">Duration</span>
+                  </div>
+                  <span class="font-bold text-gray-900 text-lg">{{ info.duration }} min</span>
+                </div>
+
+                <!-- Price -->
+                <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                  <div class="flex items-center gap-3">
+                    <div class="bg-cyan-100 p-2 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-cyan-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span class="text-gray-600 font-medium">Total Earnings</span>
+                  </div>
+                  <span class="font-bold text-[#00acc1] text-2xl">{{ info.price }} RSD</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Route Info -->
+            <div class="bg-blue-50 rounded-lg p-4">
+              <div class="space-y-2 text-sm">
+                <div class="flex items-start gap-2">
+                  <div class="bg-cyan-500 w-2 h-2 rounded-full mt-1.5"></div>
+                  <div class="flex-1">
+                    <p class="text-gray-600">From</p>
+                    <p class="font-medium text-gray-900">{{ rideDetails().pickup }}</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <div class="bg-pink-500 w-2 h-2 rounded-full mt-1.5"></div>
+                  <div class="flex-1">
+                    <p class="text-gray-600">To</p>
+                    <p class="font-medium text-gray-900">{{ rideDetails().destination }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-6 pt-0">
+          <button
+            (click)="closeAndNavigateHome()"
+            class="w-full bg-gradient-to-r from-[#00acc1] to-[#00838f] hover:from-[#008c9e] hover:to-[#006064] text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all transform hover:scale-[1.02]"
+          >
+            Continue to Dashboard
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 </div>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  /* Force Leaflet map and its controls to stay below everything else */
+  #trackingMap,
+  #trackingMap .leaflet-pane,
+  #trackingMap .leaflet-map-pane,
+  #trackingMap .leaflet-control-container {
+    z-index: 5 !important;
+  }
+
+  .leaflet-container {
+    z-index: 5 !important;
+  }
+</style>

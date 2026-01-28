@@ -1,6 +1,7 @@
 import { Route } from "./route";
 import { VehicleType } from "./vehicle.model";
 import { Location } from './location';
+import { Passenger } from "./passenger.model";
 
 export interface RideOptions {
     vehicleType: VehicleType;
@@ -30,6 +31,7 @@ export interface RideDetails {
   licensePlate: string;
   totalDistance: number;
   estimatedDuration: number;
+  passengers?: Passenger[];
 }
 
 export interface StopRideRequest {
