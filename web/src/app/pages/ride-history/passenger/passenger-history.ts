@@ -6,10 +6,10 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark, heroStar } from '@ng-icons/heroicons/outline';
 import { heroStarSolid } from '@ng-icons/heroicons/solid';
 import { finalize } from 'rxjs/operators';
+import { PassengerRideHistoryResponse } from '../../../model/ride-history'; 
 
 import {
-  RideService,
-  RideDetailResponse
+  RideService
 } from '../../../services/ride.service';
 
 interface PassengerRide {
@@ -38,22 +38,6 @@ interface PassengerRide {
   completedAt: Date;
   canRate: boolean;
   ratingExpired: boolean;
-  driverRating?: number | null;
-  vehicleRating?: number | null;
-}
-
-// Backend response interface for passenger history
-interface PassengerRideHistoryResponse {
-  id: number;
-  driverName?: string;
-  pickupAddress: string;
-  destinationAddress: string;
-  status: string;
-  price: number;
-  distance?: number;
-  duration?: number;
-  startDate: string;
-  endDate: string | null;
   driverRating?: number | null;
   vehicleRating?: number | null;
 }
@@ -198,7 +182,7 @@ export class PassengerHistory implements OnInit {
 
   private mapBackendRidesToUI(backendRides: PassengerRideHistoryResponse[]): PassengerRide[] {
     return backendRides.map((ride) => {
-      const start = ride.startDate ? new Date(ride.startDate) : new Date();
+      const start = ride.createdAt ? new Date(ride.createdAt) : new Date();
       const end = ride.endDate ? new Date(ride.endDate) : null;
       const completedAt = end || start;
 
@@ -211,7 +195,7 @@ export class PassengerHistory implements OnInit {
         route: this.formatRoute(ride.pickupAddress, ride.destinationAddress),
         startDate: start.toISOString().split('T')[0],
         endDate: end ? end.toISOString().split('T')[0] : start.toISOString().split('T')[0],
-        price: ride.price ?? 0,
+        price: ride.totalPrice ?? 0,  // ⬅️ CHANGED: was ride.price, now ride.totalPrice
         status: this.mapRideStatus(ride.status),
         startTime: start.toLocaleTimeString('en-US', {
           hour: '2-digit',
