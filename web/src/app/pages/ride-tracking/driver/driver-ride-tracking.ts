@@ -236,10 +236,10 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   }
 
   private startTracking(): void {
-    // Simulate vehicle movement every 5 seconds
+    // Simulate vehicle movement every 1 second for faster testing
     this.updateInterval = setInterval(() => {
       this.updateVehiclePosition();
-    }, 3000);
+    }, 1000);
   }
 
   private stopTracking(): void {
@@ -255,9 +255,9 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     // Move to next point in the route
     this.currentPointIndex++;
 
-    // Calculate how many points to skip for realistic speed
-    // Skip 3-5 points per update for faster movement
-    const pointsToSkip = 4;
+    // Calculate how many points to skip for faster testing
+    // Skip more points per update for much faster movement (completes in ~15 seconds)
+    const pointsToSkip = 15;
     this.currentPointIndex = Math.min(
       this.currentPointIndex + pointsToSkip,
       this.routePoints.length - 1

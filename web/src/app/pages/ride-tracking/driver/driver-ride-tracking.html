@@ -19,7 +19,7 @@
     <div id="trackingMap" class="w-full h-[400px] relative z-0"></div>
     
     <!-- Progress Bar Overlay -->
-    <div class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm p-2 shadow-lg z-30">
+    <div class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm p-4 shadow-lg z-30">
       <div class="max-w-7xl mx-auto">
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-gray-700">Trip Progress</span>
@@ -158,7 +158,7 @@
 
   <!-- Ride Completion Modal -->
   @if (showCompletionModal()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fadeIn">
         <!-- Modal Header -->
         <div class="bg-gradient-to-r from-[#00acc1] to-[#00838f] p-6 text-white relative">
@@ -252,7 +252,7 @@
             (click)="closeAndNavigateHome()"
             class="w-full bg-gradient-to-r from-[#00acc1] to-[#00838f] hover:from-[#008c9e] hover:to-[#006064] text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all transform hover:scale-[1.02]"
           >
-            Continue to Dashboard
+            Back to Home
           </button>
         </div>
       </div>
