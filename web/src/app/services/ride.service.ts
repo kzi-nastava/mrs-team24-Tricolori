@@ -86,6 +86,27 @@ export class RideService {
     return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
   }
 
+  // Get passenger's ride history with optional date filtering
+  getPassengerHistory(
+    startDate?: string,
+    endDate?: string,
+    sortBy: string = 'createdAt',
+    sortDirection: string = 'DESC'
+  ): Observable<RideHistoryResponse[]> {
+    let params = new HttpParams()
+      .set('sortBy', sortBy)
+      .set('sortDirection', sortDirection);
+    
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+    
+    return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/passenger`, { params });
+  }
+
   // Get detailed information for a specific ride (for driver)
   getDriverRideDetail(rideId: number): Observable<RideDetailResponse> {
     return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/driver`);
