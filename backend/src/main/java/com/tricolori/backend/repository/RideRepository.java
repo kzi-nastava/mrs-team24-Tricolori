@@ -1,6 +1,10 @@
 package com.tricolori.backend.repository;
 
+
+import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.Ride;
+import com.tricolori.backend.enums.RideStatus;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,12 +12,26 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride, Long> {
 
+    // Find rides where the passenger is in the passengers list
+    @Query("SELECT r FROM Ride r JOIN r.passengers p WHERE p.id = :passengerId ORDER BY r.createdAt DESC")
+    List<Ride> findByPassengerIdOrderByCreatedAtDesc(@Param("passengerId") Long passengerId);
+
+    List<Ride> findByDriverIdOrderByCreatedAtDesc(Long driverId);
+
+    List<Ride> findByStatus(RideStatus status);
+
+    List<Ride> findAllByDriverAndStatusIn(Driver driver, Collection<RideStatus> statuses);
+
+    List<Ride> findAllByStatusIn(Collection<RideStatus> statuses);
+    
     // current ride for driver
     @Query("""
         SELECT r

@@ -1,8 +1,9 @@
 package com.tricolori.backend.controller;
 
+import com.tricolori.backend.dto.ride.OrderRequest;
+
 import com.tricolori.backend.dto.ride.*;
 import com.tricolori.backend.entity.Person;
-import com.tricolori.backend.entity.Ride;
 import com.tricolori.backend.service.AuthService;
 import com.tricolori.backend.service.InconsistencyReportService;
 import com.tricolori.backend.service.ReviewService;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -197,7 +197,7 @@ public class RideController {
     }
 
     // TODO: REMOVE AFTER TESTING
-    @PostMapping("/create/passenger")
+    /*@PostMapping("/create/passenger")
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<?> createRide(@RequestBody CreateRideRequest request) {
         // Hard-coded passenger ID for testing
@@ -211,11 +211,16 @@ public class RideController {
                 "distance", ride.getRoute().getDistanceKm(),
                 "estimatedTime", ride.getRoute().getEstimatedTimeSeconds()
         ));
-    }
+    }*/
 
     @PostMapping("/order")
-    public ResponseEntity<Void> order(@RequestBody OrderRequest request) {
-        return ResponseEntity.ok().build();
+    // @PreAuthorize("hasRole('PASSENGER')")
+    public ResponseEntity<String> order(
+        @AuthenticationPrincipal Person passenger,
+        @RequestBody OrderRequest request
+    ) {
+        rideService.rideOrder(request);
+        return ResponseEntity.ok(request.toString());
     }
 
     @PutMapping("/{id}/start")

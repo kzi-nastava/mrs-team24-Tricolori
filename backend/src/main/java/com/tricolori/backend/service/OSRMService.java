@@ -1,6 +1,11 @@
 package com.tricolori.backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.tricolori.backend.infrastructure.presentation.dtos.Route.OSRMResult;
+
 import com.tricolori.backend.entity.Location;
+import com.tricolori.backend.entity.Stop;
+import com.tricolori.backend.exception.NoRouteGeometryException;
 import com.tricolori.backend.dto.osrm.OSRMRouteResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +23,7 @@ public class OSRMService {
 
     private final RestTemplate restTemplate;
     // TODO: download and host our own OSRM instance for production use - download just map of Serbia
-    private static final String OSRM_BASE_URL = "http://router.project-osrm.org";
+    private static final String OSRM_BASE_URL = "http://router.project-osrm.org/";
 
     // accepts a list of at least 2 locations and returns geometry
     public OSRMRouteResponse getRoute(List<Location> locations) {
@@ -32,7 +37,7 @@ public class OSRMService {
                 .collect(Collectors.joining(";"));
 
         String url = UriComponentsBuilder
-                .fromHttpUrl(OSRM_BASE_URL + "/route/v1/driving/" + coordinates)
+                .fromHttpUrl(OSRM_BASE_URL + "route/v1/driving/" + coordinates)
                 .queryParam("overview", "full") // full polyline
                 .queryParam("geometries", "polyline") // encoded polyline format
                 .toUriString();
@@ -47,6 +52,27 @@ public class OSRMService {
 
         return response;
     }
+
+    public OSRMResult analyzeRouteStops(List<Stop> routeStops) {
+        // Connecting stops into string format: lon,lat;lon,lat
+        String coordinates = routeStops.stream()
+            .map(stop -> stop.toCoordinates())
+            .collect(Collectors.joining(";"));
+
+        String finalUrl = OSRM_BASE_URL + "route/v1/driving/" + coordinates + "?overview=full&geometries=polyline";
+        JsonNode response = restTemplate.getForObject(finalUrl, JsonNode.class);        
+        if (response == null || !response.has("routes")) {
+            throw new NoRouteGeometryException();
+        }
+        
+        JsonNode bestRoute = response.get("routes").get(0);
+        return new OSRMResult(
+            bestRoute.get("distance").asDouble() / 1000.0, 
+            bestRoute.get("duration").asLong(), 
+            bestRoute.get("geometry").asText()
+        );
+    }
+
 
     // generates temporary polyline, used to check if the route exists
     public String generateTemporaryGeometry(List<Location> locations) {

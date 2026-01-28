@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-import {PanicRequest, StopRideRequest, StopRideResponse} from '../model/ride';
-import {environment} from '../../environments/environment';
+import { environment } from '../../environments/environment';
+import { PanicRequest, RideRequest, StopRideRequest, StopRideResponse } from '../model/ride';
 
 // Interfaces matching your backend DTOs
 export interface RideHistoryResponse {
@@ -100,6 +99,60 @@ export class RideService {
     return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
 
+  bookRide(request: RideRequest): Observable<any> {
+    return this.http.post(`${this.API_URL}/order`, {
+      route: {
+        pickup: {
+          address: request.route.pickup.address,
+          location: {
+            longitude: request.route.pickup.location.lng,
+            latitude: request.route.pickup.location.lat
+          }
+        },
+        destination: {
+          address: request.route.destination.address,
+          location: {
+            longitude: request.route.destination.location.lng,
+            latitude: request.route.destination.location.lat
+          }
+        },
+        stops: (request.route.stops || []).map(s => ({
+          address: s.address,
+          location: {
+            longitude: s.location.lng,
+            latitude: s.location.lat
+          }
+        }))
+      },
+      preferences: {
+        vehicleType: request.preferences.vehicleType,
+        petFriendly: request.preferences.petFriendly,
+        babyFriendly: request.preferences.babyFriendly,
+        scheduledFor: this.formatLocalDateTime(request.preferences.schedule)
+      },
+      estimations: {
+        distanceKilometers: request.estimation.distanceKilometers,
+        durationMinutes: request.estimation.durationMinutes
+      },
+      createdAt: this.formatLocalDateTime(new Date()),
+      trackers: request.trackers
+    });
+  }
+
+  // Use this method on 'Date' object before sending to backend
+  // if backend is expecting 'LocalDateTime'
+  formatLocalDateTime(date: Date | null): string | null {
+    if (!date) return null;
+    
+    const pad = (n: number) => n < 10 ? '0' + n : n;
+
+    return date.getFullYear() + '-' +
+      pad(date.getMonth() + 1) + '-' +
+      pad(date.getDate()) + 'T' +
+      pad(date.getHours()) + ':' +
+      pad(date.getMinutes()) + ':' +
+      pad(date.getSeconds());
+  }
   stopRide(rideId: number, stopRideRequest: StopRideRequest) : Observable<StopRideResponse> {
     return this.http.put<StopRideResponse>(`${this.API_URL}/${rideId}/stop`, stopRideRequest);
   }
