@@ -214,13 +214,13 @@ public class RideController {
     }*/
 
     @PostMapping("/order")
-    // @PreAuthorize("hasRole('PASSENGER')")
+    @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<String> order(
         @AuthenticationPrincipal Person passenger,
         @RequestBody OrderRequest request
     ) {
-        rideService.rideOrder(request);
-        return ResponseEntity.ok(request.toString());
+        //rideService.rideOrder(request);
+        return ResponseEntity.ok("Ordering a ride.");
     }
 
     @PutMapping("/{id}/start")

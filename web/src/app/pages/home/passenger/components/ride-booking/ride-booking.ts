@@ -35,6 +35,7 @@ import { RideService } from '../../../../../services/ride.service';
 export class RideBooking implements OnInit, AfterViewInit {
   // Services:
   private mapService = inject(MapService);
+  private rideService = inject(RideService);
 
   routeSelector = viewChild.required(RouteSelector);
   preferencesSelector = viewChild.required(PreferencesSelector);
@@ -101,68 +102,74 @@ export class RideBooking implements OnInit, AfterViewInit {
     });
   }
 
-  /*
+  
+
   async rideSubmit(event: Event) {
     event.preventDefault();
 
-    const routeSelector = this.routeSelector();
-    const preferences = this.preferencesSelector().preferencesForm.getRawValue();
-    const trackers = this.trackersSelector().trackersForm.getRawValue().trackers;
+    // 1. ViewChild reference
+    const routeComp = this.routeSelector();
+    const prefComp = this.preferencesSelector();
+    const trackComp = this.trackersSelector();
 
-    if (!routeSelector.routeForm.valid) {
-      routeSelector.routeForm.markAllAsTouched();
+    // 2. Osnovna validacija (adrese moraju biti unete)
+    if (!routeComp.routeForm.valid) {
+      routeComp.routeForm.markAllAsTouched();
       return;
     }
 
-    const routeVal = routeSelector.routeForm.getRawValue();
+    // 3. Raw podaci iz formi
+    const routeData = routeComp.routeForm.getRawValue();
+    const prefData = prefComp.preferencesForm.getRawValue();
+    const trackersData = trackComp.trackersForm.getRawValue().trackers;
 
-    try {
-      const pickupGeocoded = await this.geocodingService.geocodeAddress(routeVal.pickup);
-      const destinationGeocoded = await this.geocodingService.geocodeAddress(routeVal.destination);
-      
-      if (!pickupGeocoded || !destinationGeocoded) {
-        alert("Adrese nisu pronađene.");
-        return;
-      }
-
-      const stopPromises = (routeVal.stops || []).map((s: string) => this.geocodingService.geocodeAddress(s));
-      const stopsGeocodedResults = await Promise.all(stopPromises);
-
-      const rideRequest = {
-        // Ruta sa koordinatama za backend
-        route: {
-          pickupStop: {
-            address: pickupGeocoded.displayName,
-            location: { longitude: pickupGeocoded.lng, latitude: pickupGeocoded.lat }
-          },
-          destinationStop: {
-            address: destinationGeocoded.displayName,
-            location: { longitude: destinationGeocoded.lng, latitude: destinationGeocoded.lat }
-          },
-          stops: stopsGeocodedResults
-            .filter(res => res !== null)
-            .map(res => ({
-              address: res!.displayName,
-              location: { longitude: res!.lng, latitude: res!.lat }
-            }))
+    // 4. Pakovanje za OrderRequest (Java Record struktura)
+    const orderRequest = {
+      route: {
+        pickup: {
+          address: routeData.pickup.address,
+          location: { 
+            longitude: routeData.pickup.location.lng, 
+            latitude: routeData.pickup.location.lat 
+          }
         },
+        destination: {
+          address: routeData.destination.address,
+          location: { 
+            longitude: routeData.destination.location.lng, 
+            latitude: routeData.destination.location.lat 
+          }
+        },
+        stops: (routeData.stops || []).map((s: any) => ({
+          address: s.address,
+          location: { 
+            longitude: s.location.lng, 
+            latitude: s.location.lat 
+          }
+        }))
+      },
+      preferences: {
+        vehicleType: prefData.vehicleType.toUpperCase(),
+        petFriendly: prefData.petFriendly,
+        babyFriendly: prefData.babySeat,
+        scheduledFor: this.rideService.formatLocalDateTime(prefData.scheduledTime)
+      },
+      createdAt: this.rideService.formatLocalDateTime(new Date()),
+      trackers: trackersData
+    };
 
-        // Podaci iz PreferencesSelector
-        vehicleType: preferences.vehicleType,
-        babyTransport: preferences.babySeat,
-        petTransport: preferences.petFriendly,
-        scheduledTime: preferences.scheduledTime, // Date objekat ili null
+    console.log("A:",orderRequest);
 
-        passengers: trackers
-      };
-
-      console.log("Finalni zahtev za backend:", rideRequest);
-
-      // 4. Slanje na backend
-      // this.rideService.bookRide(rideRequest).subscribe({ ... });
-
-    } catch (error) {
-      console.error("Greška:", error);
-    }
-  }*/
+    // 5. Slanje
+    this.rideService.bookRide(orderRequest).subscribe({
+      next: (res) => {
+        console.log('Backend primio:', res);
+        alert('Vožnja uspešno naručena!');
+      },
+      error: (err) => {
+        console.error('Greška:', err);
+        alert('Došlo je do greške pri naručivanju.');
+      }
+    });
+  }
 }

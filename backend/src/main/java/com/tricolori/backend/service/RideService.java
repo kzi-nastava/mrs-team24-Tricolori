@@ -36,6 +36,7 @@ public class RideService {
     private final PersonRepository personRepository;
     private final PassengerRepository passengerRepository;
     private final PanicRepository panicRepository;
+    private final OSRMService osrmService;
 
     private final PassengerService passengerService;
     private final DriverService driverService;
@@ -316,7 +317,6 @@ public class RideService {
     @Transactional
     public void rideOrder(OrderRequest request) {
         RidePreferences preferences = request.preferences();
-        RideEstimations estimations = request.estimations();
         RideRoute routeData = request.route();
 
         Ride ride = new Ride();
@@ -325,18 +325,19 @@ public class RideService {
         // TODO: Set start time after we find driver...
         // TODO: Set end time after we find driver...
         ride.setStatus(RideStatus.CREATED);
-        ride.setPrice(calculatePrice(
-            preferences.vehicleType(), estimations.distanceKilometers() 
-        ));
 
         Route route = routeService.createRoute(routeData.pickup(), routeData.destination(), routeData.stops());
         ride.setRoute(route);
+        ride.setPrice(calculatePrice(
+            preferences.vehicleType(), route.getDistanceKm()
+        ));
 
         // Find passengers by email:
         ride.setPassengers(passengerService.getTrackingPassengers(request.trackers()));
 
         // Finding the driver:
-        Driver driver = driverService.findDriverForRide(routeData.pickup().getLocation(), preferences);
+        Driver driver = driverService.findById(9L);
+        // Driver driver = driverService.findDriverForRide(routeData.pickup().getLocation(), preferences);
         ride.setDriver(driver);
         ride.setVehicleSpecification(driver.getVehicle().getSpecification());
 
