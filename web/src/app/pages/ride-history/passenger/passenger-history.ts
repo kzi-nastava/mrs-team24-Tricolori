@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,7 +7,6 @@ import { heroEye, heroXMark, heroStar } from '@ng-icons/heroicons/outline';
 import { heroStarSolid } from '@ng-icons/heroicons/solid';
 import { finalize } from 'rxjs/operators';
 import * as L from 'leaflet';
-
 import { RideService } from '../../../services/ride.service';
 import { MapService } from '../../../services/map.service';
 import { PassengerRideHistoryResponse } from '../../../model/ride-history';
@@ -355,7 +354,6 @@ export class PassengerHistory implements OnInit {
       this.selectedRide.dropoffLng || this.selectedRide.pickupLng
     ];
 
-    // Initialize the map
     this.mapService.initMap('ride-map', pickupCoords, 13);
 
     try {
@@ -373,7 +371,6 @@ export class PassengerHistory implements OnInit {
           L.latLng(coord[1], coord[0])
         );
 
-        // Draw the route with coordinates
         this.mapService.drawRoute(
           '',
           pickupCoords,
