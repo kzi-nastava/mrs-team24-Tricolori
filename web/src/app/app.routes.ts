@@ -29,21 +29,24 @@ export const routes: Routes = [
         path: 'home',
         loadComponent: () => import('./pages/home/driver/driver-home').then(m => m.HomeDriver),
         children: [
-          // { path: 'waiting', component: WaitingComponent },
-          { path: 'ride-assign/:id', component: DriverRideAssignment },
-          // { path: 'active-ride/:id', component: ActiveRideComponent },
-          // { path: '', redirectTo: 'waiting', pathMatch: 'full' }
+          {
+            path: '',
+            loadComponent: () => import('./pages/home/driver/components/driver-ride-assignment/driver-ride-assignment').then(m => m.DriverRideAssignment)
+          },
+          { 
+            path: 'ride-assign/:id', 
+            component: DriverRideAssignment 
+          }
         ]
+      },
+      {
+        path: 'ride-tracking/:id',
+        loadComponent: () => import('./pages/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent)
       },
       {
         path: 'history',
         loadComponent: () => import('./pages/ride-history/driver/driver-history').then(m => m.DriverHistory),
         canActivate: [authGuard]
-
-      },
-      {
-        path: 'ride-tracking/:id',
-        loadComponent: () => import('./pages/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent)
       },
       {
         path: 'support',
@@ -144,10 +147,6 @@ export const routes: Routes = [
       {
         path: 'pricelist',
         loadComponent: () => import('./pages/pricelist/pricelist-admin').then(m => m.PricelistAdmin)
-      },
-      {
-        path: '',
-        loadComponent: () => import('./pages/profile/change-requests/change-requests').then(m => m.ChangeRequests)
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]

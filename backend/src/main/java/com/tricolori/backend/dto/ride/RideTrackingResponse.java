@@ -11,7 +11,7 @@ public record RideTrackingResponse(
         Long rideId,
         String status,
         VehicleLocationResponse currentLocation,
-        RouteDto route,
+        DetailedRouteResponse route,
         Integer estimatedTimeMinutes,
         LocalDateTime estimatedArrival,
         LocalDateTime scheduledFor,
