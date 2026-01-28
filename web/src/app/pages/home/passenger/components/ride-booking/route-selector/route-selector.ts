@@ -24,8 +24,6 @@ export class RouteSelector implements OnInit, OnDestroy {
   routeForm: FormGroup;
   selectedRoute = input<Route>();
 
-  suggestions: { [key: string]: any[] } = {};
-
   constructor() {
     this.routeForm = this.fb.group({
       pickup: this.createStopGroup(),
@@ -61,23 +59,20 @@ export class RouteSelector implements OnInit, OnDestroy {
     const addressControl = group?.get('address');
 
     addressControl?.valueChanges.pipe(
-      debounceTime(200),
+      debounceTime(400),
       distinctUntilChanged(),
       switchMap(value => {
         if (!value || typeof value !== 'string' || value.length < 3) return of([]);
-        const request = `https://photon.komoot.io/api/?q=${encodeURIComponent(value)}&${this.nsCoords}&limit=5`;
-        console.log("ZAHTJEV:", request)
-        return this.http.get<any>(request).pipe(
-          map(res => res.features)
+        
+        const query = encodeURIComponent(value);
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&addressdetails=1&limit=5&${this.nsCoords}`;
+        
+        return this.http.get<any[]>(url).pipe(
+          map(results => results)
         );
       }),
       takeUntil(this.destroy$)
     ).subscribe(results => {
-      console.log("STIGLO", results);
-      this.suggestions = {
-        ...this.suggestions,
-        [controlKey]: results
-      };
     });
   }
 
@@ -99,11 +94,6 @@ export class RouteSelector implements OnInit, OnDestroy {
     };
 
     group?.patchValue(stopData, { emitEvent: false });
-
-    this.suggestions = {
-      ...this.suggestions,
-      [controlKey]: []
-    };
   }
 
   get pickup() { return this.routeForm.get("pickup")!; }
@@ -118,7 +108,6 @@ export class RouteSelector implements OnInit, OnDestroy {
 
   removeStop(index: number) {
     this.stops.removeAt(index);
-    delete this.suggestions[index.toString()];
   }
 
   populateStops(stopsData: Stop[]) {
@@ -132,7 +121,6 @@ export class RouteSelector implements OnInit, OnDestroy {
   private createStopGroup(stopData?: Stop): FormGroup {
     return this.fb.group({
       address: [stopData?.address || '', Validators.required],
-      // Pravimo ugnježdenu grupu da odgovara interfejsu
       location: this.fb.group({
         lng: [stopData?.location?.lng || null],
         lat: [stopData?.location?.lat || null]

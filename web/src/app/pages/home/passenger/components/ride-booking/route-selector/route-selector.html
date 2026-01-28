@@ -12,25 +12,6 @@
                 class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
         </div>
 
-        @if (suggestions['pickup']; as results) {
-            @if (results.length > 0) {
-                <div class="absolute top-full left-0 z-50 w-full bg-white border border-gray-200 rounded-2xl mt-1 shadow-xl overflow-hidden">
-                    @for (res of results; track res) {
-                        <div (click)="selectSuggestion(res, 'pickup')" 
-                             class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-none border-gray-100 text-sm">
-                            <span class="font-medium">
-                                {{ res || res.properties.name }} 
-                                {{ res.properties.housenumber || '' }}
-                            </span>
-                            @if (res.properties.city) {
-                                <span class="text-gray-400 text-xs">, {{ res.properties.city }}</span>
-                            }
-                        </div>
-                    }
-                </div>
-            }
-        }
-
         <div class="flex flex-col gap-0 pl-3 text-deep-300">
             @if(pickup.get('address')?.hasError('required') && (pickup.dirty || pickup.touched)) {
                 <p class="text-xs mt-1">Pickup location is required</p>
@@ -51,25 +32,6 @@
                             placeholder="Enter stop address"
                             autocomplete="off"
                             class="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600 transition-all">
-                        
-                        @if (suggestions[i.toString()]; as stopResults) {
-                            @if (stopResults.length > 0) {
-                                <div class="absolute top-full left-0 z-50 w-full bg-white border border-gray-200 rounded-2xl mt-1 shadow-xl overflow-hidden">
-                                    @for (res of stopResults; track res) {
-                                        <div (click)="selectSuggestion(res, i.toString(), true)" 
-                                             class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-none border-gray-100 text-sm">
-                                            <span class="font-medium">
-                                                {{ res.properties.street || res.properties.name }} 
-                                                {{ res.properties.housenumber || '' }}
-                                            </span>
-                                            @if (res.properties.city) {
-                                                <span class="text-gray-400 text-xs">, {{ res.properties.city }}</span>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        }
                     </div>
                     <button type="button"
                         (click)="removeStop(i)"
@@ -99,25 +61,6 @@
                 autocomplete="off"
                 class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
         </div>
-
-        @if (suggestions['destination']; as destResults) {
-            @if (destResults.length > 0) {
-                <div class="absolute top-full left-0 z-50 w-full bg-white border border-gray-200 rounded-2xl mt-1 shadow-xl overflow-hidden">
-                    @for (res of destResults; track res) {
-                        <div (click)="selectSuggestion(res, 'destination')" 
-                             class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-none border-gray-100 text-sm">
-                            <span class="font-medium">
-                                {{ res.properties.street || res.properties.name }} 
-                                {{ res.properties.housenumber || '' }}
-                            </span>
-                            @if (res.properties.city) {
-                                <span class="text-gray-400 text-xs">, {{ res.properties.city }}</span>
-                            }
-                        </div>
-                    }
-                </div>
-            }
-        }
 
         <div class="flex flex-col gap-0 pl-3 text-deep-300">
             @if(destination.get('address')?.hasError('required') && (destination.dirty || destination.touched)) {
