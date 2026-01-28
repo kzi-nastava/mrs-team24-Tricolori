@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroArrowLeft,
@@ -55,32 +55,19 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     price: number;
   } | null>(null);
 
-  // Mock ride details
+  // Ride details - will be loaded from backend
   rideDetails = signal<RideDetails>({
     id: 1,
-    pickup: 'Trg Slobode 1',
-    destination: 'Kisačka 71',
+    pickup: 'Loading...',
+    destination: 'Loading...',
     pickupCoords: [45.2671, 19.8335],
     destinationCoords: [45.2550, 19.8450],
-    driverName: 'Marko Petrović',
-    vehicleType: 'Economy - Toyota Corolla',
-    licensePlate: 'NS-123-AB',
-    totalDistance: 2.3,
-    estimatedDuration: 8,
-    passengers: [
-      {
-        id: 1,
-        name: 'Ana Jovanović',
-        phone: '+381 64 123 4567',
-        email: 'ana.jovanovic@email.com'
-      },
-      {
-        id: 2,
-        name: 'Petar Nikolić',
-        phone: '+381 63 987 6543',
-        email: 'petar.nikolic@email.com'
-      }
-    ]
+    driverName: '',
+    vehicleType: '',
+    licensePlate: '',
+    totalDistance: 0,
+    estimatedDuration: 0,
+    passengers: []
   });
 
   // Current vehicle position (simulated)
@@ -101,15 +88,71 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   private updateInterval: any = null;
   private routePoints: L.LatLng[] = [];
   private currentPointIndex = 0;
+  private rideId: number | null = null;
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private rideService: RideService
   ) {}
 
   ngOnInit(): void {
-    // Initialize map after view is ready
-    setTimeout(() => this.initMap(), 100);
+    // Get ride ID from route params
+    this.route.params.subscribe(params => {
+      this.rideId = +params['id'];
+      if (this.rideId) {
+        this.loadRideData(this.rideId);
+      }
+    });
+  }
+
+  /**
+   * Load ride data from backend
+   */
+  private loadRideData(rideId: number): void {
+    this.rideService.trackRide(rideId).subscribe({
+      next: (response) => {
+        // Extract pickup and destination from route
+        const pickup = response.route?.stops?.[0];
+        const destination = response.route?.stops?.[response.route.stops.length - 1];
+
+        // Update ride details with real data
+        this.rideDetails.set({
+          id: response.id,
+          pickup: pickup?.address || 'Pickup location',
+          destination: destination?.address || 'Destination',
+          pickupCoords: pickup?.location 
+            ? [pickup.location.latitude, pickup.location.longitude] 
+            : [45.2671, 19.8335],
+          destinationCoords: destination?.location 
+            ? [destination.location.latitude, destination.location.longitude] 
+            : [45.2550, 19.8450],
+          driverName: response.driver?.name || '',
+          vehicleType: response.driver?.vehicleModel || '',
+          licensePlate: response.driver?.vehiclePlateNumber || '',
+          totalDistance: response.route?.distanceKilometers || 0,
+          estimatedDuration: response.route?.durationMinutes || 0,
+          passengers: response.passengers?.map(p => ({
+            id: p.id,
+            name: p.name,
+            phone: p.phoneNumber,
+            email: p.email || ''
+          })) || []
+        });
+
+        // Set initial values
+        this.remainingDistance.set(response.route?.distanceKilometers || 0);
+        this.estimatedArrival.set(response.route?.durationMinutes || 0);
+
+        // Initialize map after data is loaded
+        setTimeout(() => this.initMap(), 100);
+      },
+      error: (err) => {
+        console.error('Failed to load ride data:', err);
+        // Initialize map with default/mock data as fallback
+        setTimeout(() => this.initMap(), 100);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -298,9 +341,14 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Shows the ride completion modal with ride details
+   * Shows the ride completion modal with ride details and sends completion to backend
    */
   private showRideCompletionModal(): void {
+    if (!this.rideId) {
+      console.error('No ride ID available');
+      return;
+    }
+
     const ride = this.rideDetails();
     
     // Calculate final price (you can adjust this logic based on your pricing model)
@@ -308,13 +356,25 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     const pricePerKm = 80;
     const finalPrice = basePrice + (ride.totalDistance * pricePerKm);
 
+    // Set modal data
     this.completedRideInfo.set({
       distance: ride.totalDistance,
       duration: ride.estimatedDuration,
       price: Math.round(finalPrice)
     });
 
-    this.showCompletionModal.set(true);
+    // Call backend to complete the ride
+    this.rideService.completeRide(this.rideId).subscribe({
+      next: () => {
+        console.log('✅ Ride completed successfully on backend');
+        this.showCompletionModal.set(true);
+      },
+      error: (err) => {
+        console.error('❌ Failed to complete ride on backend:', err);
+        // Still show the modal even if backend call fails
+        this.showCompletionModal.set(true);
+      }
+    });
   }
 
   /**

@@ -104,4 +104,7 @@ export class RideService {
     return this.http.put<StopRideResponse>(`${this.API_URL}/${rideId}/stop`, stopRideRequest);
   }
 
+  completeRide(rideId: number): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/complete`, {});
+  }
 }

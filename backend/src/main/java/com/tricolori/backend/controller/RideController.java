@@ -86,12 +86,15 @@ public class RideController {
         return ResponseEntity.ok(rideService.stopRide(id, person, request));
     }
 
+    // passenger can track his current ride
     @GetMapping("/{id}/track")
+    @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<RideTrackingResponse> trackRide(@PathVariable Long id) {
         RideTrackingResponse response = rideService.trackRide(id);
         return ResponseEntity.ok(response);
     }
 
+    // driver sends data as the ride is finished
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<Void> completeRide(@PathVariable Long id) {
