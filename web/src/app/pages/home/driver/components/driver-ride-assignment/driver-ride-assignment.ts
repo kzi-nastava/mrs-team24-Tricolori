@@ -15,20 +15,9 @@ import {
 import { CancelRideModalComponent } from '../cancel-ride-modal/cancel-ride-modal';
 import { RideService } from '../../../../../services/ride.service';
 import { MapService } from '../../../../../services/map.service';
+import { RideAssignment } from '../../../../../model/ride';
+import * as L from 'leaflet';
 
-interface RideAssignment {
-  id: number;
-  pickupAddress: string;
-  destinationAddress: string;
-  passengerName: string;
-  passengerPhone: string;
-  estimatedDistance: number;
-  estimatedDuration: number;
-  estimatedPrice: number;
-  pickupCoords: [number, number];
-  destinationCoords: [number, number];
-  eta: number; // Time to pickup
-}
 
 @Component({
   selector: 'app-driver-ride-assignment',
@@ -53,7 +42,7 @@ export class DriverRideAssignment implements OnInit, OnDestroy {
   router = inject(Router);
   errorMessage = signal<string | null>(null);
 
-  // Updated activeRide with complete data from driver-waiting
+  // Updated activeRide with complete data
   activeRide = signal<RideAssignment>({
     id: 6,
     pickupAddress: 'Železnička stanica, Novi Sad',
@@ -82,77 +71,83 @@ export class DriverRideAssignment implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Wait a bit for the home component's map to be ready
     setTimeout(() => {
       this.drawRouteOnExistingMap();
     }, 500);
   }
 
   ngOnDestroy(): void {
-    // Just clear the route, don't destroy the map (it belongs to home component)
     try {
-      this.mapService.clearMap();
+      this.mapService.clearRouteAndMarkers();
     } catch (e) {
-      console.log('Map already cleaned up');
+      console.log('Route already cleaned up');
     }
   }
 
-  private drawRouteOnExistingMap(): void {
+  private async drawRouteOnExistingMap(): Promise<void> {
     const ride = this.activeRide();
     
     try {
-      // Get the existing map instance
+      // Check if map exists
       const map = this.mapService.getMap();
       
       if (!map) {
-        console.error('Map not found, cannot draw route');
+        console.error('Map not found');
         return;
       }
 
-      // Draw route with pickup and destination markers
-      this.mapService.drawRoute(
-        '', // routeGeometry not used
-        ride.pickupCoords,
-        ride.destinationCoords
-      );
+      console.log('🗺️ Drawing route on existing map');
+      console.log('📍 Pickup:', ride.pickupCoords);
+      console.log('📍 Destination:', ride.destinationCoords);
 
-      // Fetch and draw actual route from OSRM
-      this.fetchAndDrawRoute(ride.pickupCoords, ride.destinationCoords);
+      // Fetch route coordinates from OSRM
+      const url = `https://router.project-osrm.org/route/v1/driving/${ride.pickupCoords[1]},${ride.pickupCoords[0]};${ride.destinationCoords[1]},${ride.destinationCoords[0]}?overview=full&geometries=geojson`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.routes && data.routes.length > 0) {
+        const coordinates = data.routes[0].geometry.coordinates;
+        console.log('✅ Route fetched:', coordinates.length, 'points');
+
+        // Convert coordinates to Leaflet LatLng format
+        const routeCoordinates = coordinates.map((coord: number[]) => 
+          L.latLng(coord[1], coord[0])
+        );
+
+        // Draw the route with markers and line
+        this.mapService.drawRoute(
+          '',
+          ride.pickupCoords,
+          ride.destinationCoords,
+          routeCoordinates
+        );
+
+        console.log('✅ Route drawn successfully');
+      } else {
+        console.warn('⚠️ No routes found in OSRM response');
+        
+        // Draw at least the markers even if no route
+        this.mapService.drawRoute(
+          '',
+          ride.pickupCoords,
+          ride.destinationCoords
+        );
+      }
     } catch (error) {
-      console.error('Error drawing route on map:', error);
+      console.error('❌ Error drawing route:', error);
+      
+      // Fallback: draw at least the markers
+      try {
+        this.mapService.drawRoute(
+          '',
+          ride.pickupCoords,
+          ride.destinationCoords
+        );
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+      }
     }
-  }
-
-  private fetchAndDrawRoute(pickup: [number, number], destination: [number, number]): void {
-    // Fetch route from OSRM
-    const url = `https://router.project-osrm.org/route/v1/driving/${pickup[1]},${pickup[0]};${destination[1]},${destination[0]}?overview=full&geometries=geojson`;
-
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (data.routes && data.routes.length > 0) {
-          const coordinates = data.routes[0].geometry.coordinates.map(
-            (coord: number[]) => ({ lat: coord[1], lng: coord[0] })
-          );
-
-          // Convert to Leaflet LatLng format
-          const L = (window as any).L;
-          if (L) {
-            const latLngs = coordinates.map((c: any) => L.latLng(c.lat, c.lng));
-
-            // Redraw route with actual coordinates
-            this.mapService.drawRoute(
-              '',
-              pickup,
-              destination,
-              latLngs
-            );
-          }
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch route from OSRM:', err);
-      });
   }
 
   handleBack(): void {
