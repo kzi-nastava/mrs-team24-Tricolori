@@ -218,16 +218,44 @@
           </div>
           
           <!-- Status Badge -->
-          <div class="mt-4">
+          <div class="mt-4 flex items-center gap-3">
             <span [class]="'inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold ' + getStatusClass(selectedRide.status)">
               {{ selectedRide.status }}
             </span>
+            
+            <!-- Track Ride Button for In Progress rides -->
+            @if (selectedRide.status === 'In Progress') {
+              <button 
+                (click)="navigateToTracking(selectedRide.id)"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Track Ride
+              </button>
+            }
           </div>
         </div>
         
         <!-- Modal Content -->
         <div class="overflow-y-auto max-h-[calc(90vh-180px)]">
           <div class="p-6 space-y-6">
+            
+            <!-- Map Section - Show for Completed/Scheduled/In Progress -->
+            @if (selectedRide.pickupLat && selectedRide.pickupLng) {
+              <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-[#00acc1] to-[#00838f] p-4">
+                  <h3 class="text-white font-semibold flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    Route Map
+                  </h3>
+                </div>
+                <div id="ride-map" class="h-80"></div>
+              </div>
+            }
             
             <!-- Route Information Card -->
             <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
@@ -340,20 +368,6 @@
                   <p class="text-gray-900 font-medium">{{ selectedRide.endDate }} • {{ selectedRide.endTime }}</p>
                 </div>
               </div>
-            </div>
-            
-            <!-- Payment -->
-            <div class="bg-white rounded-xl p-5 border border-gray-200">
-              <div class="flex items-center gap-2 mb-4">
-                <div class="w-8 h-8 bg-[#00acc1] rounded-lg flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                  </svg>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900">Payment Method</h3>
-              </div>
-              
-              <p class="text-gray-900 font-medium">{{ selectedRide.paymentMethod }}</p>
             </div>
             
             <!-- Rating Section -->

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,11 +6,11 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark, heroStar } from '@ng-icons/heroicons/outline';
 import { heroStarSolid } from '@ng-icons/heroicons/solid';
 import { finalize } from 'rxjs/operators';
-import { PassengerRideHistoryResponse } from '../../../model/ride-history'; 
+import * as L from 'leaflet';
 
-import {
-  RideService
-} from '../../../services/ride.service';
+import { RideService } from '../../../services/ride.service';
+import { MapService } from '../../../services/map.service';
+import { PassengerRideHistoryResponse } from '../../../model/ride-history';
 
 interface PassengerRide {
   id: number;
@@ -40,6 +40,11 @@ interface PassengerRide {
   ratingExpired: boolean;
   driverRating?: number | null;
   vehicleRating?: number | null;
+  // Map data
+  pickupLat?: number;
+  pickupLng?: number;
+  dropoffLat?: number;
+  dropoffLng?: number;
 }
 
 @Component({
@@ -79,6 +84,7 @@ export class PassengerHistory implements OnInit {
   constructor(
     private router: Router,
     private rideService: RideService,
+    private mapService: MapService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -195,7 +201,7 @@ export class PassengerHistory implements OnInit {
         route: this.formatRoute(ride.pickupAddress, ride.destinationAddress),
         startDate: start.toISOString().split('T')[0],
         endDate: end ? end.toISOString().split('T')[0] : start.toISOString().split('T')[0],
-        price: ride.totalPrice ?? 0,  // ⬅️ CHANGED: was ride.price, now ride.totalPrice
+        price: ride.totalPrice ?? 0,
         status: this.mapRideStatus(ride.status),
         startTime: start.toLocaleTimeString('en-US', {
           hour: '2-digit',
@@ -261,6 +267,9 @@ export class PassengerHistory implements OnInit {
         next: (detail) => {
           this.selectedRide = this.mapDetailToUI(detail);
           this.cdr.detectChanges();
+
+          // Initialize map after modal opens
+          setTimeout(() => this.initMap(), 100);
         },
         error: (error) => {
           console.error('Failed to load ride details:', error);
@@ -312,7 +321,12 @@ export class PassengerHistory implements OnInit {
         vehicleRating: detail.vehicleRating || 0,
         comment: detail.ratingComment || '',
         ratedAt: completed ? completed.toLocaleDateString() : created.toLocaleDateString()
-      } : undefined
+      } : undefined,
+      // Map coordinates
+      pickupLat: detail.pickupLatitude,
+      pickupLng: detail.pickupLongitude,
+      dropoffLat: detail.dropoffLatitude,
+      dropoffLng: detail.dropoffLongitude
     };
   }
 
@@ -324,9 +338,75 @@ export class PassengerHistory implements OnInit {
     return isCompleted && hasNoRating && within72Hours;
   }
 
+  // ================= map =================
+
+  private async initMap(): Promise<void> {
+    if (!this.selectedRide || !this.selectedRide.pickupLat || !this.selectedRide.pickupLng) {
+      return;
+    }
+
+    const pickupCoords: [number, number] = [
+      this.selectedRide.pickupLat,
+      this.selectedRide.pickupLng
+    ];
+
+    const dropoffCoords: [number, number] = [
+      this.selectedRide.dropoffLat || this.selectedRide.pickupLat,
+      this.selectedRide.dropoffLng || this.selectedRide.pickupLng
+    ];
+
+    // Initialize the map
+    this.mapService.initMap('ride-map', pickupCoords, 13);
+
+    try {
+      // Fetch route from OSRM
+      const url = `https://router.project-osrm.org/route/v1/driving/${pickupCoords[1]},${pickupCoords[0]};${dropoffCoords[1]},${dropoffCoords[0]}?overview=full&geometries=geojson`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.routes && data.routes.length > 0) {
+        const coordinates = data.routes[0].geometry.coordinates;
+        
+        // Convert to Leaflet LatLng format
+        const routeCoordinates = coordinates.map((coord: number[]) => 
+          L.latLng(coord[1], coord[0])
+        );
+
+        // Draw the route with coordinates
+        this.mapService.drawRoute(
+          '',
+          pickupCoords,
+          dropoffCoords,
+          routeCoordinates
+        );
+      } else {
+        // Fallback: draw without route line if OSRM fails
+        this.mapService.drawRoute(
+          '',
+          pickupCoords,
+          dropoffCoords
+        );
+      }
+    } catch (error) {
+      console.error('Failed to fetch route from OSRM:', error);
+      
+      // Fallback: draw without route line
+      this.mapService.drawRoute(
+        '',
+        pickupCoords,
+        dropoffCoords
+      );
+    }
+  }
+
   // ================= modal =================
 
   closeModal(): void {
+    // Destroy map before closing modal
+    if (this.selectedRide) {
+      this.mapService.destroyMap();
+    }
     this.selectedRide = null;
     this.cdr.detectChanges();
   }
@@ -335,6 +415,11 @@ export class PassengerHistory implements OnInit {
 
   navigateToRating(rideId: number): void {
     this.router.navigate(['/passenger/ride-rating', rideId]);
+  }
+
+  navigateToTracking(rideId: number): void {
+    this.closeModal();
+    this.router.navigate(['/passenger/ride-tracking', rideId]);
   }
 
   // ================= helpers =================
