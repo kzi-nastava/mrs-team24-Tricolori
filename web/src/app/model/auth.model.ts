@@ -37,3 +37,12 @@ export interface LoginResponse {
   accessToken: string;
   personDto: PersonDto;
 }
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}

@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NgIcon} from '@ng-icons/core';
+import {AuthService} from '../../../services/auth.service';
+import {ForgotPasswordRequest} from '../../../model/auth.model';
 
 @Component({
   selector: 'app-forgot-password',
@@ -14,6 +16,8 @@ import {NgIcon} from '@ng-icons/core';
   styleUrl: './forgot-password.css',
 })
 export class ForgotPassword {
+  authService = inject(AuthService);
+
   errorMessage: string = '';
   successMessage: string = '';
 
@@ -33,6 +37,16 @@ export class ForgotPassword {
       return;
     }
 
-    this.successMessage = 'Reset link sent successfully';
+    const request : ForgotPasswordRequest = { email: this.forgotPasswordForm.value.email! };
+    this.authService.forgotPassword(request).subscribe({
+      next: () => {
+        this.successMessage = 'Reset link sent successfully';
+        this.forgotPasswordForm.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Could not send reset link. Please try again later.';
+        console.error('Email error:', err);
+      }
+    })
   }
 }

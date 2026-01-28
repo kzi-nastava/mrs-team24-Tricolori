@@ -44,8 +44,6 @@ public class AuthController {
             .body("Successfully registered a new driver. Registration's final step will be sent to driver's email.");
     }
 
-
-
     @PostMapping("/driver-activate")
     public ResponseEntity<String> driverPasswordSetup(
         @Valid @RequestBody DriverPasswordSetupRequest request
@@ -83,14 +81,16 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
 
-        return ResponseEntity.ok().build();
+        authService.resetPassword(request);
+        return ResponseEntity.ok("Password reset successfully.");
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
 
-        return ResponseEntity.ok().build();
+        authService.forgotPassword(request);
+        return ResponseEntity.ok("Reset password link sent successfully.");
     }
 }
