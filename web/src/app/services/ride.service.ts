@@ -99,7 +99,7 @@ export class RideService {
     return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
 
-  bookRide(request: RideRequest): Observable<any> {
+  /*bookRide(request: RideRequest): Observable<any> {
     return this.http.post(`${this.API_URL}/order`, {
       route: {
         pickup: {
@@ -137,7 +137,7 @@ export class RideService {
       createdAt: this.formatLocalDateTime(new Date()),
       trackers: request.trackers
     });
-  }
+  }*/
 
   // Use this method on 'Date' object before sending to backend
   // if backend is expecting 'LocalDateTime'

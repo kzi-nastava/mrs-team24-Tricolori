@@ -19,7 +19,7 @@
                         <div (click)="selectSuggestion(res, 'pickup')" 
                              class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-none border-gray-100 text-sm">
                             <span class="font-medium">
-                                {{ res.properties.street || res.properties.name }} 
+                                {{ res || res.properties.name }} 
                                 {{ res.properties.housenumber || '' }}
                             </span>
                             @if (res.properties.city) {

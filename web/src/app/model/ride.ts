@@ -11,14 +11,8 @@ export interface RideOptions {
 
 export interface RideRequest {
     route: Route;
-    estimation: Estimation;
     preferences: RideOptions;
     trackers: string[];
-}
-
-export interface Estimation {
-  distanceKilometers: number;
-  durationMinutes: number;
 }
 
 export interface PanicRequest {

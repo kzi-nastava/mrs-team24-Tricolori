@@ -35,9 +35,6 @@ import { RideService } from '../../../../../services/ride.service';
 export class RideBooking implements OnInit, AfterViewInit {
   // Services:
   private mapService = inject(MapService);
-  private estimationService = inject(EstimationService);
-  private rideService = inject(RideService)
-  private geocodingService = inject(GeocodingService);
 
   routeSelector = viewChild.required(RouteSelector);
   preferencesSelector = viewChild.required(PreferencesSelector);
@@ -69,7 +66,6 @@ export class RideBooking implements OnInit, AfterViewInit {
     this.mapService.initMap('map');
   }
 
-
   openFavoriteRoutes() {
     const dialogRef = this.routesDialog.open(FavoriteRouteSelector, {
       width: '100%',
@@ -83,11 +79,7 @@ export class RideBooking implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result: FavoriteRoute | undefined) => {
       if (result) {
-        this.currentRoute.set({
-          pickup: result.pickup,
-          destination: result.destination,
-          stops: result.stops
-        });
+        this.currentRoute.set(result.route);
       }
     });
   }
@@ -109,70 +101,68 @@ export class RideBooking implements OnInit, AfterViewInit {
     });
   }
 
+  /*
   async rideSubmit(event: Event) {
     event.preventDefault();
 
-    // Pristup child komponenti kroz signal
     const routeSelector = this.routeSelector();
-    const preferencesSelector = this.preferencesSelector();
-    const trackersSelector = this.trackersSelector();
+    const preferences = this.preferencesSelector().preferencesForm.getRawValue();
+    const trackers = this.trackersSelector().trackersForm.getRawValue().trackers;
 
-    // Since route selection is only mandatory data, I don't check
-    // other child components' validity...
     if (!routeSelector.routeForm.valid) {
       routeSelector.routeForm.markAllAsTouched();
+      return;
     }
 
     const routeVal = routeSelector.routeForm.getRawValue();
-    console.log(routeVal)
 
-    const estimation = await this.estimationService.calculateRoute(
-      { lat: routeVal.pickup.location.lat, lng: routeVal.pickup.location.lng },
-      { lat: routeVal.destination.location.lat, lng: routeVal.destination.location.lng },
-      routeVal.pickup.address,
-      routeVal.destination.address
-    );
-
-    const rideRequest: RideRequest = {
-      route: {
-        pickup: routeVal.pickup,
-        destination: routeVal.destination,
-        stops: routeVal.stops
-      },
-      preferences: preferencesSelector.preferencesForm.value,
-      trackers: trackersSelector.trackersForm.getRawValue().trackers as string[] || [],
-      estimation: {
-        distanceKilometers: estimation?.distance!,
-        durationMinutes: estimation?.duration!
+    try {
+      const pickupGeocoded = await this.geocodingService.geocodeAddress(routeVal.pickup);
+      const destinationGeocoded = await this.geocodingService.geocodeAddress(routeVal.destination);
+      
+      if (!pickupGeocoded || !destinationGeocoded) {
+        alert("Adrese nisu pronađene.");
+        return;
       }
+
+      const stopPromises = (routeVal.stops || []).map((s: string) => this.geocodingService.geocodeAddress(s));
+      const stopsGeocodedResults = await Promise.all(stopPromises);
+
+      const rideRequest = {
+        // Ruta sa koordinatama za backend
+        route: {
+          pickupStop: {
+            address: pickupGeocoded.displayName,
+            location: { longitude: pickupGeocoded.lng, latitude: pickupGeocoded.lat }
+          },
+          destinationStop: {
+            address: destinationGeocoded.displayName,
+            location: { longitude: destinationGeocoded.lng, latitude: destinationGeocoded.lat }
+          },
+          stops: stopsGeocodedResults
+            .filter(res => res !== null)
+            .map(res => ({
+              address: res!.displayName,
+              location: { longitude: res!.lng, latitude: res!.lat }
+            }))
+        },
+
+        // Podaci iz PreferencesSelector
+        vehicleType: preferences.vehicleType,
+        babyTransport: preferences.babySeat,
+        petTransport: preferences.petFriendly,
+        scheduledTime: preferences.scheduledTime, // Date objekat ili null
+
+        passengers: trackers
+      };
+
+      console.log("Finalni zahtev za backend:", rideRequest);
+
+      // 4. Slanje na backend
+      // this.rideService.bookRide(rideRequest).subscribe({ ... });
+
+    } catch (error) {
+      console.error("Greška:", error);
     }
-
-
-    this.rideService.bookRide(rideRequest).subscribe({
-      next: (response) => {
-        console.log(response);
-      },
-      error: (err) => {
-        console.log(err);
-      }
-    })
-
-    // Draw route on map:
-    const esitmation = await this.estimationService.calculateRoute(
-      { lat: routeVal.pickup.location.lat, lng: routeVal.pickup.location.lng },
-      { lat: routeVal.destination.location.lat, lng: routeVal.destination.location.lng },
-      routeVal.pickup.address,
-      routeVal.destination.address
-    )
-    this.showRouteOnMap(routeVal, esitmation?.routeCoordinates);
-  }
-
-  // TODO: REFACTOR THIS...
-  showRouteOnMap(route: Route, routeCoordinates?: L.LatLng[]) {
-    this.mapService.drawRoute('', 
-      [route.pickup.location.lat, route.pickup.location.lng],
-      [route.destination.location.lat, route.destination.location.lng],
-      routeCoordinates
-    );
-  }
+  }*/
 }
