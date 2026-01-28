@@ -47,8 +47,8 @@ public class SecurityConfig {
                 // in FavoriteRoute controller... 
                 .requestMatchers("/api/v1/favorite-routes/**").hasRole("PASSENGER")
                 .requestMatchers("/api/v1/profiles/**").authenticated()
-                .requestMatchers("/api/v1/change-requests/**").authenticated()
-
+                    .requestMatchers("/api/v1/rides/*/rate").hasRole("PASSENGER")
+                .requestMatchers("/api/v1/change-requests/**").authenticated().requestMatchers("/api/v1/rides/*/track").authenticated()
                 .requestMatchers("/api/v1/vehicles/active").permitAll()
                 .requestMatchers("/api/v1/rides/history/driver/**").hasRole("DRIVER")
                 .requestMatchers("/api/v1/rides/*/details/driver").hasRole("DRIVER")

@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {passwordMatchValidator, strongPasswordValidator} from '../../../shared/password-validator';
-import {NgIcon} from '@ng-icons/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { passwordMatchValidator, strongPasswordValidator } from '../../../shared/password-validator';
+import { NgIcon } from '@ng-icons/core';
+import { AuthService } from '../../../services/auth.service';
+import { ResetPasswordRequest } from '../../../model/auth.model';
 
 @Component({
   selector: 'app-reset-password',
+  standalone: true,
   imports: [
     ReactiveFormsModule,
     NgIcon
@@ -12,27 +16,62 @@ import {NgIcon} from '@ng-icons/core';
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.css',
 })
-export class ResetPassword {
-  hideNewPassword: boolean = true;
-  hideConfirmedPassword: boolean = true;
+export class ResetPassword implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+
+  hideNewPassword = true;
+  hideConfirmedPassword = true;
+  token: string | null = null;
+
+  errorMessage = signal<string>('');
+  successMessage = signal<string>('');
 
   resetPasswordForm = new FormGroup({
     newPassword: new FormControl('', [Validators.required, strongPasswordValidator]),
     confirmedPassword: new FormControl('', [Validators.required])
-  }, { validators: passwordMatchValidator })
+  }, { validators: passwordMatchValidator });
+
+  ngOnInit(): void {
+    this.token = this.route.snapshot.queryParamMap.get('token');
+
+    if (!this.token) {
+      this.errorMessage.set('Invalid or missing reset token. Please request a new link.');
+    }
+  }
 
   onSubmit() {
-    if (this.resetPasswordForm.valid) {
-      const formData = this.resetPasswordForm.value;
-      alert('Password successfully reset to: ' + formData.newPassword);
-    } else {
-      if (this.resetPasswordForm.errors?.['passwordMismatch']) {
-        alert('Passwords do not match!');
-      } else if (this.resetPasswordForm.get('newPassword')?.errors?.['weakPassword']) {
-        alert('Password is too weak!');
-      } else {
-        alert('Please fill in all fields correctly!');
-      }
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    if (this.resetPasswordForm.invalid) {
+      this.resetPasswordForm.markAllAsTouched();
+      return;
     }
+
+    if (!this.token) {
+      this.errorMessage.set('No token found. Cannot reset password.');
+      return;
+    }
+
+    const request: ResetPasswordRequest = {
+      token: this.token,
+      password: this.resetPasswordForm.value.newPassword!
+    };
+
+    this.authService.resetPassword(request).subscribe({
+      next: () => {
+        this.successMessage.set('Your password has been successfully reset.');
+        setTimeout(() => this.router.navigate(['/login']), 1000);
+      },
+      error: (err) => {
+        this.errorMessage.set(
+          err.status === 400
+            ? 'The link has expired or is invalid. Please request a new one.'
+            : 'Something went wrong. Please try again later.'
+        );
+      }
+    });
   }
 }

@@ -1,5 +1,7 @@
 package com.tricolori.backend.service;
 
+import com.tricolori.backend.dto.profile.DriverDto;
+import com.tricolori.backend.dto.profile.PassengerDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -93,7 +96,7 @@ public class RideService {
 
         // state validation (optional but recommended)
         if (ride.getStatus() != RideStatus.ONGOING) {
-            throw new IllegalStateException("ride is not in progress");
+            throw new IllegalStateException("Ride is not in progress");
         }
 
         // complete ride
@@ -151,7 +154,7 @@ public class RideService {
                         : null;
 
         VehicleLocationResponse currentLocation =
-                ride.getDriver() != null && ride.getDriver().getVehicle().getLocation() != null
+                ride.getDriver() != null && ride.getDriver().getVehicle() != null && ride.getDriver().getVehicle().getLocation() != null
                         ? new VehicleLocationResponse(
                         ride.getDriver().getVehicle().getId(),
                         ride.getDriver().getVehicle().getModel(),
@@ -162,18 +165,48 @@ public class RideService {
                 )
                         : null;
 
+        // Map route to DetailedRouteResponse
+        DetailedRouteResponse routeResponse = ride.getRoute() != null
+                ? mapRouteToDetailedResponse(ride.getRoute())
+                : null;
+
+        // Map driver to DTO
+        DriverDto driverDto = ride.getDriver() != null
+                ? mapDriverToDto(ride.getDriver())
+                : null;
+
+        // Map passengers to DTOs
+        List<PassengerDto> passengerDtos = null;
+
+        if (ride.getPassengers() != null && !ride.getPassengers().isEmpty()) {
+            // Get the first passenger's ID (will be marked as main)
+            Long mainId = ride.getPassengers().get(0).getId();
+
+            // Map passengers and mark the main one
+            passengerDtos = ride.getPassengers().stream()
+                    .map(passenger -> {
+                        PassengerDto dto = mapPassengerToDto(passenger);
+                        if (passenger.getId().equals(mainId)) {
+                            dto.setMainPassenger(true);
+                        }
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+
         return new RideTrackingResponse(
                 ride.getId(),
                 ride.getStatus().name(),
                 currentLocation,
-                null,               // route dto (no mapper yet)
+                routeResponse,
                 estimatedMinutes,
                 estimatedArrival,
                 ride.getScheduledFor(),
                 ride.getStartTime(),
                 ride.getPrice(),
-                null,               // driver dto (no mapper yet)
-                null                // passenger dto list (no mapper yet)
+                driverDto,
+                passengerDtos
         );
     }
 
@@ -239,8 +272,45 @@ public class RideService {
         return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
     }
 
+    // ================= location updates =================
 
+    @Transactional
+    public void updateVehicleLocation(Long rideId, Double latitude, Double longitude) {
+        Ride ride = getRideOrThrow(rideId);
 
+        if (ride.getDriver() == null || ride.getDriver().getVehicle() == null) {
+            throw new IllegalStateException("Ride does not have an assigned vehicle");
+        }
+
+        Vehicle vehicle = ride.getDriver().getVehicle();
+        Location location = vehicle.getLocation();
+
+        // Create location if it doesn't exist
+        if (location == null) {
+            location = new Location();
+            vehicle.setLocation(location);
+        }
+
+        // Update coordinates
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+
+        // Save the ride (vehicle location is persisted via cascade)
+        rideRepository.save(ride);
+    }
+
+    @Transactional
+    public void updatePassengerLocation(Long rideId, Double latitude, Double longitude) {
+        Ride ride = getRideOrThrow(rideId);
+
+        System.out.println(String.format(
+                "Passenger location updated for ride %d: lat=%.6f, lng=%.6f at %s",
+                rideId,
+                latitude,
+                longitude,
+                LocalDateTime.now()
+        ));
+    }
 
     // ================= ride actions =================
 
@@ -428,5 +498,72 @@ public class RideService {
 
     private Integer round(Double value) {
         return value != null ? (int) Math.round(value) : null;
+    }
+
+    private DetailedRouteResponse mapRouteToDetailedResponse(Route route) {
+        if (route == null) return null;
+
+        List<Stop> stops = route.getStops();
+        if (stops == null || stops.isEmpty()) {
+            return null;
+        }
+
+        Stop pickupStop = stops.get(0);
+        Stop destinationStop = stops.get(stops.size() - 1);
+
+        // Get intermediate stops (everything between pickup and destination)
+        List<Stop> intermediateStops = stops.size() > 2
+                ? stops.subList(1, stops.size() - 1)
+                : null;
+
+        DetailedRouteResponse response = new DetailedRouteResponse();
+        response.setId(route.getId());
+        response.setPickupAddress(pickupStop.getAddress());
+        response.setPickupLatitude(pickupStop.getLocation().getLatitude());
+        response.setPickupLongitude(pickupStop.getLocation().getLongitude());
+        response.setDestinationAddress(destinationStop.getAddress());
+        response.setDestinationLatitude(destinationStop.getLocation().getLatitude());
+        response.setDestinationLongitude(destinationStop.getLocation().getLongitude());
+        response.setStops(intermediateStops);
+        response.setDistanceKm(route.getDistanceKm());
+        response.setEstimatedTimeSeconds(Math.toIntExact(route.getEstimatedTimeSeconds()));
+
+        return response;
+    }
+
+    private DriverDto mapDriverToDto(Driver driver) {
+        if (driver == null) return null;
+
+        // Calculate average rating from reviews (adjust based on your review system)
+        Double rating = null;
+        try {
+            rating = reviewService.getAverageDriverRating(driver.getId());
+        } catch (Exception e) {
+            // If rating calculation fails, just use null
+            rating = null;
+        }
+
+        return new DriverDto(
+                driver.getId(),
+                driver.getFirstName(),
+                driver.getLastName(),
+                driver.getEmail(),
+                driver.getPhoneNum(),
+                driver.getPfpUrl(),
+                rating
+        );
+    }
+
+    private PassengerDto mapPassengerToDto(Passenger passenger) {
+        if (passenger == null) return null;
+
+        return new PassengerDto(
+                passenger.getId(),
+                passenger.getFirstName(),
+                passenger.getLastName(),
+                passenger.getEmail(),
+                passenger.getPhoneNum(),
+                false
+        );
     }
 }

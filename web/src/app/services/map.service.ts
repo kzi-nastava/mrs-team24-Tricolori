@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
+import { Vehicle } from '../model/vehicle.model';
 
-
+/**
+ * Custom Icons for Route Endpoints
+ */
 const pickupIcon = L.divIcon({
   className: 'custom-marker-icon',
   html: `<div style="background: #00acc1; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
@@ -16,7 +19,6 @@ const destinationIcon = L.divIcon({
   iconAnchor: [11, 11]
 });
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -25,10 +27,10 @@ export class MapService {
   private routeLayer?: L.Polyline;
   private pickupMarker?: L.Marker;
   private destinationMarker?: L.Marker;
-  private vehicleMarker?: L.Marker;
+  private vehicleLayer: L.LayerGroup = L.layerGroup(); // LayerGroup to manage multiple vehicle markers efficiently
 
   /**
-   * Initializes the map on the given element
+   * Initializes the Leaflet map instance
    */
   initMap(elementId: string, center: [number, number] = [45.2671, 19.8335], zoom: number = 13): L.Map {
     this.map = L.map(elementId, { center, zoom });
@@ -39,141 +41,128 @@ export class MapService {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
+    // Add the vehicle group to the map immediately
+    this.vehicleLayer.addTo(this.map);
+
     return this.map;
   }
 
   /**
-   * Draws a route with pickup and destination markers
-   * @param routeGeometry - Not used for frontend calculation
-   * @param pickup - Pickup coordinates [lat, lng]
-   * @param destination - Destination coordinates [lat, lng]
-   * @param routeCoordinates - Route coordinates from OSRM
+   * Clears the current vehicle layer and populates it with new markers
+   * Ideal for showing all available/active vehicles on a dashboard
+   */
+  updateVehicleMarkers(vehicles: Vehicle[]): void {
+    if (!this.map) return;
+
+    this.vehicleLayer.clearLayers();
+
+    vehicles.forEach(vehicle => {
+      const isOccupied = !vehicle.available;
+      const icon = this.createVehicleIcon(isOccupied);
+
+      const marker = L.marker([vehicle.latitude, vehicle.longitude], {
+        icon: icon,
+        zIndexOffset: 1000
+      });
+
+      const statusText = vehicle.available ? 'Available' : 'Occupied';
+      marker.bindPopup(`
+        <div style="font-family: sans-serif;">
+          <strong>${vehicle.model}</strong><br>
+          Plate: ${vehicle.plateNum}<br>
+          Status: <span style="color: ${vehicle.available ? '#10b981' : '#dc2626'}">${statusText}</span>
+        </div>
+      `);
+
+      this.vehicleLayer.addLayer(marker);
+    });
+  }
+
+  /**
+   * Draws a route line and places pickup/destination pins
    */
   drawRoute(
-    routeGeometry: string,
+    routeGeometry: string, // Kept for API compatibility
     pickup: [number, number],
     destination: [number, number],
     routeCoordinates?: L.LatLng[]
   ): void {
+    this.clearRouteAndMarkers();
 
-    this.clearMap();
-
-    // Add markers
     this.pickupMarker = L.marker(pickup, { icon: pickupIcon }).addTo(this.map);
     this.destinationMarker = L.marker(destination, { icon: destinationIcon }).addTo(this.map);
 
-    // Draw route line if coordinates provided
     if (routeCoordinates && routeCoordinates.length > 0) {
-      this.routeLayer = L.polyline(routeCoordinates, { color: '#00acc1', weight: 5, opacity: 1 }).addTo(this.map);
+      this.routeLayer = L.polyline(routeCoordinates, {
+        color: '#00acc1',
+        weight: 5,
+        opacity: 0.8
+      }).addTo(this.map);
     }
 
-    // Fit bounds to show all markers and route
     const bounds = L.latLngBounds([pickup, destination]);
     this.map.fitBounds(bounds.pad(0.2));
   }
 
   /**
-   * Adds or updates vehicle marker on the map
-   * @param position - Current vehicle position [lat, lng]
-   * @param isPanic - Whether the vehicle is in panic mode
+   * Helper to generate consistent vehicle DivIcons
    */
-  addOrUpdateVehicleMarker(position: [number, number], isPanic: boolean = false): void {
-    const vehicleIcon = this.createVehicleIcon(isPanic);
-
-    if (this.vehicleMarker) {
-      this.vehicleMarker.setLatLng(position);
-      this.vehicleMarker.setIcon(vehicleIcon);
-    } else {
-      this.vehicleMarker = L.marker(position, {
-        icon: vehicleIcon,
-        zIndexOffset: 1000
-      }).addTo(this.map);
-    }
-  }
-
-  /**
-   * Updates vehicle marker to panic/emergency state
-   */
-  setVehiclePanicState(isPanic: boolean): void {
-    if (this.vehicleMarker) {
-      const panicIcon = this.createVehicleIcon(isPanic);
-      this.vehicleMarker.setIcon(panicIcon);
-    }
-  }
-
-  /**
-   * Creates a vehicle icon
-   * @param isPanic - Whether to create panic (red) or normal (green) icon
-   */
-  private createVehicleIcon(isPanic: boolean): L.DivIcon {
-    const bgColor = isPanic ? '#dc2626' : '#10b981';
-    const pulseAnimation = isPanic ? 'animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;' : '';
+  private createVehicleIcon(isAlertState: boolean): L.DivIcon {
+    const bgColor = isAlertState ? '#dc2626' : '#10b981';
+    const animation = isAlertState ? 'animation: pulse 1.5s infinite;' : '';
 
     return L.divIcon({
       className: 'vehicle-marker',
       html: `
         <style>
           @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
           }
         </style>
-        <div style="background: ${bgColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; ${pulseAnimation}">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="12" height="12">
+        <div style="background: ${bgColor}; width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; ${animation}">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="14" height="14">
             <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
           </svg>
         </div>`,
-      iconSize: [26, 26],
-      iconAnchor: [13, 13]
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
     });
   }
 
   /**
-   * Centers the map on given coordinates
+   * Resets the view to specific coordinates
    */
   centerMap(position: [number, number], zoom?: number): void {
-    if (zoom) {
-      this.map.setView(position, zoom);
-    } else {
-      this.map.panTo(position);
-    }
+    if (!this.map) return;
+    zoom ? this.map.setView(position, zoom) : this.map.panTo(position);
   }
 
   /**
-   * Clears all markers and routes from the map
+   * Removes route-related layers but keeps the vehicle layer intact
    */
-  clearMap(): void {
-    if (this.pickupMarker) {
-      this.map.removeLayer(this.pickupMarker);
-      this.pickupMarker = undefined;
-    }
-    if (this.destinationMarker) {
-      this.map.removeLayer(this.destinationMarker);
-      this.destinationMarker = undefined;
-    }
-    if (this.routeLayer) {
-      this.map.removeLayer(this.routeLayer);
-      this.routeLayer = undefined;
-    }
-    if (this.vehicleMarker) {
-      this.map.removeLayer(this.vehicleMarker);
-      this.vehicleMarker = undefined;
-    }
+  clearRouteAndMarkers(): void {
+    if (!this.map) return;
+    if (this.pickupMarker) this.map.removeLayer(this.pickupMarker);
+    if (this.destinationMarker) this.map.removeLayer(this.destinationMarker);
+    if (this.routeLayer) this.map.removeLayer(this.routeLayer);
+
+    this.pickupMarker = undefined;
+    this.destinationMarker = undefined;
+    this.routeLayer = undefined;
   }
 
   /**
-   * Destroys the map instance
+   * Fully destroys the map instance (useful for OnDestroy)
    */
   destroyMap(): void {
     if (this.map) {
-      this.clearMap();
+      this.vehicleLayer.clearLayers();
       this.map.remove();
     }
   }
 
-  /**
-   * Gets the current map instance
-   */
   getMap(): L.Map {
     return this.map;
   }

@@ -3,6 +3,7 @@ package com.tricolori.backend.controller;
 import com.tricolori.backend.dto.ride.OrderRequest;
 
 import com.tricolori.backend.dto.ride.*;
+import com.tricolori.backend.entity.Location;
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.service.AuthService;
 import com.tricolori.backend.service.InconsistencyReportService;
@@ -86,12 +87,15 @@ public class RideController {
         return ResponseEntity.ok(rideService.stopRide(id, person, request));
     }
 
+    // passenger or driver can track current ride
     @GetMapping("/{id}/track")
+    @PreAuthorize("hasAnyRole('PASSENGER', 'DRIVER')")
     public ResponseEntity<RideTrackingResponse> trackRide(@PathVariable Long id) {
         RideTrackingResponse response = rideService.trackRide(id);
         return ResponseEntity.ok(response);
     }
 
+    // driver sends data as the ride is finished
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<Void> completeRide(@PathVariable Long id) {
@@ -178,11 +182,24 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RideStatusResponse> getRideStatus(@PathVariable Long id) {
-        RideStatusResponse response = rideService.getRideStatus(id);
-        return ResponseEntity.ok(response);
+    @PutMapping("/{rideId}/passenger-location")
+    public ResponseEntity<Void> updatePassengerLocation(
+            @PathVariable Long rideId,
+            @Valid @RequestBody Location location
+    ) {
+        rideService.updatePassengerLocation(rideId, location.getLatitude(), location.getLongitude());
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{rideId}/vehicle-location")
+    public ResponseEntity<Void> updateVehicleLocation(
+            @PathVariable Long rideId,
+            @Valid @RequestBody Location location
+    ) {
+        rideService.updateVehicleLocation(rideId, location.getLatitude(), location.getLongitude());
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/current/driver/{driverId}")

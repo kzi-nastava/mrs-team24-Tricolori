@@ -68,6 +68,74 @@ public class EmailService {
         }
     }
 
+    public void sendPasswordResetEmail(String toEmail, String firstName, String token) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Reset Your Password - Cuber App");
+
+            String resetLink = frontendUrl + "/reset-password?token=" + token;
+
+            String htmlContent = buildPasswordResetEmailHtml(firstName, resetLink);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Password reset email sent to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            log.error("Failed to send password reset email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send password reset email", e);
+        }
+    }
+
+    private String buildPasswordResetEmailHtml(String firstName, String resetLink) {
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #00acc1 0%%, #0097a7 100%%); 
+                          color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+                .button { display: inline-block; padding: 12px 30px; background: #00acc1; 
+                          color: white; text-decoration: none; border-radius: 5px; 
+                          font-weight: bold; margin: 20px 0; }
+                .button:hover { background: #008ba3; }
+                .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Password Reset Request</h1>
+                </div>
+                <div class="content">
+                    <h2>Hi %s,</h2>
+                    <p>We received a request to reset the password for your Cuber App account.</p>
+                    <p>No worries, it happens! Click the button below to choose a new password:</p>
+                    <center>
+                        <a href="%s" class="button">Reset My Password</a>
+                    </center>
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; color: #00acc1;">%s</p>
+                    <p>If you didn't request a password reset, you can safely ignore this email. Your password will remain the same.</p>
+                    <p><strong>Note:</strong> This link is valid for only 60 minutes for security reasons.</p>
+                    <p>Best regards,<br>The Cuber App Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated security email. Please do not reply to this message.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """.formatted(firstName, resetLink, resetLink);
+    }
+
     private String buildDriverRegistrationEmailHtml(String firstName, String activationLink) {
     return """
         <!DOCTYPE html>
