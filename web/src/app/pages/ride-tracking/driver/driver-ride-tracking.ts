@@ -98,12 +98,13 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Get ride ID from route params
+    // Get ride ID from route params, default to 6 if not provided
     this.route.params.subscribe(params => {
-      this.rideId = +params['id'];
-      if (this.rideId) {
-        this.loadRideData(this.rideId);
-      }
+      console.log('🚀 Component initialized');
+      console.log('📋 Route params:', params);
+      this.rideId = +params['id'] || 6;
+      console.log('🎯 Using ride ID:', this.rideId);
+      this.loadRideData(this.rideId);
     });
   }
 
@@ -111,13 +112,39 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    * Load ride data from backend
    */
   private loadRideData(rideId: number): void {
+    console.log('🔍 Loading ride data for ride ID:', rideId);
+    
     this.rideService.trackRide(rideId).subscribe({
       next: (response) => {
+        console.log('✅ Received ride tracking response:', response);
+        console.log('📍 Response details:');
+        console.log('  - rideId:', response.rideId);
+        console.log('  - status:', response.status);
+        console.log('  - route:', response.route);
+        console.log('  - currentLocation:', response.currentLocation);
+        console.log('  - driver:', response.driver);
+        console.log('  - passengers:', response.passengers);
+        console.log('  - estimatedTimeMinutes:', response.estimatedTimeMinutes);
+        console.log('  - price:', response.price);
+        
         // Extract pickup and destination from route DTO
         const route = response.route;
+        console.log('🗺️ Route data:', {
+          pickupAddress: route?.pickupAddress,
+          destinationAddress: route?.destinationAddress,
+          distanceKm: route?.distanceKm,
+          estimatedTimeSeconds: route?.estimatedTimeSeconds
+        });
+
+        // If route is null (finished ride), load full details instead
+        if (!route && (response.status === 'FINISHED' || response.status === 'CANCELLED_BY_DRIVER' || response.status === 'CANCELLED_BY_PASSENGER')) {
+          console.log('⚠️ Route is null, loading full ride details instead...');
+          this.loadFinishedRideDetails(rideId, response);
+          return;
+        }
 
         // Update ride details with real data from RideTrackingResponse
-        this.rideDetails.set({
+        const rideDetails = {
           id: response.rideId,
           pickup: route?.pickupAddress || 'Pickup location',
           destination: route?.destinationAddress || 'Destination',
@@ -140,26 +167,101 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
             phone: p.phoneNumber,
             email: p.email || ''
           })) || []
-        });
+        };
+        
+        console.log('🚗 Mapped ride details:', rideDetails);
+        this.rideDetails.set(rideDetails);
 
         // Set initial values
-        this.remainingDistance.set(route?.distanceKm || 0);
-        this.estimatedArrival.set(response.estimatedTimeMinutes || 0);
+        const remainingDist = route?.distanceKm || 0;
+        const estimatedArr = response.estimatedTimeMinutes || 0;
+        
+        console.log('⏱️ Setting initial values:');
+        console.log('  - remainingDistance:', remainingDist);
+        console.log('  - estimatedArrival:', estimatedArr);
+        
+        this.remainingDistance.set(remainingDist);
+        this.estimatedArrival.set(estimatedArr);
 
         // Update current vehicle location if available
         if (response.currentLocation) {
-          this.vehicleLocation.set({
+          const vehicleLoc = {
             lat: response.currentLocation.latitude,
             lng: response.currentLocation.longitude
-          });
+          };
+          console.log('📍 Setting vehicle location:', vehicleLoc);
+          this.vehicleLocation.set(vehicleLoc);
+        } else {
+          console.warn('⚠️ No current location in response');
         }
 
         // Initialize map after data is loaded
+        console.log('🗺️ Initializing map...');
         setTimeout(() => this.initMap(), 100);
       },
       error: (err) => {
-        console.error('Failed to load ride data:', err);
+        console.error('❌ Failed to load ride data:', err);
+        console.error('Error details:', {
+          status: err.status,
+          message: err.message,
+          error: err.error
+        });
         // Initialize map with default/mock data as fallback
+        setTimeout(() => this.initMap(), 100);
+      }
+    });
+  }
+
+  /**
+   * Load full ride details for finished rides
+   */
+  private loadFinishedRideDetails(rideId: number, trackingResponse: any): void {
+    console.log('📦 Loading full ride details for finished ride...');
+    
+    this.rideService.getDriverRideDetail(rideId).subscribe({
+      next: (detail) => {
+        console.log('✅ Received full ride details:', detail);
+        
+        const rideDetails = {
+          id: detail.id,
+          pickup: detail.pickupAddress,
+          destination: detail.dropoffAddress,
+          pickupCoords: [detail.pickupLatitude, detail.pickupLongitude],
+          destinationCoords: [detail.dropoffLatitude, detail.dropoffLongitude],
+          driverName: detail.driverName,
+          vehicleType: detail.vehicleModel,
+          licensePlate: detail.vehicleLicensePlate,
+          totalDistance: detail.distance,
+          estimatedDuration: detail.duration,
+          passengers: [{
+            id: 0,
+            name: detail.passengerName,
+            phone: detail.passengerPhone,
+            email: ''
+          }]
+        };
+        
+        console.log('🚗 Mapped finished ride details:', rideDetails);
+        this.rideDetails.set(rideDetails);
+
+        // For finished rides, set remaining values to 0
+        this.remainingDistance.set(0);
+        this.estimatedArrival.set(0);
+
+        // Use current location from tracking response if available
+        if (trackingResponse.currentLocation) {
+          this.vehicleLocation.set({
+            lat: trackingResponse.currentLocation.latitude,
+            lng: trackingResponse.currentLocation.longitude
+          });
+        }
+
+        // Initialize map
+        console.log('🗺️ Initializing map for finished ride...');
+        setTimeout(() => this.initMap(), 100);
+      },
+      error: (err) => {
+        console.error('❌ Failed to load finished ride details:', err);
         setTimeout(() => this.initMap(), 100);
       }
     });
@@ -292,7 +394,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     // Simulate vehicle movement every 1 second for faster testing
     this.updateInterval = setInterval(() => {
       this.updateVehiclePosition();
-    }, 1000);
+    }, 3000);
   }
 
   private stopTracking(): void {
