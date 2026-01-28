@@ -237,8 +237,45 @@ public class RideService {
         return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
     }
 
+    // ================= location updates =================
 
+    @Transactional
+    public void updateVehicleLocation(Long rideId, Double latitude, Double longitude) {
+        Ride ride = getRideOrThrow(rideId);
 
+        if (ride.getDriver() == null || ride.getDriver().getVehicle() == null) {
+            throw new IllegalStateException("Ride does not have an assigned vehicle");
+        }
+
+        Vehicle vehicle = ride.getDriver().getVehicle();
+        Location location = vehicle.getLocation();
+
+        // Create location if it doesn't exist
+        if (location == null) {
+            location = new Location();
+            vehicle.setLocation(location);
+        }
+
+        // Update coordinates
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+
+        // Save the ride (vehicle location is persisted via cascade)
+        rideRepository.save(ride);
+    }
+
+    @Transactional
+    public void updatePassengerLocation(Long rideId, Double latitude, Double longitude) {
+        Ride ride = getRideOrThrow(rideId);
+
+        System.out.println(String.format(
+                "Passenger location updated for ride %d: lat=%.6f, lng=%.6f at %s",
+                rideId,
+                latitude,
+                longitude,
+                LocalDateTime.now()
+        ));
+    }
 
     // ================= ride actions =================
 
