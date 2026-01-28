@@ -104,9 +104,9 @@ export class DriverWaitingComponent implements OnInit {
     this.stopCountdown();
     this.showRideOfferModal.set(false);
     
-    // Navigate to ride tracking page as a child of home
+    // Navigate to ride tracking page (separate page, not child of home)
     const rideId = this.rideOffer().id;
-    this.router.navigate(['/driver/home/ride-tracking', rideId]);
+    this.router.navigate(['/driver/ride-tracking', rideId]);
   }
 
   declineRide(): void {
