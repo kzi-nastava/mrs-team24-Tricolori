@@ -11,6 +11,7 @@ import {
 } from '@ng-icons/heroicons/outline';
 import {CancelRideModalComponent} from '../cancel-ride-modal/cancel-ride-modal';
 import {RideService} from '../../../../../services/ride.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-driver-ride-assignment',
@@ -24,12 +25,13 @@ import {RideService} from '../../../../../services/ride.service';
 export class DriverRideAssignment {
   showCancelModal = signal(false);
   rideService = inject(RideService);
+  private router = inject(Router);
   errorMessage = signal<string | null>(null);
 
   activeRide = signal({
     id: 1,
-    pickup: 'Kraljev park',
-    destination: 'Jevrejska 23b',
+    pickup: 'Trg Slobode 1',
+    destination: 'Kisačka 71',
     eta: 5
   });
 
@@ -57,6 +59,17 @@ export class DriverRideAssignment {
   }
 
   handleStartRide() {
-    console.log('Starting the ride...');
+    this.errorMessage.set(null);
+
+    this.rideService.startRide(this.activeRide().id).subscribe({
+      next: () => {
+        console.log("Ride started successfully.");
+        this.router.navigate(['/driver/ride-tracking', this.activeRide().id]);
+      },
+      error: (err) => {
+        // console.error("Error cancelling the ride", err);
+        this.router.navigate(['/driver/ride-tracking', this.activeRide().id]);
+      }
+    });
   }
 }

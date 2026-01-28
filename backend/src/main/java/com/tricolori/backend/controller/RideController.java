@@ -223,8 +223,10 @@ public class RideController {
         return ResponseEntity.ok(request.toString());
     }
 
-    @PutMapping("/{id}/start")
-    public ResponseEntity<Void> startRide(@PathVariable Long id) {
+    @PutMapping("/{rideId}/start")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<Void> startRide(@PathVariable Long rideId) {
+        rideService.startRide(rideId);
         return ResponseEntity.ok().build();
     }
 }
