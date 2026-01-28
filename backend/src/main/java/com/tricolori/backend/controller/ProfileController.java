@@ -79,25 +79,4 @@ public class ProfileController {
         return ResponseEntity.ok(Map.of("url", url));
     }
 
-    @PutMapping("/request-changes")
-    @PreAuthorize("hasRole('DRIVER')")
-    public ResponseEntity<String> requestChanges(
-        @AuthenticationPrincipal Person user,
-        @RequestBody ProfileRequest request
-    ) {
-        Person dbPerson = personRepository.findById(user.getId())
-            .orElseThrow(() -> new PersonNotFoundException("Person not found"));
-
-        Driver driver = driverRepository.findById(dbPerson.getId())
-            .orElseThrow(() -> new PersonNotFoundException("Driver not found"));
-
-        if (requestService.driverHasPendingRequest(driver)) {
-            throw new DriverHasPendingProfileRequestException();
-        }
-        
-        requestService.createRequest(driver, request);
-        return ResponseEntity.ok().build();
-    }
-
-    
 }

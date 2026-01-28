@@ -3,29 +3,22 @@ import { ProfileService } from '../../../services/profile.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileResponse } from '../../../model/profile.model';
 import { NgIcon } from '@ng-icons/core';
-import { environment } from '../../../../environments/environment';
 import { PfpPicker } from '../../../components/pfp-picker/pfp-picker';
 
 @Component({
   selector: 'app-base-profile',
-  imports: [
-    ReactiveFormsModule,
-    NgIcon,
-    PfpPicker
-  ],
-  templateUrl: './base-profile.html',
-  styleUrl: './base-profile.css',
+  standalone: true,
+  imports: [ReactiveFormsModule, NgIcon, PfpPicker],
+  templateUrl: './base-profile.html'
 })
 export class BaseProfile implements OnInit {
   protected profileService = inject(ProfileService);
   protected formBuilder = inject(FormBuilder);
 
   personalForm: FormGroup;
-
   userProfile = signal<ProfileResponse | null>(null);
   selectedFile = signal<File | null>(null);
   hasChanges = signal(false);
-
   pfpPicker = viewChild<PfpPicker>('pfpPicker');
 
   constructor() {
@@ -34,49 +27,45 @@ export class BaseProfile implements OnInit {
       lastName: ['', [Validators.required]],
       homeAddress: ['', [Validators.required]],
       phoneNumber: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
+      email: [{value: '', disabled: true}, [Validators.required, Validators.email]],
       pfp: ['']
     });
 
-    this.personalForm.valueChanges.subscribe(() => {
-      this.checkChanges();
-    });
+    this.personalForm.valueChanges.subscribe(() => this.checkChanges());
   }
 
   ngOnInit(): void {
-    this.profileService.getMyProfile().subscribe((profile: ProfileResponse) => {
-      // TODO: remove this test data:
-      profile.activeHours = 3;
-
+    this.profileService.getMyProfile().subscribe((profile) => {
       this.userProfile.set(profile);
-      this.personalForm.patchValue(profile, {emitEvent: false});
+      this.personalForm.patchValue(profile, { emitEvent: false });
       this.hasChanges.set(false);
     });
   }
 
   updateProfile() {
     if (this.personalForm.invalid || !this.hasChanges()) return;
-
-    // Disable potential multiple requests immediately:
     this.hasChanges.set(false);
-    const fileToUpload = this.selectedFile();
 
-    // Check for pfp selection:
-    if (fileToUpload) {
+    if (this.selectedFile()) {
       const formData = new FormData();
-      formData.append("pfp", fileToUpload);
-
+      formData.append("pfp", this.selectedFile()!);
       this.profileService.uploadPfp(formData).subscribe({
-        next: (response) => {
-          this.personalForm.patchValue({ pfp: response.url }, {emitEvent: false});
-          // Create request:
+        next: (res) => {
+          this.personalForm.patchValue({ pfp: res.url }, { emitEvent: false });
           this.sendUpdateRequest();
-        },
-        error: err => console.error("Error: ", err)
+        }
       });
     } else {
       this.sendUpdateRequest();
     }
+  }
+
+  protected sendUpdateRequest() {
+    // DIREKTAN UPDATE (za putnike/obične usere)
+    this.profileService.updateProfile(this.personalForm.getRawValue()).subscribe((updated) => {
+      this.userProfile.set(updated);
+      this.hasChanges.set(false);
+    });
   }
 
   handleNewFile(file: File) {
@@ -87,35 +76,11 @@ export class BaseProfile implements OnInit {
   private checkChanges() {
     const original = this.userProfile();
     if (!original) return;
-
-    const current = this.personalForm.value;
-
-    const textChanged =
-      current.firstName   != original.firstName ||
-      current.lastName    != original.lastName ||
-      current.homeAddress != original.homeAddress ||
-      current.phoneNumber != original.phoneNumber ||
-      current.email       != original.email
-
-    const fileChanged = this.selectedFile() !== null;
-
-    this.hasChanges.set(textChanged || fileChanged);
-  }
-
-  protected sendUpdateRequest() {
-    this.profileService.updateProfile(this.personalForm.value).subscribe({
-      next: (updatedProfile) => {
-        this.userProfile.set(updatedProfile);
-        this.personalForm.patchValue(updatedProfile, {emitEvent: false});
-
-        // Reset everything:
-        this.selectedFile.set(null);
-        this.pfpPicker()?.reset();
-        this.hasChanges.set(false);
-      },
-      error: (err) => {
-        console.error("Error: ", err);
-      },
-    })
+    const current = this.personalForm.getRawValue();
+    const textChanged = current.firstName !== original.firstName || 
+                        current.lastName !== original.lastName ||
+                        current.homeAddress !== original.homeAddress ||
+                        current.phoneNumber !== original.phoneNumber;
+    this.hasChanges.set(textChanged || !!this.selectedFile());
   }
 }
