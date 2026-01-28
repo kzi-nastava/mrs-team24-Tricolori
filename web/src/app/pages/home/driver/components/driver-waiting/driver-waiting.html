@@ -48,8 +48,8 @@
 
   <!-- Ride Offer Modal -->
   @if (showRideOfferModal()) {
-    <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-      <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-slideUp">
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 pt-20 animate-fadeIn">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden animate-slideUp flex flex-col">
         
         <!-- Modal Header -->
         <div class="bg-gradient-to-r from-[#00acc1] to-[#00838f] p-6 text-white relative">
@@ -97,7 +97,7 @@
         </div>
 
         <!-- Modal Body -->
-        <div class="p-6 space-y-5">
+        <div class="p-6 space-y-5 overflow-y-auto flex-1">
           
           <!-- Passenger Info -->
           <div class="bg-gray-50 rounded-xl p-4">
@@ -175,7 +175,7 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="p-6 pt-0 flex gap-3">
+        <div class="p-6 pt-0 flex gap-3 flex-shrink-0">
           <button
             (click)="declineRide()"
             class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
