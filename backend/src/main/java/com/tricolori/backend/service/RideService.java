@@ -15,6 +15,7 @@ import com.tricolori.backend.repository.RideRepository;
 import com.tricolori.backend.repository.VehicleSpecificationRepository;
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.exception.CancelRideExpiredException;
+import com.tricolori.backend.exception.ForeignRideException;
 import com.tricolori.backend.exception.PersonNotFoundException;
 import com.tricolori.backend.exception.RideAlreadyStartedException;
 import com.tricolori.backend.exception.RideNotFoundException;
@@ -315,10 +316,14 @@ public class RideService {
     }
 
     @Transactional
-    public void startRide(Long rideId) {
+    public void startRide(Person driver, Long rideId) {
         Ride ride = rideRepository.findById(rideId).orElseThrow(
             () -> {throw new RideNotFoundException("Can't find a ride to start.");}
         );
+
+        if (ride.getDriver().getId() != driver.getId()) {
+            throw new ForeignRideException("Only a driver of this ride can start it.");
+        }
 
         if (ride.getStatus() == RideStatus.ONGOING || ride.getStartTime() != null)
             throw new RideAlreadyStartedException();

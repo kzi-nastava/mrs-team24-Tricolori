@@ -225,8 +225,11 @@ public class RideController {
 
     @PutMapping("/{rideId}/start")
     @PreAuthorize("hasRole('DRIVER')")
-    public ResponseEntity<Void> startRide(@PathVariable Long rideId) {
-        rideService.startRide(rideId);
+    public ResponseEntity<Void> startRide(
+        @AuthenticationPrincipal Person driver,
+        @PathVariable Long rideId
+    ) {
+        rideService.startRide(driver, rideId);
         return ResponseEntity.ok().build();
     }
 }
