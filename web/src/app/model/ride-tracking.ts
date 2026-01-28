@@ -1,3 +1,5 @@
+import { Stop } from "./route";
+
 /**
  * Vehicle location information
  * Matches: com.tricolori.backend.dto.vehicle.VehicleLocationResponse
@@ -23,18 +25,9 @@ export interface RouteDto {
   destinationAddress: string;
   destinationLatitude: number;
   destinationLongitude: number;
-  stops?: StopDto[];  // Intermediate stops (optional)
+  stops?: Stop[];  // Intermediate stops (optional)
   distanceKm: number;
   estimatedTimeSeconds: number;
-}
-
-/**
- * Stop/waypoint information
- */
-export interface StopDto {
-  address: string;
-  latitude: number;
-  longitude: number;
 }
 
 /**
