@@ -18,7 +18,7 @@ interface Ride {
   startDate: string;
   endDate: string;
   price: number;
-  status: 'Completed' | 'Cancelled' | 'Pending' | 'In Progress';
+  status: 'Completed' | 'Cancelled' | 'Scheduled' | 'In Progress';
   startTime: string;
   endTime: string;
   duration: string;
@@ -350,7 +350,7 @@ export class DriverHistory implements OnInit {
     return `${pickup || 'Unknown'} → ${destination || 'Unknown'}`;
   }
 
-  private mapRideStatus(status: string): 'Completed' | 'Cancelled' | 'Pending' | 'In Progress' {
+  private mapRideStatus(status: string): 'Completed' | 'Cancelled' | 'Scheduled' | 'In Progress' {
     switch (status) {
       case 'COMPLETED':
       case 'FINISHED':
@@ -359,8 +359,10 @@ export class DriverHistory implements OnInit {
         return 'Cancelled';
       case 'IN_PROGRESS':
         return 'In Progress';
+      case 'ONGOING':
+        return 'In Progress';
       default:
-        return 'Pending';
+        return 'Scheduled';
     }
   }
 
@@ -370,7 +372,7 @@ export class DriverHistory implements OnInit {
         return 'bg-green-100 text-green-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
-      case 'pending':
+      case 'scheduled':
         return 'bg-yellow-100 text-yellow-800';
       case 'in progress':
         return 'bg-blue-100 text-blue-800';

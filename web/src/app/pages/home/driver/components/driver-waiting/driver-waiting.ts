@@ -45,12 +45,12 @@ export class DriverWaitingComponent implements OnInit {
   
   // Mock ride offer - this will be replaced with real data from your service
   rideOffer = signal<RideOffer>({
-    id: 1,
-    pickupAddress: 'Trg Slobode 1, Novi Sad',
-    destinationAddress: 'Kisačka 71, Novi Sad',
-    passengerName: 'Ana Jovanović',
+    id: 6,
+    pickupAddress: 'Železnička stanica, Novi Sad',
+    destinationAddress: 'Štrand, Novi Sad',
+    passengerName: 'Putnica Putnić',
     passengerPhone: '+381 64 123 4567',
-    estimatedDistance: 2.3,
+    estimatedDistance: 3.3,
     estimatedDuration: 8,
     estimatedPrice: 334,
     pickupCoords: [45.2671, 19.8335],
