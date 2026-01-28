@@ -150,6 +150,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/auth/driver-register/driver-register').then(m => m.DriverRegister)
       },
       {
+        path: 'change-requests',
+        loadComponent: () => import('./pages/profile/change-requests/change-requests').then(m => m.ChangeRequests)
+      },
+      {
         path: 'pricelist',
         loadComponent: () => import('./pages/pricelist/pricelist-admin').then(m => m.PricelistAdmin)
       },

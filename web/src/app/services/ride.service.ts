@@ -157,4 +157,8 @@ export class RideService {
   reportInconsistency(rideId: number, request: InconsistencyReportRequest): Observable<void> {
     return this.http.post<void>(`${this.API_URL}/${rideId}/report-inconsistency`, request);
   }
+
+  startRide(rideId: number): Observable<any> {
+    return this.http.put(`${this.API_URL}/${rideId}/start`, {});
+  }
 }
