@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.Person;
-import com.tricolori.backend.exception.DriverHasPendingProfileRequestException;
 import com.tricolori.backend.exception.PersonNotFoundException;
 import com.tricolori.backend.repository.DriverRepository;
 import com.tricolori.backend.repository.PersonRepository;
