@@ -47,3 +47,17 @@ export interface StopRideRequest {
 export interface StopRideResponse {
   updatedPrice: number
 }
+
+export interface RideAssignment {
+  id: number;
+  pickupAddress: string;
+  destinationAddress: string;
+  passengerName: string;
+  passengerPhone: string;
+  estimatedDistance: number;
+  estimatedDuration: number;
+  estimatedPrice: number;
+  pickupCoords: [number, number];
+  destinationCoords: [number, number];
+  eta: number; 
+}

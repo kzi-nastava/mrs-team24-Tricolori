@@ -2,6 +2,8 @@ package com.tricolori.backend.service;
 
 import com.tricolori.backend.dto.profile.DriverDto;
 import com.tricolori.backend.dto.profile.PassengerDto;
+import com.tricolori.backend.mapper.PersonMapper;
+import com.tricolori.backend.mapper.RouteMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +51,8 @@ public class RideService {
 
     private final VehicleSpecificationRepository vehicleSpecificationRepository;
     private final RideMapper rideMapper;
+    private final PersonMapper personMapper;
+    private final RouteMapper routeMapper;
     private final ReviewService reviewService;
     private final PriceListService priceListService;
     private final RouteService routeService;
@@ -166,34 +170,36 @@ public class RideService {
                         : null;
 
         // Map route to DetailedRouteResponse
-        DetailedRouteResponse routeResponse = ride.getRoute() != null
-                ? mapRouteToDetailedResponse(ride.getRoute())
-                : null;
+        DetailedRouteResponse routeResponse =
+                ride.getRoute() != null
+                        ? routeMapper.toDetailedRoute(ride.getRoute())
+                        : null;
 
         // Map driver to DTO
-        DriverDto driverDto = ride.getDriver() != null
-                ? mapDriverToDto(ride.getDriver())
-                : null;
+        DriverDto driverDto = null;
+        if (ride.getDriver() != null) {
+            Double rating = null;
+            try {
+                rating = reviewService.getAverageDriverRating(ride.getDriver().getId());
+            } catch (Exception ignored) {}
+
+            driverDto = personMapper.toDriverDto(ride.getDriver(), rating);
+        }
 
         // Map passengers to DTOs
         List<PassengerDto> passengerDtos = null;
 
         if (ride.getPassengers() != null && !ride.getPassengers().isEmpty()) {
-            // Get the first passenger's ID (will be marked as main)
             Long mainId = ride.getPassengers().get(0).getId();
 
-            // Map passengers and mark the main one
             passengerDtos = ride.getPassengers().stream()
-                    .map(passenger -> {
-                        PassengerDto dto = mapPassengerToDto(passenger);
-                        if (passenger.getId().equals(mainId)) {
-                            dto.setMainPassenger(true);
-                        }
+                    .map(p -> {
+                        PassengerDto dto = personMapper.toPassengerDto(p);
+                        dto.setMainPassenger(p.getId().equals(mainId));
                         return dto;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
         }
-
 
         return new RideTrackingResponse(
                 ride.getId(),
@@ -500,70 +506,4 @@ public class RideService {
         return value != null ? (int) Math.round(value) : null;
     }
 
-    private DetailedRouteResponse mapRouteToDetailedResponse(Route route) {
-        if (route == null) return null;
-
-        List<Stop> stops = route.getStops();
-        if (stops == null || stops.isEmpty()) {
-            return null;
-        }
-
-        Stop pickupStop = stops.get(0);
-        Stop destinationStop = stops.get(stops.size() - 1);
-
-        // Get intermediate stops (everything between pickup and destination)
-        List<Stop> intermediateStops = stops.size() > 2
-                ? stops.subList(1, stops.size() - 1)
-                : null;
-
-        DetailedRouteResponse response = new DetailedRouteResponse();
-        response.setId(route.getId());
-        response.setPickupAddress(pickupStop.getAddress());
-        response.setPickupLatitude(pickupStop.getLocation().getLatitude());
-        response.setPickupLongitude(pickupStop.getLocation().getLongitude());
-        response.setDestinationAddress(destinationStop.getAddress());
-        response.setDestinationLatitude(destinationStop.getLocation().getLatitude());
-        response.setDestinationLongitude(destinationStop.getLocation().getLongitude());
-        response.setStops(intermediateStops);
-        response.setDistanceKm(route.getDistanceKm());
-        response.setEstimatedTimeSeconds(Math.toIntExact(route.getEstimatedTimeSeconds()));
-
-        return response;
-    }
-
-    private DriverDto mapDriverToDto(Driver driver) {
-        if (driver == null) return null;
-
-        // Calculate average rating from reviews (adjust based on your review system)
-        Double rating = null;
-        try {
-            rating = reviewService.getAverageDriverRating(driver.getId());
-        } catch (Exception e) {
-            // If rating calculation fails, just use null
-            rating = null;
-        }
-
-        return new DriverDto(
-                driver.getId(),
-                driver.getFirstName(),
-                driver.getLastName(),
-                driver.getEmail(),
-                driver.getPhoneNum(),
-                driver.getPfpUrl(),
-                rating
-        );
-    }
-
-    private PassengerDto mapPassengerToDto(Passenger passenger) {
-        if (passenger == null) return null;
-
-        return new PassengerDto(
-                passenger.getId(),
-                passenger.getFirstName(),
-                passenger.getLastName(),
-                passenger.getEmail(),
-                passenger.getPhoneNum(),
-                false
-        );
-    }
 }
