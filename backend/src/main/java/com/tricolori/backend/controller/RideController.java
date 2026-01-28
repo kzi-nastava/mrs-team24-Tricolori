@@ -87,9 +87,9 @@ public class RideController {
         return ResponseEntity.ok(rideService.stopRide(id, person, request));
     }
 
-    // passenger can track his current ride
+    // passenger or driver can track current ride
     @GetMapping("/{id}/track")
-    @PreAuthorize("hasRole('PASSENGER')")
+    @PreAuthorize("hasAnyRole('PASSENGER', 'DRIVER')")
     public ResponseEntity<RideTrackingResponse> trackRide(@PathVariable Long id) {
         RideTrackingResponse response = rideService.trackRide(id);
         return ResponseEntity.ok(response);

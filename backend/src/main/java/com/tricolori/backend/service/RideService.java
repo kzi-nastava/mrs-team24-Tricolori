@@ -91,7 +91,7 @@ public class RideService {
 
         // state validation (optional but recommended)
         if (ride.getStatus() != RideStatus.ONGOING) {
-            throw new IllegalStateException("ride is not in progress");
+            throw new IllegalStateException("Ride is not in progress");
         }
 
         // complete ride
