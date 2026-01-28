@@ -1,0 +1,228 @@
+<div class="flex flex-col items-center justify-center h-full p-6">
+  <!-- Waiting State -->
+  <div class="text-center space-y-6 max-w-md">
+    <!-- Animated Icon -->
+    <div class="relative">
+      <div class="w-24 h-24 mx-auto bg-gradient-to-r from-[#00acc1] to-[#00838f] rounded-full flex items-center justify-center animate-pulse">
+        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <!-- Pulse Ring -->
+      <div class="absolute inset-0 w-24 h-24 mx-auto rounded-full border-4 border-[#00acc1] animate-ping opacity-20"></div>
+    </div>
+
+    <!-- Status Text -->
+    <div class="space-y-2">
+      <h2 class="text-2xl font-bold text-gray-900">Ready for Rides</h2>
+      <p class="text-gray-600">You're online and waiting for ride requests</p>
+    </div>
+
+    <!-- Status Card -->
+    <div class="bg-gradient-to-r from-[#00acc1]/10 to-[#00838f]/10 rounded-xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-600">Status</span>
+        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-2">
+          <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+          Online
+        </span>
+      </div>
+      
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-600">Location</span>
+        <span class="text-sm font-medium text-gray-900">Novi Sad, Serbia</span>
+      </div>
+    </div>
+
+    <!-- Tips Section -->
+    <div class="bg-blue-50 rounded-lg p-4 text-left">
+      <h3 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+        <svg class="w-5 h-5 text-[#00acc1]" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        Tip
+      </h3>
+      <p class="text-sm text-gray-700">Make sure your vehicle is clean and you're ready to provide excellent service to passengers.</p>
+    </div>
+  </div>
+
+  <!-- Ride Offer Modal -->
+  @if (showRideOfferModal()) {
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-slideUp">
+        
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-[#00acc1] to-[#00838f] p-6 text-white relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="bg-white/20 p-3 rounded-full">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold">New Ride Request</h2>
+                <p class="text-white/90 text-sm">Accept within {{ countdownSeconds() }}s</p>
+              </div>
+            </div>
+            
+            <!-- Countdown Circle -->
+            <div class="relative w-14 h-14">
+              <svg class="transform -rotate-90 w-14 h-14">
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  stroke="rgba(255,255,255,0.2)"
+                  stroke-width="4"
+                  fill="none"
+                />
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  stroke="white"
+                  stroke-width="4"
+                  fill="none"
+                  [style.stroke-dasharray]="150.72"
+                  [style.stroke-dashoffset]="150.72 * (1 - countdownSeconds() / 30)"
+                  class="transition-all duration-1000 ease-linear"
+                />
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span class="text-white font-bold text-lg">{{ countdownSeconds() }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-5">
+          
+          <!-- Passenger Info -->
+          <div class="bg-gray-50 rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="bg-[#00acc1] p-2 rounded-full">
+                <ng-icon name="heroUser" size="20" class="text-white"></ng-icon>
+              </div>
+              <h3 class="font-semibold text-gray-900">Passenger</h3>
+            </div>
+            <div class="ml-11 space-y-2">
+              <p class="font-medium text-gray-900">{{ rideOffer().passengerName }}</p>
+              <a 
+                href="tel:{{ rideOffer().passengerPhone }}"
+                class="flex items-center gap-2 text-sm text-gray-600 hover:text-[#00acc1] transition-colors"
+              >
+                <ng-icon name="heroPhone" size="16"></ng-icon>
+                <span>{{ rideOffer().passengerPhone }}</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Route Details -->
+          <div class="bg-blue-50 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="bg-[#00acc1] p-2 rounded-full">
+                <ng-icon name="heroMapPin" size="20" class="text-white"></ng-icon>
+              </div>
+              <h3 class="font-semibold text-gray-900">Route</h3>
+            </div>
+            
+            <div class="ml-11 space-y-3">
+              <!-- Pickup -->
+              <div class="flex items-start gap-3">
+                <div class="w-3 h-3 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                <div class="flex-1">
+                  <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Pickup</p>
+                  <p class="text-gray-900 font-medium mt-0.5">{{ rideOffer().pickupAddress }}</p>
+                </div>
+              </div>
+              
+              <!-- Connecting Line -->
+              <div class="ml-1.5 border-l-2 border-dashed border-gray-300 h-6"></div>
+              
+              <!-- Destination -->
+              <div class="flex items-start gap-3">
+                <div class="w-3 h-3 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                <div class="flex-1">
+                  <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Destination</p>
+                  <p class="text-gray-900 font-medium mt-0.5">{{ rideOffer().destinationAddress }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trip Stats -->
+          <div class="grid grid-cols-3 gap-3">
+            <!-- Distance -->
+            <div class="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg p-3 text-center">
+              <div class="text-2xl font-bold text-cyan-600">{{ rideOffer().estimatedDistance }}</div>
+              <div class="text-xs text-gray-600 mt-1">km</div>
+            </div>
+            
+            <!-- Duration -->
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 text-center">
+              <div class="text-2xl font-bold text-purple-600">{{ rideOffer().estimatedDuration }}</div>
+              <div class="text-xs text-gray-600 mt-1">min</div>
+            </div>
+            
+            <!-- Price -->
+            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-3 text-center">
+              <div class="text-2xl font-bold text-emerald-600">{{ rideOffer().estimatedPrice }}</div>
+              <div class="text-xs text-gray-600 mt-1">RSD</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-6 pt-0 flex gap-3">
+          <button
+            (click)="declineRide()"
+            class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
+          >
+            <ng-icon name="heroXMark" size="20"></ng-icon>
+            Decline
+          </button>
+          <button
+            (click)="acceptRide()"
+            class="flex-1 bg-gradient-to-r from-[#00acc1] to-[#00838f] hover:from-[#008c9e] hover:to-[#006064] text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg"
+          >
+            <ng-icon name="heroCheckCircle" size="20"></ng-icon>
+            Accept Ride
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  }
+</div>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.4s ease-out;
+  }
+</style>
