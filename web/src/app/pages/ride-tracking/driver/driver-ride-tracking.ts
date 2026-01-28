@@ -16,9 +16,10 @@ import {
 } from '@ng-icons/heroicons/outline';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
-import {PanicRequest, RideDetails, StopRideRequest, StopRideResponse} from '../../../model/ride';
-import {Location} from '../../../model/location';
-import {RideService} from '../../../services/ride.service';
+import { RideDetails, StopRideRequest, StopRideResponse } from '../../../model/ride';
+import { Location } from '../../../model/location';
+import { RideService } from '../../../services/ride.service';
+import { PanicRideRequest } from '../../../model/ride-tracking';
 
 
 @Component({
@@ -112,37 +113,46 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   private loadRideData(rideId: number): void {
     this.rideService.trackRide(rideId).subscribe({
       next: (response) => {
-        // Extract pickup and destination from route
-        const pickup = response.route?.stops?.[0];
-        const destination = response.route?.stops?.[response.route.stops.length - 1];
+        // Extract pickup and destination from route DTO
+        const route = response.route;
 
-        // Update ride details with real data
+        // Update ride details with real data from RideTrackingResponse
         this.rideDetails.set({
-          id: response.id,
-          pickup: pickup?.address || 'Pickup location',
-          destination: destination?.address || 'Destination',
-          pickupCoords: pickup?.location 
-            ? [pickup.location.latitude, pickup.location.longitude] 
+          id: response.rideId,
+          pickup: route?.pickupAddress || 'Pickup location',
+          destination: route?.destinationAddress || 'Destination',
+          pickupCoords: route 
+            ? [route.pickupLatitude, route.pickupLongitude] 
             : [45.2671, 19.8335],
-          destinationCoords: destination?.location 
-            ? [destination.location.latitude, destination.location.longitude] 
+          destinationCoords: route 
+            ? [route.destinationLatitude, route.destinationLongitude] 
             : [45.2550, 19.8450],
-          driverName: response.driver?.name || '',
-          vehicleType: response.driver?.vehicleModel || '',
-          licensePlate: response.driver?.vehiclePlateNumber || '',
-          totalDistance: response.route?.distanceKilometers || 0,
-          estimatedDuration: response.route?.durationMinutes || 0,
+          driverName: response.driver 
+            ? `${response.driver.firstName} ${response.driver.lastName}` 
+            : '',
+          vehicleType: response.currentLocation?.model || '',
+          licensePlate: response.currentLocation?.plateNum || '',
+          totalDistance: route?.distanceKm || 0,
+          estimatedDuration: route ? Math.round(route.estimatedTimeSeconds / 60) : 0,
           passengers: response.passengers?.map(p => ({
             id: p.id,
-            name: p.name,
+            name: `${p.firstName} ${p.lastName}`,
             phone: p.phoneNumber,
             email: p.email || ''
           })) || []
         });
 
         // Set initial values
-        this.remainingDistance.set(response.route?.distanceKilometers || 0);
-        this.estimatedArrival.set(response.route?.durationMinutes || 0);
+        this.remainingDistance.set(route?.distanceKm || 0);
+        this.estimatedArrival.set(response.estimatedTimeMinutes || 0);
+
+        // Update current vehicle location if available
+        if (response.currentLocation) {
+          this.vehicleLocation.set({
+            lat: response.currentLocation.latitude,
+            lng: response.currentLocation.longitude
+          });
+        }
 
         // Initialize map after data is loaded
         setTimeout(() => this.initMap(), 100);
@@ -401,7 +411,12 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       return; // Already triggered
     }
 
-    const panicRequest : PanicRequest = { vehicleLocation: this.vehicleLocation() }
+    const panicRequest: PanicRideRequest = { 
+      vehicleLocation: {
+        lat: this.vehicleLocation().lat,
+        lng: this.vehicleLocation().lng
+      }
+    };
 
     this.rideService.ridePanic(this.rideDetails().id, panicRequest).subscribe({
       next: () => {
@@ -413,7 +428,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error(err);
       }
-    })
+    });
   }
 
   // Update vehicle marker to emergency state (red with pulse)
@@ -432,12 +447,14 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
   stopTriggered = signal<boolean>(false);
 
-  triggerStop() : void {
+  triggerStop(): void {
     if (this.stopTriggered()) {
       return; // stop already triggered
     }
 
-    const stopRideRequest : StopRideRequest = { location : this.vehicleLocation() }
+    const stopRideRequest: StopRideRequest = { 
+      location: this.vehicleLocation() 
+    };
 
     this.rideService.stopRide(this.rideDetails().id, stopRideRequest).subscribe({
       next: (response) => {
@@ -447,17 +464,16 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error("Failed stopping the ride: ", err);
       }
-    })
+    });
   }
 
-  private handleStop(response: StopRideResponse) : void {
+  private handleStop(response: StopRideResponse): void {
     this.stopTriggered.set(true);
     this.stopTracking();
     this.estimatedArrival.set(0);
     this.remainingDistance.set(0);
     console.log('Successfully stopped the ride. Updated price: ', response.updatedPrice);
   }
-
 
   handleBack(): void {
     this.router.navigate(['/driver/home']);
