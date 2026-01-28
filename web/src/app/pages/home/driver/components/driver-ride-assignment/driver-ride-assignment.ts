@@ -136,7 +136,18 @@ get eta(): number {
     });
   }
 
-  handleStartRide(): void {
-    this.router.navigate(['/driver/ride-tracking', this.activeRide().id]);
+  handleStartRide() {
+    this.errorMessage.set(null);
+
+    this.rideService.startRide(this.activeRide().id).subscribe({
+      next: () => {
+        console.log("Ride started successfully.");
+        this.router.navigate(['/driver/ride-tracking', this.activeRide().id]);
+      },
+      error: (err) => {
+        // console.error("Error cancelling the ride", err);
+        this.router.navigate(['/driver/ride-tracking', this.activeRide().id]);
+      }
+    });
   }
 }

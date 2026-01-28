@@ -19,7 +19,9 @@ import com.tricolori.backend.repository.RideRepository;
 import com.tricolori.backend.repository.VehicleSpecificationRepository;
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.exception.CancelRideExpiredException;
+import com.tricolori.backend.exception.ForeignRideException;
 import com.tricolori.backend.exception.PersonNotFoundException;
+import com.tricolori.backend.exception.RideAlreadyStartedException;
 import com.tricolori.backend.exception.RideNotFoundException;
 import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import com.tricolori.backend.mapper.RideMapper;
@@ -387,6 +389,27 @@ public class RideService {
 
         rideRepository.save(ride);
         return new StopRideResponse(ride.getPrice());
+    }
+
+    @Transactional
+    public void startRide(Person driver, Long rideId) {
+        Ride ride = rideRepository.findById(rideId).orElseThrow(
+            () -> {throw new RideNotFoundException("Can't find a ride to start.");}
+        );
+
+        if (ride.getDriver().getId() != driver.getId()) {
+            throw new ForeignRideException("Only a driver of this ride can start it.");
+        }
+
+        if (ride.getStatus() == RideStatus.ONGOING || ride.getStartTime() != null)
+            throw new RideAlreadyStartedException();
+
+        ride.setStatus(RideStatus.ONGOING);
+        LocalDateTime now = LocalDateTime.now();
+        ride.setStartTime(now);
+        ride.setEndTime(now.plusSeconds(ride.getRoute().getEstimatedTimeSeconds()));
+        
+        rideRepository.save(ride);
     }
 
     @Transactional

@@ -126,6 +126,10 @@ export class RideService {
     return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
 
+  startRide(rideId: number) : Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/start`, {});
+  }
+
   bookRide(request: RideRequest): Observable<any> {
     return this.http.post(`${this.API_URL}/order`, {
       route: {
