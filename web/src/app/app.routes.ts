@@ -22,23 +22,28 @@ export const routes: Routes = [
 
   // Driver routes
   {
-    path: 'driver',
-    canActivate: [authGuard],
-    children: [
-      {
-        path: 'home',
-        loadComponent: () => import('./pages/home/driver/driver-home').then(m => m.HomeDriver),
-        children: [
-          {
-            path: '',
-            loadComponent: () => import('./pages/home/driver/components/driver-ride-assignment/driver-ride-assignment').then(m => m.DriverRideAssignment)
-          },
-          { 
-            path: 'ride-assign/:id', 
-            component: DriverRideAssignment 
-          }
-        ]
-      },
+  path: 'driver',
+  canActivate: [authGuard],
+  children: [
+    {
+      path: 'home',
+      loadComponent: () =>
+        import('./pages/home/driver/driver-home').then(m => m.HomeDriver),
+      children: [
+        {
+          path: '',
+          loadComponent: () =>
+            import('./pages/home/driver/components/driver-waiting/driver-waiting')
+              .then(m => m.DriverWaiting)
+        },
+        {
+          path: 'ride-assign/:id',
+          loadComponent: () =>
+            import('./pages/home/driver/components/driver-ride-assignment/driver-ride-assignment')
+              .then(m => m.DriverRideAssignment)
+        }
+      ]
+    },
       {
         path: 'ride-tracking/:id',
         loadComponent: () => import('./pages/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent)
