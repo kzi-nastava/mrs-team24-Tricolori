@@ -18,7 +18,8 @@ import * as L from 'leaflet';
 import 'leaflet-routing-machine';
 import { forkJoin } from 'rxjs';
 
-import { RideService, RideDetailResponse } from '../../../services/ride.service';
+import { RideService } from '../../../services/ride.service';
+import { RideDetailResponse } from '../../../model/ride-history';
 import {
   RideTrackingResponse,
   PanicRideRequest,
