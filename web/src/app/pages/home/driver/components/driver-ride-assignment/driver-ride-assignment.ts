@@ -52,8 +52,8 @@ export class DriverRideAssignment implements OnInit, OnDestroy {
     estimatedDistance: 3.3,
     estimatedDuration: 8,
     estimatedPrice: 334,
-    pickupCoords: [45.2671, 19.8335],
-    destinationCoords: [45.2550, 19.8450],
+    pickupCoords: [45.2656, 19.8289],
+    destinationCoords: [45.2397, 19.8514],
     eta: 5
   });
 
