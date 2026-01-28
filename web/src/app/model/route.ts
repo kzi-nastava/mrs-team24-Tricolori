@@ -11,6 +11,7 @@ export interface Route {
     stops?: Stop[];
 }
 
-export interface FavoriteRoute extends Route {
+export interface FavoriteRoute {
+  route: Route;
   title: string;
 }

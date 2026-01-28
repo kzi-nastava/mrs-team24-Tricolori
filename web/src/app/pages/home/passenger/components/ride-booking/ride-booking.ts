@@ -35,9 +35,7 @@ import { RideService } from '../../../../../services/ride.service';
 export class RideBooking implements OnInit, AfterViewInit {
   // Services:
   private mapService = inject(MapService);
-  private estimationService = inject(EstimationService);
-  private rideService = inject(RideService)
-  private geocodingService = inject(GeocodingService);
+  private rideService = inject(RideService);
 
   routeSelector = viewChild.required(RouteSelector);
   preferencesSelector = viewChild.required(PreferencesSelector);
@@ -69,7 +67,6 @@ export class RideBooking implements OnInit, AfterViewInit {
     this.mapService.initMap('map');
   }
 
-
   openFavoriteRoutes() {
     const dialogRef = this.routesDialog.open(FavoriteRouteSelector, {
       width: '100%',
@@ -83,11 +80,7 @@ export class RideBooking implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result: FavoriteRoute | undefined) => {
       if (result) {
-        this.currentRoute.set({
-          pickup: result.pickup,
-          destination: result.destination,
-          stops: result.stops
-        });
+        this.currentRoute.set(result.route);
       }
     });
   }
@@ -109,70 +102,74 @@ export class RideBooking implements OnInit, AfterViewInit {
     });
   }
 
+  
+
   async rideSubmit(event: Event) {
     event.preventDefault();
 
-    // Pristup child komponenti kroz signal
-    const routeSelector = this.routeSelector();
-    const preferencesSelector = this.preferencesSelector();
-    const trackersSelector = this.trackersSelector();
+    // 1. ViewChild reference
+    const routeComp = this.routeSelector();
+    const prefComp = this.preferencesSelector();
+    const trackComp = this.trackersSelector();
 
-    // Since route selection is only mandatory data, I don't check
-    // other child components' validity...
-    if (!routeSelector.routeForm.valid) {
-      routeSelector.routeForm.markAllAsTouched();
+    // 2. Osnovna validacija (adrese moraju biti unete)
+    if (!routeComp.routeForm.valid) {
+      routeComp.routeForm.markAllAsTouched();
+      return;
     }
 
-    const routeVal = routeSelector.routeForm.getRawValue();
-    console.log(routeVal)
+    // 3. Raw podaci iz formi
+    const routeData = routeComp.routeForm.getRawValue();
+    const prefData = prefComp.preferencesForm.getRawValue();
+    const trackersData = trackComp.trackersForm.getRawValue().trackers;
 
-    const estimation = await this.estimationService.calculateRoute(
-      { lat: routeVal.pickup.location.lat, lng: routeVal.pickup.location.lng },
-      { lat: routeVal.destination.location.lat, lng: routeVal.destination.location.lng },
-      routeVal.pickup.address,
-      routeVal.destination.address
-    );
-
-    const rideRequest: RideRequest = {
+    // 4. Pakovanje za OrderRequest (Java Record struktura)
+    const orderRequest = {
       route: {
-        pickup: routeVal.pickup,
-        destination: routeVal.destination,
-        stops: routeVal.stops
+        pickup: {
+          address: routeData.pickup.address,
+          location: { 
+            longitude: routeData.pickup.location.lng, 
+            latitude: routeData.pickup.location.lat 
+          }
+        },
+        destination: {
+          address: routeData.destination.address,
+          location: { 
+            longitude: routeData.destination.location.lng, 
+            latitude: routeData.destination.location.lat 
+          }
+        },
+        stops: (routeData.stops || []).map((s: any) => ({
+          address: s.address,
+          location: { 
+            longitude: s.location.lng, 
+            latitude: s.location.lat 
+          }
+        }))
       },
-      preferences: preferencesSelector.preferencesForm.value,
-      trackers: trackersSelector.trackersForm.getRawValue().trackers as string[] || [],
-      estimation: {
-        distanceKilometers: estimation?.distance!,
-        durationMinutes: estimation?.duration!
-      }
-    }
+      preferences: {
+        vehicleType: prefData.vehicleType.toUpperCase(),
+        petFriendly: prefData.petFriendly,
+        babyFriendly: prefData.babySeat,
+        scheduledFor: this.rideService.formatLocalDateTime(prefData.scheduledTime)
+      },
+      createdAt: this.rideService.formatLocalDateTime(new Date()),
+      trackers: trackersData
+    };
 
+    console.log("A:",orderRequest);
 
-    this.rideService.bookRide(rideRequest).subscribe({
-      next: (response) => {
-        console.log(response);
+    // 5. Slanje
+    this.rideService.bookRide(orderRequest).subscribe({
+      next: (res) => {
+        console.log('Backend primio:', res);
+        alert('Vožnja uspešno naručena!');
       },
       error: (err) => {
-        console.log(err);
+        console.error('Greška:', err);
+        alert('Došlo je do greške pri naručivanju.');
       }
-    })
-
-    // Draw route on map:
-    const esitmation = await this.estimationService.calculateRoute(
-      { lat: routeVal.pickup.location.lat, lng: routeVal.pickup.location.lng },
-      { lat: routeVal.destination.location.lat, lng: routeVal.destination.location.lng },
-      routeVal.pickup.address,
-      routeVal.destination.address
-    )
-    this.showRouteOnMap(routeVal, esitmation?.routeCoordinates);
-  }
-
-  // TODO: REFACTOR THIS...
-  showRouteOnMap(route: Route, routeCoordinates?: L.LatLng[]) {
-    this.mapService.drawRoute('', 
-      [route.pickup.location.lat, route.pickup.location.lng],
-      [route.destination.location.lat, route.destination.location.lng],
-      routeCoordinates
-    );
+    });
   }
 }

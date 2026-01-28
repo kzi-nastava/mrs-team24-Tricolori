@@ -15,15 +15,13 @@ import { FavoriteRoutesService } from '../../../../../../services/favorite-route
 export class FavoriteRouteSelector implements OnInit {
   private dialogRef = inject(MatDialogRef<FavoriteRouteSelector>);
   private favRouteService = inject(FavoriteRoutesService);
-  private data_ = inject(MAT_DIALOG_DATA);
 
   selectedRoute = output<FavoriteRoute>();
 
   favoriteRoutes = this.favRouteService.favoriteRoutes;
 
   ngOnInit(): void {
-      const id = this.data_.userId;
-      this.favRouteService.getFavoriteRoutes(id);
+      this.favRouteService.getFavoriteRoutes();
   }
 
   selectRoute(route: FavoriteRoute) {

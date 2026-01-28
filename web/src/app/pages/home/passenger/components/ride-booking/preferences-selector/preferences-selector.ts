@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, effect, inject, input, output, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
@@ -36,7 +36,7 @@ export class PreferencesSelector {
 
   constructor() {
     this.preferencesForm = this.fb.group({
-      vehicleType: ['standard'],
+      vehicleType: [environment.vehicleTypes[0].id, [Validators.required]],
       babySeat: [false],
       petFriendly: [false],
       scheduledTime: [null as Date | null]

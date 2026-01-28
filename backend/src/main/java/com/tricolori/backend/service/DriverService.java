@@ -144,4 +144,8 @@ public class DriverService {
     private Ride getCurrentOngoingRide(Driver d) {
         return rideRepository.findAllByDriverAndStatusIn(d, List.of(RideStatus.ONGOING)).get(0);
     }
+
+    public Driver findById(Long id) {
+        return repository.findById(id).orElseThrow();
+    }
 }
