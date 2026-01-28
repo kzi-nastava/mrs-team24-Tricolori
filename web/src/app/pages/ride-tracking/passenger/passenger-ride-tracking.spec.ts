@@ -170,18 +170,18 @@ describe('PassengerRideTrackingComponent', () => {
 
   describe('Vehicle Position', () => {
     it('should have initial vehicle position', () => {
-      const position = component.vehiclePosition();
+      const position = component.vehicleLocation();
       expect(position.lat).toBeDefined();
       expect(position.lng).toBeDefined();
-      expect(position.timestamp).toBeInstanceOf(Date);
+      expect(position.).toBeInstanceOf(Date);
     });
 
     it('should update vehicle position', (done) => {
-      const initialPosition = component.vehiclePosition();
+      const initialPosition = component.vehicleLocation();
       
       // Trigger position update
       setTimeout(() => {
-        const newPosition = component.vehiclePosition();
+        const newPosition = component.vehicleLocation();
         expect(newPosition.lat).not.toBe(initialPosition.lat);
         done();
       }, 5500); // Wait for update interval

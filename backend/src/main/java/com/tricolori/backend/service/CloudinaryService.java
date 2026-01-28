@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +37,7 @@ public class CloudinaryService {
                     .crop("fill")
                     .gravity("face");
 
-            Map uploadResult = cloudinary.uploader().upload(
+            var uploadResult = cloudinary.uploader().upload(
                     pfp.getBytes(),
                     ObjectUtils.asMap(
                             "public_id", "user_" + personId,

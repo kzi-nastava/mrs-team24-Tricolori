@@ -63,7 +63,7 @@ public class Ride {
     private List<Passenger> passengers = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "driver_id")
+    @JoinColumn(name = "driver_id", nullable = true)
     private Driver driver;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)

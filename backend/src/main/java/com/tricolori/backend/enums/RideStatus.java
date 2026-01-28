@@ -1,6 +1,7 @@
 package com.tricolori.backend.enums;
 
 public enum RideStatus {
+    CREATED,
     SCHEDULED,
     ONGOING,
     FINISHED,
@@ -8,5 +9,6 @@ public enum RideStatus {
     CANCELLED_BY_DRIVER,
     CANCELLED_BY_PASSENGER,
     DECLINED,
-    STOPPED
+    STOPPED,
+    REJECTED
 }

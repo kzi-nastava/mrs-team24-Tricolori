@@ -92,8 +92,10 @@ export class RouteSelector implements OnInit, OnDestroy {
 
     const stopData: Stop = {
       address: fullAddress.trim(),
-      longitude: feature.geometry.coordinates[0],
-      latitude: feature.geometry.coordinates[1]
+      location: {
+        lng: feature.geometry.coordinates[0],
+        lat: feature.geometry.coordinates[1]
+      }
     };
 
     group?.patchValue(stopData, { emitEvent: false });
@@ -130,8 +132,11 @@ export class RouteSelector implements OnInit, OnDestroy {
   private createStopGroup(stopData?: Stop): FormGroup {
     return this.fb.group({
       address: [stopData?.address || '', Validators.required],
-      longitude: [stopData?.longitude || null],
-      latitude: [stopData?.latitude || null]
+      // Pravimo ugnježdenu grupu da odgovara interfejsu
+      location: this.fb.group({
+        lng: [stopData?.location?.lng || null],
+        lat: [stopData?.location?.lat || null]
+      })
     });
   }
 }

@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Embeddable
 public class ChangeDriverProfileDTO {
-
     private String firstName;
     private String lastName;
     private String phoneNum;

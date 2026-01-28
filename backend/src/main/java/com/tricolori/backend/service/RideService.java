@@ -1,7 +1,15 @@
 package com.tricolori.backend.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tricolori.backend.dto.ride.*;
 import com.tricolori.backend.repository.PanicRepository;
+import com.tricolori.backend.repository.PassengerRepository;
 import com.tricolori.backend.repository.PersonRepository;
 import com.tricolori.backend.repository.RideRepository;
 import com.tricolori.backend.repository.VehicleSpecificationRepository;
@@ -13,16 +21,11 @@ import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import com.tricolori.backend.mapper.RideMapper;
 import com.tricolori.backend.enums.RideStatus;
 import com.tricolori.backend.enums.VehicleType;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +34,14 @@ public class RideService {
 
     private final RideRepository rideRepository;
     private final PersonRepository personRepository;
+    private final PassengerRepository passengerRepository;
     private final PanicRepository panicRepository;
+
+    private final PassengerService passengerService;
+    private final DriverService driverService;
+    
+    private PriceList priceList;
+
     private final VehicleSpecificationRepository vehicleSpecificationRepository;
     private final RideMapper rideMapper;
     private final ReviewService reviewService;
@@ -340,6 +350,36 @@ public class RideService {
         return new StopRideResponse(ride.getPrice());
     }
 
+    @Transactional
+    public void rideOrder(OrderRequest request) {
+        RidePreferences preferences = request.preferences();
+        RideEstimations estimations = request.estimations();
+        RideRoute routeData = request.route();
+
+        Ride ride = new Ride();
+        ride.setCreatedAt(request.createdAt());
+        ride.setScheduledFor(preferences.scheduledFor());
+        // TODO: Set start time after we find driver...
+        // TODO: Set end time after we find driver...
+        ride.setStatus(RideStatus.CREATED);
+        ride.setPrice(calculatePrice(
+            preferences.vehicleType(), estimations.distanceKilometers() 
+        ));
+
+        Route route = routeService.createRoute(routeData.pickup(), routeData.destination(), routeData.stops());
+        ride.setRoute(route);
+
+        // Find passengers by email:
+        ride.setPassengers(passengerService.getTrackingPassengers(request.trackers()));
+
+        // Finding the driver:
+        Driver driver = driverService.findDriverForRide(routeData.pickup().getLocation(), preferences);
+        ride.setDriver(driver);
+        ride.setVehicleSpecification(driver.getVehicle().getSpecification());
+
+        rideRepository.save(ride);
+    }
+
     // ================= helpers =================
 
     private Ride getRideOrThrow(Long rideId) {
@@ -394,6 +434,10 @@ public class RideService {
                 priceListService.getKmPrice();
 
         return basePrice + ride.getRoute().getDistanceKm() * kmPrice;
+    }
+
+    private Double calculatePrice(VehicleType type, double kilometers) {
+        return priceListService.calculateBasePrice(type) + kilometers * priceListService.getKmPrice();
     }
 
     private Integer round(Double value) {
