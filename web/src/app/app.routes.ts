@@ -31,7 +31,7 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            loadComponent: () => import('./pages/home/driver/components/driver-waiting/driver-waiting').then(m => m.DriverWaitingComponent)
+            loadComponent: () => import('./pages/home/driver/components/driver-ride-assignment/driver-ride-assignment').then(m => m.DriverRideAssignment)
           },
           { 
             path: 'ride-assign/:id', 
