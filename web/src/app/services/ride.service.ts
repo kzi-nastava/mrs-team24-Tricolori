@@ -1,8 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
 import { PanicRequest, RideRequest, StopRideRequest, StopRideResponse } from '../model/ride';
+import { environment } from '../../environments/environment';
+import {
+  RideTrackingResponse,
+  InconsistencyReportRequest,
+  PanicRideRequest
+} from '../model/ride-tracking';
 
 // Interfaces matching your backend DTOs
 export interface RideHistoryResponse {
@@ -46,6 +51,12 @@ export interface RideDetailResponse {
   ratingComment: string | null;
 }
 
+export interface RideRatingRequest {
+  driverRating: number;
+  vehicleRating: number;
+  comment: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -54,9 +65,7 @@ export class RideService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Get driver's ride history with optional date filtering
-   */
+  // Get driver's ride history with optional date filtering
   getDriverHistory(
     startDate?: string,
     endDate?: string,
@@ -66,36 +75,54 @@ export class RideService {
     let params = new HttpParams()
       .set('sortBy', sortBy)
       .set('sortDirection', sortDirection);
-
+    
     if (startDate) {
       params = params.set('startDate', startDate);
     }
     if (endDate) {
       params = params.set('endDate', endDate);
     }
-
+    
     return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
   }
 
-  /**
-   * Get detailed information for a specific ride (for driver)
-   */
+  // Get detailed information for a specific ride (for driver)
   getDriverRideDetail(rideId: number): Observable<RideDetailResponse> {
     return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/driver`);
   }
 
-  /**
-   * Get detailed information for a specific ride (for passenger)
-   */
+  // Get detailed information for a specific ride (for passenger)
   getPassengerRideDetail(rideId: number): Observable<RideDetailResponse> {
     return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/passenger`);
   }
 
-  ridePanic(rideId: number, panicRequest: PanicRequest): Observable<void> {
+  // Track a ride in real-time - get current status, location, and estimates
+  trackRide(rideId: number): Observable<RideTrackingResponse> {
+    return this.http.get<RideTrackingResponse>(`${this.API_URL}/${rideId}/track`);
+  }
+
+  // Update passenger location during ride
+  updatePassengerLocation(rideId: number, location: { latitude: number; longitude: number }): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/passenger-location`, location);
+  }
+
+  // Update vehicle location during ride (for testing/simulation)
+  updateVehicleLocation(rideId: number, location: { latitude: number; longitude: number }): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/vehicle-location`, location);
+  }
+
+  // Rate a completed ride
+  rateRide(rideId: number, request: RideRatingRequest): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/${rideId}/rate`, request);
+  }
+
+  // Trigger panic alert for a ride
+  ridePanic(rideId: number, panicRequest: PanicRideRequest): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/panic`, panicRequest);
   }
 
-  cancelRide(rideId: number, reason: string) : Observable<void> {
+  // Cancel a ride with a reason
+  cancelRide(rideId: number, reason: string): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
   }
 
@@ -123,4 +150,11 @@ export class RideService {
     return this.http.put<StopRideResponse>(`${this.API_URL}/${rideId}/stop`, stopRideRequest);
   }
 
+  completeRide(rideId: number): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/complete`, {});
+  }
+
+  reportInconsistency(rideId: number, request: InconsistencyReportRequest): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/${rideId}/report-inconsistency`, request);
+  }
 }

@@ -1,5 +1,9 @@
 package com.tricolori.backend.service;
 
+import com.tricolori.backend.dto.profile.DriverDto;
+import com.tricolori.backend.dto.profile.PassengerDto;
+import com.tricolori.backend.mapper.PersonMapper;
+import com.tricolori.backend.mapper.RouteMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +19,9 @@ import com.tricolori.backend.repository.RideRepository;
 import com.tricolori.backend.repository.VehicleSpecificationRepository;
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.exception.CancelRideExpiredException;
+import com.tricolori.backend.exception.ForeignRideException;
 import com.tricolori.backend.exception.PersonNotFoundException;
+import com.tricolori.backend.exception.RideAlreadyStartedException;
 import com.tricolori.backend.exception.RideNotFoundException;
 import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import com.tricolori.backend.mapper.RideMapper;
@@ -26,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +52,8 @@ public class RideService {
 
     private final VehicleSpecificationRepository vehicleSpecificationRepository;
     private final RideMapper rideMapper;
+    private final PersonMapper personMapper;
+    private final RouteMapper routeMapper;
     private final ReviewService reviewService;
     private final PriceListService priceListService;
     private final RouteService routeService;
@@ -92,7 +101,7 @@ public class RideService {
 
         // state validation (optional but recommended)
         if (ride.getStatus() != RideStatus.ONGOING) {
-            throw new IllegalStateException("ride is not in progress");
+            throw new IllegalStateException("Ride is not in progress");
         }
 
         // complete ride
@@ -150,7 +159,7 @@ public class RideService {
                         : null;
 
         VehicleLocationResponse currentLocation =
-                ride.getDriver() != null && ride.getDriver().getVehicle().getLocation() != null
+                ride.getDriver() != null && ride.getDriver().getVehicle() != null && ride.getDriver().getVehicle().getLocation() != null
                         ? new VehicleLocationResponse(
                         ride.getDriver().getVehicle().getId(),
                         ride.getDriver().getVehicle().getModel(),
@@ -161,18 +170,50 @@ public class RideService {
                 )
                         : null;
 
+        // Map route to DetailedRouteResponse
+        DetailedRouteResponse routeResponse =
+                ride.getRoute() != null
+                        ? routeMapper.toDetailedRoute(ride.getRoute())
+                        : null;
+
+        // Map driver to DTO
+        DriverDto driverDto = null;
+        if (ride.getDriver() != null) {
+            Double rating = null;
+            try {
+                rating = reviewService.getAverageDriverRating(ride.getDriver().getId());
+            } catch (Exception ignored) {}
+
+            driverDto = personMapper.toDriverDto(ride.getDriver(), rating);
+        }
+
+        // Map passengers to DTOs
+        List<PassengerDto> passengerDtos = null;
+
+        if (ride.getPassengers() != null && !ride.getPassengers().isEmpty()) {
+            Long mainId = ride.getPassengers().get(0).getId();
+
+            passengerDtos = ride.getPassengers().stream()
+                    .map(p -> {
+                        PassengerDto dto = personMapper.toPassengerDto(p);
+                        dto.setMainPassenger(p.getId().equals(mainId));
+                        return dto;
+                    })
+                    .toList();
+        }
+
         return new RideTrackingResponse(
                 ride.getId(),
                 ride.getStatus().name(),
                 currentLocation,
-                null,               // route dto (no mapper yet)
+                routeResponse,
                 estimatedMinutes,
                 estimatedArrival,
                 ride.getScheduledFor(),
                 ride.getStartTime(),
                 ride.getPrice(),
-                null,               // driver dto (no mapper yet)
-                null                // passenger dto list (no mapper yet)
+                driverDto,
+                passengerDtos
         );
     }
 
@@ -238,8 +279,45 @@ public class RideService {
         return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
     }
 
+    // ================= location updates =================
 
+    @Transactional
+    public void updateVehicleLocation(Long rideId, Double latitude, Double longitude) {
+        Ride ride = getRideOrThrow(rideId);
 
+        if (ride.getDriver() == null || ride.getDriver().getVehicle() == null) {
+            throw new IllegalStateException("Ride does not have an assigned vehicle");
+        }
+
+        Vehicle vehicle = ride.getDriver().getVehicle();
+        Location location = vehicle.getLocation();
+
+        // Create location if it doesn't exist
+        if (location == null) {
+            location = new Location();
+            vehicle.setLocation(location);
+        }
+
+        // Update coordinates
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+
+        // Save the ride (vehicle location is persisted via cascade)
+        rideRepository.save(ride);
+    }
+
+    @Transactional
+    public void updatePassengerLocation(Long rideId, Double latitude, Double longitude) {
+        Ride ride = getRideOrThrow(rideId);
+
+        System.out.println(String.format(
+                "Passenger location updated for ride %d: lat=%.6f, lng=%.6f at %s",
+                rideId,
+                latitude,
+                longitude,
+                LocalDateTime.now()
+        ));
+    }
 
     // ================= ride actions =================
 
@@ -312,6 +390,27 @@ public class RideService {
 
         rideRepository.save(ride);
         return new StopRideResponse(ride.getPrice());
+    }
+
+    @Transactional
+    public void startRide(Person driver, Long rideId) {
+        Ride ride = rideRepository.findById(rideId).orElseThrow(
+            () -> {throw new RideNotFoundException("Can't find a ride to start.");}
+        );
+
+        if (ride.getDriver().getId() != driver.getId()) {
+            throw new ForeignRideException("Only a driver of this ride can start it.");
+        }
+
+        if (ride.getStatus() == RideStatus.ONGOING || ride.getStartTime() != null)
+            throw new RideAlreadyStartedException();
+
+        ride.setStatus(RideStatus.ONGOING);
+        LocalDateTime now = LocalDateTime.now();
+        ride.setStartTime(now);
+        ride.setEndTime(now.plusSeconds(ride.getRoute().getEstimatedTimeSeconds()));
+        
+        rideRepository.save(ride);
     }
 
     @Transactional
@@ -407,4 +506,5 @@ public class RideService {
     private Integer round(Double value) {
         return value != null ? (int) Math.round(value) : null;
     }
+
 }

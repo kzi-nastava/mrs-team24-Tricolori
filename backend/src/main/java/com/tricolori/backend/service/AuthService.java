@@ -1,24 +1,9 @@
 package com.tricolori.backend.service;
 
-import com.tricolori.backend.entity.ActivationToken;
-import com.tricolori.backend.entity.Driver;
-import com.tricolori.backend.entity.Passenger;
-import com.tricolori.backend.entity.Person;
-import com.tricolori.backend.entity.RegistrationToken;
-import com.tricolori.backend.entity.Vehicle;
-import com.tricolori.backend.entity.VehicleSpecification;
-import com.tricolori.backend.repository.ActivationTokenRepository;
-import com.tricolori.backend.repository.DriverRepository;
-import com.tricolori.backend.repository.PassengerRepository;
-import com.tricolori.backend.repository.PersonRepository;
-import com.tricolori.backend.repository.RegistrationTokenRepository;
-import com.tricolori.backend.dto.auth.LoginRequest;
-import com.tricolori.backend.dto.auth.LoginResponse;
+import com.tricolori.backend.dto.auth.*;
+import com.tricolori.backend.entity.*;
+import com.tricolori.backend.repository.*;
 import com.tricolori.backend.dto.profile.PersonDto;
-import com.tricolori.backend.dto.auth.RegisterPassengerRequest;
-import com.tricolori.backend.dto.auth.AdminDriverRegistrationRequest;
-import com.tricolori.backend.dto.auth.DriverPasswordSetupRequest;
-import com.tricolori.backend.dto.auth.RegisterVehicleSpecification;
 import com.tricolori.backend.mapper.PersonMapper;
 import com.tricolori.backend.mapper.VehicleMapper;
 import com.tricolori.backend.security.JwtUtil;
@@ -57,6 +42,7 @@ public class AuthService {
     private final EmailService emailService;
     private final VehicleService vehicleService;
     private final JwtUtil jwtUtil;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     private final PersonMapper personMapper;
     private final VehicleMapper vehicleMapper;
@@ -66,8 +52,6 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
-
-        log.info("iddler");
 
         Person person = (Person) authentication.getPrincipal();
         final String token = jwtUtil.generateToken(person.getEmail());
@@ -178,8 +162,6 @@ public class AuthService {
         return RegistrationTokenVerificationStatus.VALID;
     }
 
-
-
     @Transactional
     public void registerDriver(AdminDriverRegistrationRequest request, MultipartFile pfpFile) {
         if (personRepository.existsByEmail(request.email())) {
@@ -240,6 +222,46 @@ public class AuthService {
 
         token.setUsed(true);
         token.setActivatedAt(java.time.LocalDateTime.now());
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.token())
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+
+        if (!resetToken.isValid()) {
+            throw new RuntimeException("Token is no longer valid (expired or used)");
+        }
+
+        Person person = resetToken.getPerson();
+        person.setPassword(passwordEncoder.encode(request.password()));
+
+        resetToken.setUsed(true);
+
+        personRepository.save(person);
+        passwordResetTokenRepository.save(resetToken);
+    }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+
+        Optional<Person> personOpt = personRepository.findByEmail(request.email());
+
+        if (personOpt.isPresent()) {
+            Person person = personOpt.get();
+
+            PasswordResetToken resetToken = PasswordResetToken.createForPerson(person);
+            passwordResetTokenRepository.save(resetToken);
+
+            emailService.sendPasswordResetEmail(
+                    person.getEmail(),
+                    person.getFirstName(),
+                    resetToken.getToken()
+            );
+        }
+
+        log.info("Password reset processed for email: {}", request.email());
     }
 
     // Get the authenticated user's ID from the security context

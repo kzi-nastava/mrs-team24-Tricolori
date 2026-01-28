@@ -5,5 +5,7 @@ public record DriverDto(
         String firstName,
         String lastName,
         String profilePicture,
+        String email,
+        String phoneNumber,
         Double rating
 ) {}
