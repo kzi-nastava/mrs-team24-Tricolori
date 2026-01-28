@@ -58,19 +58,24 @@ export class UnregisteredHome implements OnInit {
    * Updating this signal automatically updates the map via the <app-map> input effect.
    */
   loadVehicles(): void {
-    this.isLoadingVehicles.set(true);
-    this.vehicleService.getActiveVehicles().subscribe({
-      next: (vehicles) => {
-        this.vehicles.set(vehicles);
-        this.isLoadingVehicles.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading vehicles:', error);
-        this.isLoadingVehicles.set(false);
-        this.errorMessage.set('Failed to load vehicles. Please try again.');
-      }
-    });
-  }
+  this.isLoadingVehicles.set(true);
+
+  this.vehicleService.getActiveVehicles().subscribe({
+    next: (vehicles) => {
+      this.vehicles.set(vehicles);
+
+      // FORCE redraw AFTER map is already created
+      this.mapService.updateVehicleMarkers(vehicles);
+
+      this.isLoadingVehicles.set(false);
+    },
+    error: (error) => {
+      console.error('Error loading vehicles:', error);
+      this.isLoadingVehicles.set(false);
+      this.errorMessage.set('Failed to load vehicles. Please try again.');
+    }
+  });
+}
 
   // Navigation Logic
   handleStart(): void {
