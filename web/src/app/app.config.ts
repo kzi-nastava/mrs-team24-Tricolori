@@ -14,7 +14,7 @@ import { heroBoltSolid, heroBoltSlashSolid } from '@ng-icons/heroicons/solid';
 import { ionLocationOutline, ionCarOutline } from '@ng-icons/ionicons';
 import { routes } from './app.routes';
 import { provideIcons } from '@ng-icons/core';
-import { authInterceptor } from './shared/model/auth.interceptor';
+import { authInterceptor } from './security/auth.interceptor';
 import { matAssistantPhotoOutline, matAccountCircleOutline } from '@ng-icons/material-icons/outline'
 import { bootstrapClock, bootstrap123, bootstrapType } from '@ng-icons/bootstrap-icons'
 import { mynaBaby } from '@ng-icons/mynaui/outline'

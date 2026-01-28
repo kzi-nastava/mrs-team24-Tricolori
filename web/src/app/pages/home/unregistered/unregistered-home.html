@@ -1,0 +1,75 @@
+<div class="flex flex-col lg:flex-row w-full h-[calc(100vh-64px)] bg-gray-100">
+
+  <!-- Info Panel -->
+  <div class="w-full lg:w-1/4 bg-white shadow-lg p-6 overflow-y-auto z-10 lg:h-full">
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-4">
+      @if (currentState() !== 'INITIAL') {
+        <button (click)="handleBack()" class="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg text-gray-700 font-medium text-sm">
+          <ng-icon name="heroArrowLeft" class="w-4 h-4"></ng-icon> Back
+        </button>
+      } @else {
+        <ng-icon name="heroMapPin" class="w-6 h-6 text-base-600"></ng-icon>
+      }
+      <h2 class="text-xl font-semibold text-base-900 m-0">Plan Your Ride</h2>
+    </div>
+
+    @switch (currentState()) {
+      @case ('INITIAL') {
+        <app-ride-estimation-initial
+          [availableDrivers]="availableDrivers()"
+          [averageRating]="averageRating()"
+          (onStart)="handleStart()">
+        </app-ride-estimation-initial>
+      }
+      @case ('FORM') {
+        <app-ride-estimation-form
+          [errorMessage]="errorMessage()"
+          (onEstimate)="onEstimate($event)">
+        </app-ride-estimation-form>
+      }
+      @case ('RESULT') {
+        @if (estimateResults()) {
+          <app-ride-estimation-result
+            [results]="estimateResults()!"
+            (onReset)="handleReset()">
+          </app-ride-estimation-result>
+        }
+      }
+    }
+  </div>
+
+  <!-- Map Container (Right Side on Desktop, Bottom on Mobile) -->
+<div class="w-full lg:w-3/4 h-[50vh] lg:h-full relative z-0">
+  <div id="map" class="w-full h-full"></div>
+  <!-- Map Legend (Bottom Right) -->
+<div class="absolute bottom-6 right-6 bg-white rounded-lg shadow-lg p-5 z-[1000] min-w-[200px]">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-base font-semibold text-base-900 m-0">Vehicle Status</h3>
+    <button 
+      (click)="loadVehicles()"
+      [disabled]="isLoadingVehicles()"
+      class="p-1.5 hover:bg-gray-100 rounded transition-colors disabled:opacity-50"
+      title="Refresh vehicles">
+      <ng-icon 
+        name="heroArrowPath" 
+        class="w-5 h-5 text-base-600"
+        [class.animate-spin]="isLoadingVehicles()">
+      </ng-icon>
+    </button>
+  </div>
+  <div class="space-y-3">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+      <span class="text-sm text-gray-700">Available ({{ availableDrivers() }})</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-4 bg-red-500 rounded-full"></div>
+      <span class="text-sm text-gray-700">Occupied ({{ vehicles().length - availableDrivers() }})</span>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
