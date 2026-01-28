@@ -61,8 +61,8 @@ export class PassengerHistory {
     {
       id: 1,
       route: 'Kraljev park → Kosovska 21',
-      startDate: '2024-12-15',
-      endDate: '2024-12-15',
+      startDate: '2025-12-25',
+      endDate: '2025-12-25',
       price: 232.70,
       status: 'Completed',
       startTime: '09:30 AM',
@@ -87,9 +87,9 @@ export class PassengerHistory {
     },
     {
       id: 5,
-      route: 'Bulevar Oslobođenja 30 → Trg Slobode',
-      startDate: '2024-12-14',
-      endDate: '2024-12-14',
+      route: 'Železnička stanica → Novosadski sajam',
+      startDate: '2026-01-27',
+      endDate: '2026-01-27',
       price: 325.80,
       status: 'Completed',
       startTime: '14:00 PM',
