@@ -41,4 +41,8 @@ public class ChangeDataRequest {
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
+    public boolean isPending() {
+        return reviewedAt == null;
+    }
+
 }

@@ -3,6 +3,7 @@ package com.tricolori.backend.controller;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.tricolori.backend.entity.Person;
+import com.tricolori.backend.exception.PersonNotFoundException;
+import com.tricolori.backend.repository.DriverRepository;
+import com.tricolori.backend.repository.PersonRepository;
+import com.tricolori.backend.service.ChangeDataRequestService;
 import com.tricolori.backend.service.CloudinaryService;
 import com.tricolori.backend.service.ProfileService;
 import com.tricolori.backend.service.VehicleService;
@@ -29,7 +34,11 @@ import lombok.RequiredArgsConstructor;
 public class ProfileController {
     private final ProfileService profileService;
     private final VehicleService vehicleService;
+    private final ChangeDataRequestService requestService;
     private final CloudinaryService cloudinaryService;
+
+    private final DriverRepository driverRepository;
+    private final PersonRepository personRepository;
 
     @GetMapping("/me")
     public ResponseEntity<ProfileResponse> getUserProfile(@AuthenticationPrincipal Person user) {
@@ -47,11 +56,15 @@ public class ProfileController {
     }
 
     @PutMapping("/me")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PASSENGER')")
     public ResponseEntity<ProfileResponse> updateProfile(
         @AuthenticationPrincipal Person user,
         @RequestBody ProfileRequest request
     ) {
-        ProfileResponse updated = profileService.updateMyProfile(user, request);
+        Person dbPerson = personRepository.findById(user.getId())
+            .orElseThrow(() -> new PersonNotFoundException("Person not found"));
+
+        ProfileResponse updated = profileService.updateMyProfile(dbPerson, request);
         return ResponseEntity.ok(updated);
     }
 
@@ -63,4 +76,5 @@ public class ProfileController {
         String url = cloudinaryService.uploadProfilePicture(pfpFile, user.getId());
         return ResponseEntity.ok(Map.of("url", url));
     }
+
 }
