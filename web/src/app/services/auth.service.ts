@@ -1,7 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { LoginRequest, LoginResponse, PersonDto, PersonRole, RegisterRequest } from '../model/auth.model';
+import {
+  ForgotPasswordRequest,
+  LoginRequest,
+  LoginResponse,
+  PersonDto,
+  PersonRole,
+  RegisterRequest, ResetPasswordRequest
+} from '../model/auth.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { AdminDriverRegistrationRequest, DriverPasswordSetupRequest } from '../model/driver-registration';
@@ -117,6 +124,14 @@ export class AuthService {
     localStorage.removeItem('person_data');
     this.currentPersonSubject.next(null);
     this.router.navigate(['/login']);
+  }
+
+  forgotPassword(request: ForgotPasswordRequest) : Observable<string> {
+    return this.http.post(`${this.API_URL}/forgot-password`, request, { responseType: 'text' });
+  }
+
+  resetPassword(request: ResetPasswordRequest) : Observable<string> {
+    return this.http.post(`${this.API_URL}/reset-password`, request, { responseType: 'text' });
   }
 
   getCurrentUser(): PersonDto | null {
