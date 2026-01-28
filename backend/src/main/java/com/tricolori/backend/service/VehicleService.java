@@ -3,6 +3,7 @@ package com.tricolori.backend.service;
 import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import org.springframework.stereotype.Service;
 
+import com.tricolori.backend.entity.Location;
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.entity.Vehicle;
 import com.tricolori.backend.entity.VehicleSpecification;
@@ -58,6 +59,7 @@ public class VehicleService {
         vehicle.setSpecification(specs);
         vehicle.setPlateNum(registrationPlate);
         vehicle.setModel(specs.getModel());
+        vehicle.setLocation(new Location(1.0, 1.0));
 
         return vehicleRepository.save(vehicle);
     }

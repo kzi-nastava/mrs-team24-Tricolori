@@ -16,4 +16,8 @@ public class Stop {
 
     @Embedded
     private Location location;
+
+    public String toCoordinates() {
+        return location.getLongitude().toString() + "," + location.getLatitude().toString();
+    }
 }

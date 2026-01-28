@@ -5,7 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.repository.PersonRepository;
-import com.tricolori.backend.exception.PersonNotFoundException;
 import com.tricolori.backend.dto.profile.ProfileRequest;
 import com.tricolori.backend.dto.profile.ProfileResponse;
 
@@ -20,10 +19,7 @@ public class ProfileService {
     private final PersonMapper personMapper;
 
     @Transactional
-    public ProfileResponse updateMyProfile(Person currentPerson, ProfileRequest request) {
-        Person dbPerson = personRepository.findById(currentPerson.getId())
-            .orElseThrow(() -> new PersonNotFoundException("Person not found"));
-
+    public ProfileResponse updateMyProfile(Person dbPerson, ProfileRequest request) {
         // Update fields based on request:
         dbPerson.setFirstName(request.getFirstName());
         dbPerson.setLastName(request.getLastName());

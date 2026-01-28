@@ -1,4 +1,65 @@
-<app-base-profile>
+<div class="max-w-xl mx-auto font-sans p-3">
+    <h2 class="text-2xl text-light-700 px-3">Your Profile</h2>
+    <p class="text-gray-500 px-3">Manage your personal information and settings</p>
+
+    <form (submit)="updateProfile()" [formGroup]="personalForm" class="flex flex-col gap-12 mt-12">
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <ng-icon name="matAccountCircleOutline" size="2.5rem" style="color: var(--color-light-700);"/>
+                <div>
+                    <h3 class="text-lg text-light-700">Profile Picture</h3>
+                    <p class="text-gray-400 text-sm">Others can see your profile picture</p>
+                </div>
+            </div>
+            <app-pfp-picker 
+                [pfpSrc]="userProfile()?.pfp" 
+                (fileSelected)="handleNewFile($event)"
+                #pfpPicker />
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <ng-icon name="heroEnvelope" size="2.5rem" style="color: var(--color-light-700);"/>
+                <div>
+                    <h3 class="text-lg text-light-700">Email Address</h3>
+                    <p class="text-gray-400 text-sm">Your contact email address</p>
+                </div>
+            </div>
+            <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3 w-full" type="email" readonly formControlName="email">
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <ng-icon name="heroUser" size="2.5rem" style="color: var(--color-light-700);"/>
+                <div>
+                    <h3 class="text-lg text-light-700">Personal Information</h3>
+                    <p class="text-gray-400 text-sm">Update your personal details</p>
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">First Name</p>
+                <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" type="text" formControlName="firstName">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Last Name</p>
+                <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" type="text" formControlName="lastName">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Phone Number</p>
+                <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" type="text" formControlName="phoneNumber">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Home Address</p>
+                <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" type="text" formControlName="homeAddress">
+            </div>
+        </div>
+
+        <button [disabled]="!hasChanges() || personalForm.invalid" type="submit" 
+                class="disabled:bg-dark-300 disabled:cursor-not-allowed bg-light-700 px-10 py-2.5 mx-auto rounded-xl w-fit text-white cursor-pointer">
+            Update Profile
+        </button>
+    </form>
+
     <!-- Vehicle Information -->
     <div class="flex flex-col gap-4 my-12">
         <div class="flex items-center gap-4">
@@ -99,4 +160,4 @@
             </div>
         </div>
     </div>
-</app-base-profile>
+</div>

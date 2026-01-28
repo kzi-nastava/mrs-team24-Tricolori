@@ -10,12 +10,13 @@ import { NgIcon } from "@ng-icons/core";
 import { MatDialog } from '@angular/material/dialog';
 import { Overlay } from '@angular/cdk/overlay';
 import { SchedulePicker } from './schedule-picker/schedule-picker';
-import { RideOptions, RideRequest } from '../../../../../model/ride';
+import { RideRequest } from '../../../../../model/ride';
 import { MapService } from '../../../../../services/map.service';
 import { EstimationService } from '../../../../../services/estimation.service';
 import { GeocodingService } from '../../../../../services/geocoding.service';
 
 import * as L from 'leaflet';
+import { RideService } from '../../../../../services/ride.service';
 
 @Component({
   selector: 'app-home-passenger',
@@ -35,6 +36,7 @@ export class RideBooking implements OnInit, AfterViewInit {
   // Services:
   private mapService = inject(MapService);
   private estimationService = inject(EstimationService);
+  private rideService = inject(RideService)
   private geocodingService = inject(GeocodingService);
 
   routeSelector = viewChild.required(RouteSelector);
@@ -117,38 +119,59 @@ export class RideBooking implements OnInit, AfterViewInit {
 
     // Since route selection is only mandatory data, I don't check
     // other child components' validity...
-    if (routeSelector.routeForm.valid) {
-      const routeVal: Route = routeSelector.routeForm.getRawValue();
-      const rideRequest: RideRequest = {
-        route: {
-          pickup: routeVal.pickup,
-          destination: routeVal.destination,
-          stops: routeVal.stops
-        },
-        preferences: preferencesSelector.preferencesForm.value,
-        trackers: trackersSelector.trackersForm.getRawValue().trackers as string[] || []
-      }
-
-      console.log('Route Data:', rideRequest);
-
-      // Draw route on map:
-      const esitmation = await this.estimationService.calculateRoute(
-        { lat: routeVal.pickup.latitude, lng: routeVal.pickup.longitude },
-        { lat: routeVal.destination.latitude, lng: routeVal.destination.longitude },
-        routeVal.pickup.address,
-        routeVal.destination.address
-      )
-      this.showRouteOnMap(routeVal, esitmation?.routeCoordinates);
-    } else {
+    if (!routeSelector.routeForm.valid) {
       routeSelector.routeForm.markAllAsTouched();
     }
+
+    const routeVal = routeSelector.routeForm.getRawValue();
+    console.log(routeVal)
+
+    const estimation = await this.estimationService.calculateRoute(
+      { lat: routeVal.pickup.location.lat, lng: routeVal.pickup.location.lng },
+      { lat: routeVal.destination.location.lat, lng: routeVal.destination.location.lng },
+      routeVal.pickup.address,
+      routeVal.destination.address
+    );
+
+    const rideRequest: RideRequest = {
+      route: {
+        pickup: routeVal.pickup,
+        destination: routeVal.destination,
+        stops: routeVal.stops
+      },
+      preferences: preferencesSelector.preferencesForm.value,
+      trackers: trackersSelector.trackersForm.getRawValue().trackers as string[] || [],
+      estimation: {
+        distanceKilometers: estimation?.distance!,
+        durationMinutes: estimation?.duration!
+      }
+    }
+
+
+    this.rideService.bookRide(rideRequest).subscribe({
+      next: (response) => {
+        console.log(response);
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    })
+
+    // Draw route on map:
+    const esitmation = await this.estimationService.calculateRoute(
+      { lat: routeVal.pickup.location.lat, lng: routeVal.pickup.location.lng },
+      { lat: routeVal.destination.location.lat, lng: routeVal.destination.location.lng },
+      routeVal.pickup.address,
+      routeVal.destination.address
+    )
+    this.showRouteOnMap(routeVal, esitmation?.routeCoordinates);
   }
 
   // TODO: REFACTOR THIS...
   showRouteOnMap(route: Route, routeCoordinates?: L.LatLng[]) {
-    this.mapService.drawRoute('',
-      [route.pickup.latitude, route.pickup.longitude],
-      [route.destination.latitude, route.destination.longitude],
+    this.mapService.drawRoute('', 
+      [route.pickup.location.lat, route.pickup.location.lng],
+      [route.destination.location.lat, route.destination.location.lng],
       routeCoordinates
     );
   }

@@ -153,6 +153,10 @@ export const routes: Routes = [
         path: 'pricelist',
         loadComponent: () => import('./pages/pricelist/pricelist-admin').then(m => m.PricelistAdmin)
       },
+      {
+        path: '',
+        loadComponent: () => import('./pages/profile/change-requests/change-requests').then(m => m.ChangeRequests)
+      },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },

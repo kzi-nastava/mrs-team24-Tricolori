@@ -107,64 +107,23 @@ export class PassengerHistory {
     },
     {
       id: 4,
-      route: 'Železnička stanica → Limanski park',
-      startDate: '2024-12-13',
-      endDate: '2024-12-13',
+      route: 'Bulevar oslobođenja 46, Novi Sad → Petrovaradinska tvrđava, Novi Sad',
+      startDate: '2026-01-27',
+      endDate: '2026-01-27',
       price: 512.00,
       status: 'Completed',
-      startTime: '08:00 AM',
-      endTime: '08:04 AM',
-      duration: '4min',
-      driverName: 'Stefan Nikolić',
+      startTime: '04:58 AM',
+      endTime: '05:14 AM',
+      duration: '16 min',
+      driverName: 'Sara Stojkov',
       driverPhone: '+381 65 555 1234',
-      vehicleType: 'Premium - Mercedes E-Class',
+      vehicleType: 'Fiat Punto',
       licensePlate: 'NS-789-EF',
       distance: 4.2,
       paymentMethod: 'Credit Card',
       completedAt: new Date(Date.now() - 48 * 60 * 60 * 1000), // 2 days ago
       canRate: true,
       ratingExpired: false
-    },
-    {
-      id: 4,
-      route: 'Spens → Petrovaradinska tvrđava',
-      startDate: '2024-12-12',
-      endDate: '2024-12-12',
-      price: 395.60,
-      status: 'Cancelled',
-      startTime: '16:00 PM',
-      endTime: '16:00 PM',
-      duration: '0min',
-      driverName: 'Jelena Đorđević',
-      driverPhone: '+381 64 222 3333',
-      vehicleType: 'XL - Toyota Sienna',
-      licensePlate: 'BG-321-GH',
-      distance: 0,
-      paymentMethod: 'N/A',
-      notes: 'Ride cancelled by me due to change of plans.',
-      completedAt: new Date('2024-12-12T16:00:00'),
-      canRate: false,
-      ratingExpired: false
-    },
-    {
-      id: 5,
-      route: 'Grbavica → Spens',
-      startDate: '2024-12-08',
-      endDate: '2024-12-08',
-      price: 250.00,
-      status: 'Completed',
-      startTime: '11:00 AM',
-      endTime: '11:05 AM',
-      duration: '5min',
-      driverName: 'Milan Stojanović',
-      driverPhone: '+381 66 777 8888',
-      vehicleType: 'Economy - Volkswagen Golf',
-      licensePlate: 'NS-654-IJ',
-      distance: 2.1,
-      paymentMethod: 'Cash',
-      completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-      canRate: false,
-      ratingExpired: true
     }
   ];
   
@@ -255,6 +214,5 @@ export class PassengerHistory {
   // DELETE AFTER TESTING
   // Navigate to test ride tracking
   startTestRide() {
-  this.router.navigate(['/passenger/ride-tracking', 'test-ride-123']);
-  }
+  this.router.navigate(['/passenger/ride-tracking', 7]);  }
 }
