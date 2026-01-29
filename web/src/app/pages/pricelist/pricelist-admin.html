@@ -1,71 +1,74 @@
-<div class="pricelist-container">
-  <div class="pricelist-card">
-    <div class="section">
-      <div class="section-header">
-        <div class="icon-wrapper">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div class="flex justify-center items-start p-12 px-8 min-h-[calc(100vh-200px)] bg-white">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-10 w-full max-w-[500px]">
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="flex items-center justify-center w-10 h-10 bg-[#00d4d4] rounded-lg text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2v20M2 12h20"/>
           </svg>
         </div>
-        <h2>Price per Kilometer</h2>
+        <h2 class="text-lg font-semibold text-[#1a1a1a] m-0">Price per Kilometer</h2>
       </div>
-      <div class="input-group">
+      <div class="mt-4">
         <input 
           type="number" 
           [(ngModel)]="pricePerKm" 
-          class="price-input"
+          class="w-full py-3 px-4 text-[0.9375rem] text-[#1a1a1a] bg-gray-50 border border-gray-200 rounded-lg transition-all duration-200 outline-none focus:bg-white focus:border-[#00d4d4] focus:shadow-[0_0_0_3px_rgba(0,212,212,0.1)] placeholder:text-gray-400"
           placeholder="150"
         />
       </div>
     </div>
-
-    <div class="section">
-      <div class="section-header">
-        <div class="icon-wrapper">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="flex items-center justify-center w-10 h-10 bg-[#00d4d4] rounded-lg text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <path d="M12 6v6l4 2"/>
           </svg>
         </div>
-        <h2>Start Prices</h2>
+        <h2 class="text-lg font-semibold text-[#1a1a1a] m-0">Start Prices</h2>
       </div>
-
-      <div class="price-item">
-        <label class="price-label">Standard</label>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-500 mb-2">Standard</label>
         <input 
           type="number" 
           [(ngModel)]="standardPrice" 
-          class="price-input"
+          class="w-full py-3 px-4 text-[0.9375rem] text-[#1a1a1a] bg-gray-50 border border-gray-200 rounded-lg transition-all duration-200 outline-none focus:bg-white focus:border-[#00d4d4] focus:shadow-[0_0_0_3px_rgba(0,212,212,0.1)] placeholder:text-gray-400"
           placeholder="150"
         />
       </div>
-
-      <div class="price-item">
-        <label class="price-label">Luxury</label>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-500 mb-2">Luxury</label>
         <input 
           type="number" 
           [(ngModel)]="luxuryPrice" 
-          class="price-input"
+          class="w-full py-3 px-4 text-[0.9375rem] text-[#1a1a1a] bg-gray-50 border border-gray-200 rounded-lg transition-all duration-200 outline-none focus:bg-white focus:border-[#00d4d4] focus:shadow-[0_0_0_3px_rgba(0,212,212,0.1)] placeholder:text-gray-400"
           placeholder="250"
         />
       </div>
-
-      <div class="price-item">
-        <label class="price-label">Van</label>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-500 mb-2">Van</label>
         <input 
           type="number" 
           [(ngModel)]="vanPrice" 
-          class="price-input"
+          class="w-full py-3 px-4 text-[0.9375rem] text-[#1a1a1a] bg-gray-50 border border-gray-200 rounded-lg transition-all duration-200 outline-none focus:bg-white focus:border-[#00d4d4] focus:shadow-[0_0_0_3px_rgba(0,212,212,0.1)] placeholder:text-gray-400"
           placeholder="225"
         />
       </div>
     </div>
-
-    <div class="info-text">
+    
+    <div class="text-[0.8125rem] text-gray-500 my-8 mx-0 text-left">
       All prices are calculated in RSD - Serbian Dinars.
     </div>
-
-    <button class="save-button" (click)="onSaveChanges()">
+    
+    <button 
+      class="w-full py-3.5 px-6 bg-[#00d4d4] text-white text-base font-semibold border-0 rounded-lg cursor-pointer transition-all duration-200 hover:bg-[#00b8b8] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,212,212,0.3)] active:translate-y-0" 
+      (click)="onSaveChanges()"
+    >
       Save changes
     </button>
   </div>
