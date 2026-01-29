@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark, heroStar } from '@ng-icons/heroicons/outline';
-import { heroStarSolid } from '@ng-icons/heroicons/solid';
+import { heroHeartSolid, heroStarSolid } from '@ng-icons/heroicons/solid';
 import { finalize } from 'rxjs/operators';
 import * as L from 'leaflet';
 import { RideService } from '../../../services/ride.service';
@@ -55,7 +55,7 @@ interface PassengerRide {
     NgIconComponent
   ],
   providers: [
-    provideIcons({ heroEye, heroXMark, heroStar, heroStarSolid })
+    provideIcons({ heroEye, heroXMark, heroStar, heroStarSolid, heroHeartSolid })
   ],
   templateUrl: './passenger-history.html',
   styleUrls: ['./passenger-history.css']
@@ -335,6 +335,10 @@ export class PassengerHistory implements OnInit {
     const within72Hours = !this.isRatingExpired(completedAt);
     
     return isCompleted && hasNoRating && within72Hours;
+  }
+
+  addToFavoriteRoutes(ride: PassengerRide): void {
+    console.log(`Adding ride ${ride.id} to favorite routes (to-do).`);
   }
 
   // ================= map =================
