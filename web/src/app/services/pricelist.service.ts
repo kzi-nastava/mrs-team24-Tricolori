@@ -22,15 +22,15 @@ export interface PriceConfigRequest {
   providedIn: 'root'
 })
 export class PricelistService {
-  private apiUrl = `${environment.apiUrl}/api/v1/pricelist`;
-
+  private apiUrl = `${environment.apiUrl}/pricelist`; 
+  
   constructor(private http: HttpClient) {}
-
+  
   getCurrentPricing(): Observable<PriceConfigResponse> {
-    return this.http.get<PriceConfigResponse>(this.apiUrl);
+    return this.http.get<PriceConfigResponse>(`${this.apiUrl}/current`);
   }
-
+  
   updatePricing(request: PriceConfigRequest): Observable<void> {
-    return this.http.put<void>(this.apiUrl, request);
+    return this.http.put<void>(`${this.apiUrl}/update`, request);
   }
 }

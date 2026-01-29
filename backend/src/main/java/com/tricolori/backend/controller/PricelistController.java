@@ -17,14 +17,14 @@ public class PricelistController {
     private final PriceListService priceListService;
 
     // Get current pricing configuration - Returns all base prices and the km price
-    @GetMapping
+    @GetMapping("/current")
     public ResponseEntity<PriceConfigResponse> getCurrentPricing() {
         PriceConfigResponse response = priceListService.getCurrentPricing();
         return ResponseEntity.ok(response);
     }
 
     // Update pricing (admin only) - Admin can define/change prices for all vehicle types and km price
-    @PutMapping
+    @PutMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updatePricing(@Valid @RequestBody PriceConfigRequest request) {
         priceListService.updatePricing(request);
