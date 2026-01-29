@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity(name = "PriceList")
 @Table(name = "price_lists")
@@ -24,7 +24,7 @@ public class PriceList {
             nullable = false
     )
     @CreationTimestamp
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "standard_price")
     private double standardPrice;
