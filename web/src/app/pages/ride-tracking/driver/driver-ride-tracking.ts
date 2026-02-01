@@ -100,10 +100,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Get ride ID from route params, default to 6 if not provided
     this.route.params.subscribe(params => {
-      console.log('🚀 Component initialized');
-      console.log('📋 Route params:', params);
       this.rideId = +params['id'] || 6;
-      console.log('🎯 Using ride ID:', this.rideId);
       this.loadRideData(this.rideId);
     });
   }
@@ -112,29 +109,19 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    * Load ride data from backend
    */
   private loadRideData(rideId: number): void {
-    console.log('🔍 Loading ride data for ride ID:', rideId);
     
     this.rideService.trackRide(rideId).subscribe({
       next: (response) => {
-        console.log('✅ Received ride tracking response:', response);
-        console.log('📍 Response details:');
-        console.log('  - rideId:', response.rideId);
-        console.log('  - status:', response.status);
-        console.log('  - route:', response.route);
-        console.log('  - currentLocation:', response.currentLocation);
-        console.log('  - driver:', response.driver);
-        console.log('  - passengers:', response.passengers);
-        console.log('  - estimatedTimeMinutes:', response.estimatedTimeMinutes);
-        console.log('  - price:', response.price);
+        // console.log('✅ Ride tracking data loaded:', response);
         
         // Extract pickup and destination from route DTO
         const route = response.route;
-        console.log('🗺️ Route data:', {
-          pickupAddress: route?.pickupAddress,
-          destinationAddress: route?.destinationAddress,
-          distanceKm: route?.distanceKm,
-          estimatedTimeSeconds: route?.estimatedTimeSeconds
-        });
+        // console.log('🗺️ Route data:', {
+        //   pickupAddress: route?.pickupAddress,
+        //   destinationAddress: route?.destinationAddress,
+        //   distanceKm: route?.distanceKm,
+        //   estimatedTimeSeconds: route?.estimatedTimeSeconds
+        // });
 
         // If route is null (finished ride), load full details instead
         if (!route && (response.status === 'FINISHED' || response.status === 'CANCELLED_BY_DRIVER' || response.status === 'CANCELLED_BY_PASSENGER')) {
@@ -169,16 +156,11 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
           })) || []
         };
         
-        console.log('🚗 Mapped ride details:', rideDetails);
         this.rideDetails.set(rideDetails);
 
         // Set initial values
         const remainingDist = route?.distanceKm || 0;
         const estimatedArr = response.estimatedTimeMinutes || 0;
-        
-        console.log('⏱️ Setting initial values:');
-        console.log('  - remainingDistance:', remainingDist);
-        console.log('  - estimatedArrival:', estimatedArr);
         
         this.remainingDistance.set(remainingDist);
         this.estimatedArrival.set(estimatedArr);
@@ -196,7 +178,6 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
         }
 
         // Initialize map after data is loaded
-        console.log('🗺️ Initializing map...');
         setTimeout(() => this.initMap(), 100);
       },
       error: (err) => {
@@ -216,11 +197,10 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    * Load full ride details for finished rides
    */
   private loadFinishedRideDetails(rideId: number, trackingResponse: any): void {
-    console.log('📦 Loading full ride details for finished ride...');
     
     this.rideService.getDriverRideDetail(rideId).subscribe({
       next: (detail) => {
-        console.log('✅ Received full ride details:', detail);
+        // console.log('✅ Received full ride details:', detail);
         
         const rideDetails = {
           id: detail.id,
@@ -241,7 +221,6 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
           }]
         };
         
-        console.log('🚗 Mapped finished ride details:', rideDetails);
         this.rideDetails.set(rideDetails);
 
         // For finished rides, set remaining values to 0
@@ -257,7 +236,6 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
         }
 
         // Initialize map
-        console.log('🗺️ Initializing map for finished ride...');
         setTimeout(() => this.initMap(), 100);
       },
       error: (err) => {
