@@ -157,6 +157,26 @@ public class RideController {
         return ResponseEntity.ok(detail);
     }
 
+    // Get passenger's ride history
+    @GetMapping("/history/passenger")
+    @PreAuthorize("hasRole('PASSENGER')")
+    public ResponseEntity<List<PassengerRideHistoryResponse>> getPassengerHistory(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Long passengerId = authenticationService.getAuthenticatedUserId();
+
+        Pageable pageable = Pageable.unpaged();
+
+        List<PassengerRideHistoryResponse> history =
+                rideService.getPassengerHistory(passengerId, pageable)
+                        .getContent();
+
+        return ResponseEntity.ok(history);
+    }
+
     // detailed view for specific ride (for passenger)
     @GetMapping("/{id}/details/passenger")
     @PreAuthorize("hasRole('PASSENGER')")

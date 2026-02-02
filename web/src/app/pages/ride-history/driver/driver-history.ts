@@ -5,12 +5,11 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark } from '@ng-icons/heroicons/outline';
 import { finalize } from 'rxjs/operators';
 import * as L from 'leaflet';
-
+import { RideService } from '../../../services/ride.service';
 import {
-  RideService,
   RideHistoryResponse,
   RideDetailResponse
-} from '../../../services/ride.service';
+} from '../../../model/ride-history';
 
 interface Ride {
   id: number;

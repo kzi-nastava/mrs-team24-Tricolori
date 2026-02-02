@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -40,9 +41,44 @@ public class DriverDailyLog {
     @Column(name = "active_time_seconds", nullable = false)
     private Long activeTimeSeconds = 0L;
 
-    private boolean active;
+    private boolean active = false;
 
     @Column(name = "last_activation_at")
     private LocalDateTime lastActivationAt;
+
+    /** Set activity status to true and set last activation time to now */
+    public void setActiveOn() {
+        setActive(true);
+        setLastActivationAt(LocalDateTime.now());
+    }
+
+    /** Set activity status to false and update total active time */
+    public void setActiveOff() {
+        if (isActive() && getLastActivationAt() != null) {
+            long secondsSinceActivation = Duration.between(
+                    getLastActivationAt(), LocalDateTime.now()
+            ).getSeconds();
+
+            setActiveTimeSeconds(getActiveTimeSeconds() + secondsSinceActivation);
+        }
+        setActive(false);
+        setLastActivationAt(null);
+    }
+
+    /** Recalculate active time and move last activation point to now */
+    public void refreshActiveTime() {
+        if (!active || lastActivationAt == null) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        long secondsSinceActivation = Duration.between(
+                getLastActivationAt(), now
+        ).getSeconds();
+
+        activeTimeSeconds += secondsSinceActivation;
+        lastActivationAt = now;
+    }
 
 }

@@ -31,6 +31,8 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     List<Ride> findAllByDriverAndStatusIn(Driver driver, Collection<RideStatus> statuses);
 
     List<Ride> findAllByStatusIn(Collection<RideStatus> statuses);
+
+    boolean existsByDriverIdAndStatus(Long driverId, RideStatus rideStatus);
     
     // current ride for driver
     @Query("""
@@ -80,16 +82,11 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     );
 
     // all passenger rides
-    @Query("""
-        SELECT DISTINCT r
-        FROM Ride r
-        JOIN r.passengers p
-        WHERE p.id = :passengerId
-    """)
-    Page<Ride> findAllPassengerRides(
-            @Param("passengerId") Long passengerId,
-            Pageable pageable
-    );
+    @Query("SELECT r FROM Ride r " +
+            "JOIN r.passengers p " +
+            "WHERE p.id = :passengerId " +
+            "ORDER BY r.createdAt DESC")
+    Page<Ride> findAllPassengerRides(@Param("passengerId") Long passengerId, Pageable pageable);
 
     // passenger rides filtered by date
     @Query("""

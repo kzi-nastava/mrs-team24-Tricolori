@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PanicRequest, RideRequest, StopRideRequest, StopRideResponse } from '../model/ride';
+import { RideHistoryResponse, RideDetailResponse, RideRatingRequest, PassengerRideHistoryResponse } from '../model/ride-history';
 import { environment } from '../../environments/environment';
 import {
   RideTrackingResponse,
@@ -9,53 +10,6 @@ import {
   PanicRideRequest
 } from '../model/ride-tracking';
 
-// Interfaces matching your backend DTOs
-export interface RideHistoryResponse {
-  id: number;
-  passengerName?: string;
-  pickupAddress: string;
-  destinationAddress: string;
-  status: string;
-  price: number;
-  distance?: number;
-  duration?: number;
-  startDate: string;
-  endDate: string | null;
-  driverRating?: number | null;
-  vehicleRating?: number | null;
-}
-
-export interface RideDetailResponse {
-  id: number;
-  passengerName: string;
-  passengerPhone: string;
-  driverName: string;
-  vehicleModel: string;
-  vehicleLicensePlate: string;
-  pickupAddress: string;
-  pickupLatitude: number;
-  pickupLongitude: number;
-  dropoffAddress: string;
-  dropoffLatitude: number;
-  dropoffLongitude: number;
-  status: string;
-  totalPrice: number;
-  distance: number;
-  duration: number;
-  createdAt: string;
-  acceptedAt: string;
-  startedAt: string;
-  completedAt: string;
-  driverRating: number | null;
-  vehicleRating: number | null;
-  ratingComment: string | null;
-}
-
-export interface RideRatingRequest {
-  driverRating: number;
-  vehicleRating: number;
-  comment: string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -84,6 +38,27 @@ export class RideService {
     }
     
     return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
+  }
+
+  // Get passenger's ride history with optional date filtering
+  getPassengerHistory(
+    startDate?: string,
+    endDate?: string,
+    sortBy: string = 'createdAt',
+    sortDirection: string = 'DESC'
+  ): Observable<PassengerRideHistoryResponse[]> {
+    let params = new HttpParams()
+      .set('sortBy', sortBy)
+      .set('sortDirection', sortDirection);
+    
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+    
+    return this.http.get<PassengerRideHistoryResponse[]>(`${this.API_URL}/history/passenger`, { params });
   }
 
   // Get detailed information for a specific ride (for driver)
