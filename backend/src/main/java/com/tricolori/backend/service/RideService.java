@@ -415,29 +415,27 @@ public class RideService {
 
     @Transactional
     public void rideOrder(OrderRequest request) {
-        RidePreferences preferences = request.preferences();
-        RideRoute routeData = request.route();
+        RidePreferences preferences = request.getPreferences();
+
+        // Extracting and creating route:
+        RideRoute routeData = request.getRoute();
+        Route route = routeService.createRoute(routeData.pickup(), routeData.destination(), routeData.stops());
 
         Ride ride = new Ride();
-        ride.setCreatedAt(request.createdAt());
+        ride.setCreatedAt(request.getCreatedAt());
         ride.setScheduledFor(preferences.scheduledFor());
-        // TODO: Set start time after we find driver...
-        // TODO: Set end time after we find driver...
-        ride.setStatus(RideStatus.CREATED);
-
-        Route route = routeService.createRoute(routeData.pickup(), routeData.destination(), routeData.stops());
         ride.setRoute(route);
         ride.setPrice(calculatePrice(
             preferences.vehicleType(), route.getDistanceKm()
         ));
 
         // Find passengers by email:
-        ride.setPassengers(passengerService.getTrackingPassengers(request.trackers()));
+        ride.setPassengers(passengerService.getTrackingPassengers(request.getTrackers()));
 
         // Finding the driver:
-        Driver driver = driverService.findById(9L);
-        // Driver driver = driverService.findDriverForRide(routeData.pickup().getLocation(), preferences);
+        Driver driver = driverService.findDriverForRide(route.getPickupStop().getLocation(), preferences);
         ride.setDriver(driver);
+        ride.setStatus(RideStatus.SCHEDULED);
         ride.setVehicleSpecification(driver.getVehicle().getSpecification());
 
         rideRepository.save(ride);

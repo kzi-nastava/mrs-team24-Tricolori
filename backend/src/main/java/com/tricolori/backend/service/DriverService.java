@@ -28,7 +28,6 @@ public class DriverService {
     private final RideRepository rideRepository;
 
     public Driver findDriverForRide(Location pickup, RidePreferences preferences) {
-        // 1. Uzmi sve aktivne vozače
         List<Driver> activeDrivers = repository.getAllCurrentlyActiveDrivers();
         if (activeDrivers.isEmpty()) {
             throw new NoActiveDriversException("Trenutno nema aktivnih vozaca.");
