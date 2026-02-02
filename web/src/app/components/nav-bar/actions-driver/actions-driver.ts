@@ -1,8 +1,8 @@
 import {Component, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
 import {NgClass} from '@angular/common';
-import {RouterLink} from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import {DriverDailyLogService} from '../../../services/driver-daily-log.service';
 
 @Component({
   selector: 'app-actions-driver',
@@ -14,14 +14,40 @@ import { AuthService } from '../../../services/auth.service';
   styleUrl: './actions-driver.css',
 })
 export class ActionsDriver {
-  active: boolean = true ;
-  constructor(private authService: AuthService) {}
+  active = signal<boolean>(true);
+
+  constructor(
+    private authService: AuthService,
+    private driverDailyLogService: DriverDailyLogService,
+  ) {}
 
   toggleStatus() {
-    this.active = !this.active;
+    const requestedStatus = !this.active();
+
+    this.driverDailyLogService.changeStatus(requestedStatus).subscribe({
+      next: () => {
+        this.active.set(requestedStatus);
+        console.log(`Status successfully changed to: ${this.active()}`);
+      },
+      error: (err) => {
+        alert(err.error || 'Error changing driver status.');
+        console.error('Error changing driver status', err);
+      }
+    })
   }
 
-  protected logout() {
+  logout() {
+    if (this.active()) {
+      this.driverDailyLogService.changeStatus(false).subscribe({
+        next: () => this.completeLogout(),
+        error: (err) => alert("Complete your ride before logging out!")
+      });
+    } else {
+      this.completeLogout();
+    }
+  }
+
+  private completeLogout() {
     this.authService.logout();
   }
 }
