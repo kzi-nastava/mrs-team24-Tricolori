@@ -1,10 +1,13 @@
 package com.tricolori.backend.service;
 
+import com.tricolori.backend.dto.driver.DriverDailyLogResponse;
 import com.tricolori.backend.dto.profile.ChangeDriverStatusRequest;
 import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.DriverDailyLog;
 import com.tricolori.backend.enums.RideStatus;
+import com.tricolori.backend.exception.DriverDailyLogNotFoundException;
 import com.tricolori.backend.exception.PersonNotFoundException;
+import com.tricolori.backend.mapper.DriverDailyLogMapper;
 import com.tricolori.backend.repository.DriverDailyLogRepository;
 import com.tricolori.backend.repository.DriverRepository;
 import com.tricolori.backend.repository.RideRepository;
@@ -23,6 +26,7 @@ public class DriverDailyLogService {
     private final DriverDailyLogRepository dailyLogRepository;
     private final DriverRepository driverRepository;
     private final RideRepository rideRepository;
+    private final DriverDailyLogMapper dailyLogMapper;
 
     @Transactional
     public void changeStatus(ChangeDriverStatusRequest request, Long driverId) {
@@ -49,6 +53,17 @@ public class DriverDailyLogService {
 
         log.info("Driver with ID {{}} changed activity status to {{}}.", driverId, request.active());
         dailyLogRepository.save(dailyLog);
+    }
+
+    @Transactional
+    public DriverDailyLogResponse getTodayLog(Long driverId) {
+
+        DriverDailyLog dailyLog = dailyLogRepository.findByDriverIdAndDate(driverId, LocalDate.now())
+                .orElseThrow(() -> new DriverDailyLogNotFoundException("Drivers daily log not found for today."));
+
+        dailyLog.refreshActiveTime();
+
+        return dailyLogMapper.toResponse(dailyLog);
     }
 
     @Transactional

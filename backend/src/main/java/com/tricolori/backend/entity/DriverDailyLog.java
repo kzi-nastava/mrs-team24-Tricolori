@@ -65,4 +65,20 @@ public class DriverDailyLog {
         setLastActivationAt(null);
     }
 
+    /** Recalculate active time and move last activation point to now */
+    public void refreshActiveTime() {
+        if (!active || lastActivationAt == null) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        long secondsSinceActivation = Duration.between(
+                getLastActivationAt(), now
+        ).getSeconds();
+
+        activeTimeSeconds += secondsSinceActivation;
+        lastActivationAt = now;
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.tricolori.backend.controller;
 
+import com.tricolori.backend.dto.driver.DriverDailyLogResponse;
 import com.tricolori.backend.dto.profile.ChangeDriverStatusRequest;
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.service.DriverDailyLogService;
@@ -27,5 +28,13 @@ public class DriverDailyLogController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/today")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<DriverDailyLogResponse> getTodayLog(
+            @AuthenticationPrincipal Person driver
+    ) {
+
+        return ResponseEntity.ok(dailyLogService.getTodayLog(driver.getId()));
+    }
 
 }
