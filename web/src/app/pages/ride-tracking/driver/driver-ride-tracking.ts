@@ -58,7 +58,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
   // Ride details - will be loaded from backend
   rideDetails = signal<RideDetails>({
-    id: 1,
+    id: 6,
     pickup: 'Loading...',
     destination: 'Loading...',
     pickupCoords: [45.2671, 19.8335],
@@ -113,7 +113,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    */
   private loadRideData(rideId: number): void {
     console.log('🔍 Loading ride data for ride ID:', rideId);
-    
+
     this.rideService.trackRide(rideId).subscribe({
       next: (response) => {
         console.log('✅ Received ride tracking response:', response);
@@ -126,7 +126,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
         console.log('  - passengers:', response.passengers);
         console.log('  - estimatedTimeMinutes:', response.estimatedTimeMinutes);
         console.log('  - price:', response.price);
-        
+
         // Extract pickup and destination from route DTO
         const route = response.route;
         console.log('🗺️ Route data:', {
@@ -148,14 +148,14 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
           id: response.rideId,
           pickup: route?.pickupAddress || 'Pickup location',
           destination: route?.destinationAddress || 'Destination',
-          pickupCoords: route 
-            ? [route.pickupLatitude, route.pickupLongitude] 
+          pickupCoords: route
+            ? [route.pickupLatitude, route.pickupLongitude]
             : [45.2671, 19.8335],
-          destinationCoords: route 
-            ? [route.destinationLatitude, route.destinationLongitude] 
+          destinationCoords: route
+            ? [route.destinationLatitude, route.destinationLongitude]
             : [45.2550, 19.8450],
-          driverName: response.driver 
-            ? `${response.driver.firstName} ${response.driver.lastName}` 
+          driverName: response.driver
+            ? `${response.driver.firstName} ${response.driver.lastName}`
             : '',
           vehicleType: response.currentLocation?.model || '',
           licensePlate: response.currentLocation?.plateNum || '',
@@ -168,18 +168,18 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
             email: p.email || ''
           })) || []
         };
-        
+
         console.log('🚗 Mapped ride details:', rideDetails);
         this.rideDetails.set(rideDetails);
 
         // Set initial values
         const remainingDist = route?.distanceKm || 0;
         const estimatedArr = response.estimatedTimeMinutes || 0;
-        
+
         console.log('⏱️ Setting initial values:');
         console.log('  - remainingDistance:', remainingDist);
         console.log('  - estimatedArrival:', estimatedArr);
-        
+
         this.remainingDistance.set(remainingDist);
         this.estimatedArrival.set(estimatedArr);
 
@@ -217,11 +217,11 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    */
   private loadFinishedRideDetails(rideId: number, trackingResponse: any): void {
     console.log('📦 Loading full ride details for finished ride...');
-    
+
     this.rideService.getDriverRideDetail(rideId).subscribe({
       next: (detail) => {
         console.log('✅ Received full ride details:', detail);
-        
+
         const rideDetails = {
           id: detail.id,
           pickup: detail.pickupAddress,
@@ -240,7 +240,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
             email: ''
           }]
         };
-        
+
         console.log('🚗 Mapped finished ride details:', rideDetails);
         this.rideDetails.set(rideDetails);
 
@@ -423,7 +423,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       this.stopTracking();
       this.remainingDistance.set(0);
       this.estimatedArrival.set(0);
-      
+
       // Show completion modal
       this.showRideCompletionModal();
       return;
@@ -462,7 +462,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     }
 
     const ride = this.rideDetails();
-    
+
     // Calculate final price (you can adjust this logic based on your pricing model)
     const basePrice = 150; // Base price in RSD
     const pricePerKm = 80;
@@ -513,14 +513,14 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       return; // Already triggered
     }
 
-    const panicRequest: PanicRideRequest = { 
+    const panicRequest: PanicRideRequest = {
       vehicleLocation: {
         lat: this.vehicleLocation().lat,
         lng: this.vehicleLocation().lng
       }
     };
 
-    this.rideService.ridePanic(this.rideDetails().id, panicRequest).subscribe({
+    this.rideService.ridePanic(panicRequest).subscribe({
       next: () => {
         this.panicTriggered.set(true);
         this.stopTracking();
@@ -554,8 +554,8 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       return; // stop already triggered
     }
 
-    const stopRideRequest: StopRideRequest = { 
-      location: this.vehicleLocation() 
+    const stopRideRequest: StopRideRequest = {
+      location: this.vehicleLocation()
     };
 
     this.rideService.stopRide(this.rideDetails().id, stopRideRequest).subscribe({
