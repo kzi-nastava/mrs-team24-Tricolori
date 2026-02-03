@@ -238,7 +238,10 @@ public class RideHistoryFragment extends Fragment {
 
 
     private void showRideDetailsDialog(Ride ride) {
-        RideDetailsDialogFragment dialog = RideDetailsDialogFragment.newInstance(ride);
+        RideDetailsDialogFragment dialog =
+                RideDetailsDialogFragment.newInstance((long) ride.getId());
+
         dialog.show(getParentFragmentManager(), "RideDetailsDialog");
     }
+
 }

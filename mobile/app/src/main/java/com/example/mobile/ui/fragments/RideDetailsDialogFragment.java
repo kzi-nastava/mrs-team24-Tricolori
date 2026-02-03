@@ -11,6 +11,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import com.example.mobile.dto.ride.DriverRideDetailResponse;
+import com.example.mobile.network.RetrofitClient;
+import com.example.mobile.network.RideService;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 import com.example.mobile.R;
 import com.example.mobile.ui.models.Ride;
@@ -34,26 +42,14 @@ public class RideDetailsDialogFragment extends DialogFragment {
     private static final String ARG_PAYMENT_METHOD = "payment_method";
     private static final String ARG_NOTES = "notes";
 
-    public static RideDetailsDialogFragment newInstance(Ride ride) {
+    public static RideDetailsDialogFragment newInstance(Long rideId) {
         RideDetailsDialogFragment fragment = new RideDetailsDialogFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_RIDE_ID, ride.getId());
-        args.putString(ARG_ROUTE, ride.getRoute());
-        args.putString(ARG_START_DATE, ride.getStartDate());
-        args.putString(ARG_END_DATE, ride.getEndDate());
-        args.putDouble(ARG_PRICE, ride.getPrice());
-        args.putString(ARG_STATUS, ride.getStatus());
-        args.putString(ARG_START_TIME, ride.getStartTime());
-        args.putString(ARG_END_TIME, ride.getEndTime());
-        args.putString(ARG_DURATION, ride.getDuration());
-        args.putString(ARG_PASSENGER_NAME, ride.getPassengerName());
-        args.putString(ARG_PASSENGER_PHONE, ride.getPassengerPhone());
-        args.putDouble(ARG_DISTANCE, ride.getDistance());
-        args.putString(ARG_PAYMENT_METHOD, ride.getPaymentMethod());
-        args.putString(ARG_NOTES, ride.getNotes());
+        args.putLong(ARG_RIDE_ID, rideId);
         fragment.setArguments(args);
         return fragment;
     }
+
 
     @Nullable
     @Override
@@ -69,44 +65,43 @@ public class RideDetailsDialogFragment extends DialogFragment {
         Bundle args = getArguments();
         if (args == null) return;
 
-        // Bind data to views
-        TextView tvRoute = view.findViewById(R.id.tvDetailRoute);
-        TextView tvDate = view.findViewById(R.id.tvDetailDate);
-        TextView tvStartTime = view.findViewById(R.id.tvDetailStartTime);
-        TextView tvEndTime = view.findViewById(R.id.tvDetailEndTime);
-        TextView tvDuration = view.findViewById(R.id.tvDetailDuration);
-        TextView tvDistance = view.findViewById(R.id.tvDetailDistance);
-        TextView tvPrice = view.findViewById(R.id.tvDetailPrice);
-        TextView tvPaymentMethod = view.findViewById(R.id.tvDetailPaymentMethod);
-        TextView tvStatus = view.findViewById(R.id.tvDetailStatus);
-        TextView tvPassengerName = view.findViewById(R.id.tvDetailPassengerName);
-        TextView tvPassengerPhone = view.findViewById(R.id.tvDetailPassengerPhone);
-        TextView tvNotes = view.findViewById(R.id.tvDetailNotes);
-        View notesContainer = view.findViewById(R.id.notesContainer);
+        long rideId = args.getLong(ARG_RIDE_ID);
+
+        fetchRideDetails(rideId, view);
+
         Button btnClose = view.findViewById(R.id.btnClose);
-
-        tvRoute.setText(args.getString(ARG_ROUTE));
-        tvDate.setText(args.getString(ARG_START_DATE));
-        tvStartTime.setText(args.getString(ARG_START_TIME));
-        tvEndTime.setText(args.getString(ARG_END_TIME));
-        tvDuration.setText(args.getString(ARG_DURATION));
-        tvDistance.setText(String.format(Locale.getDefault(), "%.1f km", args.getDouble(ARG_DISTANCE)));
-        tvPrice.setText(String.format(Locale.getDefault(), "€%.2f", args.getDouble(ARG_PRICE)));
-        tvPaymentMethod.setText(args.getString(ARG_PAYMENT_METHOD));
-        tvStatus.setText(args.getString(ARG_STATUS));
-        tvPassengerName.setText(args.getString(ARG_PASSENGER_NAME));
-        tvPassengerPhone.setText(args.getString(ARG_PASSENGER_PHONE));
-
-        String notes = args.getString(ARG_NOTES);
-        if (notes != null && !notes.isEmpty()) {
-            tvNotes.setText(notes);
-            notesContainer.setVisibility(View.VISIBLE);
-        } else {
-            notesContainer.setVisibility(View.GONE);
-        }
-
         btnClose.setOnClickListener(v -> dismiss());
     }
+
+    private void fetchRideDetails(long rideId, View view) {
+
+        RideService rideService =
+                RetrofitClient.getClient().create(RideService.class);
+
+        rideService.getDriverRideDetail(rideId)
+                .enqueue(new Callback<DriverRideDetailResponse>() {
+
+                    @Override
+                    public void onResponse(
+                            Call<DriverRideDetailResponse> call,
+                            Response<DriverRideDetailResponse> response) {
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            return;
+                        }
+
+                        bindData(view, response.body());
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<DriverRideDetailResponse> call,
+                            Throwable t) {
+                    }
+                });
+    }
+
+
 
     @Override
     public void onStart() {
@@ -130,4 +125,49 @@ public class RideDetailsDialogFragment extends DialogFragment {
             getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
     }
+
+    private void bindData(View view, DriverRideDetailResponse dto) {
+
+        TextView tvRoute = view.findViewById(R.id.tvDetailRoute);
+        TextView tvDate = view.findViewById(R.id.tvDetailDate);
+        TextView tvStartTime = view.findViewById(R.id.tvDetailStartTime);
+        TextView tvEndTime = view.findViewById(R.id.tvDetailEndTime);
+        TextView tvDuration = view.findViewById(R.id.tvDetailDuration);
+        TextView tvDistance = view.findViewById(R.id.tvDetailDistance);
+        TextView tvPrice = view.findViewById(R.id.tvDetailPrice);
+        TextView tvStatus = view.findViewById(R.id.tvDetailStatus);
+        TextView tvPassengerName = view.findViewById(R.id.tvDetailPassengerName);
+        TextView tvPassengerPhone = view.findViewById(R.id.tvDetailPassengerPhone);
+        TextView tvNotes = view.findViewById(R.id.tvDetailNotes);
+        View notesContainer = view.findViewById(R.id.notesContainer);
+
+        tvRoute.setText(dto.getPickupAddress() + " → " + dto.getDropoffAddress());
+
+        if (dto.getStartedAt() != null)
+            tvDate.setText(dto.getStartedAt().substring(0, 10));
+
+        tvStartTime.setText(dto.getStartedAt());
+        tvEndTime.setText(dto.getCompletedAt());
+
+        if (dto.getDuration() != null)
+            tvDuration.setText(dto.getDuration() + " min");
+
+        if (dto.getDistance() != null)
+            tvDistance.setText(String.format(Locale.getDefault(), "%.1f km", dto.getDistance()));
+
+        if (dto.getTotalPrice() != null)
+            tvPrice.setText(String.format(Locale.getDefault(), "€%.2f", dto.getTotalPrice()));
+
+        tvStatus.setText(dto.getStatus());
+        tvPassengerName.setText(dto.getPassengerName());
+        tvPassengerPhone.setText(dto.getPassengerPhone());
+
+        if (dto.getRatingComment() != null) {
+            tvNotes.setText(dto.getRatingComment());
+            notesContainer.setVisibility(View.VISIBLE);
+        } else {
+            notesContainer.setVisibility(View.GONE);
+        }
+    }
+
 }
