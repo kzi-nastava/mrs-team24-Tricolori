@@ -14,8 +14,9 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "IP_ADDR", "\"192.168.1.45\"")
+
     }
 
     buildTypes {
@@ -31,6 +32,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -44,9 +48,10 @@ dependencies {
     implementation(libs.navigation.ui)
 
     // Networking
+    // Networking
     implementation(libs.retrofit)
-    implementation(libs.retrofit.v290)
     implementation(libs.converter.gson)
+    implementation(libs.okhttp.logging)
     implementation(libs.navigation.runtime)
 
     //OSMDroid for OpenStreetMap

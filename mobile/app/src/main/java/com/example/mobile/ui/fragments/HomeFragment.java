@@ -28,6 +28,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
+import com.example.mobile.clients.ClientUtils;
+import com.example.mobile.model.VehicleLocationResponse;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -44,7 +46,10 @@ import org.osmdroid.views.overlay.Polyline;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
@@ -107,7 +112,6 @@ public class HomeFragment extends Fragment {
         initializeViews(view);
         initializeMap(view);
 
-        boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
         llAuthButtons.setVisibility(View.VISIBLE);
 
         setupListeners(view);
@@ -148,7 +152,7 @@ public class HomeFragment extends Fragment {
         if (fabRefresh != null) {
             fabRefresh.setOnClickListener(v -> {
                 Log.d(TAG, "Refresh button clicked!");
-                refreshVehicles();
+                loadVehicles();
                 Toast.makeText(getContext(), R.string.refreshing_vehicles, Toast.LENGTH_SHORT).show();
             });
         }
@@ -295,12 +299,7 @@ public class HomeFragment extends Fragment {
         } catch (Exception e) {
             Log.e(TAG, "Geocoding error for: " + address, e);
         }
-
-        Random random = new Random(address.hashCode());
-        double lat = DEFAULT_LAT + (random.nextDouble() - 0.5) * 0.02;
-        double lon = DEFAULT_LON + (random.nextDouble() - 0.5) * 0.02;
-        Log.d(TAG, "Using fallback location for: " + address);
-        return new GeoPoint(lat, lon);
+        return null;
     }
 
     private void snapToRoadAsync(GeoPoint point, RoadSnapCallback callback) {
@@ -389,30 +388,73 @@ public class HomeFragment extends Fragment {
         mapView.invalidate();
     }
 
+    // ─── Network: fetch vehicles via Retrofit ─────────────────────────────────
+
+    /**
+     * Calls GET /api/v1/vehicles/active using the Retrofit service instance
+     * from ClientUtils — the same way ProductService is used elsewhere.
+     */
     private void loadVehicles() {
-        generateMockVehicles();
-        updateVehicleCounts();
+        Call<ArrayList<VehicleLocationResponse>> call = ClientUtils.vehicleService.getAllActive();
+
+        call.enqueue(new Callback<ArrayList<VehicleLocationResponse>>() {
+            @Override
+            public void onResponse(Call<ArrayList<VehicleLocationResponse>> call,
+                                   Response<ArrayList<VehicleLocationResponse>> response) {
+                if (!response.isSuccessful()) {
+                    Log.e(TAG, "Server returned: " + response.code());
+                    Toast.makeText(getContext(),
+                            "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                ArrayList<VehicleLocationResponse> vehicles = response.body();
+                if (vehicles == null) {
+                    vehicles = new ArrayList<>();
+                }
+
+                // Retrofit already delivers this on the main thread
+                clearVehicleMarkers();
+                placeVehicleMarkers(vehicles);
+                updateVehicleCounts();
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<VehicleLocationResponse>> call, Throwable t) {
+                Log.e(TAG, "Request failed", t);
+                Toast.makeText(getContext(),
+                        "Could not load vehicles: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void generateMockVehicles() {
+    /**
+     * Removes all existing vehicle markers from the map and clears the list.
+     */
+    private void clearVehicleMarkers() {
         for (VehicleMarker vm : vehicleMarkers) {
             mapView.getOverlays().remove(vm.marker);
         }
         vehicleMarkers.clear();
+    }
 
-        Random random = new Random();
-        int numVehicles = 8 + random.nextInt(5);
+    /**
+     * Places a marker for each vehicle from the backend response.
+     * Green icon = available, Red icon = busy.
+     */
+    private void placeVehicleMarkers(List<VehicleLocationResponse> vehicles) {
+        for (VehicleLocationResponse vehicle : vehicles) {
+            if (vehicle.getLatitude() == null || vehicle.getLongitude() == null) {
+                Log.w(TAG, "Skipping vehicle " + vehicle.getVehicleId() + " — missing coordinates");
+                continue;
+            }
 
-        for (int i = 0; i < numVehicles; i++) {
-            double lat = DEFAULT_LAT + (random.nextDouble() - 0.5) * 0.04;
-            double lon = DEFAULT_LON + (random.nextDouble() - 0.5) * 0.04;
-            GeoPoint position = new GeoPoint(lat, lon);
-
-            boolean isAvailable = random.nextBoolean();
+            GeoPoint position = new GeoPoint(vehicle.getLatitude(), vehicle.getLongitude());
+            boolean isAvailable = vehicle.isAvailable();
 
             snapToRoadAsync(position, snappedPoint -> {
-                VehicleMarker vehicleMarker = new VehicleMarker(
-                        "Vehicle " + vehicleMarkers.size(),
+                VehicleMarker vm = new VehicleMarker(
+                        "Vehicle " + vehicle.getVehicleId(),
                         snappedPoint.getLatitude(),
                         snappedPoint.getLongitude(),
                         isAvailable
@@ -421,28 +463,24 @@ public class HomeFragment extends Fragment {
                 Marker marker = new Marker(mapView);
                 marker.setPosition(snappedPoint);
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                marker.setTitle(vehicleMarker.name);
-                marker.setSnippet(isAvailable ?
-                        getString(R.string.status_available) :
-                        getString(R.string.status_busy));
+                marker.setTitle(vm.name);
+                marker.setSnippet(isAvailable
+                        ? getString(R.string.status_available)
+                        : getString(R.string.status_busy));
 
                 Drawable icon = ContextCompat.getDrawable(requireContext(),
                         isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
 
                 if (icon != null) {
-                    if (isAvailable) {
-                        icon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700));
-                    } else {
-                        icon.setTint(Color.parseColor("#8B0000"));
-                    }
+                    icon.setTint(isAvailable
+                            ? ContextCompat.getColor(requireContext(), R.color.light_700)
+                            : Color.parseColor("#8B0000"));
                 }
                 marker.setIcon(icon);
 
-                vehicleMarker.marker = marker;
-                vehicleMarkers.add(vehicleMarker);
+                vm.marker = marker;
+                vehicleMarkers.add(vm);
                 mapView.getOverlays().add(marker);
-
-                updateVehicleCounts();
                 mapView.invalidate();
             });
         }
@@ -464,64 +502,21 @@ public class HomeFragment extends Fragment {
         tvBusyCount.setText(getString(R.string.busy_count, busyCount));
     }
 
-    private void refreshVehicles() {
-        loadVehicles();
-    }
+    // ─── Periodic refresh ─────────────────────────────────────────────────────
 
     private void setupPeriodicUpdates() {
         updateHandler = new Handler(Looper.getMainLooper());
         updateRunnable = new Runnable() {
             @Override
             public void run() {
-                simulateVehicleUpdates();
+                loadVehicles();
                 updateHandler.postDelayed(this, 30000);
             }
         };
         updateHandler.postDelayed(updateRunnable, 30000);
     }
 
-    private void simulateVehicleUpdates() {
-        Random random = new Random();
-
-        for (VehicleMarker vm : vehicleMarkers) {
-            if (random.nextInt(10) == 0) {
-                vm.isAvailable = !vm.isAvailable;
-                vm.marker.setSnippet(vm.isAvailable ?
-                        getString(R.string.status_available) :
-                        getString(R.string.status_busy));
-
-                Drawable icon = ContextCompat.getDrawable(requireContext(),
-                        vm.isAvailable ? R.drawable.ic_vehicle_available : R.drawable.ic_vehicle_busy);
-
-                if (icon != null) {
-                    if (vm.isAvailable) {
-                        icon.setTint(ContextCompat.getColor(requireContext(), R.color.light_700));
-                    } else {
-                        icon.setTint(Color.parseColor("#8B0000"));
-                    }
-                }
-                vm.marker.setIcon(icon);
-
-                updateVehicleCounts();
-            }
-
-            if (vm.isAvailable && random.nextInt(5) == 0) {
-                GeoPoint currentPos = vm.marker.getPosition();
-                double newLat = currentPos.getLatitude() + (random.nextDouble() - 0.5) * 0.003;
-                double newLon = currentPos.getLongitude() + (random.nextDouble() - 0.5) * 0.003;
-                GeoPoint newPos = new GeoPoint(newLat, newLon);
-
-                snapToRoadAsync(newPos, snappedPoint -> {
-                    vm.marker.setPosition(snappedPoint);
-                    vm.latitude = snappedPoint.getLatitude();
-                    vm.longitude = snappedPoint.getLongitude();
-                    mapView.invalidate();
-                });
-            }
-        }
-
-        mapView.invalidate();
-    }
+    // ─── Lifecycle ────────────────────────────────────────────────────────────
 
     @Override
     public void onResume() {
@@ -538,7 +533,6 @@ public class HomeFragment extends Fragment {
             }
         }
 
-        boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
         if (llAuthButtons != null) {
             llAuthButtons.setVisibility(View.VISIBLE);
         }
@@ -559,6 +553,8 @@ public class HomeFragment extends Fragment {
             updateHandler.removeCallbacks(updateRunnable);
         }
     }
+
+    // ─── Internal model ───────────────────────────────────────────────────────
 
     private static class VehicleMarker {
         String name;
