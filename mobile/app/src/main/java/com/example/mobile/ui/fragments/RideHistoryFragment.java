@@ -13,6 +13,14 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.mobile.dto.PageResponse;
+import com.example.mobile.dto.ride.DriverRideHistoryResponse;
+import com.example.mobile.network.RetrofitClient;
+import com.example.mobile.network.RideService;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import com.example.mobile.R;
 import com.example.mobile.ui.adapters.RideHistoryAdapter;
@@ -55,9 +63,9 @@ public class RideHistoryFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initViews(view);
-        loadMockData();
         setupRecyclerView();
         setupListeners();
+        fetchRideHistory();
     }
 
     private void initViews(View view) {
@@ -73,96 +81,41 @@ public class RideHistoryFragment extends Fragment {
         etEndDate.setClickable(true);
     }
 
-    private void loadMockData() {
-        allRides = new ArrayList<>();
+    private void fetchRideHistory() {
 
-        allRides.add(new Ride(
-                1,
-                "Narodnog fronta 23 → Dunavski park",
-                "2024-12-15",
-                "2024-12-15",
-                45.50,
-                "Completed",
-                "09:30 AM",
-                "11:15 AM",
-                "1h 45min",
-                "Marko Petrović",
-                "+381 64 123 4567",
-                89.5,
-                "Credit Card",
-                "Pleasant ride, passenger was on time."
-        ));
+        RideService rideService =
+                RetrofitClient.getClient().create(RideService.class);
 
-        allRides.add(new Ride(
-                2,
-                "Bulevar Oslobođenja 30 → Trg Slobode",
-                "2024-12-14",
-                "2024-12-14",
-                32.00,
-                "Completed",
-                "14:00 PM",
-                "15:30 PM",
-                "1h 30min",
-                "Ana Jovanović",
-                "+381 63 987 6543",
-                72.3,
-                "Cash",
-                "Smooth journey, no issues."
-        ));
+        rideService.getDriverRideHistory(0, 20)
+                .enqueue(new Callback<PageResponse<DriverRideHistoryResponse>>() {
 
-        allRides.add(new Ride(
-                3,
-                "Železnička stanica Novi Sad → Limanski park",
-                "2024-12-13",
-                "2024-12-13",
-                85.00,
-                "Completed",
-                "08:00 AM",
-                "11:45 AM",
-                "3h 45min",
-                "Stefan Nikolić",
-                "+381 65 555 1234",
-                237.8,
-                "Credit Card",
-                "Long distance trip, passenger requested one rest stop."
-        ));
+                    @Override
+                    public void onResponse(
+                            Call<PageResponse<DriverRideHistoryResponse>> call,
+                            Response<PageResponse<DriverRideHistoryResponse>> response) {
 
-        allRides.add(new Ride(
-                4,
-                "Spens (Bulevar cara Lazara) → Petrovaradinska tvrđava",
-                "2024-12-12",
-                "2024-12-12",
-                38.50,
-                "Cancelled",
-                "16:00 PM",
-                "17:30 PM",
-                "1h 30min",
-                "Jelena Đorđević",
-                "+381 64 222 3333",
-                115.2,
-                "N/A",
-                "Ride cancelled by passenger 30 minutes before scheduled time."
-        ));
+                        if (!response.isSuccessful() || response.body() == null) {
+                            Toast.makeText(getContext(),
+                                    "Error loading rides",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
-        allRides.add(new Ride(
-                5,
-                "Grbavica (Danila Kiša 18) → Spens",
-                "2024-12-11",
-                "2024-12-11",
-                25.00,
-                "Completed",
-                "11:00 AM",
-                "12:00 PM",
-                "1h",
-                "Milan Stojanović",
-                "+381 66 777 8888",
-                46.5,
-                "Cash",
-                null
-        ));
+                        mapDtosToRides(response.body().getContent());
+                    }
 
-        filteredRides = new ArrayList<>(allRides);
+                    @Override
+                    public void onFailure(
+                            Call<PageResponse<DriverRideHistoryResponse>> call,
+                            Throwable t) {
+
+                        Toast.makeText(getContext(),
+                                "Network error",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
+
 
     private void setupRecyclerView() {
         adapter = new RideHistoryAdapter(filteredRides, ride -> {
@@ -249,6 +202,40 @@ public class RideHistoryFragment extends Fragment {
             e.printStackTrace();
         }
     }
+
+    private void mapDtosToRides(List<DriverRideHistoryResponse> dtos) {
+
+        allRides = new ArrayList<>();
+
+        for (DriverRideHistoryResponse dto : dtos) {
+
+            Ride ride = new Ride(
+                    dto.getId().intValue(),
+                    dto.getPickupAddress() + " → " + dto.getDestinationAddress(),
+
+                    dto.getStartDate().substring(0,10),
+                    dto.getEndDate() != null ? dto.getEndDate().substring(0,10) : "",
+
+                    dto.getPrice() != null ? dto.getPrice() : 0.0,
+                    dto.getStatus(),
+
+                    "", "", "",  // vremena/duration trenutno nemamo
+
+                    "", "", // passenger name/phone nemamo u history DTO
+
+                    dto.getDistance() != null ? dto.getDistance() : 0.0,
+
+                    "",  // payment method
+                    null // note
+            );
+
+            allRides.add(ride);
+        }
+
+        filteredRides = new ArrayList<>(allRides);
+        adapter.updateData(filteredRides);
+    }
+
 
     private void showRideDetailsDialog(Ride ride) {
         RideDetailsDialogFragment dialog = RideDetailsDialogFragment.newInstance(ride);
