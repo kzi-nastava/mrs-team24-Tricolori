@@ -38,6 +38,13 @@ public class RouteService {
         route.setStops(allStops);
         
         OSRMResult result = osrmService.analyzeRouteStops(allStops);
+        String geometry = result.getGeometry();
+
+        Optional<Route> existingRoute = routeRepository.findByRouteGeometry(geometry);
+        if (existingRoute.isPresent()) {
+            return existingRoute.get();
+        }
+
         route.setDistanceKm(result.getDistanceKilometers());
         route.setEstimatedTimeSeconds(result.getDurationSeconds());
         route.setRouteGeometry(result.getGeometry());
