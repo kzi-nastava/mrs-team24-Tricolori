@@ -8,7 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -420,7 +420,7 @@ public class HomeFragment extends Fragment {
 
                         clearVehicleMarkers();
                         placeVehicleMarkers(vehicles);
-                        updateVehicleCounts();
+                       // updateVehicleCounts();
                     }
 
                     @Override
@@ -493,6 +493,8 @@ public class HomeFragment extends Fragment {
                 vehicleMarkers.add(vm);
                 mapView.getOverlays().add(marker);
                 mapView.invalidate();
+
+                updateVehicleCounts();
             });
         }
     }

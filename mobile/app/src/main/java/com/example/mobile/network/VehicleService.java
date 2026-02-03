@@ -10,9 +10,9 @@ import retrofit2.http.Path;
 
 public interface VehicleService {
 
-    @GET("vehicles/active")
+    @GET("/api/v1/vehicles/active")
     Call<List<VehicleLocationResponse>> getAllActive();
 
-    @GET("vehicles/{id}/location")
+    @GET("/api/v1/vehicles/{id}/location")
     Call<VehicleLocationResponse> getLocationById(@Path("id") Long id);
 }

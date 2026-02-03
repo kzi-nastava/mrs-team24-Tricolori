@@ -55,6 +55,7 @@ dependencies {
     //OSMDroid for OpenStreetMap
     implementation(libs.osmdroid.android)
     implementation(libs.osmbonuspack)
+    implementation(libs.preference)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
