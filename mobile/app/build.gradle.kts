@@ -15,8 +15,6 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "IP_ADDR", "\"192.168.1.45\"")
-
     }
 
     buildTypes {
@@ -48,9 +46,9 @@ dependencies {
     implementation(libs.navigation.ui)
 
     // Networking
-    // Networking
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.navigation.runtime)
 

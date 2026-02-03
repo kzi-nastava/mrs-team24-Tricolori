@@ -1,9 +1,6 @@
 package com.example.mobile.clients;
 
-import com.example.mobile.BuildConfig;
-
 import java.util.concurrent.TimeUnit;
-
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -11,7 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ClientUtils {
 
-    public static final String SERVICE_API_PATH = "http://"+ BuildConfig.IP_ADDR +":8080/api/v1/";
+    public static final String SERVICE_API_PATH = "http://192.168.8.101/"+":8080/api/v1/";
 
     // for debugging, to check whether requests are sent and how hey look
     public static OkHttpClient test(){
