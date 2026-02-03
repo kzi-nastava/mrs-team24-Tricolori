@@ -71,7 +71,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   isSubmittingReport = signal<boolean>(false);
   reportSubmitted = signal<boolean>(false);
   panicTriggered = signal<boolean>(false);
-  
+
   // Ride completion modal
   showCompletionModal = signal<boolean>(false);
   isSubmittingRating = signal<boolean>(false);
@@ -148,6 +148,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.rideId = +params['id'] || 7; // Default to 7 for testing
+      // DELETE DEFAULT AFTER TESTING
       if (this.rideId) {
         this.rideStartTime = new Date();
         this.loadInitialData();
@@ -180,18 +181,18 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
     }
 
     this.currentRouteIndex = 0;
-    
+
     const [initialLat, initialLng] = this.routeCoordinates[0];
     this.vehicleLocation.set({ lat: initialLat, lng: initialLng });
     this.updateVehiclePosition();
-    
+
     // Calculate how many points to skip to cover 1/10 of the route each interval
     const totalPoints = this.routeCoordinates.length;
     const jumpSize = Math.ceil(totalPoints / 10);
-    
+
     this.mockMovementInterval = setInterval(() => {
       this.currentRouteIndex += jumpSize;
-      
+
       if (this.currentRouteIndex >= this.routeCoordinates.length) {
         console.log('🏁 Mock vehicle reached destination');
         this.estimatedArrival.set(0);
@@ -202,7 +203,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
       }
 
       const [lat, lng] = this.routeCoordinates[this.currentRouteIndex];
-      
+
       this.vehicleLocation.set({ lat, lng });
       this.updateVehiclePosition();
       this.updateProgressMetrics();
@@ -259,7 +260,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
     // Calculate remaining time
     const totalDistance = this.totalRouteDistance;
     const totalTimeSeconds = this.rideDetails().estimatedDuration;
-    
+
     if (totalDistance > 0 && totalTimeSeconds > 0) {
       const remainingTimeSeconds = Math.round((remainingDist / totalDistance) * totalTimeSeconds);
       const remainingTimeMinutes = Math.round(remainingTimeSeconds / 60);
@@ -273,15 +274,15 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   private calculateDistance(coord1: [number, number], coord2: [number, number]): number {
     const [lat1, lon1] = coord1;
     const [lat2, lon2] = coord2;
-    
+
     const R = 6371;
     const dLat = this.toRad(lat2 - lat1);
     const dLon = this.toRad(lon2 - lon1);
-    
+
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
               Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
               Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
@@ -310,8 +311,8 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
       const routes = e.routes;
       if (routes && routes.length > 0) {
         const route = routes[0];
-        
-        this.routeCoordinates = route.coordinates.map((coord: any) => 
+
+        this.routeCoordinates = route.coordinates.map((coord: any) =>
           [coord.lat, coord.lng] as [number, number]
         );
 
@@ -323,8 +324,8 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
           );
         }
 
-        console.log(`📍 Extracted ${this.routeCoordinates.length} route points from OSRM`);
-        console.log(`📏 Total route distance: ${this.totalRouteDistance.toFixed(2)} km`);
+        // console.log(`📍 Extracted ${this.routeCoordinates.length} route points from OSRM`);
+        // console.log(`📏 Total route distance: ${this.totalRouteDistance.toFixed(2)} km`);
         
         setTimeout(() => this.startMockMovement(), 1000);
       }
@@ -339,7 +340,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
       next: (result) => {
         this.updateRideDetailsFromDetail(result.details);
         this.updateTrackingData(result.tracking);
-        
+
         if (!this.isInitialized) {
           setTimeout(() => {
             this.initMap();
@@ -409,7 +410,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
     }
 
     const ride = this.rideDetails();
-    
+
     if (ride.pickupCoords[0] === 0 || ride.destinationCoords[0] === 0) {
       console.warn('Invalid coordinates for map initialization');
       return;
@@ -499,7 +500,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
 
   private updateVehiclePosition(): void {
     const vehicleLoc = this.vehicleLocation();
-    
+
     if (vehicleLoc.lat === 0 || vehicleLoc.lng === 0) {
       return;
     }
@@ -597,14 +598,14 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const panicRequest: PanicRideRequest = { 
+    const panicRequest: PanicRideRequest = {
       vehicleLocation: {
         lat: this.vehicleLocation().lat,
         lng: this.vehicleLocation().lng
       }
     };
 
-    this.rideService.ridePanic(this.rideId, panicRequest).subscribe({
+    this.rideService.ridePanic(panicRequest).subscribe({
       next: () => {
         this.panicTriggered.set(true);
         this.stopTracking();

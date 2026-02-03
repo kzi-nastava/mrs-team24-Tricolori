@@ -29,13 +29,8 @@ export class AuthService {
     const storedUser = localStorage.getItem('person_data');
     const storedToken = localStorage.getItem('access_token');
 
-    console.log('🔄 AuthService initialized');
-    console.log('📦 Stored user:', storedUser ? 'Found' : 'Not found');
-    console.log('🔑 Stored token:', storedToken ? 'Found' : 'Not found');
-
     if (storedUser && storedToken) {
       this.currentPersonSubject.next(JSON.parse(storedUser));
-      console.log('✅ User restored from localStorage');
     }
   }
 
