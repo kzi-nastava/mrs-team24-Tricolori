@@ -23,10 +23,8 @@ public class GeocodingService {
     private final String NOMINATIM_URL = "https://nominatim.openstreetmap.org/search?format=json&q=";
 
     public NominatimResponse getAddressCoordinates(String address) {
-        // Add more precision...
-        // String query = address + ", Novi Sad, Serbia";
-        String query = address;
-        String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
+        String query = address + ", Novi Sad, Serbia";
+        // String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("User-Agent", "Cuber/1.0 (mdujanovic03@gmail.com)");
@@ -34,19 +32,21 @@ public class GeocodingService {
 
         try {
             ResponseEntity<NominatimResponse[]> response = restTemplate.exchange(
-                NOMINATIM_URL + encodedQuery,
+                NOMINATIM_URL + query,
                 HttpMethod.GET,
                 entity,
                 NominatimResponse[].class
             );
 
-            if (response.getBody() != null && response.getBody().length > 0) {
-                return response.getBody()[0];
+            if (response == null || response.getBody() == null || response.getBody().length == 0) {
+                throw new BadAddressException("Couldn't find lat and lng for address: " + address);
             }
+
+            NominatimResponse bestChoice = response.getBody()[0];
+            return bestChoice;
         } catch (Exception e) {
             System.err.println("Greška prilikom geokodiranja: " + e.getMessage());
         }
-
         throw new BadAddressException("Couldn't find lat and lng for address: " + address);
     }
 }

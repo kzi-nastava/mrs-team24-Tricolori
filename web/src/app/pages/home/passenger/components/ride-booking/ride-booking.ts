@@ -135,8 +135,7 @@ export class RideBooking implements OnInit, AfterViewInit {
     // 5. Slanje
     this.rideService.bookRide(orderRequest).subscribe({
       next: (res) => {
-        console.log('Backend primio:', res);
-        alert('Vožnja uspešno naručena!');
+        console.log(res);
       },
       error: (err) => {
         console.error('Greška:', err);

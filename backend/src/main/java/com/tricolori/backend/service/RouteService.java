@@ -42,8 +42,7 @@ public class RouteService {
         route.setEstimatedTimeSeconds(result.getDurationSeconds());
         route.setRouteGeometry(result.getGeometry());
 
-        // return routeRepository.save(route);
-        return route;
+        return routeRepository.save(route);
     }
 
     private void locateStop(Stop stop) {

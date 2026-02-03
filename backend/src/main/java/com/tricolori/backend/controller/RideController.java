@@ -257,7 +257,12 @@ public class RideController {
         @AuthenticationPrincipal Person passenger,
         @RequestBody OrderRequest request
     ) {
-        rideService.rideOrder(request);
+        try {
+            rideService.rideOrder(request);
+        } catch (Exception e) {
+            String errorResponse = "ODGOVOR: " + e.getClass().getSimpleName() + ": " + e.getMessage();
+            return ResponseEntity.ok(errorResponse);
+        }
         return ResponseEntity.ok("Created a ride.");
     }
 
