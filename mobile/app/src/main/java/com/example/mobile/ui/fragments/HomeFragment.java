@@ -418,6 +418,10 @@ public class HomeFragment extends Fragment {
                         isAvailable
                 );
 
+                if (mapView == null) {
+                    return;
+                }
+
                 Marker marker = new Marker(mapView);
                 marker.setPosition(snappedPoint);
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
