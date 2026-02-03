@@ -125,7 +125,7 @@ get eta(): number {
   submitCancellation(reason: string): void {
     this.errorMessage.set(null);
 
-    this.rideService.cancelRide(this.activeRide().id, reason).subscribe({
+    this.rideService.cancelRide(reason).subscribe({
       next: () => {
         this.showCancelModal.set(false);
         this.router.navigate(['/driver/home']);

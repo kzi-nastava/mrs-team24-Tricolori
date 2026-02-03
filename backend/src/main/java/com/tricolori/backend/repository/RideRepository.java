@@ -55,6 +55,23 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     """)
     Optional<Ride> findCurrentRideByPassenger(@Param("passengerId") Long passengerId);
 
+    @Query("""
+    SELECT r
+    FROM Ride r
+    WHERE r.driver.id = :driverId
+      AND r.status = 'ONGOING'
+    """)
+    Optional<Ride> findOngoingRideByDriver(@Param("driverId") Long driverId);
+
+    @Query("""
+    SELECT r
+    FROM Ride r
+    JOIN r.passengers p
+    WHERE p.id = :passengerId
+      AND r.status = 'ONGOING'
+    """)
+    Optional<Ride> findOngoingRideByPassenger(@Param("passengerId") Long passengerId);
+
     // all driver rides
     @Query("""
         SELECT r

@@ -58,7 +58,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
   // Ride details - will be loaded from backend
   rideDetails = signal<RideDetails>({
-    id: 1,
+    id: 6,
     pickup: 'Loading...',
     destination: 'Loading...',
     pickupCoords: [45.2671, 19.8335],
@@ -135,14 +135,14 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
           id: response.rideId,
           pickup: route?.pickupAddress || 'Pickup location',
           destination: route?.destinationAddress || 'Destination',
-          pickupCoords: route 
-            ? [route.pickupLatitude, route.pickupLongitude] 
+          pickupCoords: route
+            ? [route.pickupLatitude, route.pickupLongitude]
             : [45.2671, 19.8335],
-          destinationCoords: route 
-            ? [route.destinationLatitude, route.destinationLongitude] 
+          destinationCoords: route
+            ? [route.destinationLatitude, route.destinationLongitude]
             : [45.2550, 19.8450],
-          driverName: response.driver 
-            ? `${response.driver.firstName} ${response.driver.lastName}` 
+          driverName: response.driver
+            ? `${response.driver.firstName} ${response.driver.lastName}`
             : '',
           vehicleType: response.currentLocation?.model || '',
           licensePlate: response.currentLocation?.plateNum || '',
@@ -401,7 +401,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       this.stopTracking();
       this.remainingDistance.set(0);
       this.estimatedArrival.set(0);
-      
+
       // Show completion modal
       this.showRideCompletionModal();
       return;
@@ -440,7 +440,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     }
 
     const ride = this.rideDetails();
-    
+
     // Calculate final price (you can adjust this logic based on your pricing model)
     const basePrice = 150; // Base price in RSD
     const pricePerKm = 80;
@@ -491,14 +491,14 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       return; // Already triggered
     }
 
-    const panicRequest: PanicRideRequest = { 
+    const panicRequest: PanicRideRequest = {
       vehicleLocation: {
         lat: this.vehicleLocation().lat,
         lng: this.vehicleLocation().lng
       }
     };
 
-    this.rideService.ridePanic(this.rideDetails().id, panicRequest).subscribe({
+    this.rideService.ridePanic(panicRequest).subscribe({
       next: () => {
         this.panicTriggered.set(true);
         this.stopTracking();
@@ -532,8 +532,8 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       return; // stop already triggered
     }
 
-    const stopRideRequest: StopRideRequest = { 
-      location: this.vehicleLocation() 
+    const stopRideRequest: StopRideRequest = {
+      location: this.vehicleLocation()
     };
 
     this.rideService.stopRide(this.rideDetails().id, stopRideRequest).subscribe({
