@@ -2,6 +2,7 @@ package com.tricolori.backend.service;
 
 import com.tricolori.backend.dto.profile.DriverDto;
 import com.tricolori.backend.dto.profile.PassengerDto;
+import com.tricolori.backend.enums.PersonRole;
 import com.tricolori.backend.mapper.PersonMapper;
 import com.tricolori.backend.mapper.RouteMapper;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -322,19 +323,24 @@ public class RideService {
     // ================= ride actions =================
 
     @Transactional
-    public void cancelRide(
-            Long rideId,
-            String personEmail,
-            CancelRideRequest request
-    ) {
-        Ride ride = getRideOrThrow(rideId);
+    public void cancelRide(Person person, CancelRideRequest request) {
 
-        if (isDriver(ride, personEmail)) {
+        Ride ride;
+
+        if (person.getRole().equals(PersonRole.ROLE_DRIVER)) {
+            ride = rideRepository.findCurrentRideByDriver(person.getId())
+                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
+
             cancelByDriver(ride, request);
-        } else if (isPassenger(ride, personEmail)) {
-            cancelByPassenger(ride, request);
+
+        } else if (person.getRole().equals(PersonRole.ROLE_PASSENGER)) {
+            ride = rideRepository.findCurrentRideByPassenger(person.getId())
+                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this passenger."));
+
+            cancelByPassenger(ride);
+
         } else {
-            throw new AccessDeniedException("not authorized");
+            throw new AccessDeniedException("Only drivers and passengers can cancel rides.");
         }
 
         ride.setCancellationReason(request.reason());
@@ -342,23 +348,13 @@ public class RideService {
     }
 
     @Transactional
-    public void panicRide(
-            Long rideId,
-            String personEmail,
-            PanicRideRequest request
-    ) {
-        Ride ride = getRideOrThrow(rideId);
+    public void panicRide(Person person, PanicRideRequest request) {
 
-        boolean isParticipant =
-                ride.getDriver().getEmail().equals(personEmail)
-                        || ride.containsPassengerWithEmail(personEmail);
-
-        if (!isParticipant) {
-            throw new AccessDeniedException("not part of this ride");
-        }
-
-        Person person = personRepository.findByEmail(personEmail)
-                .orElseThrow(() -> new PersonNotFoundException("person not found"));
+        Ride ride = person.getRole().equals(PersonRole.ROLE_PASSENGER) ?
+                rideRepository.findOngoingRideByPassenger(person.getId())
+                        .orElseThrow(() -> new RideNotFoundException("Ongoing ride not found for this passenger.")) :
+                rideRepository.findOngoingRideByDriver(person.getId())
+                        .orElseThrow(() -> new RideNotFoundException("Ongoing ride not found for this driver."));
 
         ride.setStatus(RideStatus.PANIC);
         ride.setEndTime(LocalDateTime.now());
@@ -374,15 +370,11 @@ public class RideService {
 
     @Transactional
     public StopRideResponse stopRide(
-            Long rideId,
             Person driver,
             StopRideRequest request
     ) {
-        Ride ride = getRideOrThrow(rideId);
-
-        if (!ride.getDriver().getId().equals(driver.getId())) {
-            throw new AccessDeniedException("not authorized");
-        }
+        Ride ride = rideRepository.findOngoingRideByDriver(driver.getId())
+                .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
 
         Route updatedRoute = ride.getRoute(); // placeholder
         ride.stop(updatedRoute);
@@ -465,14 +457,6 @@ public class RideService {
         }
     }
 
-    private boolean isDriver(Ride ride, String email) {
-        return ride.getDriver().getEmail().equals(email);
-    }
-
-    private boolean isPassenger(Ride ride, String email) {
-        return ride.containsPassengerWithEmail(email);
-    }
-
     private void cancelByDriver(Ride ride, CancelRideRequest request) {
         if (request.reason().isBlank()) {
             throw new IllegalArgumentException("reason required");
@@ -480,7 +464,7 @@ public class RideService {
         ride.setStatus(RideStatus.CANCELLED_BY_DRIVER);
     }
 
-    private void cancelByPassenger(Ride ride, CancelRideRequest request) {
+    private void cancelByPassenger(Ride ride) {
         if (LocalDateTime.now().isAfter(ride.getStartTime().minusMinutes(10))) {
             throw new CancelRideExpiredException("cancel expired");
         }

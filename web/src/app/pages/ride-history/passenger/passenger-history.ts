@@ -338,6 +338,7 @@ export class PassengerHistory implements OnInit {
   }
 
   addToFavoriteRoutes(ride: PassengerRide): void {
+    // DELETE AFTER TESTING
     console.log(`Adding ride ${ride.id} to favorite routes (to-do).`);
   }
 
@@ -486,10 +487,5 @@ export class PassengerHistory implements OnInit {
       default:
         return 'Scheduled';
     }
-  }
-
-  // DELETE AFTER TESTING
-  startTestRide() {
-    this.router.navigate(['/passenger/ride-tracking', 7]);
   }
 }

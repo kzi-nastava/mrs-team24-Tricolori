@@ -29,14 +29,14 @@ export class RideService {
     let params = new HttpParams()
       .set('sortBy', sortBy)
       .set('sortDirection', sortDirection);
-    
+
     if (startDate) {
       params = params.set('startDate', startDate);
     }
     if (endDate) {
       params = params.set('endDate', endDate);
     }
-    
+
     return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
   }
 
@@ -50,14 +50,14 @@ export class RideService {
     let params = new HttpParams()
       .set('sortBy', sortBy)
       .set('sortDirection', sortDirection);
-    
+
     if (startDate) {
       params = params.set('startDate', startDate);
     }
     if (endDate) {
       params = params.set('endDate', endDate);
     }
-    
+
     return this.http.get<PassengerRideHistoryResponse[]>(`${this.API_URL}/history/passenger`, { params });
   }
 
@@ -92,17 +92,17 @@ export class RideService {
   }
 
   // Trigger panic alert for a ride
-  ridePanic(rideId: number, panicRequest: PanicRideRequest): Observable<void> {
-    return this.http.put<void>(`${this.API_URL}/${rideId}/panic`, panicRequest);
+  ridePanic(panicRequest: PanicRideRequest): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/panic`,  { panicRequest: panicRequest });
   }
 
   // Cancel a ride with a reason
-  cancelRide(rideId: number, reason: string): Observable<void> {
-    return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason: reason });
+  cancelRide(reason: string): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/cancel`, { reason: reason });
   }
 
   bookRide(orderData: any): Observable<any> {
-    return this.http.post(`${this.API_URL}/order`, orderData, { 
+    return this.http.post(`${this.API_URL}/order`, orderData, {
       responseType: 'text'
     });
   }
@@ -111,7 +111,7 @@ export class RideService {
   // if backend is expecting 'LocalDateTime'
   formatLocalDateTime(date: Date | null): string | null {
     if (!date) return null;
-    
+
     const pad = (n: number) => n < 10 ? '0' + n : n;
 
     return date.getFullYear() + '-' +

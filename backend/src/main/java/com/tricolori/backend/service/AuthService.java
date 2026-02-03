@@ -1,7 +1,9 @@
 package com.tricolori.backend.service;
 
 import com.tricolori.backend.dto.auth.*;
+import com.tricolori.backend.dto.profile.ChangeDriverStatusRequest;
 import com.tricolori.backend.entity.*;
+import com.tricolori.backend.enums.PersonRole;
 import com.tricolori.backend.repository.*;
 import com.tricolori.backend.dto.profile.PersonDto;
 import com.tricolori.backend.mapper.PersonMapper;
@@ -43,6 +45,7 @@ public class AuthService {
     private final VehicleService vehicleService;
     private final JwtUtil jwtUtil;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final DriverDailyLogService driverDailyLogService;
 
     private final PersonMapper personMapper;
     private final VehicleMapper vehicleMapper;
@@ -54,6 +57,12 @@ public class AuthService {
         );
 
         Person person = (Person) authentication.getPrincipal();
+
+        boolean isDriver =  person.getRole().equals(PersonRole.ROLE_DRIVER);
+        if (isDriver) {
+            driverDailyLogService.changeStatus(new ChangeDriverStatusRequest(true), person.getId());
+        }
+
         final String token = jwtUtil.generateToken(person.getEmail());
         PersonDto personDto = personMapper.toDto(person);
 
@@ -122,7 +131,7 @@ public class AuthService {
             token.getToken()
         );
     }
-
+    
     @Transactional
     public RegistrationTokenVerificationStatus verifyToken(String tokenValue) {
         Optional<RegistrationToken> tokenOpt = registrationTokenRepository.findByToken(tokenValue);

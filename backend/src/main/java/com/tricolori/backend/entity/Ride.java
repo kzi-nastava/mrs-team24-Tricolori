@@ -112,9 +112,9 @@ public class Ride {
         return LocalDateTime.now().isBefore(deadline);
     }
 
-    public boolean containsPassengerWithEmail(String email) {
+    public boolean containsPassengerWithId(Long id) {
         for (Passenger passenger : passengers) {
-            if (passenger.getEmail().equals(email)) {
+            if (passenger.getId().equals(id)) {
                 return true;
             }
         }
@@ -125,5 +125,9 @@ public class Ride {
         route = updatedRoute;
         status = RideStatus.STOPPED;
         endTime = LocalDateTime.now();
+    }
+
+    public boolean containsPassengerWithEmail(String personEmail) {
+        return false;
     }
 }
