@@ -28,8 +28,9 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
-import com.example.mobile.clients.ClientUtils;
+import com.example.mobile.network.VehicleService;
 import com.example.mobile.model.VehicleLocationResponse;
+import com.example.mobile.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -395,38 +396,44 @@ public class HomeFragment extends Fragment {
      * from ClientUtils — the same way ProductService is used elsewhere.
      */
     private void loadVehicles() {
-        Call<ArrayList<VehicleLocationResponse>> call = ClientUtils.vehicleService.getAllActive();
 
-        call.enqueue(new Callback<ArrayList<VehicleLocationResponse>>() {
-            @Override
-            public void onResponse(Call<ArrayList<VehicleLocationResponse>> call,
-                                   Response<ArrayList<VehicleLocationResponse>> response) {
-                if (!response.isSuccessful()) {
-                    Log.e(TAG, "Server returned: " + response.code());
-                    Toast.makeText(getContext(),
-                            "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
+        VehicleService vehicleService =
+                RetrofitClient.getClient().create(VehicleService.class);
 
-                ArrayList<VehicleLocationResponse> vehicles = response.body();
-                if (vehicles == null) {
-                    vehicles = new ArrayList<>();
-                }
+        vehicleService.getAllActive().enqueue(
+                new Callback<List<VehicleLocationResponse>>() {
 
-                // Retrofit already delivers this on the main thread
-                clearVehicleMarkers();
-                placeVehicleMarkers(vehicles);
-                updateVehicleCounts();
-            }
+                    @Override
+                    public void onResponse(Call<List<VehicleLocationResponse>> call,
+                                           Response<List<VehicleLocationResponse>> response) {
 
-            @Override
-            public void onFailure(Call<ArrayList<VehicleLocationResponse>> call, Throwable t) {
-                Log.e(TAG, "Request failed", t);
-                Toast.makeText(getContext(),
-                        "Could not load vehicles: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                        if (!response.isSuccessful()) {
+                            Log.e(TAG, "Server returned: " + response.code());
+                            Toast.makeText(getContext(),
+                                    "Server error: " + response.code(),
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        List<VehicleLocationResponse> vehicles = response.body();
+                        if (vehicles == null) vehicles = new ArrayList<>();
+
+                        clearVehicleMarkers();
+                        placeVehicleMarkers(vehicles);
+                        updateVehicleCounts();
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<VehicleLocationResponse>> call,
+                                          Throwable t) {
+                        Log.e(TAG, "Request failed", t);
+                        Toast.makeText(getContext(),
+                                "Could not load vehicles: " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
+
 
     /**
      * Removes all existing vehicle markers from the map and clears the list.
