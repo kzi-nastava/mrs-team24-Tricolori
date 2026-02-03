@@ -148,6 +148,7 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.rideId = +params['id'] || 7; // Default to 7 for testing
+      // DELETE DEFAULT AFTER TESTING
       if (this.rideId) {
         this.rideStartTime = new Date();
         this.loadInitialData();
@@ -323,9 +324,9 @@ export class PassengerRideTrackingComponent implements OnInit, OnDestroy {
           );
         }
 
-        console.log(`📍 Extracted ${this.routeCoordinates.length} route points from OSRM`);
-        console.log(`📏 Total route distance: ${this.totalRouteDistance.toFixed(2)} km`);
-
+        // console.log(`📍 Extracted ${this.routeCoordinates.length} route points from OSRM`);
+        // console.log(`📏 Total route distance: ${this.totalRouteDistance.toFixed(2)} km`);
+        
         setTimeout(() => this.startMockMovement(), 1000);
       }
     });

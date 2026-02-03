@@ -31,6 +31,8 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     List<Ride> findAllByDriverAndStatusIn(Driver driver, Collection<RideStatus> statuses);
 
     List<Ride> findAllByStatusIn(Collection<RideStatus> statuses);
+
+    boolean existsByDriverIdAndStatus(Long driverId, RideStatus rideStatus);
     
     // current ride for driver
     @Query("""

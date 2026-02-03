@@ -9,10 +9,5 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/drivers")
 @RequiredArgsConstructor
 public class DriverController {
-
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> changeStatus(@RequestBody ChangeDriverStatusRequest request, @PathVariable Long id) {
-
-        return ResponseEntity.ok().build();
-    }
+    
 }

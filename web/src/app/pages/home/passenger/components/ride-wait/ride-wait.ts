@@ -50,7 +50,6 @@ export class RideWait {
     this.rideService.cancelRide(reason).subscribe({
       next: () => {
         this.showCancelModal.set(false);
-        console.log("Cancellation successful.");
         this.router.navigate(['/passenger/home']);
       },
       error: (err) => {
