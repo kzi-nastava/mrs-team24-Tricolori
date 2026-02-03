@@ -32,7 +32,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -430,10 +429,17 @@ public class RideService {
         ));
 
         // Find passengers by email:
-        ride.setPassengers(passengerService.getTrackingPassengers(request.getTrackers()));
+        List<Passenger> trackingPassengers = passengerService.getTrackingPassengers(
+            request.getTrackers()
+        );
+        ride.setPassengers(trackingPassengers);
 
         // Finding the driver:
-        Driver driver = driverService.findDriverForRide(route.getPickupStop().getLocation(), preferences);
+        Driver driver = driverService.findDriverForRide(
+            route.getPickupStop().getLocation(), 
+            preferences,
+            trackingPassengers.size()
+        );
         ride.setDriver(driver);
         ride.setStatus(RideStatus.SCHEDULED);
         ride.setVehicleSpecification(driver.getVehicle().getSpecification());

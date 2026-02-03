@@ -126,4 +126,12 @@ public class Ride {
         status = RideStatus.STOPPED;
         endTime = LocalDateTime.now();
     }
+
+    public boolean isScheduledForLater() {
+        return this.status == RideStatus.SCHEDULED && this.scheduledFor == null;
+    }
+
+    public boolean isOngoing() {
+        return this.status == RideStatus.ONGOING;
+    }
 }
