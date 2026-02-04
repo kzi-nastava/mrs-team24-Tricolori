@@ -1,4 +1,4 @@
-package com.example.mobile.network;
+package com.example.mobile.network.service;
 
 import com.example.mobile.dto.auth.ForgotPasswordRequest;
 import com.example.mobile.dto.auth.LoginRequest;

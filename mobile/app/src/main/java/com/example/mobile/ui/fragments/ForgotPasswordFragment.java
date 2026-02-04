@@ -14,7 +14,7 @@ import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.auth.ForgotPasswordRequest;
-import com.example.mobile.network.AuthService;
+import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -65,7 +65,7 @@ public class ForgotPasswordFragment extends Fragment {
 
     private void sendResetEmail(String email) {
         btnSendReset.setEnabled(false);
-        AuthService authService = RetrofitClient.getClient().create(AuthService.class);
+        AuthService authService = RetrofitClient.getClient(requireContext()).create(AuthService.class);
         ForgotPasswordRequest request = new ForgotPasswordRequest(email);
 
         authService.forgotPassword(request).enqueue(new retrofit2.Callback<ResponseBody>() {
