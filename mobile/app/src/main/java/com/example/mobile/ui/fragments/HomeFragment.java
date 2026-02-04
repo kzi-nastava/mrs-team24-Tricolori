@@ -28,7 +28,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
-import com.example.mobile.network.VehicleService;
+import com.example.mobile.network.service.VehicleService;
 import com.example.mobile.model.VehicleLocationResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
@@ -398,7 +398,7 @@ public class HomeFragment extends Fragment {
     private void loadVehicles() {
 
         VehicleService vehicleService =
-                RetrofitClient.getClient().create(VehicleService.class);
+                RetrofitClient.getClient(requireContext()).create(VehicleService.class);
 
         vehicleService.getAllActive().enqueue(
                 new Callback<List<VehicleLocationResponse>>() {

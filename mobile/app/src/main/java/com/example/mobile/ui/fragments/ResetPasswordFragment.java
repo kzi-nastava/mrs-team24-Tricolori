@@ -15,7 +15,7 @@ import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.auth.ResetPasswordRequest;
-import com.example.mobile.network.AuthService;
+import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -94,7 +94,7 @@ public class ResetPasswordFragment extends Fragment {
     private void performResetPassword(String token, String newPassword) {
         btnSubmit.setEnabled(false);
 
-        AuthService authService = RetrofitClient.getClient().create(AuthService.class);
+        AuthService authService = RetrofitClient.getClient(requireContext()).create(AuthService.class);
         ResetPasswordRequest request = new ResetPasswordRequest(token, newPassword);
 
         authService.resetPassword(request).enqueue(new retrofit2.Callback<ResponseBody>() {
