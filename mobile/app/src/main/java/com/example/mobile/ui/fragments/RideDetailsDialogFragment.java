@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
 import com.example.mobile.network.RetrofitClient;
-import com.example.mobile.network.RideService;
+import com.example.mobile.network.service.RideService;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -21,26 +21,12 @@ import retrofit2.Response;
 
 
 import com.example.mobile.R;
-import com.example.mobile.ui.models.Ride;
 
 import java.util.Locale;
 
 public class RideDetailsDialogFragment extends DialogFragment {
 
     private static final String ARG_RIDE_ID = "ride_id";
-    private static final String ARG_ROUTE = "route";
-    private static final String ARG_START_DATE = "start_date";
-    private static final String ARG_END_DATE = "end_date";
-    private static final String ARG_PRICE = "price";
-    private static final String ARG_STATUS = "status";
-    private static final String ARG_START_TIME = "start_time";
-    private static final String ARG_END_TIME = "end_time";
-    private static final String ARG_DURATION = "duration";
-    private static final String ARG_PASSENGER_NAME = "passenger_name";
-    private static final String ARG_PASSENGER_PHONE = "passenger_phone";
-    private static final String ARG_DISTANCE = "distance";
-    private static final String ARG_PAYMENT_METHOD = "payment_method";
-    private static final String ARG_NOTES = "notes";
 
     public static RideDetailsDialogFragment newInstance(Long rideId) {
         RideDetailsDialogFragment fragment = new RideDetailsDialogFragment();
@@ -49,7 +35,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
         fragment.setArguments(args);
         return fragment;
     }
-
 
     @Nullable
     @Override
@@ -75,8 +60,7 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
     private void fetchRideDetails(long rideId, View view) {
 
-        RideService rideService =
-                RetrofitClient.getClient().create(RideService.class);
+        RideService rideService = RetrofitClient.getClient(requireContext()).create(RideService.class);
 
         rideService.getDriverRideDetail(rideId)
                 .enqueue(new Callback<DriverRideDetailResponse>() {
@@ -113,7 +97,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
             getDialog().getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             int width = displayMetrics.widthPixels;
 
-            // Set dialog to 90% of screen width (or use fixed dp if preferred)
             int dialogWidth = (int) (width * 0.90);
 
             getDialog().getWindow().setLayout(
@@ -121,7 +104,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
 
-            // Make background transparent so CardView corners show
             getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
     }

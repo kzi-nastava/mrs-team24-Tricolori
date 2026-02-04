@@ -1,6 +1,8 @@
 package com.example.mobile.ui.fragments;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mobile.dto.PageResponse;
 import com.example.mobile.dto.ride.DriverRideHistoryResponse;
 import com.example.mobile.network.RetrofitClient;
-import com.example.mobile.network.RideService;
+import com.example.mobile.network.service.RideService;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -55,7 +57,6 @@ public class RideHistoryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the XML layout instead of creating programmatically
         return inflater.inflate(R.layout.fragment_ride_history, container, false);
     }
 
@@ -64,10 +65,14 @@ public class RideHistoryFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initViews(view);
+        allRides = new ArrayList<>();
+        filteredRides = new ArrayList<>();
+
         setupRecyclerView();
         setupListeners();
         fetchRideHistory();
     }
+
 
     private void initViews(View view) {
         etStartDate = view.findViewById(R.id.etStartDate);
@@ -75,7 +80,6 @@ public class RideHistoryFragment extends Fragment {
         btnFilter = view.findViewById(R.id.btnFilter);
         rvRides = view.findViewById(R.id.rvRides);
 
-        // Make date fields non-editable (click to open calendar)
         etStartDate.setFocusable(false);
         etStartDate.setClickable(true);
         etEndDate.setFocusable(false);
@@ -84,50 +88,80 @@ public class RideHistoryFragment extends Fragment {
 
     private void fetchRideHistory() {
 
+        SharedPreferences prefs =
+                requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+
+        String token = prefs.getString("jwt_token", null);
+
+        if (token == null || token.isEmpty()) {
+            Toast.makeText(getContext(),
+                    "Please log in first",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         RideService rideService =
-                RetrofitClient.getClient().create(RideService.class);
+                RetrofitClient.getClient(requireContext()).create(RideService.class);
 
-        rideService.getDriverRideHistory(0, 20)
-                .enqueue(new Callback<PageResponse<DriverRideHistoryResponse>>() {
+        rideService.getDriverRideHistory(
+                null,
+                null,
+                "createdAt",
+                "DESC"
+        ).enqueue(new Callback<List<DriverRideHistoryResponse>>() {
 
-                    @Override
-                    public void onResponse(
-                            Call<PageResponse<DriverRideHistoryResponse>> call,
-                            Response<PageResponse<DriverRideHistoryResponse>> response) {
+            @Override
+            public void onResponse(
+                    Call<List<DriverRideHistoryResponse>> call,
+                    Response<List<DriverRideHistoryResponse>> response) {
 
-                        Log.d("RideHistory", "Response code: " + response.code());
+                Log.d("RideHistory", "Response code: " + response.code());
 
-                        if (!response.isSuccessful() || response.body() == null) {
-                            String errorBody = "";
-                            try {
-                                if (response.errorBody() != null) {
-                                    errorBody = response.errorBody().string();
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                if (!response.isSuccessful() || response.body() == null) {
 
-                            Log.e("RideHistory", "Error: " + response.code() + " - " + errorBody);
-                            Toast.makeText(getContext(),
-                                    "Error loading rides: " + response.code(),
-                                    Toast.LENGTH_SHORT).show();
-                            return;
+                    String errorBody = "";
+
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
                         }
-
-                        mapDtosToRides(response.body().getContent());
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
 
-                    @Override
-                    public void onFailure(
-                            Call<PageResponse<DriverRideHistoryResponse>> call,
-                            Throwable t) {
+                    Log.e("RideHistory",
+                            "Error " + response.code() + " : " + errorBody);
 
-                        Toast.makeText(getContext(),
-                                "Network error",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    Toast.makeText(getContext(),
+                            "Error loading rides",
+                            Toast.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                List<DriverRideHistoryResponse> dtos = response.body();
+
+                Log.d("RideHistory",
+                        "Rides fetched: " + dtos.size());
+
+                mapDtosToRides(dtos);
+            }
+
+            @Override
+            public void onFailure(
+                    Call<List<DriverRideHistoryResponse>> call,
+                    Throwable t) {
+
+                Log.e("RideHistory",
+                        "Network failure: " + t.getMessage());
+
+                Toast.makeText(getContext(),
+                        "Network error",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 
 
     private void setupRecyclerView() {
@@ -232,14 +266,14 @@ public class RideHistoryFragment extends Fragment {
                     dto.getPrice() != null ? dto.getPrice() : 0.0,
                     dto.getStatus(),
 
-                    "", "", "",  // vremena/duration trenutno nemamo
+                    "", "", "",
 
-                    "", "", // passenger name/phone nemamo u history DTO
+                    "", "",
 
                     dto.getDistance() != null ? dto.getDistance() : 0.0,
 
-                    "",  // payment method
-                    null // note
+                    "",
+                    null
             );
 
             allRides.add(ride);
