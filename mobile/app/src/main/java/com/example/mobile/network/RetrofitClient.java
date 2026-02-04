@@ -17,4 +17,9 @@ public class RetrofitClient {
         }
         return retrofit;
     }
+
+    /*--- Creating instances of services ---*/
+    public static ProfileService getProfileService() {
+        return getClient().create(ProfileService.class);
+    }
 }

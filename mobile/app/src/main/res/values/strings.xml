@@ -37,9 +37,6 @@
     <!-- Personal information section -->
     <string name="profile_personal">Personal Information</string>
     <string name="profile_personal_desc">Update your personal details</string>
-    <string name="profile_personal_edit">Edit</string>
-    <string name="profile_personal_save">Save</string>
-    <string name="profile_personal_cancel">X</string>
     <string name="profile_personal_first_name">First Name</string>
     <string name="profile_personal_last_name">Last Name</string>
     <string name="profile_personal_phone">Phone Number</string>
@@ -49,6 +46,8 @@
     <string name="profile_personal_last_name_example">Doe</string>
     <string name="profile_personal_phone_example">+381601234567</string>
     <string name="profile_personal_home_example">123 Main Street, Belgrade</string>
+    <!-- Update profile button -->
+    <string name="profile_update_profile">Update Profile</string>
     <!-- Password section -->
     <string name="profile_security">Security</string>
     <string name="profile_security_desc">Update password to protect your account</string>

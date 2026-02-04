@@ -174,18 +174,15 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <EditText
+            <TextView
                 android:id="@+id/profile_user_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_3"
                 android:autofillHints="email"
                 android:background="@drawable/rounded_input"
-                android:enabled="false"
                 android:focusable="false"
-                android:inputType="textEmailAddress"
                 android:padding="@dimen/spacing_4"
-                android:text="@string/profile_email_example"
                 android:textSize="@dimen/text_base"
                 android:textColor="@color/black"/>
         </LinearLayout>
@@ -328,9 +325,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/rounded_input"
                     android:padding="@dimen/spacing_4"
-                    android:enabled="false"
                     android:textSize="@dimen/text_base"
-                    android:text="@string/profile_personal_first_name_example"
                     android:textColor="@color/black"/>
 
                 <!-- Last Name -->
@@ -347,9 +342,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/rounded_input"
                     android:padding="@dimen/spacing_4"
-                    android:enabled="false"
                     android:textSize="@dimen/text_base"
-                    android:text="@string/profile_personal_last_name_example"
                     android:textColor="@color/black"/>
 
                 <!-- Phone Number -->
@@ -366,9 +359,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/rounded_input"
                     android:padding="@dimen/spacing_4"
-                    android:enabled="false"
                     android:textSize="@dimen/text_base"
-                    android:text="@string/profile_personal_phone_example"
                     android:textColor="@color/black"/>
 
                 <!-- Home Address -->
@@ -385,11 +376,30 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/rounded_input"
                     android:padding="@dimen/spacing_4"
-                    android:enabled="false"
                     android:textSize="@dimen/text_base"
-                    android:text="@string/profile_personal_home_example"
                     android:textColor="@color/black"/>
             </LinearLayout>
+        </LinearLayout>
+
+        <!-- Update button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_3"
+            android:layout_marginLeft="@dimen/spacing_1"
+            android:layout_marginRight="@dimen/spacing_1"
+            android:layout_marginBottom="@dimen/spacing_6">
+                <Button
+                    android:id="@+id/profile_update_profile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:paddingVertical="8dp"
+                    android:text="@string/profile_update_profile"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/profile_submit_button_selector"
+                    android:enabled="false" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

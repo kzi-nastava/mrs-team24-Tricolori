@@ -4,6 +4,20 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class ProfileRequest {
+    public ProfileRequest(
+        String firstName,
+        String lastName,
+        String homeAddress,
+        String phoneNumber,
+        String pfp
+    ) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.homeAddress = homeAddress;
+        this.phoneNumber = phoneNumber;
+        this.pfp = pfp;
+    }
+
     @SerializedName("firstName")
     @Expose
     private String firstName;
