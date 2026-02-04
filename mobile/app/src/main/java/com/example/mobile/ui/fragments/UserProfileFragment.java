@@ -1,5 +1,6 @@
 package com.example.mobile.ui.fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -122,9 +123,13 @@ public class UserProfileFragment extends Fragment {
 
             // Activity:
             int percentage = (int) Math.round(activeHours / 8 * 100);
-            tvActivity.setText(activeHours + " hours");
             progressBar.setProgress(percentage);
-            tvProgressText.setText(percentage + "%");
+
+            String formattedHours = String.format("%.1f hours", activeHours);
+            tvActivity.setText(formattedHours);
+
+            String formattedPercentage = String.format("%d %%", percentage);
+            tvProgressText.setText(formattedPercentage);
         } else {
             vehicleCard.setVisibility(View.GONE);
             activityCard.setVisibility(View.GONE);
