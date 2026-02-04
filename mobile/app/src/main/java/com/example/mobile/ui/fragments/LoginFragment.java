@@ -18,7 +18,7 @@ import androidx.navigation.Navigation;
 import com.example.mobile.R;
 import com.example.mobile.dto.auth.LoginRequest;
 import com.example.mobile.dto.auth.LoginResponse;
-import com.example.mobile.network.AuthService;
+import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.RetrofitClient;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -80,7 +80,7 @@ public class LoginFragment extends Fragment {
 
     private void login(String email, String password) {
 
-        AuthService authService = RetrofitClient.getClient().create(AuthService.class);
+        AuthService authService = RetrofitClient.getClient(requireContext()).create(AuthService.class);
         LoginRequest loginRequest = new LoginRequest(email, password);
 
         authService.login(loginRequest).enqueue(new retrofit2.Callback<>() {

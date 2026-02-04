@@ -15,7 +15,7 @@ import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.auth.ResetPasswordRequest;
-import com.example.mobile.network.AuthService;
+import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -26,7 +26,7 @@ import retrofit2.Response;
 
 public class ResetPasswordFragment extends Fragment {
 
-    private TextInputEditText etToken;
+    private String mToken = null;
     private TextInputEditText etNewPassword;
     private TextInputEditText etConfirmPassword;
     private MaterialButton btnSubmit;
@@ -45,7 +45,6 @@ public class ResetPasswordFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        etToken = view.findViewById(R.id.etToken);
         etNewPassword = view.findViewById(R.id.etNewPassword);
         etConfirmPassword = view.findViewById(R.id.etConfirmPassword);
         btnSubmit = view.findViewById(R.id.btnSubmit);
@@ -53,40 +52,35 @@ public class ResetPasswordFragment extends Fragment {
         handleDeepLink();
 
         btnSubmit.setOnClickListener(v -> {
-            String token = etToken.getText().toString().trim();
             String newPass = etNewPassword.getText().toString().trim();
             String confirmPass = etConfirmPassword.getText().toString().trim();
 
-            if (token.isEmpty() || newPass.isEmpty() || confirmPass.isEmpty()) {
+            if (mToken == null || mToken.isEmpty()) {
+                Toast.makeText(getContext(), "Invalid reset session. Please use the link from your email.", Toast.LENGTH_LONG).show();
+            } else if (newPass.isEmpty() || confirmPass.isEmpty()) {
                 Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
             } else if (!newPass.equals(confirmPass)) {
                 Toast.makeText(getContext(), "Passwords do not match", Toast.LENGTH_SHORT).show();
             } else {
-                performResetPassword(token, newPass);
+                performResetPassword(mToken, newPass);
             }
         });
     }
 
     private void handleDeepLink() {
-        String tokenFromLink = null;
-
         if (getArguments() != null && getArguments().containsKey("token")) {
-            tokenFromLink = getArguments().getString("token");
+            mToken = getArguments().getString("token");
         }
 
-        if (tokenFromLink == null && requireActivity().getIntent() != null) {
-            Intent intent = requireActivity().getIntent();
-            Uri data = intent.getData();
+        if (mToken == null && requireActivity().getIntent() != null) {
+            Uri data = requireActivity().getIntent().getData();
             if (data != null) {
-                tokenFromLink = data.getQueryParameter("token");
+                mToken = data.getQueryParameter("token");
             }
         }
 
-        if (tokenFromLink != null && !tokenFromLink.isEmpty()) {
-            etToken.setText(tokenFromLink);
-            etToken.setEnabled(false);
-            Toast.makeText(getContext(), "Token applied successfully", Toast.LENGTH_SHORT).show();
-
+        if (mToken != null) {
+            Toast.makeText(getContext(), "Session verified", Toast.LENGTH_SHORT).show();
             requireActivity().getIntent().setData(null);
         }
     }
@@ -94,7 +88,7 @@ public class ResetPasswordFragment extends Fragment {
     private void performResetPassword(String token, String newPassword) {
         btnSubmit.setEnabled(false);
 
-        AuthService authService = RetrofitClient.getClient().create(AuthService.class);
+        AuthService authService = RetrofitClient.getClient(requireContext()).create(AuthService.class);
         ResetPasswordRequest request = new ResetPasswordRequest(token, newPassword);
 
         authService.resetPassword(request).enqueue(new retrofit2.Callback<ResponseBody>() {
@@ -106,7 +100,6 @@ public class ResetPasswordFragment extends Fragment {
                     Navigation.findNavController(requireView()).navigate(R.id.action_resetPassword_to_login);
                 } else {
                     Toast.makeText(getContext(), "Error: Invalid or expired token", Toast.LENGTH_SHORT).show();
-                    etToken.setEnabled(true);
                 }
             }
 
