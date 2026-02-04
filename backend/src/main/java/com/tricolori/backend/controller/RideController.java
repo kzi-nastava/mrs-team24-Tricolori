@@ -1,10 +1,10 @@
 package com.tricolori.backend.controller;
 
-import com.tricolori.backend.dto.ride.OrderRequest;
-
 import com.tricolori.backend.dto.ride.*;
 import com.tricolori.backend.entity.Location;
 import com.tricolori.backend.entity.Person;
+import com.tricolori.backend.entity.Route;
+import com.tricolori.backend.entity.Stop;
 import com.tricolori.backend.service.AuthService;
 import com.tricolori.backend.service.InconsistencyReportService;
 import com.tricolori.backend.service.ReviewService;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -252,8 +253,13 @@ public class RideController {
         @AuthenticationPrincipal Person passenger,
         @RequestBody OrderRequest request
     ) {
-        //rideService.rideOrder(request);
-        return ResponseEntity.ok("Ordering a ride.");
+        try {
+            rideService.rideOrder(request);
+        } catch (Exception e) {
+            String errorResponse = "ODGOVOR: " + e.getClass().getSimpleName() + ": " + e.getMessage();
+            return ResponseEntity.ok(errorResponse);
+        }
+        return ResponseEntity.ok("Created a ride.");
     }
 
     @PutMapping("/{rideId}/start")

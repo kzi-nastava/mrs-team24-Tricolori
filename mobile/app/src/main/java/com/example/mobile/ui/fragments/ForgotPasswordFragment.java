@@ -13,8 +13,15 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
+import com.example.mobile.dto.auth.ForgotPasswordRequest;
+import com.example.mobile.network.service.AuthService;
+import com.example.mobile.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Response;
 
 public class ForgotPasswordFragment extends Fragment {
 
@@ -46,14 +53,39 @@ public class ForgotPasswordFragment extends Fragment {
             if (email.isEmpty()) {
                 Toast.makeText(getContext(), "Please enter your email", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getContext(), "Reset link sent to: " + email, Toast.LENGTH_SHORT).show();
-                // TODO: Retrofit
+                sendResetEmail(email);
             }
         });
 
         // "Login here" (Return back)
         tvBackToLogin.setOnClickListener(v -> {
             Navigation.findNavController(view).popBackStack();
+        });
+    }
+
+    private void sendResetEmail(String email) {
+        btnSendReset.setEnabled(false);
+        AuthService authService = RetrofitClient.getClient(requireContext()).create(AuthService.class);
+        ForgotPasswordRequest request = new ForgotPasswordRequest(email);
+
+        authService.forgotPassword(request).enqueue(new retrofit2.Callback<ResponseBody>() {
+
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                btnSendReset.setEnabled(true);
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Email sent!", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
+                } else {
+                    Toast.makeText(getContext(), "Error: User not found", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                btnSendReset.setEnabled(true);
+                Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 }

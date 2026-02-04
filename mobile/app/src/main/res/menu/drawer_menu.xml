@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"> <group android:checkableBehavior="single">
+    <item
+        android:id="@+id/rideHistoryFragment"
+        android:icon="@drawable/ic_history"
+        android:title="Ride History" />
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/rideHistoryFragment"
-            android:icon="@drawable/ic_history"
-            android:title="Ride History" />
-
-        <item
-            android:id="@+id/userProfileFragment"
-            android:icon="@drawable/ic_person"
-            android:title="Profile" />
-
-    </group>
+    <item
+        android:id="@+id/userProfileFragment"
+        android:icon="@drawable/ic_person"
+        android:title="Profile" />
+</group>
 
     <item android:title="Account">
         <menu>
@@ -22,5 +20,11 @@
                 android:title="Log Out" />
         </menu>
     </item>
+
+    <item
+        android:id="@+id/nav_status_switch"
+        android:title="Active Status"
+        app:actionViewClass="com.google.android.material.switchmaterial.SwitchMaterial"
+        app:showAsAction="always" />
 
 </menu>

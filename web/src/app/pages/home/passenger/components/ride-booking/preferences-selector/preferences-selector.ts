@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
 import { SchedulePicker } from '../schedule-picker/schedule-picker';
 import { environment } from '../../../../../../../environments/environment';
+import { RideService } from '../../../../../../services/ride.service';
 
 @Component({
   selector: 'app-preferences-selector',
@@ -18,6 +19,8 @@ import { environment } from '../../../../../../../environments/environment';
 })
 export class PreferencesSelector {
   private fb = inject(FormBuilder);
+  private rideService = inject(RideService);
+
   readonly vehicleTypes = environment.vehicleTypes;
 
   selectedType = signal('standard');
@@ -63,6 +66,18 @@ export class PreferencesSelector {
       });
     } else {
       this.scheduleWanted.emit();
+    }
+  }
+
+  getPreferences() {
+    const formData = this.preferencesForm.getRawValue();
+
+    // This maps to RidePreferemces on backend...
+    return {
+      vehicleType: formData.vehicleType.toUpperCase(),
+      petFriendly: formData.petFriendly,
+      babyFriendly: formData.babySeat,
+      scheduledFor: this.rideService.formatLocalDateTime(formData.scheduledTime)
     }
   }
 

@@ -1,4 +1,4 @@
-package com.example.mobile.network;
+package com.example.mobile.network.service;
 
 import java.util.List;
 
