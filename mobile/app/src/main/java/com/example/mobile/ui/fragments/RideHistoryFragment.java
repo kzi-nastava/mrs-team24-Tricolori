@@ -2,6 +2,7 @@ package com.example.mobile.ui.fragments;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,9 +95,21 @@ public class RideHistoryFragment extends Fragment {
                             Call<PageResponse<DriverRideHistoryResponse>> call,
                             Response<PageResponse<DriverRideHistoryResponse>> response) {
 
+                        Log.d("RideHistory", "Response code: " + response.code());
+
                         if (!response.isSuccessful() || response.body() == null) {
+                            String errorBody = "";
+                            try {
+                                if (response.errorBody() != null) {
+                                    errorBody = response.errorBody().string();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            Log.e("RideHistory", "Error: " + response.code() + " - " + errorBody);
                             Toast.makeText(getContext(),
-                                    "Error loading rides",
+                                    "Error loading rides: " + response.code(),
                                     Toast.LENGTH_SHORT).show();
                             return;
                         }
