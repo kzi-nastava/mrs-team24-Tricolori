@@ -14,9 +14,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/spacing_3">
+        android:padding="@dimen/spacing_1">
 
-        <!-- Header -->
+        <!-- Header message -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,476 +35,256 @@
             android:layout_marginBottom="@dimen/spacing_8"
             android:layout_marginLeft="@dimen/spacing_3_5"/>
 
-        <!-- Email Address Card -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- Profile Picture -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_3"
             android:layout_marginLeft="@dimen/spacing_1"
             android:layout_marginRight="@dimen/spacing_1"
             android:layout_marginTop="@dimen/spacing_1"
-            android:layout_marginBottom="@dimen/spacing_6"
-            app:cardCornerRadius="@dimen/spacing_3"
-            app:cardElevation="@dimen/spacing_1"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@color/white">
+            android:layout_marginBottom="@dimen/spacing_6">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_3">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/spacing_3">
+
+                <!-- Icon placeholder -->
+                <ImageView
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:contentDescription="@string/profile_picture_icon_desc"
+                    app:tint="@color/light_700"
+                    android:layout_marginEnd="@dimen/spacing_3"
+                    android:src="@drawable/ic_profile_picture"/>
+                <!-- android:src="@drawable/ic_picture" -->
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="@dimen/spacing_3">
-
-                    <!-- Icon placeholder -->
-                    <ImageView
-                        android:layout_width="@dimen/spacing_10"
-                        android:layout_height="@dimen/spacing_10"
-                        android:contentDescription="@string/profile_email_icon_desc"
-                        app:tint="@color/light_700"
-                        android:layout_marginEnd="@dimen/spacing_3"
-                        android:src="@drawable/ic_email"/>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_email"
-                            android:textColor="@color/light_700"
-                            android:textSize="@dimen/text_base"
-                            android:labelFor="@id/profile_user_email"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_email_desc"
-                            android:textColor="@color/gray_400"
-                            android:textSize="@dimen/text_xs" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <EditText
-                    android:id="@+id/profile_user_email"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_3"
-                    android:autofillHints="email"
-                    android:background="@drawable/rounded_input"
-                    android:enabled="false"
-                    android:focusable="false"
-                    android:inputType="textEmailAddress"
-                    android:padding="@dimen/spacing_4"
-                    android:text="@string/profile_email_example"
-                    android:textSize="@dimen/text_base"
-                    android:textColor="@color/black"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/spacing_1"
-            android:layout_marginRight="@dimen/spacing_1"
-            android:layout_marginTop="@dimen/spacing_1"
-            android:layout_marginBottom="@dimen/spacing_6"
-            app:cardCornerRadius="@dimen/spacing_3"
-            app:cardElevation="@dimen/spacing_1"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@color/white">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_3">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="@dimen/spacing_3">
-
-                    <!-- Icon placeholder -->
-                    <ImageView
-                        android:layout_width="@dimen/spacing_10"
-                        android:layout_height="@dimen/spacing_10"
-                        android:contentDescription="@string/profile_picture_icon_desc"
-                        app:tint="@color/light_700"
-                        android:layout_marginEnd="@dimen/spacing_3"
-                        android:src="@drawable/ic_profile_picture"/>
-                    <!-- android:src="@drawable/ic_picture" -->
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_picture"
-                            android:textColor="@color/light_700"
-                            android:textSize="@dimen/text_base"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_picture_desc"
-                            android:textColor="@color/gray_400"
-                            android:textSize="@dimen/text_xs" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Centered Profile Image -->
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="@dimen/spacing_40"
-                        android:layout_height="@dimen/spacing_40"
-                        android:layout_gravity="center"
-                        android:background="@drawable/profile_picture_background"
-                        android:scaleType="centerCrop"
-                        android:contentDescription="@string/profile_user_picture_desc"
-                        android:src="@drawable/ic_person"
-                        app:tint="@color/gray_400"/>
-                    <!-- android:src="@drawable/logo" -->
-                </FrameLayout>
-
-                <!-- Instructions & Upload Button -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_marginTop="@dimen/spacing_3">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/profile_picture_info"
-                        android:textColor="@color/gray_500"
-                        android:textAlignment="center"/>
-
-                    <Button
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/profile_picture_submit"
-                        android:backgroundTint="@color/light_700"
-                        android:textColor="@color/white"/>
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Personal Information Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/spacing_1"
-            android:layout_marginRight="@dimen/spacing_1"
-            android:layout_marginTop="@dimen/spacing_1"
-            android:layout_marginBottom="@dimen/spacing_6"
-            app:cardCornerRadius="@dimen/spacing_3"
-            app:cardElevation="@dimen/spacing_1"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@color/white">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_3">
-
-                <!-- Header: Icon + Title + Description + Buttons -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="@dimen/spacing_2">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <!-- Icon placeholder -->
-                        <ImageView
-                            android:layout_width="@dimen/spacing_10"
-                            android:layout_height="@dimen/spacing_10"
-                            android:contentDescription="@string/profile_personal_icon_desc"
-                            app:tint="@color/light_700"
-                            android:layout_marginEnd="@dimen/spacing_3"
-                            android:src="@drawable/ic_person"/>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_personal"
-                                android:textColor="@color/light_700"
-                                android:textSize="@dimen/text_base" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_personal_desc"
-                                android:textColor="@color/gray_400"
-                                android:textSize="@dimen/text_xs" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Buttons -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <LinearLayout
-                            android:id="@+id/profile_buttons_layout"
-                            android:visibility="gone"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center_horizontal">
-
-                            <Button
-                                android:id="@+id/profile_btn_save"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_personal_save"
-                                android:backgroundTint="@color/light_700"
-                                android:padding="@dimen/spacing_0_5"
-                                android:textSize="@dimen/text_xs"
-                                android:textColor="@color/white" />
-
-                            <Button
-                                android:id="@+id/profile_btn_reset"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_personal_cancel"
-                                android:backgroundTint="@color/dark_700"
-                                android:padding="@dimen/spacing_0_5"
-                                android:textSize="@dimen/text_xs"
-                                android:textColor="@color/white" />
-                        </LinearLayout>
-
-                        <Button
-                            android:id="@+id/profile_btn_edit"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_personal_edit"
-                            android:backgroundTint="@color/light_700"
-                            android:padding="@dimen/spacing_0_5"
-                            android:textSize="@dimen/text_xs"
-                            android:textColor="@color/white"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- Input fields -->
-                <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- First Name -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/profile_personal_first_name"
-                        android:textColor="@color/gray_500"
-                        android:layout_marginStart="@dimen/spacing_2"
-                        android:layout_marginTop="@dimen/spacing_3"/>
-                    <EditText
-                        android:id="@+id/profile_first_name"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_4"
-                        android:enabled="false"
-                        android:textSize="@dimen/text_base"
-                        android:text="@string/profile_personal_first_name_example"
-                        android:textColor="@color/black"/>
+                        android:text="@string/profile_picture"
+                        android:textColor="@color/light_700"
+                        android:textSize="@dimen/text_base"/>
 
-                    <!-- Last Name -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/profile_personal_last_name"
-                        android:textColor="@color/gray_500"
-                        android:layout_marginStart="@dimen/spacing_2"
-                        android:layout_marginTop="@dimen/spacing_3"/>
-                    <EditText
-                        android:id="@+id/profile_last_name"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_4"
-                        android:enabled="false"
-                        android:textSize="@dimen/text_base"
-                        android:text="@string/profile_personal_last_name_example"
-                        android:textColor="@color/black"/>
-
-                    <!-- Phone Number -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/profile_personal_phone"
-                        android:textColor="@color/gray_500"
-                        android:layout_marginStart="@dimen/spacing_2"
-                        android:layout_marginTop="@dimen/spacing_3"/>
-                    <EditText
-                        android:id="@+id/profile_phone"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_4"
-                        android:enabled="false"
-                        android:textSize="@dimen/text_base"
-                        android:text="@string/profile_personal_phone_example"
-                        android:textColor="@color/black"/>
-
-                    <!-- Home Address -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/profile_personal_home"
-                        android:textColor="@color/gray_500"
-                        android:layout_marginStart="@dimen/spacing_2"
-                        android:layout_marginTop="@dimen/spacing_3"/>
-                    <EditText
-                        android:id="@+id/profile_address"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_4"
-                        android:enabled="false"
-                        android:textSize="@dimen/text_base"
-                        android:text="@string/profile_personal_home_example"
-                        android:textColor="@color/black"/>
+                        android:text="@string/profile_picture_desc"
+                        android:textColor="@color/gray_400"
+                        android:textSize="@dimen/text_xs" />
                 </LinearLayout>
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+
+            <!-- Centered Profile Image -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="@dimen/spacing_40"
+                    android:layout_height="@dimen/spacing_40"
+                    android:layout_gravity="center"
+                    android:background="@drawable/profile_picture_background"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/profile_user_picture_desc"
+                    android:src="@drawable/ic_person"
+                    app:tint="@color/gray_400"/>
+                <!-- android:src="@drawable/logo" -->
+            </FrameLayout>
+
+            <!-- Instructions & Upload Button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/spacing_3">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_picture_info"
+                    android:textColor="@color/gray_500"
+                    android:textAlignment="center"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_picture_submit"
+                    android:backgroundTint="@color/light_700"
+                    android:textColor="@color/white"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Email Address Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_3"
+            android:layout_marginLeft="@dimen/spacing_1"
+            android:layout_marginRight="@dimen/spacing_1"
+            android:layout_marginTop="@dimen/spacing_1"
+            android:layout_marginBottom="@dimen/spacing_6">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/spacing_3">
+
+                <!-- Icon placeholder -->
+                <ImageView
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:contentDescription="@string/profile_email_icon_desc"
+                    app:tint="@color/light_700"
+                    android:layout_marginEnd="@dimen/spacing_3"
+                    android:src="@drawable/ic_email"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_email"
+                        android:textColor="@color/light_700"
+                        android:textSize="@dimen/text_base"
+                        android:labelFor="@id/profile_user_email"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_email_desc"
+                        android:textColor="@color/gray_400"
+                        android:textSize="@dimen/text_xs" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/profile_user_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_3"
+                android:autofillHints="email"
+                android:background="@drawable/rounded_input"
+                android:enabled="false"
+                android:focusable="false"
+                android:inputType="textEmailAddress"
+                android:padding="@dimen/spacing_4"
+                android:text="@string/profile_email_example"
+                android:textSize="@dimen/text_base"
+                android:textColor="@color/black"/>
+        </LinearLayout>
 
         <!-- Security Card -->
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_3"
             android:layout_marginLeft="@dimen/spacing_1"
             android:layout_marginRight="@dimen/spacing_1"
             android:layout_marginTop="@dimen/spacing_1"
-            android:layout_marginBottom="@dimen/spacing_6"
-            app:cardCornerRadius="@dimen/spacing_3"
-            app:cardElevation="@dimen/spacing_1"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@color/white">
+            android:layout_marginBottom="@dimen/spacing_6">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_3">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/spacing_3">
+
+                <!-- Icon placeholder -->
+                <ImageView
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:contentDescription="@string/profile_email_icon_desc"
+                    app:tint="@color/light_700"
+                    android:layout_marginEnd="@dimen/spacing_3"
+                    android:src="@drawable/ic_lock"/>
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="@dimen/spacing_3">
+                    android:orientation="vertical">
 
-                    <!-- Icon placeholder -->
-                    <ImageView
-                        android:layout_width="@dimen/spacing_10"
-                        android:layout_height="@dimen/spacing_10"
-                        android:contentDescription="@string/profile_email_icon_desc"
-                        app:tint="@color/light_700"
-                        android:layout_marginEnd="@dimen/spacing_3"
-                        android:src="@drawable/ic_lock"/>
-
-                    <LinearLayout
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:text="@string/profile_security"
+                        android:textColor="@color/light_700"
+                        android:textSize="@dimen/text_base"/>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_security"
-                            android:textColor="@color/light_700"
-                            android:textSize="@dimen/text_base"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_security_desc"
-                            android:textColor="@color/gray_400"
-                            android:textSize="@dimen/text_xs" />
-                    </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_security_desc"
+                        android:textColor="@color/gray_400"
+                        android:textSize="@dimen/text_xs" />
                 </LinearLayout>
-
-                <!-- Change Password Button -->
-                <Button
-                    android:id="@+id/profile_btn_change_password"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_3"
-                    android:backgroundTint="@color/dark_700"
-                    android:textColor="@color/white"
-                    android:text="@string/profile_security_submit"
-                    android:paddingVertical="@dimen/spacing_2"
-                    android:textSize="@dimen/text_sm"/>
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Vehicle Information Card -->
-        <com.google.android.material.card.MaterialCardView
+            <!-- Change Password Button -->
+            <Button
+                android:id="@+id/profile_btn_change_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_3"
+                android:backgroundTint="@color/dark_700"
+                android:textColor="@color/white"
+                android:text="@string/profile_security_submit"
+                android:paddingVertical="@dimen/spacing_2"
+                android:textSize="@dimen/text_sm"/>
+        </LinearLayout>
+
+        <!-- Personal Information Card -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_3"
             android:layout_marginLeft="@dimen/spacing_1"
             android:layout_marginRight="@dimen/spacing_1"
             android:layout_marginTop="@dimen/spacing_1"
-            android:layout_marginBottom="@dimen/spacing_6"
-            app:cardCornerRadius="@dimen/spacing_3"
-            app:cardElevation="@dimen/spacing_1"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@color/white">
+            android:layout_marginBottom="@dimen/spacing_6">
+
+            <!-- Header: Icon + Title + Description + Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_3">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/spacing_2">
 
-                <!-- Header: Icon + Title + Description -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="@dimen/spacing_3">
+                    android:gravity="center_vertical">
 
                     <!-- Icon placeholder -->
                     <ImageView
                         android:layout_width="@dimen/spacing_10"
                         android:layout_height="@dimen/spacing_10"
-                        android:contentDescription="@string/profile_vehicle_icon_desc"
+                        android:contentDescription="@string/profile_personal_icon_desc"
                         app:tint="@color/light_700"
                         android:layout_marginEnd="@dimen/spacing_3"
-                        android:src="@drawable/ic_vehicle"/>
+                        android:src="@drawable/ic_person"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -514,426 +294,102 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/profile_vehicle"
+                            android:text="@string/profile_personal"
                             android:textColor="@color/light_700"
                             android:textSize="@dimen/text_base" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/profile_vehicle_desc"
+                            android:text="@string/profile_personal_desc"
                             android:textColor="@color/gray_400"
                             android:textSize="@dimen/text_xs" />
                     </LinearLayout>
                 </LinearLayout>
-
-                <!-- Vehicle info grid -->
-                <GridLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:columnCount="1"
-                    android:orientation="horizontal"
-                    android:rowOrderPreserved="false"
-                    android:layout_marginBottom="@dimen/spacing_3">
-
-                    <!-- Card 1: Model -->
-                    <LinearLayout
-                        android:gravity="fill"
-                        android:layout_rowWeight="1"
-                        android:layout_columnWeight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_3"
-                        android:layout_marginBottom="@dimen/spacing_3">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <!-- Icon -->
-                            <ImageView
-                                android:layout_width="@dimen/spacing_6"
-                                android:layout_height="@dimen/spacing_6"
-                                android:contentDescription="@string/profile_vehicle_model_icon_desc"
-                                app:tint="@color/light_700"
-                                android:src="@drawable/ic_model"
-                                android:layout_marginEnd="@dimen/spacing_2"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_vehicle_model"
-                                android:textColor="@color/gray_700"
-                                android:textSize="@dimen/text_sm"/>
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_vehicle_model_example"
-                            android:textColor="@color/dark_900"
-                            android:textSize="@dimen/text_sm"
-                            android:layout_marginTop="@dimen/spacing_2"/>
-                    </LinearLayout>
-
-                    <!-- Card 2: Place -->
-                    <LinearLayout
-                        android:gravity="fill"
-                        android:layout_rowWeight="1"
-                        android:layout_columnWeight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_3"
-                        android:layout_marginBottom="@dimen/spacing_3">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <!-- Icon -->
-                            <ImageView
-                                android:layout_width="@dimen/spacing_6"
-                                android:layout_height="@dimen/spacing_6"
-                                android:contentDescription="@string/profile_vehicle_place_icon_desc"
-                                app:tint="@color/light_700"
-                                android:src="@drawable/ic_place"
-                                android:layout_marginEnd="@dimen/spacing_2"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_vehicle_place"
-                                android:textColor="@color/gray_700"
-                                android:textSize="@dimen/text_sm"/>
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_vehicle_place_example"
-                            android:textColor="@color/dark_900"
-                            android:textSize="@dimen/text_sm"
-                            android:layout_marginTop="@dimen/spacing_2"/>
-                    </LinearLayout>
-
-                    <!-- Card 3: Licence plate -->
-                    <LinearLayout
-                        android:gravity="fill"
-                        android:layout_rowWeight="1"
-                        android:layout_columnWeight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_3"
-                        android:layout_marginBottom="@dimen/spacing_3">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <!-- Icon -->
-                            <ImageView
-                                android:layout_width="@dimen/spacing_6"
-                                android:layout_height="@dimen/spacing_6"
-                                android:contentDescription="@string/profile_vehicle_licence_icon_desc"
-                                app:tint="@color/light_700"
-                                android:src="@drawable/ic_licence"
-                                android:layout_marginEnd="@dimen/spacing_2"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_vehicle_licence"
-                                android:textColor="@color/gray_700"
-                                android:textSize="@dimen/text_sm"/>
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_vehicle_licence_example"
-                            android:textColor="@color/dark_900"
-                            android:textSize="@dimen/text_sm"
-                            android:layout_marginTop="@dimen/spacing_2"/>
-                    </LinearLayout>
-
-                    <!-- Card 4: Vehicle type -->
-                    <LinearLayout
-                        android:gravity="fill"
-                        android:layout_rowWeight="1"
-                        android:layout_columnWeight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_3"
-                        android:layout_marginBottom="@dimen/spacing_3">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <!-- Icon -->
-                            <ImageView
-                                android:layout_width="@dimen/spacing_6"
-                                android:layout_height="@dimen/spacing_6"
-                                android:contentDescription="@string/profile_vehicle_type_icon_desc"
-                                app:tint="@color/light_700"
-                                android:src="@drawable/ic_vehicle_type"
-                                android:layout_marginEnd="@dimen/spacing_2"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_vehicle_type"
-                                android:textColor="@color/gray_700"
-                                android:textSize="@dimen/text_sm"/>
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_vehicle_type_example"
-                            android:textColor="@color/dark_900"
-                            android:textSize="@dimen/text_sm"
-                            android:layout_marginTop="@dimen/spacing_2"/>
-                    </LinearLayout>
-
-                    <!-- Card 5: Does it drive babies? -->
-                    <LinearLayout
-                        android:gravity="fill"
-                        android:layout_rowWeight="1"
-                        android:layout_columnWeight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_3"
-                        android:layout_marginBottom="@dimen/spacing_3">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <!-- Icon -->
-                            <ImageView
-                                android:layout_width="@dimen/spacing_6"
-                                android:layout_height="@dimen/spacing_6"
-                                android:contentDescription="@string/profile_vehicle_baby_icon_desc"
-                                app:tint="@color/light_700"
-                                android:src="@drawable/ic_baby"
-                                android:layout_marginEnd="@dimen/spacing_2"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_vehicle_baby"
-                                android:textColor="@color/gray_700"
-                                android:textSize="@dimen/text_sm"/>
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_vehicle_baby_example"
-                            android:textColor="@color/dark_900"
-                            android:textSize="@dimen/text_sm"
-                            android:layout_marginTop="@dimen/spacing_2"/>
-                    </LinearLayout>
-
-                    <!-- Card 6: Does it drive pets? -->
-                    <LinearLayout
-                        android:gravity="fill"
-                        android:layout_rowWeight="1"
-                        android:layout_columnWeight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/rounded_input"
-                        android:padding="@dimen/spacing_3"
-                        android:layout_marginBottom="@dimen/spacing_3">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <!-- Icon -->
-                            <ImageView
-                                android:layout_width="@dimen/spacing_6"
-                                android:layout_height="@dimen/spacing_6"
-                                android:contentDescription="@string/profile_vehicle_pet_icon_desc"
-                                app:tint="@color/light_700"
-                                android:src="@drawable/ic_pets"
-                                android:layout_marginEnd="@dimen/spacing_2"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_vehicle_pet"
-                                android:textColor="@color/gray_700"
-                                android:textSize="@dimen/text_sm"/>
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_vehicle_pet_example"
-                            android:textColor="@color/dark_900"
-                            android:textSize="@dimen/text_sm"
-                            android:layout_marginTop="@dimen/spacing_2"/>
-                    </LinearLayout>
-
-                </GridLayout>
-
-                <!-- Info text at the bottom -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/profile_vehicle_info"
-                    android:textColor="@color/deep_400"
-                    android:textSize="@dimen/text_base"
-                    android:background="@drawable/rounded_info"
-                    android:padding="@dimen/spacing_4"/>
-
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Driver Activity Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/spacing_1"
-            android:layout_marginRight="@dimen/spacing_1"
-            android:layout_marginTop="@dimen/spacing_1"
-            android:layout_marginBottom="@dimen/spacing_6"
-            app:cardCornerRadius="@dimen/spacing_3"
-            app:cardElevation="@dimen/spacing_1"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@color/white">
+            <!-- Input fields -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_3">
+                android:orientation="vertical">
 
-                <LinearLayout
+                <!-- First Name -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_personal_first_name"
+                    android:textColor="@color/gray_500"
+                    android:layout_marginStart="@dimen/spacing_2"
+                    android:layout_marginTop="@dimen/spacing_3"/>
+                <EditText
+                    android:id="@+id/profile_first_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="@dimen/spacing_3">
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_4"
+                    android:enabled="false"
+                    android:textSize="@dimen/text_base"
+                    android:text="@string/profile_personal_first_name_example"
+                    android:textColor="@color/black"/>
 
-                    <!-- Icon placeholder -->
-                    <ImageView
-                        android:layout_width="@dimen/spacing_10"
-                        android:layout_height="@dimen/spacing_10"
-                        android:contentDescription="@string/profile_activity_icon_desc"
-                        app:tint="@color/light_700"
-                        android:layout_marginEnd="@dimen/spacing_3"
-                        android:src="@drawable/ic_activity"/>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_activity"
-                            android:textColor="@color/light_700"
-                            android:textSize="@dimen/text_base"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/profile_activity_desc"
-                            android:textColor="@color/gray_400"
-                            android:textSize="@dimen/text_xs" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Inner Card -->
-                <LinearLayout
+                <!-- Last Name -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_personal_last_name"
+                    android:textColor="@color/gray_500"
+                    android:layout_marginStart="@dimen/spacing_2"
+                    android:layout_marginTop="@dimen/spacing_3"/>
+                <EditText
+                    android:id="@+id/profile_last_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/spacing_3"
-                    android:background="@drawable/rounded_activity">
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_4"
+                    android:enabled="false"
+                    android:textSize="@dimen/text_base"
+                    android:text="@string/profile_personal_last_name_example"
+                    android:textColor="@color/black"/>
 
-                    <!-- Stats Row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                <!-- Phone Number -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_personal_phone"
+                    android:textColor="@color/gray_500"
+                    android:layout_marginStart="@dimen/spacing_2"
+                    android:layout_marginTop="@dimen/spacing_3"/>
+                <EditText
+                    android:id="@+id/profile_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_4"
+                    android:enabled="false"
+                    android:textSize="@dimen/text_base"
+                    android:text="@string/profile_personal_phone_example"
+                    android:textColor="@color/black"/>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:text="@string/profile_activity_total"
-                                android:textColor="@color/white"
-                                android:layout_height="match_parent"
-                                android:layout_width="match_parent" />
-
-                            <TextView
-                                android:layout_height="match_parent"
-                                android:layout_width="match_parent"
-                                android:text="@string/profile_activity_amount"
-                                android:textSize="@dimen/text_2xl"
-                                android:textStyle="bold"
-                                android:textColor="@color/white"/>
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Progress -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginTop="@dimen/spacing_3">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="4dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/profile_activity_goal"
-                                android:textColor="@color/white"/>
-                        </LinearLayout>
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="@dimen/spacing_6">
-
-                            <ProgressBar
-                                android:id="@+id/progressBar"
-                                style="?android:attr/progressBarStyleHorizontal"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:max="100"
-                                android:progress="69"
-                                android:progressDrawable="@drawable/progress_bar"/>
-
-                            <TextView
-                                android:id="@+id/progressText"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="69%"
-                                android:textColor="@color/white"
-                                android:textStyle="bold"
-                                android:layout_gravity="center"/>
-                        </FrameLayout>
-                    </LinearLayout>
-                </LinearLayout>
-
+                <!-- Home Address -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_personal_home"
+                    android:textColor="@color/gray_500"
+                    android:layout_marginStart="@dimen/spacing_2"
+                    android:layout_marginTop="@dimen/spacing_3"/>
+                <EditText
+                    android:id="@+id/profile_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_4"
+                    android:enabled="false"
+                    android:textSize="@dimen/text_base"
+                    android:text="@string/profile_personal_home_example"
+                    android:textColor="@color/black"/>
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
