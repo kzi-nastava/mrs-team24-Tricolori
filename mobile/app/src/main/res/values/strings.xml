@@ -163,6 +163,8 @@
     <string name="req_1">• At least 8 characters</string>
     <string name="req_2">• Upper and lowercase letters</string>
     <string name="req_3">• At least one number</string>
+    <string name="reset_token">Reset Token:</string>
+    <string name="enter_token_from_email">Enter token from email</string>
 
     <!-- Menu -->
     <string name="nav_ride_history">Ride History</string>
