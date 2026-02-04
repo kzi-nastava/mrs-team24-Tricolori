@@ -127,7 +127,15 @@ public class Ride {
         endTime = LocalDateTime.now();
     }
 
-    public boolean containsPassengerWithEmail(String personEmail) {
-        return false;
+    public boolean isScheduledForLater() {
+        return this.status == RideStatus.SCHEDULED && this.scheduledFor == null;
     }
-}
+
+    public boolean isOngoing() {
+        return this.status == RideStatus.ONGOING;
+    }
+
+        public boolean containsPassengerWithEmail(String personEmail) {
+            return false;
+        }
+    }
