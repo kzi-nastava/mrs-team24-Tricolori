@@ -13,11 +13,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mobile.R;
 import com.example.mobile.ui.models.Ride;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class RideHistoryAdapter extends RecyclerView.Adapter<RideHistoryAdapter.RideViewHolder> {
-    private List<Ride> rides;
+
+    private List<Ride> rides = new ArrayList<>();
     private OnRideClickListener listener;
 
     public interface OnRideClickListener {
@@ -25,12 +27,12 @@ public class RideHistoryAdapter extends RecyclerView.Adapter<RideHistoryAdapter.
     }
 
     public RideHistoryAdapter(List<Ride> rides, OnRideClickListener listener) {
-        this.rides = rides;
+        this.rides = rides != null ? rides : new ArrayList<>();
         this.listener = listener;
     }
 
     public void updateData(List<Ride> newRides) {
-        this.rides = newRides;
+        this.rides = newRides != null ? newRides : new ArrayList<>();
         notifyDataSetChanged();
     }
 
@@ -49,15 +51,17 @@ public class RideHistoryAdapter extends RecyclerView.Adapter<RideHistoryAdapter.
 
     @Override
     public int getItemCount() {
-        return rides.size();
+        return rides == null ? 0 : rides.size();
     }
 
     class RideViewHolder extends RecyclerView.ViewHolder {
+
         private TextView tvRoute, tvDate, tvPrice, tvStatus, tvPassenger;
         private CardView cardView;
 
         public RideViewHolder(@NonNull View itemView) {
             super(itemView);
+
             cardView = itemView.findViewById(R.id.cardView);
             tvRoute = itemView.findViewById(R.id.tvRoute);
             tvDate = itemView.findViewById(R.id.tvDate);
@@ -74,19 +78,44 @@ public class RideHistoryAdapter extends RecyclerView.Adapter<RideHistoryAdapter.
         }
 
         public void bind(Ride ride) {
+            if (ride == null) return;
+
             tvRoute.setText(ride.getRoute());
             tvDate.setText(ride.getStartDate() + " • " + ride.getStartTime());
             tvPrice.setText(String.format(Locale.getDefault(), "€%.2f", ride.getPrice()));
             tvStatus.setText(ride.getStatus());
             tvPassenger.setText(ride.getPassengerName());
 
-            // Set status color
-            if ("Completed".equals(ride.getStatus())) {
-                tvStatus.setTextColor(Color.parseColor("#4CAF50"));
-            } else if ("Cancelled".equals(ride.getStatus())) {
-                tvStatus.setTextColor(Color.parseColor("#F44336"));
-            } else {
-                tvStatus.setTextColor(Color.parseColor("#FF9800"));
+            String status = ride.getStatus();
+
+            if (status == null) {
+                tvStatus.setTextColor(Color.GRAY);
+                return;
+            }
+
+            switch (status) {
+
+                case "FINISHED":
+                    tvStatus.setTextColor(Color.parseColor("#4CAF50"));
+                    break;
+
+                case "CANCELLED_BY_DRIVER":
+                case "CANCELLED_BY_PASSENGER":
+                case "DECLINED":
+                case "REJECTED":
+                case "PANIC":
+                    tvStatus.setTextColor(Color.parseColor("#F44336"));
+                    break;
+
+                case "CREATED":
+                case "SCHEDULED":
+                case "ONGOING":
+                case "STOPPED":
+                    tvStatus.setTextColor(Color.parseColor("#FF9800"));
+                    break;
+
+                default:
+                    tvStatus.setTextColor(Color.GRAY);
             }
         }
     }
