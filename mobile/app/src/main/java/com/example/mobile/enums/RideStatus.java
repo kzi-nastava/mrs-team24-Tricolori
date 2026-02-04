@@ -1,6 +1,7 @@
-package com.tricolori.backend.enums;
+package com.example.mobile.enums;
 
 public enum RideStatus {
+    CREATED,
     SCHEDULED,
     ONGOING,
     FINISHED,

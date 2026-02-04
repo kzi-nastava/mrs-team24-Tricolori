@@ -57,6 +57,38 @@ export class RouteSelector {
     });
   }
 
+  getRoute() {
+    const formData = this.routeForm.getRawValue();
+
+    const pickupData = formData.pickup;
+    const destinationData = formData.destination; 
+
+    // This maps to RideRoute record on backend...
+    return {
+      pickup: {
+        address: pickupData.address,
+        location: { 
+          longitude: pickupData.location.lng, 
+          latitude: pickupData.location.lat 
+        }
+      },
+      destination: {
+        address: destinationData.address,
+        location: { 
+          longitude: destinationData.location.lng, 
+          latitude: destinationData.location.lat 
+        }
+      },
+      stops: (formData.stops || []).map((s: any) => ({
+        address: s.address,
+        location: { 
+          longitude: s.location.lng, 
+          latitude: s.location.lat 
+        }
+      }))
+    };
+  }
+
   private createStopGroup(stopData?: Stop): FormGroup {
     return this.fb.group({
       address: [stopData?.address || '', Validators.required],

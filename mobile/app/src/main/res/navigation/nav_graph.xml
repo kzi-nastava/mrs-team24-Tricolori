@@ -144,6 +144,9 @@
         android:label="Reset Password"
         tools:layout="@layout/fragment_reset_password">
 
+        <deepLink
+            app:uri="http://10.0.2.2:4200/reset-password?token={token}" />
+
         <action
             android:id="@+id/action_resetPassword_to_login"
             app:destination="@id/loginFragment"

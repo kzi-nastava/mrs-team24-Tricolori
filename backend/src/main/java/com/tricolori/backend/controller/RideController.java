@@ -1,10 +1,10 @@
 package com.tricolori.backend.controller;
 
-import com.tricolori.backend.dto.ride.OrderRequest;
-
 import com.tricolori.backend.dto.ride.*;
 import com.tricolori.backend.entity.Location;
 import com.tricolori.backend.entity.Person;
+import com.tricolori.backend.entity.Route;
+import com.tricolori.backend.entity.Stop;
 import com.tricolori.backend.service.AuthService;
 import com.tricolori.backend.service.InconsistencyReportService;
 import com.tricolori.backend.service.ReviewService;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -38,28 +39,24 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}/cancel")
+    @PutMapping("/cancel")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<Void> cancelRide(
-            @PathVariable Long id,
             @RequestBody CancelRideRequest request,
-            Authentication authentication
+            @AuthenticationPrincipal Person person
     ) {
 
-        String personEmail =  authentication.getName();
-        rideService.cancelRide(id, personEmail, request);
-
+        rideService.cancelRide(person, request);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}/panic")
+    @PutMapping("/panic")
     public ResponseEntity<Void> panicRide(
-            @PathVariable Long id,
             @Valid @RequestBody PanicRideRequest request,
-            Authentication authentication
+            @AuthenticationPrincipal Person person
     ) {
 
-        String personEmail = authentication.getName();
-        rideService.panicRide(id, personEmail, request);
+        rideService.panicRide(person, request);
 
         return ResponseEntity.ok().build();
     }
@@ -77,14 +74,14 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}/stop")
+    @PutMapping("/stop")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<StopRideResponse> stopRide(
-            @PathVariable Long id,
             @Valid @RequestBody StopRideRequest request,
             @AuthenticationPrincipal Person person
     ) {
 
-        return ResponseEntity.ok(rideService.stopRide(id, person, request));
+        return ResponseEntity.ok(rideService.stopRide(person, request));
     }
 
     // passenger or driver can track current ride
@@ -256,8 +253,13 @@ public class RideController {
         @AuthenticationPrincipal Person passenger,
         @RequestBody OrderRequest request
     ) {
-        //rideService.rideOrder(request);
-        return ResponseEntity.ok("Ordering a ride.");
+        try {
+            rideService.rideOrder(request);
+        } catch (Exception e) {
+            String errorResponse = "ODGOVOR: " + e.getClass().getSimpleName() + ": " + e.getMessage();
+            return ResponseEntity.ok(errorResponse);
+        }
+        return ResponseEntity.ok("Created a ride.");
     }
 
     @PutMapping("/{rideId}/start")

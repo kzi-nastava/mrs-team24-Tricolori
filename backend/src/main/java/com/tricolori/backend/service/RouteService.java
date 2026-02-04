@@ -7,6 +7,8 @@ import com.tricolori.backend.entity.Route;
 import com.tricolori.backend.entity.Stop;
 import com.tricolori.backend.repository.RouteRepository;
 import com.tricolori.backend.dto.osrm.OSRMRouteResponse;
+import com.tricolori.backend.dto.ride.NominatimResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,21 +26,41 @@ public class RouteService {
 
     private final RouteRepository routeRepository;
     private final OSRMService osrmService;
+    private final GeocodingService geocodingService;
 
-    // All I need for route are stops...
     public Route createRoute(Stop pickup, Stop destination, List<Stop> stops) {
         Route route = new Route();
         List<Stop> allStops = new ArrayList<>();
+        // Save stops in order:
         allStops.add(pickup); allStops.addAll(stops); allStops.add(destination);
+        allStops.forEach(this::locateStop);
+
         route.setStops(allStops);
         
         OSRMResult result = osrmService.analyzeRouteStops(allStops);
-        
+        String geometry = result.getGeometry();
+
+        Optional<Route> existingRoute = routeRepository.findByRouteGeometry(geometry);
+        if (existingRoute.isPresent()) {
+            return existingRoute.get();
+        }
+
         route.setDistanceKm(result.getDistanceKilometers());
         route.setEstimatedTimeSeconds(result.getDurationSeconds());
         route.setRouteGeometry(result.getGeometry());
 
         return routeRepository.save(route);
+    }
+
+    private void locateStop(Stop stop) {
+        Location location = stop.getLocation();
+        if (location.getLatitude() != null && location.getLongitude() != null)
+            return;
+
+        NominatimResponse response = geocodingService.getAddressCoordinates(stop.getAddress());
+        location.setLatitude(Double.parseDouble(response.getLat()));
+        location.setLongitude(Double.parseDouble(response.getLon()));
+        stop.setAddress(response.getDisplay_name());
     }
 
     // finds or crates a route based on stops, uses polyline as identifier

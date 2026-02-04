@@ -16,7 +16,14 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
+import com.example.mobile.dto.auth.LoginRequest;
+import com.example.mobile.dto.auth.LoginResponse;
+import com.example.mobile.network.AuthService;
+import com.example.mobile.network.RetrofitClient;
 import com.google.android.material.textfield.TextInputEditText;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 public class LoginFragment extends Fragment {
 
@@ -51,19 +58,11 @@ public class LoginFragment extends Fragment {
 
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getContext(), "Fill in all fields!", Toast.LENGTH_SHORT).show();
-            } else {
-                // Save login state
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("is_logged_in", true);
-                editor.putString("user_email", email);
-                editor.putString("user_name", "Driver Name"); // Replace with actual name from API
-                editor.apply();
-
-                Toast.makeText(getContext(), "Login successful!", Toast.LENGTH_SHORT).show();
-
-                // Navigate to user profile
-                Navigation.findNavController(v).navigate(R.id.action_login_to_profile);
+                return;
             }
+
+            login(email, password);
+
         });
 
         // Navigate to registration
@@ -77,5 +76,65 @@ public class LoginFragment extends Fragment {
         tvForgotPassword.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_login_to_forgotPassword);
         });
+    }
+
+    private void login(String email, String password) {
+
+        AuthService authService = RetrofitClient.getClient().create(AuthService.class);
+        LoginRequest loginRequest = new LoginRequest(email, password);
+
+        authService.login(loginRequest).enqueue(new retrofit2.Callback<>() {
+            @Override
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    handleLoginSuccess(response.body());
+                } else {
+                    handleLoginFailure(response);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
+                Toast.makeText(getContext(), "Server unreachable: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void saveUserSession(LoginResponse response) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("is_logged_in", true);
+        editor.putString("jwt_token", response.accessToken);
+        editor.putString("user_email", response.personDto.email);
+        editor.putString("user_role", response.personDto.role.name());
+        editor.apply();
+    }
+
+    private void navigateBasedOnRole(String role) {
+        if (getView() == null) return;
+
+        int destination = R.id.action_login_to_profile;
+//        if ("DRIVER".equals(role)) {
+//            destination = R.id.action_login_to_driverHome;
+//        } else if ("PASSENGER".equals(role)) {
+//            destination = R.id.action_login_to_passengerHome;
+//        } else {
+//            destination = R.id.action_login_to_profile;
+//        }
+
+        Navigation.findNavController(getView()).navigate(destination);
+    }
+
+    private void handleLoginSuccess(LoginResponse response) {
+        saveUserSession(response);
+        Toast.makeText(getContext(), "Welcome back!", Toast.LENGTH_SHORT).show();
+        navigateBasedOnRole(response.personDto.role.name());
+    }
+
+    private void handleLoginFailure(Response<LoginResponse> response) {
+        if (response.code() == 401) {
+            Toast.makeText(getContext(), "Wrong credentials!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getContext(), "Something went wrong: " + response.code(), Toast.LENGTH_SHORT).show();
+        }
     }
 }
