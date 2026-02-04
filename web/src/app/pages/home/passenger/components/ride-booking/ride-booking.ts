@@ -118,44 +118,16 @@ export class RideBooking implements OnInit, AfterViewInit {
       return;
     }
 
-    // 3. Raw podaci iz formi
-    const routeData = routeComp.routeForm.getRawValue();
-    const prefData = prefComp.preferencesForm.getRawValue();
-    const trackersData = trackComp.trackersForm.getRawValue().trackers;
+    const route = routeComp.getRoute();
+    const preferences = prefComp.getPreferences();
+    const trackers = trackComp.trackersForm.getRawValue().trackers;
 
     // 4. Pakovanje za OrderRequest (Java Record struktura)
     const orderRequest = {
-      route: {
-        pickup: {
-          address: routeData.pickup.address,
-          location: { 
-            longitude: routeData.pickup.location.lng, 
-            latitude: routeData.pickup.location.lat 
-          }
-        },
-        destination: {
-          address: routeData.destination.address,
-          location: { 
-            longitude: routeData.destination.location.lng, 
-            latitude: routeData.destination.location.lat 
-          }
-        },
-        stops: (routeData.stops || []).map((s: any) => ({
-          address: s.address,
-          location: { 
-            longitude: s.location.lng, 
-            latitude: s.location.lat 
-          }
-        }))
-      },
-      preferences: {
-        vehicleType: prefData.vehicleType.toUpperCase(),
-        petFriendly: prefData.petFriendly,
-        babyFriendly: prefData.babySeat,
-        scheduledFor: this.rideService.formatLocalDateTime(prefData.scheduledTime)
-      },
+      route: route,
+      preferences: preferences,
       createdAt: this.rideService.formatLocalDateTime(new Date()),
-      trackers: trackersData
+      trackers: trackers
     };
 
     console.log("A:",orderRequest);
@@ -163,8 +135,7 @@ export class RideBooking implements OnInit, AfterViewInit {
     // 5. Slanje
     this.rideService.bookRide(orderRequest).subscribe({
       next: (res) => {
-        console.log('Backend primio:', res);
-        alert('Vožnja uspešno naručena!');
+        console.log(res);
       },
       error: (err) => {
         console.error('Greška:', err);

@@ -2,11 +2,12 @@ package com.tricolori.backend.dto.ride;
 
 import java.time.LocalDateTime;
 
+import lombok.Data;
 
-public record OrderRequest(
-    RideRoute route,
-    RidePreferences preferences,
-    LocalDateTime createdAt,
-    String[] trackers
-) 
-{}
+@Data
+public class OrderRequest {
+    private RideRoute route;
+    private RidePreferences preferences;
+    private LocalDateTime createdAt;
+    private String[] trackers;
+}
