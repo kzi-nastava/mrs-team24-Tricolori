@@ -30,7 +30,6 @@
     <!-- Profile picture section -->
     <string name="profile_picture">Profile Picture</string>
     <string name="profile_picture_desc">Change your profile picture</string>
-    <string name="profile_picture_info">Picture must be in .jpg or .png format</string>
     <string name="profile_picture_submit">Upload Picture</string>
     <string name="profile_picture_icon_desc">Profile icon</string>
     <string name="profile_user_picture_desc">User picture</string>
