@@ -81,8 +81,8 @@ public class RideHistoryAdapter extends RecyclerView.Adapter<RideHistoryAdapter.
             if (ride == null) return;
 
             tvRoute.setText(ride.getRoute());
-            tvDate.setText(ride.getStartDate() + " • " + ride.getStartTime());
-            tvPrice.setText(String.format(Locale.getDefault(), "€%.2f", ride.getPrice()));
+            tvDate.setText(ride.getStartDate());
+            tvPrice.setText(String.format(Locale.getDefault(), "%.2f RSD", ride.getPrice()));
             tvStatus.setText(ride.getStatus());
             tvPassenger.setText(ride.getPassengerName());
 
