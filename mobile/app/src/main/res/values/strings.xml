@@ -59,22 +59,16 @@
     <string name="profile_vehicle_info">Vehicle information is managed by administrators. Contact support for any changes</string>
     <string name="profile_vehicle_model">Model</string>
     <string name="profile_vehicle_model_icon_desc">Vehicle model icon</string>
-    <string name="profile_vehicle_model_example">Volkswagen Passat</string>
-    <string name="profile_vehicle_place">Place</string>
-    <string name="profile_vehicle_place_icon_desc">Place icon</string>
-    <string name="profile_vehicle_place_example">Novi Sad</string>
+    <string name="profile_vehicle_seats">Seat number</string>
+    <string name="profile_vehicle_seats_icon_desc">Seat number icon</string>
     <string name="profile_vehicle_licence">Licence plate</string>
     <string name="profile_vehicle_licence_icon_desc">Licence plate icon</string>
-    <string name="profile_vehicle_licence_example">NS 123-AB</string>
     <string name="profile_vehicle_type">Vehicle type</string>
     <string name="profile_vehicle_type_icon_desc">Vehicle type icon</string>
-    <string name="profile_vehicle_type_example">Standard</string>
     <string name="profile_vehicle_baby">Does it drive babies?</string>
     <string name="profile_vehicle_baby_icon_desc">Baby icon</string>
-    <string name="profile_vehicle_baby_example">Yes</string>
     <string name="profile_vehicle_pet">Does it drive pets?</string>
     <string name="profile_vehicle_pet_icon_desc">Pet icon</string>
-    <string name="profile_vehicle_pet_example">Yes</string>
     <!-- Driver activity section -->
     <string name="profile_activity">Active Hours</string>
     <string name="profile_activity_desc">Your activity in last 24 hours</string>

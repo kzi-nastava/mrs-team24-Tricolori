@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import androidx.navigation.Navigation;
 import com.example.mobile.R;
 import com.example.mobile.dto.profile.ProfileRequest;
 import com.example.mobile.dto.profile.ProfileResponse;
+import com.example.mobile.dto.vehicle.VehicleDto;
 import com.example.mobile.network.RetrofitClient;
 
 import retrofit2.Call;
@@ -26,13 +28,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class UserProfileFragment extends Fragment {
-    private TextView etEmail;
-    private EditText etFirstName;
-    private EditText etLastName;
-    private EditText etPhone;
-    private EditText etAddress;
-    private Button btnUpdate;
+    private EditText etFirstName, etLastName, etPhone, etAddress;
+    // Vehicle information & activity:
+    private TextView tvEmail, tvModel, tvType, tvPlate, tvSeats, tvBabies, tvPets, tvActivity, tvProgressText;
+    private ProgressBar progressBar;
+    private View vehicleCard, activityCard;
 
+    private Button btnUpdate;
     // Current profile state:
     private ProfileResponse originalProfile;
 
@@ -54,7 +56,20 @@ public class UserProfileFragment extends Fragment {
         etLastName = view.findViewById(R.id.profile_last_name);
         etPhone = view.findViewById(R.id.profile_phone);
         etAddress = view.findViewById(R.id.profile_address);
-        etEmail = view.findViewById(R.id.profile_user_email);
+        tvEmail = view.findViewById(R.id.profile_user_email);
+        tvModel = view.findViewById(R.id.profile_vehicle_model);
+        tvType = view.findViewById(R.id.profile_vehicle_type);
+        tvPlate = view.findViewById(R.id.profile_vehicle_plate);
+        tvSeats = view.findViewById(R.id.profile_vehicle_seats);
+        tvBabies = view.findViewById(R.id.profile_vehicle_babies);
+        tvPets = view.findViewById(R.id.profile_vehicle_pets);
+        tvActivity = view.findViewById(R.id.profile_driver_activity);
+
+        progressBar = view.findViewById(R.id.progressBar);
+        tvProgressText = view.findViewById(R.id.progressText);
+
+        vehicleCard = view.findViewById(R.id.profile_vehicle_card);
+        activityCard = view.findViewById(R.id.profile_activity_card);
 
         RetrofitClient.getProfileService().getUserProfile().enqueue(new Callback<>() {
             @Override
@@ -88,10 +103,35 @@ public class UserProfileFragment extends Fragment {
         etLastName.setText(profile.getLastName());
         etPhone.setText(profile.getPhoneNumber());
         etAddress.setText(profile.getHomeAddress());
-        etEmail.setText(profile.getEmail());
+        tvEmail.setText(profile.getEmail());
+
+        VehicleDto vehicle = profile.getVehicle();
+        Double activeHours = profile.getActiveHours();
+
+        if (profile.getVehicle() != null && activeHours != null) {
+            vehicleCard.setVisibility(View.VISIBLE);
+            activityCard.setVisibility(View.VISIBLE);
+
+            tvModel.setText(vehicle.getModel());
+            tvType.setText(vehicle.getType());
+            tvPlate.setText(vehicle.getPlateNumber());
+            tvSeats.setText(String.valueOf(vehicle.getNumSeats()));
+            tvBabies.setText(vehicle.getBabyFriendly() ? "Yes" : "No");
+            tvPets.setText(vehicle.getPetFriendly() ? "Yes" : "No");
+
+            // Activity:
+            int percentage = (int) Math.round(activeHours / 8 * 100);
+            tvActivity.setText(activeHours + " hours");
+            progressBar.setProgress(percentage);
+            tvProgressText.setText(percentage + "%");
+        } else {
+            vehicleCard.setVisibility(View.GONE);
+            activityCard.setVisibility(View.GONE);
+        }
 
         btnUpdate.setEnabled(false);
     }
+
 
     private void setChangeTrackers() {
         TextWatcher watcher = new TextWatcher() {

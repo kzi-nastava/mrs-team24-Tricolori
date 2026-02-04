@@ -401,5 +401,462 @@
                     android:background="@drawable/profile_submit_button_selector"
                     android:enabled="false" />
         </LinearLayout>
+
+        <!-- Vehicle Information Card -->
+        <LinearLayout
+            android:id="@+id/profile_vehicle_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_3"
+            android:layout_marginLeft="@dimen/spacing_1"
+            android:layout_marginRight="@dimen/spacing_1"
+            android:layout_marginTop="@dimen/spacing_1"
+            android:layout_marginBottom="@dimen/spacing_6"
+            android:visibility="gone">
+
+            <!-- Header: Icon + Title + Description -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/spacing_3">
+
+                <!-- Icon placeholder -->
+                <ImageView
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:contentDescription="@string/profile_vehicle_icon_desc"
+                    app:tint="@color/light_700"
+                    android:layout_marginEnd="@dimen/spacing_3"
+                    android:src="@drawable/ic_vehicle"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_vehicle"
+                        android:textColor="@color/light_700"
+                        android:textSize="@dimen/text_base" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_vehicle_desc"
+                        android:textColor="@color/gray_400"
+                        android:textSize="@dimen/text_xs" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Vehicle info grid -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="1"
+                android:orientation="horizontal"
+                android:rowOrderPreserved="false"
+                android:layout_marginBottom="@dimen/spacing_3">
+
+                <!-- Card 1: Model -->
+                <LinearLayout
+                    android:gravity="fill"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_3"
+                    android:layout_marginBottom="@dimen/spacing_3">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Icon -->
+                        <ImageView
+                            android:layout_width="@dimen/spacing_6"
+                            android:layout_height="@dimen/spacing_6"
+                            android:contentDescription="@string/profile_vehicle_model_icon_desc"
+                            app:tint="@color/light_700"
+                            android:src="@drawable/ic_model"
+                            android:layout_marginEnd="@dimen/spacing_2"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_vehicle_model"
+                            android:textColor="@color/gray_700"
+                            android:textSize="@dimen/text_sm"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/profile_vehicle_model"
+                        android:focusable="false"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/dark_900"
+                        android:textSize="@dimen/text_sm"
+                        android:layout_marginTop="@dimen/spacing_2"/>
+                </LinearLayout>
+
+                <!-- Card 2: Type -->
+                <LinearLayout
+                    android:gravity="fill"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_3"
+                    android:layout_marginBottom="@dimen/spacing_3">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Icon -->
+                        <ImageView
+                            android:layout_width="@dimen/spacing_6"
+                            android:layout_height="@dimen/spacing_6"
+                            android:contentDescription="@string/profile_vehicle_type_icon_desc"
+                            app:tint="@color/light_700"
+                            android:src="@drawable/ic_place"
+                            android:layout_marginEnd="@dimen/spacing_2"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_vehicle_type"
+                            android:textColor="@color/gray_700"
+                            android:textSize="@dimen/text_sm"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/profile_vehicle_type"
+                        android:focusable="false"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/dark_900"
+                        android:textSize="@dimen/text_sm"
+                        android:layout_marginTop="@dimen/spacing_2"/>
+                </LinearLayout>
+
+                <!-- Card 3: Licence plate -->
+                <LinearLayout
+                    android:gravity="fill"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_3"
+                    android:layout_marginBottom="@dimen/spacing_3">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Icon -->
+                        <ImageView
+                            android:layout_width="@dimen/spacing_6"
+                            android:layout_height="@dimen/spacing_6"
+                            android:contentDescription="@string/profile_vehicle_licence_icon_desc"
+                            app:tint="@color/light_700"
+                            android:src="@drawable/ic_licence"
+                            android:layout_marginEnd="@dimen/spacing_2"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_vehicle_licence"
+                            android:textColor="@color/gray_700"
+                            android:textSize="@dimen/text_sm"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/profile_vehicle_plate"
+                        android:focusable="false"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/dark_900"
+                        android:textSize="@dimen/text_sm"
+                        android:layout_marginTop="@dimen/spacing_2"/>
+                </LinearLayout>
+
+                <!-- Card 4: Seat number -->
+                <LinearLayout
+                    android:gravity="fill"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_3"
+                    android:layout_marginBottom="@dimen/spacing_3">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Icon -->
+                        <ImageView
+                            android:layout_width="@dimen/spacing_6"
+                            android:layout_height="@dimen/spacing_6"
+                            android:contentDescription="@string/profile_vehicle_seats_icon_desc"
+                            app:tint="@color/light_700"
+                            android:src="@drawable/ic_vehicle_type"
+                            android:layout_marginEnd="@dimen/spacing_2"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_vehicle_seats"
+                            android:textColor="@color/gray_700"
+                            android:textSize="@dimen/text_sm"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/profile_vehicle_seats"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/dark_900"
+                        android:textSize="@dimen/text_sm"
+                        android:layout_marginTop="@dimen/spacing_2"/>
+                </LinearLayout>
+
+                <!-- Card 5: Does it drive babies? -->
+                <LinearLayout
+                    android:gravity="fill"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_3"
+                    android:layout_marginBottom="@dimen/spacing_3">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Icon -->
+                        <ImageView
+                            android:layout_width="@dimen/spacing_6"
+                            android:layout_height="@dimen/spacing_6"
+                            android:contentDescription="@string/profile_vehicle_baby_icon_desc"
+                            app:tint="@color/light_700"
+                            android:src="@drawable/ic_baby"
+                            android:layout_marginEnd="@dimen/spacing_2"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_vehicle_baby"
+                            android:textColor="@color/gray_700"
+                            android:textSize="@dimen/text_sm"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/profile_vehicle_babies"
+                        android:focusable="false"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/dark_900"
+                        android:textSize="@dimen/text_sm"
+                        android:layout_marginTop="@dimen/spacing_2"/>
+                </LinearLayout>
+
+                <!-- Card 6: Does it drive pets? -->
+                <LinearLayout
+                    android:gravity="fill"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_input"
+                    android:padding="@dimen/spacing_3"
+                    android:layout_marginBottom="@dimen/spacing_3">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Icon -->
+                        <ImageView
+                            android:layout_width="@dimen/spacing_6"
+                            android:layout_height="@dimen/spacing_6"
+                            android:contentDescription="@string/profile_vehicle_pet_icon_desc"
+                            app:tint="@color/light_700"
+                            android:src="@drawable/ic_pets"
+                            android:layout_marginEnd="@dimen/spacing_2"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_vehicle_pet"
+                            android:textColor="@color/gray_700"
+                            android:textSize="@dimen/text_sm"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/profile_vehicle_pets"
+                        android:focusable="false"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/dark_900"
+                        android:textSize="@dimen/text_sm"
+                        android:layout_marginTop="@dimen/spacing_2"/>
+                </LinearLayout>
+
+            </GridLayout>
+
+            <!-- Info text at the bottom -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/profile_vehicle_info"
+                android:textColor="@color/deep_400"
+                android:textSize="@dimen/text_base"
+                android:background="@drawable/rounded_info"
+                android:padding="@dimen/spacing_4"/>
+
+        </LinearLayout>
+
+        <!-- Driver Activity Card -->
+        <LinearLayout
+            android:id="@+id/profile_activity_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_3"
+            android:layout_marginLeft="@dimen/spacing_1"
+            android:layout_marginRight="@dimen/spacing_1"
+            android:layout_marginTop="@dimen/spacing_1"
+            android:layout_marginBottom="@dimen/spacing_6"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/spacing_3">
+
+                <!-- Icon placeholder -->
+                <ImageView
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:contentDescription="@string/profile_activity_icon_desc"
+                    app:tint="@color/light_700"
+                    android:layout_marginEnd="@dimen/spacing_3"
+                    android:src="@drawable/ic_activity"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_activity"
+                        android:textColor="@color/light_700"
+                        android:textSize="@dimen/text_base"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_activity_desc"
+                        android:textColor="@color/gray_400"
+                        android:textSize="@dimen/text_xs" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Inner Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_3"
+                android:background="@drawable/rounded_activity">
+
+                <!-- Stats Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:text="@string/profile_activity_total"
+                            android:textColor="@color/white"
+                            android:layout_height="match_parent"
+                            android:layout_width="match_parent" />
+
+                        <TextView
+                            android:id="@+id/profile_driver_activity"
+                            android:layout_height="match_parent"
+                            android:layout_width="match_parent"
+                            android:textSize="@dimen/text_2xl"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Progress -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="@dimen/spacing_3">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="4dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_activity_goal"
+                            android:textColor="@color/white"/>
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/spacing_6">
+
+                        <ProgressBar
+                            android:id="@+id/progressBar"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:max="100"
+                            android:progress="69"
+                            android:progressDrawable="@drawable/progress_bar"/>
+
+                        <TextView
+                            android:id="@+id/progressText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"
+                            android:layout_gravity="center"/>
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
