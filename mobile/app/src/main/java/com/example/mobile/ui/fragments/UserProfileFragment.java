@@ -71,7 +71,8 @@ public class UserProfileFragment extends Fragment {
         vehicleCard = view.findViewById(R.id.profile_vehicle_card);
         activityCard = view.findViewById(R.id.profile_activity_card);
 
-        RetrofitClient.getProfileService().getUserProfile().enqueue(new Callback<>() {
+        RetrofitClient.getProfileService(requireContext())
+                .getUserProfile().enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ProfileResponse> call, @NonNull Response<ProfileResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -180,7 +181,8 @@ public class UserProfileFragment extends Fragment {
         // Disable button while data is being sent:
         btnUpdate.setEnabled(false);
 
-        RetrofitClient.getProfileService().updateProfile(request).enqueue(new Callback<ProfileResponse>() {
+        RetrofitClient.getProfileService(requireContext())
+                .updateProfile(request).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ProfileResponse> call, @NonNull Response<ProfileResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {

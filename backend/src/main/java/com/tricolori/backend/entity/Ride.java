@@ -134,8 +134,4 @@ public class Ride {
     public boolean isOngoing() {
         return this.status == RideStatus.ONGOING;
     }
-    
-    public boolean containsPassengerWithEmail(String personEmail) {
-        return false;
-    }
 }

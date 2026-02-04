@@ -26,4 +26,8 @@ public class RetrofitClient {
         }
         return retrofit;
     }
+
+    public static ProfileService getProfileService(Context context) {
+        return getClient(context).create(ProfileService.class);
+    }
 }
