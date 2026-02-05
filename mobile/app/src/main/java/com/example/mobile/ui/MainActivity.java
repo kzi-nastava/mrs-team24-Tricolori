@@ -188,7 +188,8 @@ public class MainActivity extends AppCompatActivity {
         MenuItem profile = menu.findItem(R.id.userProfileFragment);
         MenuItem logout = menu.findItem(R.id.nav_logout);
         MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
-        MenuItem changeRequests = menu.findItem();
+        MenuItem changeRequests = menu.findItem(R.id.changeRequestsReviewFragment);
+
         if (token != null && role != null) {
             // Common items for all logged in users
             home.setVisible(true);
@@ -203,18 +204,21 @@ public class MainActivity extends AppCompatActivity {
 //                notifications.setVisible(true);
 //                pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
+                changeRequests.setVisible(true);
 
             } else if ("ROLE_DRIVER".equals(role)) {
 //                supervise.setVisible(false);
 //                notifications.setVisible(false);
 //                pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
+                changeRequests.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
 //                supervise.setVisible(false);
 //                notifications.setVisible(true);
 //                pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
+                changeRequests.setVisible(false);
             }
 
         } else {
@@ -228,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
             profile.setVisible(false);
             logout.setVisible(false);
             statusSwitch.setVisible(false);
+            changeRequests.setVisible(false);
         }
     }
 }
