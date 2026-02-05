@@ -20,6 +20,10 @@ export class DriverProfile extends BaseProfile {
   activityPercentage = computed(() => Math.round(((this.activeHours() || 0) / this.WORK_GOAL) * 100));
   progressBarWidth = computed(() => Math.min(this.activityPercentage(), 100));
 
+  get activeHoursRounded() {
+    return (this.activeHours() || 0).toFixed(1);
+  }
+
   protected override sendUpdateRequest() {
     console.log("DRIVER VERZIJA: Šaljem zahtev adminu na odobrenje...");
     

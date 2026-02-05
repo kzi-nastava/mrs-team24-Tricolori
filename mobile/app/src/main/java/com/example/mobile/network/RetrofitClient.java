@@ -1,6 +1,9 @@
 package com.example.mobile.network;
 
 import android.content.Context;
+
+import com.example.mobile.network.service.ProfileService;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -25,5 +28,9 @@ public class RetrofitClient {
                     .build();
         }
         return retrofit;
+    }
+
+    public static ProfileService getProfileService(Context context) {
+        return getClient(context).create(ProfileService.class);
     }
 }
