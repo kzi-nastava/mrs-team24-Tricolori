@@ -20,6 +20,7 @@ import com.example.mobile.dto.auth.LoginRequest;
 import com.example.mobile.dto.auth.LoginResponse;
 import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.RetrofitClient;
+import com.example.mobile.ui.MainActivity;
 import com.google.android.material.textfield.TextInputEditText;
 
 import retrofit2.Call;
@@ -112,20 +113,26 @@ public class LoginFragment extends Fragment {
     private void navigateBasedOnRole(String role) {
         if (getView() == null) return;
 
-        int destination = R.id.action_login_to_profile;
-//        if ("DRIVER".equals(role)) {
-//            destination = R.id.action_login_to_driverHome;
-//        } else if ("PASSENGER".equals(role)) {
-//            destination = R.id.action_login_to_passengerHome;
-//        } else {
-//            destination = R.id.action_login_to_profile;
-//        }
+        int destination;
+        if ("ROLE_DRIVER".equals(role)) {
+            destination = R.id.action_login_to_rideHistory;
+        } else if ("ROLE_ADMIN".equals(role)) {
+            destination = R.id.action_login_to_profile;
+        } else if ("ROLE_PASSENGER".equals(role)) {
+            destination = R.id.action_login_to_profile;
+        } else {
+            // fallback
+            destination = R.id.action_login_to_home;
+        }
 
         Navigation.findNavController(getView()).navigate(destination);
     }
 
     private void handleLoginSuccess(LoginResponse response) {
         saveUserSession(response);
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).updateMenuVisibility();
+        }
         Toast.makeText(getContext(), "Welcome back!", Toast.LENGTH_SHORT).show();
         navigateBasedOnRole(response.personDto.role.name());
     }

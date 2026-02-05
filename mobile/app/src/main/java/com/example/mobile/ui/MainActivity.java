@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
             NavigationUI.setupWithNavController(navigationView, navController);
 
+            updateMenuVisibility();
+
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int id = destination.getId();
                 if (id == R.id.loginFragment || id == R.id.registerFragment ||
@@ -104,27 +106,17 @@ public class MainActivity extends AppCompatActivity {
         Menu menu = navigationView.getMenu();
         MenuItem statusItem = menu.findItem(R.id.nav_status_switch);
 
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        String role = prefs.getString("user_role", "");
+        if (statusItem != null && statusItem.isVisible()) {
+            SwitchMaterial statusSwitch = (SwitchMaterial) statusItem.getActionView();
+            if (statusSwitch != null) {
+                statusSwitch.setOnCheckedChangeListener(null);
+                statusSwitch.setChecked(true);
+                statusItem.setTitle("Status: Online");
+                statusItem.setIcon(R.drawable.ic_online);
 
-        if (statusItem != null) {
-            boolean isDriver = "ROLE_DRIVER".equals(role);
-            statusItem.setVisible(isDriver);
-
-            if (isDriver) {
-                SwitchMaterial statusSwitch = (SwitchMaterial) statusItem.getActionView();
-                if (statusSwitch != null) {
-                    statusSwitch.setOnCheckedChangeListener(null);
-
-                    statusSwitch.setChecked(true);
-
-                    statusItem.setTitle("Status: Online");
-                    statusItem.setIcon(R.drawable.ic_online);
-
-                    statusSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                        updateStatus(isChecked, statusSwitch, statusItem);
-                    });
-                }
+                statusSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    updateStatus(isChecked, statusSwitch, statusItem);
+                });
             }
         }
     }
@@ -166,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
     private void logoutUser() {
         SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         prefs.edit().clear().apply();
+        updateMenuVisibility();
         navController.navigate(R.id.loginFragment);
         drawerLayout.closeDrawer(GravityCompat.START);
     }
@@ -174,5 +167,67 @@ public class MainActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    // method that makes the menu dynamic - declares what is visible and what not
+    public void updateMenuVisibility() {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("jwt_token", null);
+        String role = prefs.getString("user_role", null);
+
+        Menu menu = navigationView.getMenu();
+
+        // Get all menu items
+        MenuItem home = menu.findItem(R.id.homeFragment);
+        MenuItem history = menu.findItem(R.id.rideHistoryFragment);
+        // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
+//        MenuItem supervise = menu.findItem(R.id.rideSupervisorFragment);
+//        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
+//        MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
+//        MenuItem support = menu.findItem(R.id.supportFragment);
+        MenuItem profile = menu.findItem(R.id.userProfileFragment);
+        MenuItem logout = menu.findItem(R.id.nav_logout);
+        MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
+
+        if (token != null && role != null) {
+            // Common items for all logged in users
+            home.setVisible(true);
+            history.setVisible(true);
+            // support.setVisible(true);
+            profile.setVisible(true);
+            logout.setVisible(true);
+
+            // Role-specific items
+            if ("ROLE_ADMIN".equals(role)) {
+                // supervise.setVisible(true);
+//                notifications.setVisible(true);
+//                pricelist.setVisible(true);
+                statusSwitch.setVisible(false);
+
+            } else if ("ROLE_DRIVER".equals(role)) {
+//                supervise.setVisible(false);
+//                notifications.setVisible(false);
+//                pricelist.setVisible(false);
+                statusSwitch.setVisible(true);
+
+            } else if ("ROLE_PASSENGER".equals(role)) {
+//                supervise.setVisible(false);
+//                notifications.setVisible(true);
+//                pricelist.setVisible(false);
+                statusSwitch.setVisible(false);
+            }
+
+        } else {
+            // Not logged in - hide everything
+            home.setVisible(false);
+            history.setVisible(false);
+//            supervise.setVisible(false);
+//            notifications.setVisible(false);
+//            pricelist.setVisible(false);
+//            support.setVisible(false);
+            profile.setVisible(false);
+            logout.setVisible(false);
+            statusSwitch.setVisible(false);
+        }
     }
 }
