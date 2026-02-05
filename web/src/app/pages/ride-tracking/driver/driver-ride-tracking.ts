@@ -109,11 +109,11 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    * Load ride data from backend
    */
   private loadRideData(rideId: number): void {
-    
+
     this.rideService.trackRide(rideId).subscribe({
       next: (response) => {
         // console.log('✅ Ride tracking data loaded:', response);
-        
+
         // Extract pickup and destination from route DTO
         const route = response.route;
         // console.log('🗺️ Route data:', {
@@ -155,13 +155,13 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
             email: p.email || ''
           })) || []
         };
-        
+
         this.rideDetails.set(rideDetails);
 
         // Set initial values
         const remainingDist = route?.distanceKm || 0;
         const estimatedArr = response.estimatedTimeMinutes || 0;
-        
+
         this.remainingDistance.set(remainingDist);
         this.estimatedArrival.set(estimatedArr);
 
@@ -197,11 +197,11 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    * Load full ride details for finished rides
    */
   private loadFinishedRideDetails(rideId: number, trackingResponse: any): void {
-    
+
     this.rideService.getDriverRideDetail(rideId).subscribe({
       next: (detail) => {
         // console.log('✅ Received full ride details:', detail);
-        
+
         const rideDetails = {
           id: detail.id,
           pickup: detail.pickupAddress,
@@ -220,7 +220,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
             email: ''
           }]
         };
-        
+
         this.rideDetails.set(rideDetails);
 
         // For finished rides, set remaining values to 0
@@ -536,7 +536,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       location: this.vehicleLocation()
     };
 
-    this.rideService.stopRide(this.rideDetails().id, stopRideRequest).subscribe({
+    this.rideService.stopRide(stopRideRequest).subscribe({
       next: (response) => {
         this.handleStop(response);
         this.handleBack();

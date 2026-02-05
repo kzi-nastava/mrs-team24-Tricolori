@@ -121,8 +121,8 @@ export class RideService {
       pad(date.getMinutes()) + ':' +
       pad(date.getSeconds());
   }
-  stopRide(rideId: number, stopRideRequest: StopRideRequest) : Observable<StopRideResponse> {
-    return this.http.put<StopRideResponse>(`${this.API_URL}/${rideId}/stop`, stopRideRequest);
+  stopRide(stopRideRequest: StopRideRequest) : Observable<StopRideResponse> {
+    return this.http.put<StopRideResponse>(`${this.API_URL}/stop`, stopRideRequest);
   }
 
   completeRide(rideId: number): Observable<void> {
