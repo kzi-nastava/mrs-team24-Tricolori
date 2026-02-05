@@ -1,5 +1,6 @@
 package com.tricolori.backend.service;
 
+import com.tricolori.backend.dto.osrm.OSRMRouteResponse;
 import com.tricolori.backend.dto.profile.DriverDto;
 import com.tricolori.backend.dto.profile.PassengerDto;
 import com.tricolori.backend.enums.PersonRole;
@@ -33,7 +34,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +45,7 @@ public class RideService {
     private final PassengerRepository passengerRepository;
     private final PanicRepository panicRepository;
     private final OSRMService osrmService;
+    private final GeocodingService geocodingService;
 
     private final PassengerService passengerService;
     private final DriverService driverService;
@@ -347,17 +348,55 @@ public class RideService {
         rideRepository.save(ride);
     }
 
+    private void terminateRideAtLocation(Ride ride, Location stopLocation, RideStatus status) {
+
+        Route route = ride.getRoute();
+        Location pickup = route.getPickupStop().getLocation();
+
+        // Find address display name from given coordinates
+        String stopAddress = geocodingService.getAddressFromCoordinates(
+                stopLocation.getLatitude(),
+                stopLocation.getLongitude()
+        );
+
+        // Get updated route data
+        OSRMRouteResponse osrmResponse = osrmService.getRoute(List.of(pickup, stopLocation));
+        OSRMRouteResponse.OSRMRoute updatedRouteData = osrmResponse.getRoutes().getFirst();
+
+        // Update route
+        route.setDestinationStop(new Stop(stopAddress, stopLocation));
+        route.setRouteGeometry(updatedRouteData.getGeometry());
+        route.setEstimatedTimeSeconds(updatedRouteData.getDuration());
+
+        double distanceKm = updatedRouteData.getDistance() / 1000.0;
+        route.setDistanceKm(distanceKm);
+
+        ride.setStatus(status);
+        ride.setEndTime(LocalDateTime.now());
+
+        ride.setPrice(calculatePrice(ride));
+    }
+
+    @Transactional
+    public StopRideResponse stopRide(Person driver, StopRideRequest request) {
+        Ride ride = rideRepository.findOngoingRideByDriver(driver.getId())
+                .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
+
+        terminateRideAtLocation(ride, request.location(), RideStatus.STOPPED);
+
+        rideRepository.save(ride);
+        return new StopRideResponse(ride.getPrice());
+    }
+
     @Transactional
     public void panicRide(Person person, PanicRideRequest request) {
-
         Ride ride = person.getRole().equals(PersonRole.ROLE_PASSENGER) ?
                 rideRepository.findOngoingRideByPassenger(person.getId())
                         .orElseThrow(() -> new RideNotFoundException("Ongoing ride not found for this passenger.")) :
                 rideRepository.findOngoingRideByDriver(person.getId())
                         .orElseThrow(() -> new RideNotFoundException("Ongoing ride not found for this driver."));
 
-        ride.setStatus(RideStatus.PANIC);
-        ride.setEndTime(LocalDateTime.now());
+        terminateRideAtLocation(ride, request.vehicleLocation(), RideStatus.PANIC);
 
         Panic panic = new Panic();
         panic.setRide(ride);
@@ -366,22 +405,6 @@ public class RideService {
 
         panicRepository.save(panic);
         rideRepository.save(ride);
-    }
-
-    @Transactional
-    public StopRideResponse stopRide(
-            Person driver,
-            StopRideRequest request
-    ) {
-        Ride ride = rideRepository.findOngoingRideByDriver(driver.getId())
-                .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
-
-        Route updatedRoute = ride.getRoute(); // placeholder
-        ride.stop(updatedRoute);
-        ride.setPrice(calculatePrice(ride));
-
-        rideRepository.save(ride);
-        return new StopRideResponse(ride.getPrice());
     }
 
     @Transactional

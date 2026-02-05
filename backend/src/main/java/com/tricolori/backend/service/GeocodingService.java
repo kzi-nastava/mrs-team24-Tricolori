@@ -49,4 +49,28 @@ public class GeocodingService {
         }
         throw new BadAddressException("Couldn't find lat and lng for address: " + address);
     }
+
+    public String getAddressFromCoordinates(double lat, double lng) {
+        String url = String.format("https://nominatim.openstreetmap.org/reverse?format=json&lat=%f&lon=%f", lat, lng);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("User-Agent", "Cuber/1.0 (mdujanovic03@gmail.com)");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<com.fasterxml.jackson.databind.JsonNode> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    com.fasterxml.jackson.databind.JsonNode.class
+            );
+
+            if (response.getBody() != null && response.getBody().has("display_name")) {
+                return response.getBody().get("display_name").asText();
+            }
+        } catch (Exception e) {
+            System.err.println("Error while reverse geocoding: " + e.getMessage());
+        }
+        return "Non-existent location (" + lat + ", " + lng + ")";
+    }
 }

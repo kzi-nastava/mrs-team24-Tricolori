@@ -48,4 +48,12 @@ public class Route {
         return stops.getLast();
     }
 
+    public void setDestinationStop(Stop stop) {
+        if (stops.isEmpty()) return;
+        Stop pickup = stops.getFirst();
+        stops.clear();
+        stops.add(pickup);
+        stops.add(stop);
+    }
+
 }
