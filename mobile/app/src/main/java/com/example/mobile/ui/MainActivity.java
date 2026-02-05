@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         prefs.edit().clear().apply();
         updateMenuVisibility();
-        navController.navigate(R.id.loginFragment);
+        navController.navigate(R.id.homeFragment);
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 
