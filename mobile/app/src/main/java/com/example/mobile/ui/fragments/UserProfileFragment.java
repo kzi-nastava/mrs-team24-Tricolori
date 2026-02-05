@@ -186,26 +186,55 @@ public class UserProfileFragment extends Fragment {
         // Disable button while data is being sent:
         btnUpdate.setEnabled(false);
 
-        RetrofitClient.getProfileService(requireContext())
-                .updateProfile(request).enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<ProfileResponse> call, @NonNull Response<ProfileResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    // Update current profile with returned profile data:
-                    originalProfile = response.body();
-                    populateFields(originalProfile);
-
-                    Toast.makeText(getContext(), "Profile successfully updated!", Toast.LENGTH_SHORT).show();
-                } else {
+        if (isDriver()) {
+            RetrofitClient.getChangeDataRequestService(requireContext())
+            .createRequest(request).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                     btnUpdate.setEnabled(true);
-                    Toast.makeText(getContext(), "Error while saving!", Toast.LENGTH_SHORT).show();
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Zahtev za izmenu poslat administratoru!", Toast.LENGTH_LONG).show();
+                        populateFields(originalProfile);
+                    } else if (response.code() == 400 || response.code() == 409) {
+                        // 409 je tipičan kod za "DriverHasPendingProfileRequestException"
+                        Toast.makeText(getContext(), "Već imate aktivan zahtev na čekanju!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Greška pri slanju zahteva: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-            @Override
-            public void onFailure(@NonNull Call<ProfileResponse> call, @NonNull Throwable t) {
-                btnUpdate.setEnabled(true);
-                Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+
+                @Override
+                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                    btnUpdate.setEnabled(true);
+                    Toast.makeText(getContext(), "Mrežna greška: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            RetrofitClient.getProfileService(requireContext())
+            .updateProfile(request).enqueue(new Callback<>() {
+                @Override
+                public void onResponse(@NonNull Call<ProfileResponse> call, @NonNull Response<ProfileResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        // Update current profile with returned profile data:
+                        originalProfile = response.body();
+                        populateFields(originalProfile);
+
+                        Toast.makeText(getContext(), "Profile successfully updated!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        btnUpdate.setEnabled(true);
+                        Toast.makeText(getContext(), "Error while saving!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(@NonNull Call<ProfileResponse> call, @NonNull Throwable t) {
+                    btnUpdate.setEnabled(true);
+                    Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private boolean isDriver() {
+        return originalProfile != null && originalProfile.getVehicle() != null;
     }
 }
