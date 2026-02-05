@@ -34,18 +34,22 @@
 <!--            android:icon="@drawable/ic_pricelist"-->
 <!--            android:title="Pricelist" />-->
 
+    <item
+        android:id="@+id/userProfileFragment"
+        android:icon="@drawable/ic_person"
+        android:title="Profile" />
+
+    <item
+        android:id="@+id/changeRequestsReviewFragment"
+        android:title="Change Requests"
+        android:icon="@drawable/ic_change_requests" />
 <!--        &lt;!&ndash; Support - shown to all logged in users &ndash;&gt;-->
 <!--        <item-->
 <!--            android:id="@+id/supportFragment"-->
 <!--            android:icon="@drawable/ic_support"-->
 <!--            android:title="Support" />-->
+</group>
 
-        <!-- Profile - shown to all logged in users -->
-        <item
-            android:id="@+id/userProfileFragment"
-            android:icon="@drawable/ic_person"
-            android:title="Profile" />
-    </group>
 
     <item android:title="Account">
         <menu>

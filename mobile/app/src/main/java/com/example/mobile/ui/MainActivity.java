@@ -27,7 +27,6 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import java.util.HashSet;
 import java.util.Set;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -64,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         Set<Integer> topLevelDestinations = new HashSet<>();
         topLevelDestinations.add(R.id.rideHistoryFragment);
         topLevelDestinations.add(R.id.userProfileFragment);
+        topLevelDestinations.add(R.id.changeRequestsReviewFragment);
 
         appBarConfiguration = new AppBarConfiguration.Builder(topLevelDestinations)
                 .setOpenableLayout(drawerLayout)
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem profile = menu.findItem(R.id.userProfileFragment);
         MenuItem logout = menu.findItem(R.id.nav_logout);
         MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
-
+        MenuItem changeRequests = menu.findItem();
         if (token != null && role != null) {
             // Common items for all logged in users
             home.setVisible(true);
