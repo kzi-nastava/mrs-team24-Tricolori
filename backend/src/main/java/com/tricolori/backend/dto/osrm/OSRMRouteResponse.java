@@ -12,7 +12,7 @@ public class OSRMRouteResponse {
     @Data
     public static class OSRMRoute {
         private Double distance; // in meters
-        private Double duration; // in seconds
+        private Long duration; // in seconds
         private String geometry; // encoded polyline
     }
 }

@@ -94,7 +94,7 @@ public class RouteService {
         route.setStops(stops);
         route.setRouteGeometry(osrmRoute.getGeometry()); // encoded polyline
         route.setDistanceKm(osrmRoute.getDistance() / 1000.0); // iz metara u kilometre
-        route.setEstimatedTimeSeconds(osrmRoute.getDuration().longValue());
+        route.setEstimatedTimeSeconds(osrmRoute.getDuration());
 
         return routeRepository.save(route);
     }
