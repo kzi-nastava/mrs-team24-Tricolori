@@ -38,6 +38,12 @@
             android:layout_marginBottom="10dp"
             tools:text="Bulevar Oslobođenja 12 → Trg Slobode 3" />
 
+        <org.osmdroid.views.MapView
+            android:id="@+id/rideMap"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="12dp"/>
+
         <!-- DATE -->
         <TextView
             android:layout_width="wrap_content"
