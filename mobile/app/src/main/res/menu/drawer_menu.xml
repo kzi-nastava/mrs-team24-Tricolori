@@ -10,6 +10,11 @@
         android:id="@+id/userProfileFragment"
         android:icon="@drawable/ic_person"
         android:title="Profile" />
+
+    <item
+        android:id="@+id/changeRequestsReviewFragment"
+        android:title="Change Requests"
+        android:icon="@drawable/ic_change_requests" />
 </group>
 
     <item android:title="Account">

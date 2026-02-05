@@ -19,6 +19,10 @@
             android:id="@+id/action_home_to_register"
             app:destination="@id/registerFragment" />
 
+        <action
+            android:id="@+id/action_home_to_changeRequests"
+            app:destination="@id/changeRequestsReviewFragment" />
+
     </fragment>
 
     <fragment
@@ -89,6 +93,10 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="false" />
+
+        <action
+            android:id="@+id/action_profile_to_changeRequests"
+            app:destination="@id/changeRequestsReviewFragment" />
     </fragment>
 
     <fragment
@@ -152,6 +160,22 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/changeRequestsReviewFragment"
+        android:name="com.example.mobile.ui.fragments.ChangeRequestsReviewFragment"
+        android:label="Profile Change Requests"
+        tools:layout="@layout/fragment_change_requests_review">
+
+        <action
+            android:id="@+id/action_changeRequests_to_home"
+            app:destination="@id/homeFragment" />
+
+        <action
+            android:id="@+id/action_changeRequests_to_profile"
+            app:destination="@id/userProfileFragment" />
+
     </fragment>
 
 </navigation>
