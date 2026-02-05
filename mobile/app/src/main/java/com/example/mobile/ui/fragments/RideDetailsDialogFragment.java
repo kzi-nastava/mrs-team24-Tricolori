@@ -74,9 +74,7 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
                             DriverRideDetailResponse dto = response.body();
 
-                            // DEBUG LOGS
                             Log.d("RideDTO","createdAt=" + dto.getCreatedAt());
-                            Log.d("RideDTO","acceptedAt=" + dto.getAcceptedAt());
                             Log.d("RideDTO","startedAt=" + dto.getStartedAt());
                             Log.d("RideDTO","completedAt=" + dto.getCompletedAt());
 
@@ -112,10 +110,14 @@ public class RideDetailsDialogFragment extends DialogFragment {
         }
     }
 
+    private String formatDateTime(String iso) {
+        if (iso == null || iso.length() < 16) return "-";
+        return iso.substring(0,10) + " " + iso.substring(11,16);
+    }
+
     private void bindData(View view, DriverRideDetailResponse dto) {
 
         TextView tvRoute = view.findViewById(R.id.tvDetailRoute);
-        TextView tvDate = view.findViewById(R.id.tvDetailDate);
         TextView tvStartTime = view.findViewById(R.id.tvDetailStartTime);
         TextView tvEndTime = view.findViewById(R.id.tvDetailEndTime);
         TextView tvDuration = view.findViewById(R.id.tvDetailDuration);
@@ -134,25 +136,16 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 safe(dto.getDropoffAddress())
         ));
 
-        // DATETIME
-        String baseTime =
+        // ✅ START DATETIME
+        String start =
                 dto.getStartedAt() != null
                         ? dto.getStartedAt()
                         : dto.getCreatedAt();
 
-        if (baseTime != null && baseTime.length() >= 16) {
-            tvDate.setText(baseTime.substring(0,10));
-            tvStartTime.setText(baseTime.substring(11,16));
-        } else {
-            tvDate.setText("-");
-            tvStartTime.setText("-");
-        }
+        tvStartTime.setText(formatDateTime(start));
 
-        if (dto.getCompletedAt() != null && dto.getCompletedAt().length() >= 16) {
-            tvEndTime.setText(dto.getCompletedAt().substring(11,16));
-        } else {
-            tvEndTime.setText("-");
-        }
+        // ✅ END DATETIME
+        tvEndTime.setText(formatDateTime(dto.getCompletedAt()));
 
         // DURATION
         tvDuration.setText(
@@ -193,13 +186,5 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
     private String safe(String s) {
         return s == null ? "-" : s;
-    }
-
-    private String stars(int rating) {
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < 5; i++) {
-            s.append(i < rating ? "★" : "☆");
-        }
-        return s.toString();
     }
 }
