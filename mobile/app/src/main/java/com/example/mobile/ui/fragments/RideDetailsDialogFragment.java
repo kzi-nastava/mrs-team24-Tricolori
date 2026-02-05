@@ -2,27 +2,26 @@ package com.example.mobile.ui.fragments;
 
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+
+import com.example.mobile.R;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.RideService;
 
+import java.util.Locale;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-
-import com.example.mobile.R;
-
-import java.util.Locale;
 
 public class RideDetailsDialogFragment extends DialogFragment {
 
@@ -38,29 +37,30 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_ride_details_dialog, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Bundle args = getArguments();
-        if (args == null) return;
-
-        long rideId = args.getLong(ARG_RIDE_ID);
+        long rideId = getArguments().getLong(ARG_RIDE_ID);
 
         fetchRideDetails(rideId, view);
 
-        Button btnClose = view.findViewById(R.id.btnClose);
-        btnClose.setOnClickListener(v -> dismiss());
+        view.findViewById(R.id.btnClose)
+                .setOnClickListener(v -> dismiss());
     }
 
     private void fetchRideDetails(long rideId, View view) {
 
-        RideService rideService = RetrofitClient.getClient(requireContext()).create(RideService.class);
+        RideService rideService =
+                RetrofitClient.getClient(requireContext())
+                        .create(RideService.class);
 
         rideService.getDriverRideDetail(rideId)
                 .enqueue(new Callback<DriverRideDetailResponse>() {
@@ -70,41 +70,45 @@ public class RideDetailsDialogFragment extends DialogFragment {
                             Call<DriverRideDetailResponse> call,
                             Response<DriverRideDetailResponse> response) {
 
-                        if (!response.isSuccessful() || response.body() == null) {
-                            return;
-                        }
+                        if (response.isSuccessful() && response.body() != null) {
 
-                        bindData(view, response.body());
+                            DriverRideDetailResponse dto = response.body();
+
+                            // DEBUG LOGS
+                            Log.d("RideDTO","createdAt=" + dto.getCreatedAt());
+                            Log.d("RideDTO","acceptedAt=" + dto.getAcceptedAt());
+                            Log.d("RideDTO","startedAt=" + dto.getStartedAt());
+                            Log.d("RideDTO","completedAt=" + dto.getCompletedAt());
+
+                            bindData(view, dto);
+
+                        } else {
+                            Log.e("RideDetails","Error code: " + response.code());
+                        }
                     }
 
                     @Override
                     public void onFailure(
                             Call<DriverRideDetailResponse> call,
                             Throwable t) {
+                        Log.e("RideDetails","FAILURE", t);
                     }
                 });
     }
-
-
 
     @Override
     public void onStart() {
         super.onStart();
 
         if (getDialog() != null && getDialog().getWindow() != null) {
-            // Get screen width
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getDialog().getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            int width = displayMetrics.widthPixels;
-
-            int dialogWidth = (int) (width * 0.90);
+            DisplayMetrics dm = new DisplayMetrics();
+            getDialog().getWindow().getWindowManager()
+                    .getDefaultDisplay().getMetrics(dm);
 
             getDialog().getWindow().setLayout(
-                    dialogWidth,
+                    (int)(dm.widthPixels * 0.9),
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
-
-            getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
     }
 
@@ -123,28 +127,63 @@ public class RideDetailsDialogFragment extends DialogFragment {
         TextView tvNotes = view.findViewById(R.id.tvDetailNotes);
         View notesContainer = view.findViewById(R.id.notesContainer);
 
-        tvRoute.setText(dto.getPickupAddress() + " → " + dto.getDropoffAddress());
+        // ROUTE
+        tvRoute.setText(String.format(
+                "%s → %s",
+                safe(dto.getPickupAddress()),
+                safe(dto.getDropoffAddress())
+        ));
 
-        if (dto.getStartedAt() != null)
-            tvDate.setText(dto.getStartedAt().substring(0, 10));
+        // DATETIME
+        String baseTime =
+                dto.getStartedAt() != null
+                        ? dto.getStartedAt()
+                        : dto.getCreatedAt();
 
-        tvStartTime.setText(dto.getStartedAt());
-        tvEndTime.setText(dto.getCompletedAt());
+        if (baseTime != null && baseTime.length() >= 16) {
+            tvDate.setText(baseTime.substring(0,10));
+            tvStartTime.setText(baseTime.substring(11,16));
+        } else {
+            tvDate.setText("-");
+            tvStartTime.setText("-");
+        }
 
-        if (dto.getDuration() != null)
-            tvDuration.setText(dto.getDuration() + " min");
+        if (dto.getCompletedAt() != null && dto.getCompletedAt().length() >= 16) {
+            tvEndTime.setText(dto.getCompletedAt().substring(11,16));
+        } else {
+            tvEndTime.setText("-");
+        }
 
-        if (dto.getDistance() != null)
-            tvDistance.setText(String.format(Locale.getDefault(), "%.1f km", dto.getDistance()));
+        // DURATION
+        tvDuration.setText(
+                dto.getDuration() != null
+                        ? dto.getDuration() + " min"
+                        : "-"
+        );
 
-        if (dto.getTotalPrice() != null)
-            tvPrice.setText(String.format(Locale.getDefault(), "€%.2f", dto.getTotalPrice()));
+        // DISTANCE
+        tvDistance.setText(
+                dto.getDistance() != null
+                        ? String.format(Locale.getDefault(),"%.1f km", dto.getDistance())
+                        : "-"
+        );
 
-        tvStatus.setText(dto.getStatus());
-        tvPassengerName.setText(dto.getPassengerName());
-        tvPassengerPhone.setText(dto.getPassengerPhone());
+        // PRICE
+        tvPrice.setText(
+                dto.getTotalPrice() != null
+                        ? String.format(Locale.getDefault(),"%.2f RSD", dto.getTotalPrice())
+                        : "-"
+        );
 
-        if (dto.getRatingComment() != null) {
+        // STATUS
+        tvStatus.setText(safe(dto.getStatus()));
+
+        // PASSENGER
+        tvPassengerName.setText(safe(dto.getPassengerName()));
+        tvPassengerPhone.setText(safe(dto.getPassengerPhone()));
+
+        // COMMENT
+        if (dto.getRatingComment() != null && !dto.getRatingComment().isEmpty()) {
             tvNotes.setText(dto.getRatingComment());
             notesContainer.setVisibility(View.VISIBLE);
         } else {
@@ -152,4 +191,15 @@ public class RideDetailsDialogFragment extends DialogFragment {
         }
     }
 
+    private String safe(String s) {
+        return s == null ? "-" : s;
+    }
+
+    private String stars(int rating) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            s.append(i < rating ? "★" : "☆");
+        }
+        return s.toString();
+    }
 }
