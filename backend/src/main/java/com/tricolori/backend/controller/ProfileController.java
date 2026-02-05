@@ -20,8 +20,10 @@ import com.tricolori.backend.repository.DriverRepository;
 import com.tricolori.backend.repository.PersonRepository;
 import com.tricolori.backend.service.ChangeDataRequestService;
 import com.tricolori.backend.service.CloudinaryService;
+import com.tricolori.backend.service.DriverDailyLogService;
 import com.tricolori.backend.service.ProfileService;
 import com.tricolori.backend.service.VehicleService;
+import com.tricolori.backend.dto.driver.DriverDailyLogResponse;
 import com.tricolori.backend.dto.profile.ProfileRequest;
 import com.tricolori.backend.dto.profile.ProfileResponse;
 
@@ -34,10 +36,9 @@ import lombok.RequiredArgsConstructor;
 public class ProfileController {
     private final ProfileService profileService;
     private final VehicleService vehicleService;
-    private final ChangeDataRequestService requestService;
     private final CloudinaryService cloudinaryService;
+    private final DriverDailyLogService activityService;
 
-    private final DriverRepository driverRepository;
     private final PersonRepository personRepository;
 
     @GetMapping("/me")
@@ -49,9 +50,10 @@ public class ProfileController {
 
         if(isDriver) {
             vehicleService.fillDriverVehicleData(user, response);
+            DriverDailyLogResponse activity = activityService.getTodayLog(user.getId());
+            response.setActiveHours(activity.activeTimeSeconds() / 3600.0);
         }
 
-        // TODO: add activity hours...
         return ResponseEntity.ok(response);
     }
 

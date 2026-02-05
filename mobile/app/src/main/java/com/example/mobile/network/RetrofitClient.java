@@ -9,6 +9,7 @@ import com.google.gson.JsonDeserializer;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import com.example.mobile.network.service.ProfileService;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -43,5 +44,9 @@ public class RetrofitClient {
 
     public static ChangeDataRequestService getChangeDataRequestService(Context context) {
         return getClient(context).create(ChangeDataRequestService.class);
+    }
+  
+    public static ProfileService getProfileService(Context context) {
+        return getClient(context).create(ProfileService.class);
     }
 }
