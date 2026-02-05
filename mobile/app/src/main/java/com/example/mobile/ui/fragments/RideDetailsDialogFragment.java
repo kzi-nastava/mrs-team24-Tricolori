@@ -128,54 +128,57 @@ public class RideDetailsDialogFragment extends DialogFragment {
         TextView tvPassengerPhone = view.findViewById(R.id.tvDetailPassengerPhone);
         TextView tvNotes = view.findViewById(R.id.tvDetailNotes);
         View notesContainer = view.findViewById(R.id.notesContainer);
+        TextView tvDriverRating = view.findViewById(R.id.tvDriverRating);
+        TextView tvVehicleRating = view.findViewById(R.id.tvVehicleRating);
+        View ratingContainer = view.findViewById(R.id.ratingContainer);
 
-        // ROUTE
         tvRoute.setText(String.format(
                 "%s → %s",
                 safe(dto.getPickupAddress()),
                 safe(dto.getDropoffAddress())
         ));
-
-        // ✅ START DATETIME
         String start =
                 dto.getStartedAt() != null
                         ? dto.getStartedAt()
                         : dto.getCreatedAt();
 
         tvStartTime.setText(formatDateTime(start));
-
-        // ✅ END DATETIME
         tvEndTime.setText(formatDateTime(dto.getCompletedAt()));
-
-        // DURATION
         tvDuration.setText(
                 dto.getDuration() != null
                         ? dto.getDuration() + " min"
                         : "-"
         );
-
-        // DISTANCE
         tvDistance.setText(
                 dto.getDistance() != null
                         ? String.format(Locale.getDefault(),"%.1f km", dto.getDistance())
                         : "-"
         );
-
-        // PRICE
         tvPrice.setText(
                 dto.getTotalPrice() != null
                         ? String.format(Locale.getDefault(),"%.2f RSD", dto.getTotalPrice())
                         : "-"
         );
-
-        // STATUS
         tvStatus.setText(safe(dto.getStatus()));
 
-        // PASSENGER
         tvPassengerName.setText(safe(dto.getPassengerName()));
         tvPassengerPhone.setText(safe(dto.getPassengerPhone()));
 
-        // COMMENT
+        Integer driverRating = dto.getDriverRating();
+        Integer vehicleRating = dto.getVehicleRating();
+
+        if (driverRating != null || vehicleRating != null) {
+
+            if (driverRating != null) {
+                tvDriverRating.setText(String.format("Driver: %s", stars(driverRating)));
+            }
+            if (vehicleRating != null) {
+                tvVehicleRating.setText(String.format("Vehicle: %s", stars(vehicleRating)));
+            }
+            ratingContainer.setVisibility(View.VISIBLE);
+        } else {
+            ratingContainer.setVisibility(View.GONE);
+        }
         if (dto.getRatingComment() != null && !dto.getRatingComment().isEmpty()) {
             tvNotes.setText(dto.getRatingComment());
             notesContainer.setVisibility(View.VISIBLE);
@@ -187,4 +190,13 @@ public class RideDetailsDialogFragment extends DialogFragment {
     private String safe(String s) {
         return s == null ? "-" : s;
     }
+
+    private String stars(int rating) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            s.append(i < rating ? "★" : "☆");
+        }
+        return s.toString();
+    }
+
 }
