@@ -44,7 +44,7 @@ export class DriverRideAssignment implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
 
   activeRide = signal<RideAssignment>({
-    id: 6,
+    id: 1,
     pickupAddress: 'Železnička stanica, Novi Sad',
     destinationAddress: 'Štrand, Novi Sad',
     passengerName: 'Putnica Putnić',

@@ -417,7 +417,7 @@ public class RideService {
             throw new ForeignRideException("Only a driver of this ride can start it.");
         }
 
-        if (ride.getStatus() == RideStatus.ONGOING || ride.getStartTime() != null)
+        if (ride.getStatus() == RideStatus.ONGOING)
             throw new RideAlreadyStartedException();
 
         ride.setStatus(RideStatus.ONGOING);

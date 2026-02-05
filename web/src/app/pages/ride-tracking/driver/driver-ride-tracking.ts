@@ -58,7 +58,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
   // Ride details - will be loaded from backend
   rideDetails = signal<RideDetails>({
-    id: 6,
+    id: 1,
     pickup: 'Loading...',
     destination: 'Loading...',
     pickupCoords: [45.2671, 19.8335],
