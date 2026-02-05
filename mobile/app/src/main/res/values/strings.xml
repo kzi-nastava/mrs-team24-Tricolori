@@ -193,4 +193,19 @@
     <string name="error_route_calculation">Could not calculate route. Please try again.</string>
     <string name="start_location">Start</string>
     <string name="end_location">End</string>
+
+    <!-- Change Requests -->
+    <string name="change_request_approve">Approve</string>
+    <string name="change_request_reject">Reject</string>
+    <string name="change_request_arrow"> -> </string>
+    <string name="change_request_header">Driver Profile Change Requests</string>
+    <string name="change_request_desc">Review and approve/reject driver change requests</string>
+    <string name="change_request_no_requests">There are currently no pending requests</string>
+    <string name="change_request_pfp_changed">New profile picture is set</string>
+    <string name="change_request_pfp_changed_desc">New profile picture</string>
+    <string name="change_request_driver_id">Driver ID: #%1$d</string>
+    <string name="change_request_first_name">First name</string>
+    <string name="change_request_last_name">Last name</string>
+    <string name="change_request_phone">Phone number</string>
+    <string name="change_request_address">Home address</string>
 </resources>

@@ -27,7 +27,6 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import java.util.HashSet;
 import java.util.Set;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -64,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         Set<Integer> topLevelDestinations = new HashSet<>();
         topLevelDestinations.add(R.id.rideHistoryFragment);
         topLevelDestinations.add(R.id.userProfileFragment);
+        topLevelDestinations.add(R.id.changeRequestsReviewFragment);
 
         appBarConfiguration = new AppBarConfiguration.Builder(topLevelDestinations)
                 .setOpenableLayout(drawerLayout)
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     toolbar.setVisibility(View.VISIBLE);
                     drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-                    setupDriverStatusSwitch();
+                    setupMenuByRole();
                 }
             });
 
@@ -93,19 +93,39 @@ public class MainActivity extends AppCompatActivity {
                     logoutUser();
                     return true;
                 }
-                boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+                if (navController.getCurrentDestination() != null &&
+                        navController.getCurrentDestination().getId() == id) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                }
+                try {
+                    navController.navigate(id);
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                } catch (Exception e) {
+                    // Fallback ako direktna navigacija ne uspe
+                    boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+                    if (handled) drawerLayout.closeDrawer(GravityCompat.START);
+                    return handled;
+                }
+                /*boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
                 if (handled) drawerLayout.closeDrawer(GravityCompat.START);
-                return handled;
+                return handled;*/
             });
         }
     }
 
-    private void setupDriverStatusSwitch() {
+    private void setupMenuByRole() {
         Menu menu = navigationView.getMenu();
         MenuItem statusItem = menu.findItem(R.id.nav_status_switch);
+        MenuItem adminRequestsItem = menu.findItem(R.id.changeRequestsReviewFragment);
 
         SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         String role = prefs.getString("user_role", "");
+
+        if (adminRequestsItem != null) {
+            adminRequestsItem.setVisible("ROLE_ADMIN".equals(role) || "ADMIN".equals(role));
+        }
 
         if (statusItem != null) {
             boolean isDriver = "ROLE_DRIVER".equals(role);
