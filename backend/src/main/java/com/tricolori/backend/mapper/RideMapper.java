@@ -31,6 +31,9 @@ public interface RideMapper {
     /**
      * Map Ride to Driver Detail Response (Detail view)
      */
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "startTime", target = "startedAt")
+    @Mapping(source = "endTime", target = "completedAt")
     @Mapping(target = "passengerName", expression = "java(getPassengerFullName(ride))")
     @Mapping(target = "passengerPhone", expression = "java(getPassengerPhone(ride))")
     @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
@@ -48,6 +51,7 @@ public interface RideMapper {
     @Mapping(target = "ratingComment", expression = "java(getFirstRatingComment(ride))")
     RideDetailResponse toDriverDetailResponse(Ride ride);
 
+
     // ==================== PASSENGER MAPPINGS ====================
 
     /**
@@ -64,6 +68,9 @@ public interface RideMapper {
     /**
      * Map Ride to Passenger Detail Response (Detail view)
      */
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "startTime", target = "startedAt")
+    @Mapping(source = "endTime", target = "completedAt")
     @Mapping(target = "driverName", expression = "java(getDriverFullName(ride))")
     @Mapping(target = "driverPhone", expression = "java(getDriverPhone(ride))")
     @Mapping(target = "vehicleModel", expression = "java(getVehicleModel(ride))")
