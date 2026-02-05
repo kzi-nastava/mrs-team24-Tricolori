@@ -47,10 +47,8 @@ public class ChangeRequestsReviewFragment extends Fragment implements AdminReque
         recyclerView = view.findViewById(R.id.change_requests_rv_requests);
         emptyView = view.findViewById(R.id.change_requests_empty_view);
 
-        // 2. Podešavanje liste (1 kolona za mob, 2 za tablet ako želiš)
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // 3. Inicijalizacija adaptera (proslediš listu i 'this' jer fragment implementira OnActionListener)
         adapter = new AdminRequestsAdapter(requestList, (AdminRequestsAdapter.OnActionListener) this);
         recyclerView.setAdapter(adapter);
 
