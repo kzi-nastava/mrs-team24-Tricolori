@@ -234,7 +234,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/base_500">
+            app:cardBackgroundColor="@color/base_700">
 
             <Button
                 android:id="@+id/btnSaveChanges"

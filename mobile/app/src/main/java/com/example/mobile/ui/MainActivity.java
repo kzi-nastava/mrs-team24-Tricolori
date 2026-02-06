@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.profile.ChangeDriverStatusRequest;
+import com.example.mobile.dto.profile.ProfileResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.DriverDailyLogService;
 import com.google.android.material.navigation.NavigationView;
@@ -39,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
 
     private DriverDailyLogService dailyLogService;
+
+    // nav header fields
+    private TextView navHeaderUserName;
+    private TextView navHeaderUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
         topLevelDestinations.add(R.id.userProfileFragment);
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
 
+        View headerView = navigationView.getHeaderView(0);
+        navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
+        navHeaderUserEmail = headerView.findViewById(R.id.nav_header_user_email);
+
         appBarConfiguration = new AppBarConfiguration.Builder(topLevelDestinations)
                 .setOpenableLayout(drawerLayout)
                 .build();
@@ -74,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(navigationView, navController);
 
             updateMenuVisibility();
+            updateNavigationHeader();
+
 
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int id = destination.getId();
@@ -158,6 +170,8 @@ public class MainActivity extends AppCompatActivity {
     private void logoutUser() {
         SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         prefs.edit().clear().apply();
+        navHeaderUserName.setText("Guest User");
+        navHeaderUserEmail.setText("Not logged in");
         updateMenuVisibility();
         navController.navigate(R.id.homeFragment);
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -233,6 +247,39 @@ public class MainActivity extends AppCompatActivity {
             logout.setVisible(false);
             statusSwitch.setVisible(false);
             changeRequests.setVisible(false);
+        }
+    }
+
+    public void updateNavigationHeader() {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("jwt_token", null);
+
+        if (token != null) {
+            // User is logged in - fetch profile data
+            RetrofitClient.getProfileService(this)
+                    .getUserProfile()
+                    .enqueue(new Callback<ProfileResponse>() {
+                        @Override
+                        public void onResponse(Call<ProfileResponse> call, Response<ProfileResponse> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                ProfileResponse profile = response.body();
+                                String fullName = profile.getFirstName() + " " + profile.getLastName();
+                                navHeaderUserName.setText(fullName);
+                                navHeaderUserEmail.setText(profile.getEmail());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ProfileResponse> call, Throwable t) {
+                            // Failed to load profile - use defaults
+                            navHeaderUserName.setText("User");
+                            navHeaderUserEmail.setText("Loading...");
+                        }
+                    });
+        } else {
+            // Not logged in
+            navHeaderUserName.setText("Guest User");
+            navHeaderUserEmail.setText("Not logged in");
         }
     }
 }
