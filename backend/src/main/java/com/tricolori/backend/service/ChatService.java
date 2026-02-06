@@ -9,6 +9,9 @@ import com.tricolori.backend.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -37,5 +40,18 @@ public class ChatService {
                 savedMessage.getContent(),
                 savedMessage.getCreatedAt()
         );
+    }
+
+    public List<ChatMessageResponse> getChatHistory(Long userId1, Long userId2) {
+        return messageRepository.findChatMessages(userId1, userId2)
+                .stream()
+                .map(message -> new ChatMessageResponse(
+                        message.getId(),
+                        message.getSender().getId(),
+                        message.getRecipient().getId(),
+                        message.getContent(),
+                        message.getCreatedAt()
+                ))
+                .collect(Collectors.toList());
     }
 }
