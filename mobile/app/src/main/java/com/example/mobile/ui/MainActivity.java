@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
 //        MenuItem supervise = menu.findItem(R.id.rideSupervisorFragment);
 //        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
-//        MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
+        MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
 //        MenuItem support = menu.findItem(R.id.supportFragment);
         MenuItem profile = menu.findItem(R.id.userProfileFragment);
         MenuItem logout = menu.findItem(R.id.nav_logout);
@@ -202,21 +202,21 @@ public class MainActivity extends AppCompatActivity {
             if ("ROLE_ADMIN".equals(role)) {
                 // supervise.setVisible(true);
 //                notifications.setVisible(true);
-//                pricelist.setVisible(true);
+                pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
                 changeRequests.setVisible(true);
 
             } else if ("ROLE_DRIVER".equals(role)) {
 //                supervise.setVisible(false);
 //                notifications.setVisible(false);
-//                pricelist.setVisible(false);
+                pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
                 changeRequests.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
 //                supervise.setVisible(false);
 //                notifications.setVisible(true);
-//                pricelist.setVisible(false);
+                pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
                 changeRequests.setVisible(false);
             }
@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
             history.setVisible(false);
 //            supervise.setVisible(false);
 //            notifications.setVisible(false);
-//            pricelist.setVisible(false);
+            pricelist.setVisible(false);
 //            support.setVisible(false);
             profile.setVisible(false);
             logout.setVisible(false);
