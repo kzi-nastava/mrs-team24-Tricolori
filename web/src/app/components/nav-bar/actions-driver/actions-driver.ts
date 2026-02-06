@@ -1,8 +1,9 @@
-import {Component, signal} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
 import {NgClass} from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 import {DriverDailyLogService} from '../../../services/driver-daily-log.service';
+import {ToastService} from '../../../services/toast.service';
 
 @Component({
   selector: 'app-actions-driver',
@@ -16,10 +17,9 @@ import {DriverDailyLogService} from '../../../services/driver-daily-log.service'
 export class ActionsDriver {
   active = signal<boolean>(true);
 
-  constructor(
-    private authService: AuthService,
-    private driverDailyLogService: DriverDailyLogService,
-  ) {}
+  private authService = inject(AuthService);
+  private driverDailyLogService = inject(DriverDailyLogService);
+  private toastService = inject(ToastService);
 
   toggleStatus() {
     const requestedStatus = !this.active();
@@ -27,20 +27,23 @@ export class ActionsDriver {
     this.driverDailyLogService.changeStatus(requestedStatus).subscribe({
       next: () => {
         this.active.set(requestedStatus);
-        console.log(`Status successfully changed to: ${this.active()}`);
+        const message = requestedStatus ? 'You are now Online' : 'You are now Offline';
+        this.toastService.show(message, requestedStatus ? 'success' : 'warning');
       },
       error: (err) => {
-        alert(err.error || 'Error changing driver status.');
-        console.error('Error changing driver status', err);
+        const errorMsg = err.error?.message || 'Error changing driver status.';
+        this.toastService.show(errorMsg, 'error');
       }
-    })
+    });
   }
 
   logout() {
     if (this.active()) {
       this.driverDailyLogService.changeStatus(false).subscribe({
         next: () => this.completeLogout(),
-        error: (err) => alert("Complete your ride before logging out!")
+        error: () => {
+          this.toastService.show("Finish your active ride before logging out!", "error");
+        }
       });
     } else {
       this.completeLogout();

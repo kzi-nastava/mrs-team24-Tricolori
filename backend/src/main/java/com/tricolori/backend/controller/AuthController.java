@@ -60,8 +60,6 @@ public class AuthController {
         return ResponseEntity.ok(status.toString());
     }
 
-
-
     @PostMapping(path = "/register-passenger", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> register(
             @Valid @RequestPart("data") RegisterPassengerRequest request,

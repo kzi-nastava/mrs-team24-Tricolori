@@ -1,5 +1,5 @@
 @if (toastService.currentToast(); as toast) {
-  <div [class]="'fixed bottom-10 left-1/2 -translate-x-1/2 z-[9999] flex items-center min-w-[300px] p-4 rounded-xl shadow-2xl border animate-bounce-in ' + getStyles(toast.type)">
+  <div [class]="'fixed top-10 left-1/2 -translate-x-1/2 z-[9999] flex items-center min-w-[300px] p-4 rounded-xl shadow-2xl border animate-bounce-in ' + getStyles(toast.type)">
 
     <div class="flex-shrink-0 mr-3">
       @switch (toast.type) {
