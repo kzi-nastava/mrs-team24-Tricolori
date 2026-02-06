@@ -17,6 +17,7 @@ import { RideService } from '../../../../../services/ride.service';
 import { MapService } from '../../../../../services/map.service';
 import { RideAssignment } from '../../../../../model/ride';
 import * as L from 'leaflet';
+import {LatLng} from 'leaflet';
 
 @Component({
   selector: 'app-driver-ride-assignment',
@@ -91,11 +92,9 @@ get eta(): number {
     if (!map) return;
 
     try {
-      const route = await this.fetchOsrmRoute(pickupCoords, destinationCoords);
-      this.mapService.drawRoute('', pickupCoords, destinationCoords, route);
+      this.mapService.drawRoute([]);
     } catch {
-      // fallback: samo markeri
-      this.mapService.drawRoute('', pickupCoords, destinationCoords);
+      this.mapService.drawRoute([]);
     }
   }
 

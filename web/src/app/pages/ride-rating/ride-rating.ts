@@ -86,19 +86,14 @@ export class RideRatingComponent implements OnInit {
         this.rideDetails.set(rideDetails);
 
         // TODO: provide previously calculated route geometry instead of estimating each time
-        const estimation = await this.estimationService.calculateRoute(
-          { lat: rideDetails.pickupLatitude, lng: rideDetails.pickupLongitude },
-          { lat: rideDetails.dropoffLatitude, lng: rideDetails.dropoffLongitude },
+        this.estimationService.calculateRouteFromAddress(
           rideDetails.pickupAddress,
           rideDetails.dropoffAddress
-        );
-
-        this.mapService.drawRoute(
-          '', // routeGeometry
-          [rideDetails.pickupLatitude, rideDetails.pickupLongitude], // pickup
-          [rideDetails.dropoffLatitude, rideDetails.dropoffLongitude], // destination
-          estimation?.routeCoordinates // routeCoordinates
-        );
+        ).subscribe({
+          next: (estimation) => {
+            this.mapService.drawRoute(estimation!.routeGeometry)
+          }
+        });
       }
     });
   }

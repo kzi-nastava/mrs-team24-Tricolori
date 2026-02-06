@@ -64,18 +64,18 @@ export class PassengerHistory implements OnInit {
   // Date filter properties
   startDate: string = '';
   endDate: string = '';
-  
+
   // Modal property
   selectedRide: PassengerRide | null = null;
-  
+
   // All rides and filtered rides
   allRides: PassengerRide[] = [];
   filteredRides: PassengerRide[] = [];
-  
+
   // Loading and error states
   isLoading = false;
   errorMessage = '';
-  
+
   // Filter options
   statusFilter: string = 'all';
   searchQuery: string = '';
@@ -238,7 +238,7 @@ export class PassengerHistory implements OnInit {
     const isCompleted = this.mapRideStatus(ride.status) === 'Completed';
     const hasNoRating = !ride.driverRating && !ride.vehicleRating;
     const within72Hours = !this.isRatingExpired(completedAt);
-    
+
     return isCompleted && hasNoRating && within72Hours;
   }
 
@@ -333,7 +333,7 @@ export class PassengerHistory implements OnInit {
     const isCompleted = this.mapRideStatus(detail.status) === 'Completed';
     const hasNoRating = !detail.driverRating && !detail.vehicleRating;
     const within72Hours = !this.isRatingExpired(completedAt);
-    
+
     return isCompleted && hasNoRating && within72Hours;
   }
 
@@ -364,41 +364,28 @@ export class PassengerHistory implements OnInit {
     try {
       // Fetch route from OSRM
       const url = `https://router.project-osrm.org/route/v1/driving/${pickupCoords[1]},${pickupCoords[0]};${dropoffCoords[1]},${dropoffCoords[0]}?overview=full&geometries=geojson`;
-      
+
       const response = await fetch(url);
       const data = await response.json();
 
       if (data.routes && data.routes.length > 0) {
         const coordinates = data.routes[0].geometry.coordinates;
-        
+
         // Convert to Leaflet LatLng format
-        const routeCoordinates = coordinates.map((coord: number[]) => 
+        const routeCoordinates = coordinates.map((coord: number[]) =>
           L.latLng(coord[1], coord[0])
         );
 
-        this.mapService.drawRoute(
-          '',
-          pickupCoords,
-          dropoffCoords,
-          routeCoordinates
-        );
+        this.mapService.drawRoute([]);
       } else {
         // Fallback: draw without route line if OSRM fails
-        this.mapService.drawRoute(
-          '',
-          pickupCoords,
-          dropoffCoords
-        );
+        this.mapService.drawRoute([]);
       }
     } catch (error) {
       console.error('Failed to fetch route from OSRM:', error);
-      
+
       // Fallback: draw without route line
-      this.mapService.drawRoute(
-        '',
-        pickupCoords,
-        dropoffCoords
-      );
+      this.mapService.drawRoute([]);
     }
   }
 

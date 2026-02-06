@@ -1,64 +1,46 @@
 import { Injectable } from '@angular/core';
-
-export interface GeocodingResult {
-  lat: number;
-  lng: number;
-  displayName: string;
-}
+import * as L from 'leaflet';
+import { Observable, from, map, catchError, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GeocodingService {
   private readonly NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+  private readonly REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
   private readonly DEFAULT_CITY = 'Novi Sad';
 
   /**
-   * Geocodes an address to coordinates using Nominatim
-   * @param address - Address string to geocode
-   * @param city - Optional city to narrow search (defaults to Novi Sad)
+   * Geocodes address directly to Leaflet LatLng
    */
-  async geocodeAddress(address: string, city: string = this.DEFAULT_CITY): Promise<GeocodingResult | null> {
-    try {
-      const query = city ? `${address}, ${city}` : address;
-      const response = await fetch(
-        `${this.NOMINATIM_URL}?format=json&q=${encodeURIComponent(query)}`
-      );
+  geocodeAddress(address: string, city: string = this.DEFAULT_CITY): Observable<L.LatLng | null> {
+    const query = city ? `${address}, ${city}` : address;
+    const url = `${this.NOMINATIM_URL}?format=json&q=${encodeURIComponent(query)}&limit=1`;
 
-      const results = await response.json();
-
-      if (results.length === 0) {
+    return from(fetch(url).then(res => res.json())).pipe(
+      map((results: any[]) => {
+        if (results && results.length > 0) {
+          const first = results[0];
+          return L.latLng(parseFloat(first.lat), parseFloat(first.lon));
+        }
         return null;
-      }
-
-      const firstResult = results[0];
-      return {
-        lat: parseFloat(firstResult.lat),
-        lng: parseFloat(firstResult.lon),
-        displayName: firstResult.display_name
-      };
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      return null;
-    }
+      }),
+      catchError(error => {
+        console.error('Geocoding error:', error);
+        return of(null);
+      })
+    );
   }
 
   /**
-   * Reverse geocodes coordinates to an address
-   * @param lat - Latitude
-   * @param lng - Longitude
+   * Reverse geocodes coordinates to a string address
    */
-  async reverseGeocode(lat: number, lng: number): Promise<string | null> {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-      );
+  reverseGeocode(lat: number, lng: number): Observable<string | null> {
+    const url = `${this.REVERSE_URL}?format=json&lat=${lat}&lon=${lng}`;
 
-      const result = await response.json();
-      return result.display_name || null;
-    } catch (error) {
-      console.error('Reverse geocoding error:', error);
-      return null;
-    }
+    return from(fetch(url).then(res => res.json())).pipe(
+      map(result => result.display_name || null),
+      catchError(() => of(null))
+    );
   }
 }

@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
   heroEnvelope, heroSquares2x2, heroTruck,
-  heroLockClosed, heroCurrencyDollar,
+  heroLockClosed, heroCurrencyDollar,heroMap,
   heroEye, heroArrowRightOnRectangle,
   heroEyeSlash, heroPower,
   heroArrowRight, heroUser, heroPhone, heroHome, heroArrowUpTray,
@@ -31,7 +31,7 @@ export const appConfig: ApplicationConfig = {
       heroEnvelope, heroBoltSlashSolid,
       heroLockClosed, heroBoltSolid,
       heroEye, heroPower, heroArrowRightOnRectangle,
-      heroEyeSlash, heroCurrencyDollar,
+      heroEyeSlash, heroCurrencyDollar, heroMap,
       heroArrowRight, heroSquares2x2, heroTruck,
       heroUser, heroArrowUpTray, heroHome, heroPhone,
       heroClock, heroInformationCircle, heroChevronDown,
