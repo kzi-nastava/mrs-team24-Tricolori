@@ -2,16 +2,26 @@ import { Routes } from '@angular/router';
 import { Login } from './pages/auth/login/login';
 import { Register } from './pages/auth/register/register';
 import { UnregisteredHome } from './pages/home/unregistered/unregistered-home';
-import {DriverRideAssignment} from './pages/home/driver/components/driver-ride-assignment/driver-ride-assignment';
 import { authGuard } from './guards/auth.guard';
 import { RideBooking } from './pages/home/passenger/components/ride-booking/ride-booking';
 import { HomePassenger } from './pages/home/passenger/passenger-home';
-import {NavigationPassenger} from './components/nav-bar/navigation-passenger/navigation-passenger';
-import {NavigationDriver} from './components/nav-bar/navigation-driver/navigation-driver';
+import {
+  RideEstimationForm
+} from './pages/home/unregistered/components/ride-estimation/ride-estimation-form/ride-estimation-form';
+import {
+  RideEstimationResult
+} from './pages/home/unregistered/components/ride-estimation/ride-estimation-result/ride-estimation-result';
 
 export const routes: Routes = [
   // Public routes
-  { path: '', component: UnregisteredHome },
+  {
+    path: 'unregistered',
+    component: UnregisteredHome,
+    children: [
+      { path: '', redirectTo: 'form', pathMatch: 'full' },
+      { path: 'form', component: RideEstimationForm },
+      { path: 'result', component: RideEstimationResult }
+    ]},
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   { path: 'forgot-password', loadComponent: () => import('./pages/auth/forgot-password/forgot-password').then(m => m.ForgotPassword) },
@@ -161,5 +171,5 @@ export const routes: Routes = [
     ]
   },
 
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: 'unregistered' }
 ];

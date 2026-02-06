@@ -151,7 +151,7 @@ export class AuthService {
         this.router.navigate(['/driver']);
         break;
       case 'ROLE_PASSENGER':
-        this.router.navigate(['/home']);
+        this.router.navigate(['/passenger']);
         break;
       case 'ROLE_ADMIN':
         this.router.navigate(['/admin']);

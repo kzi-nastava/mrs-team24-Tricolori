@@ -81,27 +81,30 @@ export class MapService {
   /**
    * Draws a route line and places pickup/destination pins
    */
-  drawRoute(
-    routeGeometry: string, // Kept for API compatibility
-    pickup: [number, number],
-    destination: [number, number],
-    routeCoordinates?: L.LatLng[]
-  ): void {
+  drawRoute(geometry: L.LatLng[]): void {
     this.clearRouteAndMarkers();
+
+    if (!geometry || geometry.length < 2) {
+      console.error('Invalid geometry provided to drawRoute');
+      return;
+    }
+
+    const pickup = geometry[0];
+    const destination = geometry[geometry.length - 1];
 
     this.pickupMarker = L.marker(pickup, { icon: pickupIcon }).addTo(this.map);
     this.destinationMarker = L.marker(destination, { icon: destinationIcon }).addTo(this.map);
 
-    if (routeCoordinates && routeCoordinates.length > 0) {
-      this.routeLayer = L.polyline(routeCoordinates, {
-        color: '#00acc1',
-        weight: 5,
-        opacity: 0.8
-      }).addTo(this.map);
-    }
+    this.routeLayer = L.polyline(geometry, {
+      color: '#00acc1',
+      weight: 5,
+      opacity: 0.8,
+      lineJoin: 'round'
+    }).addTo(this.map);
 
-    const bounds = L.latLngBounds([pickup, destination]);
-    this.map.fitBounds(bounds.pad(0.2));
+    this.map.fitBounds(this.routeLayer.getBounds(), {
+      padding: [50, 50]
+    });
   }
 
   /**
