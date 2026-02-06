@@ -1,0 +1,21 @@
+@if (toastService.currentToast(); as toast) {
+  <div [class]="'fixed bottom-10 left-1/2 -translate-x-1/2 z-[9999] flex items-center min-w-[300px] p-4 rounded-xl shadow-2xl border animate-bounce-in ' + getStyles(toast.type)">
+
+    <div class="flex-shrink-0 mr-3">
+      @switch (toast.type) {
+        @case ('success') { <ng-icon name="heroCheckCircle" class="text-2xl"></ng-icon> }
+        @case ('warning') { <ng-icon name="heroExclamationTriangle" class="text-2xl"></ng-icon> }
+        @case ('error') { <ng-icon name="heroXCircle" class="text-2xl"></ng-icon> }
+        @default { <ng-icon name="heroInformationCircle" class="text-2xl"></ng-icon> }
+      }
+    </div>
+
+    <div class="flex-grow font-medium text-sm">
+      {{ toast.message }}
+    </div>
+
+    <button (click)="toastService.clear()" class="ml-4 hover:opacity-70 transition-opacity">
+      <ng-icon name="heroXMark" class="text-lg"></ng-icon>
+    </button>
+  </div>
+}
