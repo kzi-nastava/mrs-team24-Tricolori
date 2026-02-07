@@ -64,6 +64,11 @@ export const routes: Routes = [
         canActivate: [authGuard]
       },
       {
+        path: 'notifications',
+        loadComponent: () => import('./pages/notifications/driver/driver-notifications').then(m => m.DriverNotifications),
+        canActivate: [authGuard]
+      },
+      {
         path: 'support',
         loadComponent: () => import('./pages/support-chat/driver/driver-support').then(m => m.DriverSupport)
       },
