@@ -55,7 +55,7 @@ export const routes: Routes = [
       },
       {
         path: 'support',
-        loadComponent: () => import('./pages/support-chat/user/user-support').then(m => m.DriverSupport)
+        loadComponent: () => import('./pages/support-chat/user/user-support').then(m => m.UserSupport)
       },
       {
         path: 'profile',
@@ -90,7 +90,7 @@ export const routes: Routes = [
       },
       {
         path: 'support',
-        loadComponent: () => import('./pages/support-chat/passenger/passenger-support').then(m => m.PassengerSupport)
+        loadComponent: () => import('./pages/support-chat/user/user-support').then(m => m.UserSupport)
       },
       {
         path: 'history',
