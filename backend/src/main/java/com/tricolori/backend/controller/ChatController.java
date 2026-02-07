@@ -19,12 +19,8 @@ public class ChatController {
 
     @MessageMapping("/chat.send")
     public void sendMessage(ChatMessageRequest message) {
-        log.info("Received message from user {} to user {}: {}",
-                message.getSenderId(), message.getReceiverId(), message.getContent());
 
         ChatMessageResponse response = chatService.processMessage(message);
-
-        log.info("Saved message with ID: {}", response.getId());
 
         messagingTemplate.convertAndSend(
                 "/topic/chat/" + message.getReceiverId(),
@@ -35,8 +31,5 @@ public class ChatController {
                 "/topic/chat/" + message.getSenderId(),
                 response
         );
-
-        log.info("Message sent to topics for users {} and {}",
-                message.getReceiverId(), message.getSenderId());
     }
 }
