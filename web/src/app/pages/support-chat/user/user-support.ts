@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroPaperAirplane, heroUser } from '@ng-icons/heroicons/outline';
+import { WebSocketService, ChatMessage } from '../../../services/websocket.service';
+import { ChatService, ChatMessageDTO } from '../../../services/chat.service';
+import { Subscription } from 'rxjs';
 
 interface Message {
   id: number;
@@ -12,7 +15,7 @@ interface Message {
 }
 
 @Component({
-  selector: 'app-driver-support',
+  selector: 'app-user-support',
   standalone: true,
   imports: [
     CommonModule,
@@ -20,72 +23,113 @@ interface Message {
     NgIcon
   ],
   providers: [provideIcons({ heroPaperAirplane, heroUser })],
-  templateUrl: './driver-support.html',
-  styleUrl: './driver-support.css'
+  templateUrl: './user-support.html',
+  styleUrl: './user-support.css'
 })
-export class DriverSupport {
+export class UserSupport implements OnInit, OnDestroy {
   messages: Message[] = [];
   newMessage: string = '';
+  showAdminUnavailableDialog: boolean = false;
+  
+  private currentUserId: number = 1; // TODO: Get from auth service
+  private adminUserId: number = 0; // TODO: Get admin ID from backend
+  private messageSubscription?: Subscription;
 
-  constructor() {
+  constructor(
+    private webSocketService: WebSocketService,
+    private chatService: ChatService
+  ) {}
+
+  ngOnInit(): void {
     this.loadMessages();
+    this.connectWebSocket();
+  }
+
+  ngOnDestroy(): void {
+    this.messageSubscription?.unsubscribe();
+    this.webSocketService.disconnect();
   }
 
   loadMessages(): void {
-    // TODO: Replace with actual API call to fetch chat history
-    this.messages = [
-      {
-        id: 1,
-        text: 'Hello! How can I help you today?',
-        timestamp: 'Yesterday, 16:48',
-        isFromUser: false
+    this.chatService.getChatHistory(this.currentUserId, this.adminUserId).subscribe({
+      next: (chatMessages: ChatMessageDTO[]) => {
+        this.messages = chatMessages.map(msg => ({
+          id: msg.id,
+          text: msg.content,
+          timestamp: this.formatTimestamp(new Date(msg.timestamp)),
+          isFromUser: msg.senderId === this.currentUserId
+        }));
+        setTimeout(() => this.scrollToBottom(), 100);
       },
-      {
-        id: 2,
-        text: 'I have a question about my recent ride',
-        timestamp: 'Yesterday, 17:53',
-        isFromUser: true
-      },
-      {
-        id: 3,
-        text: 'Sure, I\'d be happy to help. What would you like to know?',
-        timestamp: 'Today, 11:35',
-        isFromUser: false
-      },
-      {
-        id: 4,
-        text: 'Can I get more information about payment processing?',
-        timestamp: 'Today, 12:14',
-        isFromUser: true
+      error: (error) => {
+        console.error('Error loading messages:', error);
       }
-    ];
+    });
+  }
+
+  connectWebSocket(): void {
+    this.webSocketService.connect(this.currentUserId);
+    
+    this.messageSubscription = this.webSocketService.messages$.subscribe({
+      next: (chatMessage: ChatMessage | null) => {
+        if (chatMessage && 
+            (chatMessage.senderId === this.adminUserId || chatMessage.receiverId === this.currentUserId)) {
+          const message: Message = {
+            id: chatMessage.id || this.messages.length + 1,
+            text: chatMessage.content,
+            timestamp: this.formatTimestamp(new Date(chatMessage.timestamp)),
+            isFromUser: chatMessage.senderId === this.currentUserId
+          };
+          
+          this.messages.push(message);
+          setTimeout(() => this.scrollToBottom(), 100);
+        }
+      }
+    });
   }
 
   sendMessage(): void {
     if (this.newMessage.trim()) {
-      const message: Message = {
-        id: this.messages.length + 1,
-        text: this.newMessage,
-        timestamp: this.getCurrentTimestamp(),
-        isFromUser: true
-      };
-      
-      this.messages.push(message);
-      this.newMessage = '';
-      
-      // TODO: Send message to backend via API
-      console.log('Message sent:', message);
-      
-      // Scroll to bottom after sending
-      setTimeout(() => this.scrollToBottom(), 100);
+      // Check if admin is available before sending
+      this.chatService.checkAdminAvailable().subscribe({
+        next: (response) => {
+          if (response.available) {
+            // Admin available, send the message
+            this.webSocketService.sendMessage(
+              this.currentUserId,
+              this.adminUserId,
+              this.newMessage
+            );
+            
+            this.newMessage = '';
+          } else {
+            // No admin available, show dialog
+            this.showAdminUnavailableDialog = true;
+            this.newMessage = '';
+          }
+        },
+        error: (error) => {
+          console.error('Error checking admin availability:', error);
+        }
+      });
     }
   }
 
-  private getCurrentTimestamp(): string {
+  closeDialog(): void {
+    this.showAdminUnavailableDialog = false;
+  }
+
+  private formatTimestamp(date: Date): string {
     const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    return `Today, ${hours}:${minutes}`;
+    const isToday = date.toDateString() === now.toDateString();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    if (isToday) {
+      return `Today, ${hours}:${minutes}`;
+    } else {
+      return `Yesterday, ${hours}:${minutes}`;
+    }
   }
 
   private scrollToBottom(): void {
