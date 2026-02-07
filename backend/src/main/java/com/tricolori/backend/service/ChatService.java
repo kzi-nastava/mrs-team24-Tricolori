@@ -4,6 +4,7 @@ import com.tricolori.backend.dto.chat.ChatMessageRequest;
 import com.tricolori.backend.dto.chat.ChatMessageResponse;
 import com.tricolori.backend.entity.Message;
 import com.tricolori.backend.entity.Person;
+import com.tricolori.backend.enums.PersonRole;
 import com.tricolori.backend.repository.MessageRepository;
 import com.tricolori.backend.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,5 +54,9 @@ public class ChatService {
                         message.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public boolean isAdminAvailable() {
+        return personRepository.existsByRole(PersonRole.ROLE_ADMIN);
     }
 }

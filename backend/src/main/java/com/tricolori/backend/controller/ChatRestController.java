@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -21,5 +22,11 @@ public class ChatRestController {
             @RequestParam Long userId2) {
         List<ChatMessageResponse> messages = chatService.getChatHistory(userId1, userId2);
         return ResponseEntity.ok(messages);
+    }
+
+    @GetMapping("/admin-available")
+    public ResponseEntity<Map<String, Boolean>> checkAdminAvailable() {
+        boolean available = chatService.isAdminAvailable();
+        return ResponseEntity.ok(Map.of("available", available));
     }
 }
