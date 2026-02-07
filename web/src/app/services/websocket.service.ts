@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import SockJS from 'sockjs-client';
 import { Client, IMessage } from '@stomp/stompjs';
 import { BehaviorSubject } from 'rxjs';
 
@@ -30,21 +29,28 @@ export class WebSocketService {
 
     this.stompClient = new Client({
 
-      webSocketFactory: () =>
-        new SockJS('http://localhost:8080/ws'),
+      // ✅ Direktan WebSocket (NO SockJS)
+      brokerURL: 'ws://localhost:8080/ws',
 
+      // Debug logs (možeš ugasiti u prod)
       debug: (str) => {
-        console.log(str);
+        console.log('[STOMP]', str);
       },
 
+      // Auto reconnect
       reconnectDelay: 5000,
 
+      // Heartbeat (best practice)
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+
       onConnect: () => {
-        console.log('WebSocket Connected');
+        console.log('✅ WebSocket Connected');
 
         this.stompClient?.subscribe(
           `/topic/chat/${userId}`,
           (message: IMessage) => {
+
             const chatMessage: ChatMessage =
               JSON.parse(message.body);
 
@@ -54,7 +60,12 @@ export class WebSocketService {
       },
 
       onStompError: (frame) => {
-        console.error('Broker error:', frame);
+        console.error('❌ Broker error:', frame.headers['message']);
+        console.error('Details:', frame.body);
+      },
+
+      onWebSocketClose: () => {
+        console.warn('⚠️ WebSocket closed');
       }
     });
 
@@ -67,7 +78,10 @@ export class WebSocketService {
     content: string
   ): void {
 
-    if (!this.stompClient?.connected) return;
+    if (!this.stompClient?.connected) {
+      console.warn('STOMP not connected');
+      return;
+    }
 
     const message = {
       senderId,
@@ -84,7 +98,7 @@ export class WebSocketService {
   disconnect(): void {
     if (this.stompClient) {
       this.stompClient.deactivate();
-      console.log('WebSocket Disconnected');
+      console.log('🔌 WebSocket Disconnected');
     }
   }
 }
