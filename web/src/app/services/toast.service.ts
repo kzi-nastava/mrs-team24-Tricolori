@@ -15,7 +15,7 @@ export class ToastService {
   show(message: string, type: ToastType = 'success') {
     this.currentToast.set({ message, type });
 
-    setTimeout(() => this.clear(), 3000);
+    setTimeout(() => this.clear(), 4000);
   }
 
   clear() {

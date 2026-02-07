@@ -1,5 +1,5 @@
-import {ChangeDetectorRef, Component, inject, OnInit} from '@angular/core';
-import {ActivatedRoute, RouterLink} from '@angular/router';
+import { Component, inject} from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,6 +11,7 @@ import { NgIcon } from '@ng-icons/core';
 
 import { AuthService } from '../../../services/auth.service';
 import { LoginRequest } from '../../../model/auth.model';
+import {ToastService} from '../../../services/toast.service';
 
 
 @Component({
@@ -25,26 +26,14 @@ import { LoginRequest } from '../../../model/auth.model';
     MatCardModule,
     NgIcon
   ],
-  templateUrl: './login.html',
-  styleUrl: './login.css',
+  templateUrl: './login.html'
 })
-export class Login implements OnInit {
-  private route = inject(ActivatedRoute);
+export class Login {
 
   hidePassword: boolean = true;
-  errorMessage: string = '';
-  successMessage: string = '';
 
-  ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      if (params['activated']) {
-        this.successMessage = "Account activated successfully! Please log in.";
-        this.cdr.detectChanges();
-      }
-    })
-  }
-
-  constructor(private authService: AuthService, private cdr: ChangeDetectorRef) {}
+  private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -52,43 +41,27 @@ export class Login implements OnInit {
   });
 
   onSubmit() {
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    if (this.loginForm.valid) {
-
-      const loginRequest: LoginRequest = {
-        email: this.loginForm.value.email!,
-        password: this.loginForm.value.password!
-      };
-
-      this.authService.login(loginRequest).subscribe({
-        next: () => {
-          this.successMessage = 'Success! Redirecting...';
-        },
-        error: () => {
-          this.errorMessage = 'Invalid email or password';
-          this.cdr.detectChanges();
-        }
-      });
-
-    } else {
-      this.errorMessage = this.getErrorMessage();
+    if (this.loginForm.invalid) {
+      this.toastService.show(this.getErrorMessage(), 'warning');
+      return;
     }
+
+    const loginRequest: LoginRequest = this.loginForm.getRawValue() as LoginRequest;
+
+    this.authService.login(loginRequest).subscribe({
+      error: () => {
+        this.toastService.show('Invalid email or password', 'error');
+      }
+    });
   }
 
   private getErrorMessage(): string {
-    const emailControl = this.loginForm.get('email');
-    const passwordControl = this.loginForm.get('password');
+    const { email, password } = this.loginForm.controls;
 
-    if (emailControl?.errors?.['required']) {
-      return 'Email address is required!';
-    }
+    if (email.errors?.['required']) return 'Email address is required!';
+    if (email.errors?.['email']) return 'Please enter a valid email!';
+    if (password.errors?.['required']) return 'Password is required!';
 
-    if (passwordControl?.errors?.['required']) {
-      return 'Password is required!';
-    }
-
-    return 'Please fill in all fields correctly!';
+    return 'Please check your credentials.';
   }
 }
