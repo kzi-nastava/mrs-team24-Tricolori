@@ -25,7 +25,7 @@ export interface ChatUserDTO {
   providedIn: 'root'
 })
 export class ChatService {
-  private apiUrl = 'http://localhost:8080/api/v1/chat';
+  private apiUrl = 'http://localhost:8080/api/v1/chats';
 
   constructor(private http: HttpClient) {}
 
