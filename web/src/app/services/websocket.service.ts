@@ -24,21 +24,15 @@ export class WebSocketService {
     this.stompClient = new Client({
       brokerURL: 'ws://localhost:8080/ws',
       
-      debug: (str) => {
-        console.log('[STOMP]', str);
-      },
-      
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
 
       onConnect: () => {
-        console.log('✅ WebSocket Connected');
         
         this.stompClient?.subscribe(
           `/topic/chat/${userId}`,
           (message: IMessage) => {
-            console.log('📨 Received message:', message.body);
             const chatMessage: ChatMessage = JSON.parse(message.body);
             this.messageSubject.next(chatMessage);
           }
@@ -70,8 +64,6 @@ export class WebSocketService {
       content: content
     };
 
-    console.log('📤 Sending message:', message);
-
     this.stompClient.publish({
       destination: '/app/chat.send',
       body: JSON.stringify(message)
@@ -81,7 +73,6 @@ export class WebSocketService {
   disconnect(): void {
     if (this.stompClient) {
       this.stompClient.deactivate();
-      console.log('🔌 WebSocket Disconnected');
     }
   }
 }

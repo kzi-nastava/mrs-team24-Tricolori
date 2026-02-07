@@ -71,11 +71,9 @@ export class UserSupport implements OnInit, OnDestroy {
   }
 
   loadMessages(): void {
-    console.log('🔍 loadMessages called with:', this.currentUserId, this.adminUserId);
     
     this.chatService.getChatHistory(this.currentUserId, this.adminUserId).subscribe({
       next: (chatMessages: ChatMessageDTO[]) => {
-        console.log('📥 Received chat messages:', chatMessages);
         
         this.messages = chatMessages.map(msg => ({
           id: msg.id,
@@ -84,11 +82,7 @@ export class UserSupport implements OnInit, OnDestroy {
           isFromUser: msg.senderId === this.currentUserId
         }));
         
-        console.log('✅ Messages array after mapping:', this.messages);
-        console.log('📊 Messages length:', this.messages.length);
-        
-        // FORCE CHANGE DETECTION
-        this.cdr.detectChanges();
+       this.cdr.detectChanges();
         
         setTimeout(() => this.scrollToBottom(), 300);
       },
