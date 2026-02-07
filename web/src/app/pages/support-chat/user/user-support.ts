@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -40,7 +40,8 @@ export class UserSupport implements OnInit, OnDestroy {
   constructor(
     private webSocketService: WebSocketService,
     private chatService: ChatService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -70,40 +71,47 @@ export class UserSupport implements OnInit, OnDestroy {
   }
 
   loadMessages(): void {
+    console.log('🔍 loadMessages called with:', this.currentUserId, this.adminUserId);
+    
     this.chatService.getChatHistory(this.currentUserId, this.adminUserId).subscribe({
       next: (chatMessages: ChatMessageDTO[]) => {
+        console.log('📥 Received chat messages:', chatMessages);
+        
         this.messages = chatMessages.map(msg => ({
           id: msg.id,
           text: msg.content,
           timestamp: this.formatTimestamp(new Date(msg.timestamp)),
           isFromUser: msg.senderId === this.currentUserId
         }));
+        
+        console.log('✅ Messages array after mapping:', this.messages);
+        console.log('📊 Messages length:', this.messages.length);
+        
+        // FORCE CHANGE DETECTION
+        this.cdr.detectChanges();
+        
         setTimeout(() => this.scrollToBottom(), 300);
       },
       error: (error) => {
-        console.error('Error loading messages:', error);
+        console.error('❌ Error loading messages:', error);
       }
     });
   }
 
-  connectWebSocket(): void {
 
+  connectWebSocket(): void {
   this.webSocketService.connect(this.currentUserId);
 
   this.messageSubscription =
     this.webSocketService.messages$.subscribe({
-
       next: (chatMessage: ChatMessage | null) => {
-
         if (!chatMessage) return;
 
         this.ngZone.run(() => {
-
           if (
-            chatMessage.senderId === this.adminUserId ||
-            chatMessage.receiverId === this.currentUserId
+            (chatMessage.senderId === this.currentUserId && chatMessage.receiverId === this.adminUserId) ||
+            (chatMessage.senderId === this.adminUserId && chatMessage.receiverId === this.currentUserId)
           ) {
-
             const message: Message = {
               id: chatMessage.id || Date.now(),
               text: chatMessage.content,
@@ -115,14 +123,13 @@ export class UserSupport implements OnInit, OnDestroy {
             };
 
             this.messages = [...this.messages, message];
+            
+            this.cdr.detectChanges();
 
-            setTimeout(() =>
-              this.scrollToBottom(), 100);
+            setTimeout(() => this.scrollToBottom(), 100);
           }
-
         });
       }
-
     });
 }
 

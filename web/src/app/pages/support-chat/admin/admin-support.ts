@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -6,6 +6,7 @@ import { heroPaperAirplane, heroUser } from '@ng-icons/heroicons/outline';
 import { WebSocketService, ChatMessage } from '../../../services/websocket.service';
 import { ChatService, ChatMessageDTO, ChatUserDTO } from '../../../services/chat.service';
 import { Subscription } from 'rxjs';
+import { NgZone } from '@angular/core';
 
 interface Message {
   id: number;
@@ -61,7 +62,9 @@ export class AdminSupport implements OnInit, OnDestroy {
 
   constructor(
     private webSocketService: WebSocketService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private ngZone: NgZone,          
+    private cdr: ChangeDetectorRef    
   ) {}
 
   ngOnInit(): void {
@@ -109,6 +112,8 @@ export class AdminSupport implements OnInit, OnDestroy {
           };
         });
 
+        this.cdr.detectChanges();
+
         // Auto-select first user with unread messages
         const firstUnread = this.chatUsers.find(u => u.hasUnread);
         if (firstUnread) {
@@ -140,6 +145,9 @@ export class AdminSupport implements OnInit, OnDestroy {
           timestamp: this.formatTimestamp(new Date(msg.timestamp)),
           isFromAdmin: msg.senderId === this.adminUserId
         }));
+        
+        this.cdr.detectChanges();
+        
         setTimeout(() => this.scrollToBottom(), 100);
       },
       error: (error) => {
@@ -153,51 +161,60 @@ export class AdminSupport implements OnInit, OnDestroy {
     
     this.messageSubscription = this.webSocketService.messages$.subscribe({
       next: (chatMessage: ChatMessage | null) => {
-        if (chatMessage && this.selectedUser) {
-          // Only add message if it's for the currently selected user
-          if (chatMessage.senderId === this.selectedUser.id || 
-              chatMessage.receiverId === this.selectedUser.id) {
-            const message: Message = {
-              id: chatMessage.id || this.messages.length + 1,
-              text: chatMessage.content,
-              timestamp: this.formatTimestamp(new Date(chatMessage.timestamp)),
-              isFromAdmin: chatMessage.senderId === this.adminUserId
-            };
-            
-            this.messages.push(message);
-            setTimeout(() => this.scrollToBottom(), 100);
-          }
+        if (!chatMessage) return;
+        
+        this.ngZone.run(() => {
+          if (this.selectedUser) {
+            // Only add message if it's for the currently selected user
+            if (chatMessage.senderId === this.selectedUser.id || 
+                chatMessage.receiverId === this.selectedUser.id) {
+              const message: Message = {
+                id: chatMessage.id || this.messages.length + 1,
+                text: chatMessage.content,
+                timestamp: this.formatTimestamp(new Date(chatMessage.timestamp)),
+                isFromAdmin: chatMessage.senderId === this.adminUserId
+              };
+              
+              this.messages.push(message);
+              
+              this.cdr.detectChanges();
+              
+              setTimeout(() => this.scrollToBottom(), 100);
+            }
 
-          // Update chat user's last message
-          const chatUser = this.chatUsers.find(u => 
-            u.id === chatMessage.senderId || u.id === chatMessage.receiverId
-          );
-          if (chatUser) {
-            chatUser.lastMessage = chatMessage.content;
-            if (chatMessage.senderId !== this.adminUserId && 
-                chatUser.id !== this.selectedUser?.id) {
-              chatUser.hasUnread = true;
+            // Update chat user's last message
+            const chatUser = this.chatUsers.find(u => 
+              u.id === chatMessage.senderId || u.id === chatMessage.receiverId
+            );
+            if (chatUser) {
+              chatUser.lastMessage = chatMessage.content;
+              if (chatMessage.senderId !== this.adminUserId && 
+                  chatUser.id !== this.selectedUser?.id) {
+                chatUser.hasUnread = true;
+              }
+              
+              this.cdr.detectChanges();
             }
           }
-        }
+        });
       }
     });
   }
 
   sendMessage(): void {
-  if (this.newMessage.trim() && this.selectedUser) {
-    const messageText = this.newMessage;
-    this.newMessage = ''; // Clear input immediately
-    
-    this.webSocketService.sendMessage(
-      this.adminUserId,
-      this.selectedUser.id,
-      messageText
-    );
-    
-    // message will be added when it comes back through WebSocket
+    if (this.newMessage.trim() && this.selectedUser) {
+      const messageText = this.newMessage;
+      this.newMessage = ''; // Clear input immediately
+      
+      this.webSocketService.sendMessage(
+        this.adminUserId,
+        this.selectedUser.id,
+        messageText
+      );
+      
+      // message will be added when it comes back through WebSocket
+    }
   }
-}
 
   getRoleBadgeText(role: string): string {
     return role === 'ROLE_DRIVER' ? 'Driver' : 'Passenger';
