@@ -1,11 +1,10 @@
-// ChatMessageRequest.java
 package com.tricolori.backend.dto.chat;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import lombok.Data;
 
-public record ChatMessageRequest(
-        @NotBlank
-        @Size(max = 1000)
-        String content
-) {}
+@Data
+public class ChatMessageRequest {
+        private Long senderId;
+        private Long receiverId;
+        private String content;
+}

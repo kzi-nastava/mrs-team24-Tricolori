@@ -110,6 +110,7 @@
               [(ngModel)]="newMessage"
               name="message"
               placeholder="Type your message..."
+              (keydown.enter)="$event.preventDefault(); sendMessage()"
               class="flex-1 px-6 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent"
             />
             <button
