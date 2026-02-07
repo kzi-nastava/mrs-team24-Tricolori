@@ -1,7 +1,9 @@
 package com.tricolori.backend.repository;
 
 import com.tricolori.backend.entity.Message;
+import com.tricolori.backend.entity.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -16,4 +18,23 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "(m.sender.id = :userId2 AND m.recipient.id = :userId1) " +
             "ORDER BY m.createdAt ASC")
     List<Message> findChatMessages(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+
+    @Query("SELECT DISTINCT CASE WHEN m.sender.id = :adminId THEN m.recipient ELSE m.sender END " +
+            "FROM Message m WHERE m.sender.id = :adminId OR m.recipient.id = :adminId")
+    List<Person> findUsersWithChats(@Param("adminId") Long adminId);
+
+    @Query("SELECT m FROM Message m WHERE " +
+            "(m.sender.id = :userId1 AND m.recipient.id = :userId2) OR " +
+            "(m.sender.id = :userId2 AND m.recipient.id = :userId1) " +
+            "ORDER BY m.createdAt DESC LIMIT 1")
+    Message findLastMessageBetweenUsers(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+
+    @Query("SELECT COUNT(m) > 0 FROM Message m WHERE " +
+            "m.recipient.id = :recipientId AND m.sender.id = :senderId AND m.isRead = false")
+    boolean hasUnreadMessages(@Param("recipientId") Long recipientId, @Param("senderId") Long senderId);
+
+    @Modifying
+    @Query("UPDATE Message m SET m.isRead = true, m.readAt = CURRENT_TIMESTAMP WHERE " +
+            "m.recipient.id = :recipientId AND m.sender.id = :senderId AND m.isRead = false")
+    void markMessagesAsRead(@Param("recipientId") Long recipientId, @Param("senderId") Long senderId);
 }

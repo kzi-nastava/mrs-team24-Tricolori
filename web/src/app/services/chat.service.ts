@@ -10,6 +10,17 @@ export interface ChatMessageDTO {
   timestamp: string;
 }
 
+export interface ChatUserDTO {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'ROLE_PASSENGER' | 'ROLE_DRIVER' | 'ROLE_ADMIN';
+  lastMessage: string;
+  lastMessageTime: string;
+  hasUnread: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -27,4 +38,14 @@ export class ChatService {
   checkAdminAvailable(): Observable<{ available: boolean }> {
     return this.http.get<{ available: boolean }>(`${this.apiUrl}/admin-available`);
   }
+
+  getActiveChats(adminId: number): Observable<ChatUserDTO[]> {
+    return this.http.get<ChatUserDTO[]>(`${this.apiUrl}/active-chats`, {
+      params: { adminId: adminId.toString() }
+    });
+  }
+
+  getAdminId(): Observable<{ adminId: number }> {
+  return this.http.get<{ adminId: number }>(`${this.apiUrl}/admin-id`);
+}
 }

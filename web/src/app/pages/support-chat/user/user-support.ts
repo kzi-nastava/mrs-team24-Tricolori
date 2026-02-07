@@ -31,8 +31,8 @@ export class UserSupport implements OnInit, OnDestroy {
   newMessage: string = '';
   showAdminUnavailableDialog: boolean = false;
   
-  private currentUserId: number = 1; // TODO: Get from auth service
-  private adminUserId: number = 0; // TODO: Get admin ID from backend
+  private currentUserId: number = 0;
+  private adminUserId: number = 0;
   private messageSubscription?: Subscription;
 
   constructor(
@@ -41,8 +41,24 @@ export class UserSupport implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadMessages();
-    this.connectWebSocket();
+    // Get current user ID from localStorage
+    const personData = localStorage.getItem('person_data');
+    if (personData) {
+      const person = JSON.parse(personData);
+      this.currentUserId = person.id;
+    }
+
+    // Fetch admin ID and then load messages
+    this.chatService.getAdminId().subscribe({
+      next: (response) => {
+        this.adminUserId = response.adminId;
+        this.loadMessages();
+        this.connectWebSocket();
+      },
+      error: (error) => {
+        console.error('Error fetching admin ID:', error);
+      }
+    });
   }
 
   ngOnDestroy(): void {

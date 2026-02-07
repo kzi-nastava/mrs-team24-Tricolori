@@ -1,6 +1,7 @@
 package com.tricolori.backend.controller;
 
 import com.tricolori.backend.dto.chat.ChatMessageResponse;
+import com.tricolori.backend.dto.chat.ChatUserResponse;
 import com.tricolori.backend.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +29,17 @@ public class ChatRestController {
     public ResponseEntity<Map<String, Boolean>> checkAdminAvailable() {
         boolean available = chatService.isAdminAvailable();
         return ResponseEntity.ok(Map.of("available", available));
+    }
+
+    @GetMapping("/active-chats")
+    public ResponseEntity<List<ChatUserResponse>> getActiveChats(@RequestParam Long adminId) {
+        List<ChatUserResponse> activeChats = chatService.getActiveChatsForAdmin(adminId);
+        return ResponseEntity.ok(activeChats);
+    }
+
+    @GetMapping("/admin-id")
+    public ResponseEntity<Map<String, Long>> getAdminId() {
+        Long adminId = chatService.getAdminId();
+        return ResponseEntity.ok(Map.of("adminId", adminId));
     }
 }
