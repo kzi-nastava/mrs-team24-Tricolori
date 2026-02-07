@@ -185,16 +185,19 @@ export class AdminSupport implements OnInit, OnDestroy {
   }
 
   sendMessage(): void {
-    if (this.newMessage.trim() && this.selectedUser) {
-      this.webSocketService.sendMessage(
-        this.adminUserId,
-        this.selectedUser.id,
-        this.newMessage
-      );
-      
-      this.newMessage = '';
-    }
+  if (this.newMessage.trim() && this.selectedUser) {
+    const messageText = this.newMessage;
+    this.newMessage = ''; // Clear input immediately
+    
+    this.webSocketService.sendMessage(
+      this.adminUserId,
+      this.selectedUser.id,
+      messageText
+    );
+    
+    // message will be added when it comes back through WebSocket
   }
+}
 
   getRoleBadgeText(role: string): string {
     return role === 'ROLE_DRIVER' ? 'Driver' : 'Passenger';

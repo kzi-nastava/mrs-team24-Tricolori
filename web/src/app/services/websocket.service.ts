@@ -14,46 +14,32 @@ export interface ChatMessage {
   providedIn: 'root'
 })
 export class WebSocketService {
-
   private stompClient: Client | null = null;
-
-  private messageSubject =
-    new BehaviorSubject<ChatMessage | null>(null);
-
-  public messages$ =
-    this.messageSubject.asObservable();
+  private messageSubject = new BehaviorSubject<ChatMessage | null>(null);
+  public messages$ = this.messageSubject.asObservable();
 
   constructor() {}
 
   connect(userId: number): void {
-
     this.stompClient = new Client({
-
-      // ✅ Direktan WebSocket (NO SockJS)
       brokerURL: 'ws://localhost:8080/ws',
-
-      // Debug logs (možeš ugasiti u prod)
+      
       debug: (str) => {
         console.log('[STOMP]', str);
       },
-
-      // Auto reconnect
+      
       reconnectDelay: 5000,
-
-      // Heartbeat (best practice)
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
 
       onConnect: () => {
         console.log('✅ WebSocket Connected');
-
+        
         this.stompClient?.subscribe(
           `/topic/chat/${userId}`,
           (message: IMessage) => {
-
-            const chatMessage: ChatMessage =
-              JSON.parse(message.body);
-
+            console.log('📨 Received message:', message.body);
+            const chatMessage: ChatMessage = JSON.parse(message.body);
             this.messageSubject.next(chatMessage);
           }
         );
@@ -72,22 +58,19 @@ export class WebSocketService {
     this.stompClient.activate();
   }
 
-  sendMessage(
-    senderId: number,
-    receiverId: number,
-    content: string
-  ): void {
-
+  sendMessage(senderId: number, receiverId: number, content: string): void {
     if (!this.stompClient?.connected) {
-      console.warn('STOMP not connected');
+      console.warn('⚠️ STOMP not connected');
       return;
     }
 
     const message = {
-      senderId,
-      receiverId,
-      content
+      senderId: senderId,
+      receiverId: receiverId,
+      content: content
     };
+
+    console.log('📤 Sending message:', message);
 
     this.stompClient.publish({
       destination: '/app/chat.send',

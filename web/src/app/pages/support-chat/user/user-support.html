@@ -22,7 +22,7 @@
   <div class="flex-1 overflow-y-auto px-6 py-8 chat-messages">
     <div class="max-w-4xl mx-auto space-y-6">
       
-      @for (message of messages; track message.id) {
+      @for (message of messages; track $index) {
         <div [class]="message.isFromUser ? 'flex justify-end items-start gap-3' : 'flex justify-start items-start gap-3'">
           
           <!-- User Avatar (for support messages) -->
@@ -64,6 +64,7 @@
           [(ngModel)]="newMessage"
           name="message"
           placeholder="Type your message..."
+          (keydown.enter)="$event.preventDefault(); sendMessage()"
           class="flex-1 px-6 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#00acc1] focus:border-transparent"
         />
         <button

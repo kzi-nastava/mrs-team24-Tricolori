@@ -6,6 +6,8 @@ import { heroPaperAirplane, heroUser } from '@ng-icons/heroicons/outline';
 import { WebSocketService, ChatMessage } from '../../../services/websocket.service';
 import { ChatService, ChatMessageDTO } from '../../../services/chat.service';
 import { Subscription } from 'rxjs';
+import { NgZone } from '@angular/core';
+
 
 interface Message {
   id: number;
@@ -37,7 +39,8 @@ export class UserSupport implements OnInit, OnDestroy {
 
   constructor(
     private webSocketService: WebSocketService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -75,7 +78,7 @@ export class UserSupport implements OnInit, OnDestroy {
           timestamp: this.formatTimestamp(new Date(msg.timestamp)),
           isFromUser: msg.senderId === this.currentUserId
         }));
-        setTimeout(() => this.scrollToBottom(), 100);
+        setTimeout(() => this.scrollToBottom(), 300);
       },
       error: (error) => {
         console.error('Error loading messages:', error);
@@ -84,52 +87,75 @@ export class UserSupport implements OnInit, OnDestroy {
   }
 
   connectWebSocket(): void {
-    this.webSocketService.connect(this.currentUserId);
-    
-    this.messageSubscription = this.webSocketService.messages$.subscribe({
+
+  this.webSocketService.connect(this.currentUserId);
+
+  this.messageSubscription =
+    this.webSocketService.messages$.subscribe({
+
       next: (chatMessage: ChatMessage | null) => {
-        if (chatMessage && 
-            (chatMessage.senderId === this.adminUserId || chatMessage.receiverId === this.currentUserId)) {
-          const message: Message = {
-            id: chatMessage.id || this.messages.length + 1,
-            text: chatMessage.content,
-            timestamp: this.formatTimestamp(new Date(chatMessage.timestamp)),
-            isFromUser: chatMessage.senderId === this.currentUserId
-          };
+
+        if (!chatMessage) return;
+
+        this.ngZone.run(() => {
+
+          if (
+            chatMessage.senderId === this.adminUserId ||
+            chatMessage.receiverId === this.currentUserId
+          ) {
+
+            const message: Message = {
+              id: chatMessage.id || Date.now(),
+              text: chatMessage.content,
+              timestamp: this.formatTimestamp(
+                new Date(chatMessage.timestamp)
+              ),
+              isFromUser:
+                chatMessage.senderId === this.currentUserId
+            };
+
+            this.messages = [...this.messages, message];
+
+            setTimeout(() =>
+              this.scrollToBottom(), 100);
+          }
+
+        });
+      }
+
+    });
+}
+
+
+  sendMessage(): void {
+  if (this.newMessage.trim()) {
+    const messageText = this.newMessage;
+    this.newMessage = ''; // clear input immediately
+    
+    // check if admin is available before sending
+    this.chatService.checkAdminAvailable().subscribe({
+      next: (response) => {
+        if (response.available) {
+          // send the message via WebSocket
+          this.webSocketService.sendMessage(
+            this.currentUserId,
+            this.adminUserId,
+            messageText
+          );
           
-          this.messages.push(message);
-          setTimeout(() => this.scrollToBottom(), 100);
+          // wait for WebSocket response
+          // the message will be added when it comes back through the WebSocket subscription
+        } else {
+          // no admin available, show dialog
+          this.showAdminUnavailableDialog = true;
         }
+      },
+      error: (error) => {
+        console.error('Error checking admin availability:', error);
       }
     });
   }
-
-  sendMessage(): void {
-    if (this.newMessage.trim()) {
-      // Check if admin is available before sending
-      this.chatService.checkAdminAvailable().subscribe({
-        next: (response) => {
-          if (response.available) {
-            // Admin available, send the message
-            this.webSocketService.sendMessage(
-              this.currentUserId,
-              this.adminUserId,
-              this.newMessage
-            );
-            
-            this.newMessage = '';
-          } else {
-            // No admin available, show dialog
-            this.showAdminUnavailableDialog = true;
-            this.newMessage = '';
-          }
-        },
-        error: (error) => {
-          console.error('Error checking admin availability:', error);
-        }
-      });
-    }
-  }
+}
 
   closeDialog(): void {
     this.showAdminUnavailableDialog = false;

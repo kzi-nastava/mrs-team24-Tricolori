@@ -19,8 +19,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "ORDER BY m.createdAt ASC")
     List<Message> findChatMessages(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
-    @Query("SELECT DISTINCT CASE WHEN m.sender.id = :adminId THEN m.recipient ELSE m.sender END " +
-            "FROM Message m WHERE m.sender.id = :adminId OR m.recipient.id = :adminId")
+    @Query("SELECT DISTINCT m.sender FROM Message m WHERE m.recipient.id = :adminId AND m.sender.id != :adminId " +
+            "UNION " +
+            "SELECT DISTINCT m.recipient FROM Message m WHERE m.sender.id = :adminId AND m.recipient.id != :adminId")
     List<Person> findUsersWithChats(@Param("adminId") Long adminId);
 
     @Query("SELECT m FROM Message m WHERE " +
