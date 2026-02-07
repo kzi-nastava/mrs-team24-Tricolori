@@ -37,7 +37,7 @@ public class EmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            log.info("Activation email sent to: {}", toEmail);
+            log.info("Activation email sent to {{}}", toEmail);
 
         } catch (MessagingException e) {
             log.error("Failed to send activation email to: {}", toEmail, e);

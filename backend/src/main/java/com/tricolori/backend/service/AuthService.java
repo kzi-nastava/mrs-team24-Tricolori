@@ -4,6 +4,7 @@ import com.tricolori.backend.dto.auth.*;
 import com.tricolori.backend.dto.profile.ChangeDriverStatusRequest;
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.enums.PersonRole;
+import com.tricolori.backend.exception.EmailAlreadyExistsException;
 import com.tricolori.backend.repository.*;
 import com.tricolori.backend.dto.profile.PersonDto;
 import com.tricolori.backend.mapper.PersonMapper;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.aspectj.lang.annotation.AfterReturning;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -102,7 +104,7 @@ public class AuthService {
     public void registerPassenger(RegisterPassengerRequest request, MultipartFile pfp) {
 
         if (personRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new EmailAlreadyExistsException("Email already registered");
         }
 
         Passenger passenger = new Passenger();
@@ -115,6 +117,8 @@ public class AuthService {
         passenger.setAccountStatus(AccountStatus.WAITING_FOR_ACTIVATION);
 
         Passenger savedPassenger = passengerRepository.save(passenger);
+
+        log.info("Registered passenger with email {{}}", savedPassenger.getEmail());
 
         if (pfp != null) {
             String pfpUrl = cloudinaryService.uploadProfilePicture(pfp, savedPassenger.getId());
@@ -232,6 +236,8 @@ public class AuthService {
 
         token.setUsed(true);
         token.setActivatedAt(java.time.LocalDateTime.now());
+
+        log.info("Account with email {{}} successfully activated", person.getEmail());
     }
 
     @Transactional
@@ -272,6 +278,8 @@ public class AuthService {
                     resetToken.getToken()
             );
         }
+
+        log.info("Password reset processed for email {{}}", request.email());
     }
 
     // Get the authenticated user's ID from the security context
