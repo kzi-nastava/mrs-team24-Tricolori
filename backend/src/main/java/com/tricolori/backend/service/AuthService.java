@@ -57,6 +57,7 @@ public class AuthService {
         );
 
         Person person = (Person) authentication.getPrincipal();
+        log.info("{} with ID {{}} logged in.", person.getRole().name().substring(5), person.getId());
 
         boolean isDriver =  person.getRole().equals(PersonRole.ROLE_DRIVER);
         if (isDriver) {
@@ -250,6 +251,8 @@ public class AuthService {
 
         personRepository.save(person);
         passwordResetTokenRepository.save(resetToken);
+
+        log.info("Password reset successfully for email: {}", person.getEmail());
     }
 
     @Transactional
@@ -269,8 +272,6 @@ public class AuthService {
                     resetToken.getToken()
             );
         }
-
-        log.info("Password reset processed for email: {}", request.email());
     }
 
     // Get the authenticated user's ID from the security context

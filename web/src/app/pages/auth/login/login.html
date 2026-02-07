@@ -13,20 +13,6 @@
       </a>!
     </p>
 
-    <!-- Global Error Message -->
-    @if (errorMessage) {
-      <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4 text-left text-sm">
-        {{ errorMessage }}
-      </div>
-    }
-
-    <!-- Global Success Message -->
-    @if (successMessage) {
-      <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-4 text-left text-sm">
-        {{ successMessage }}
-      </div>
-    }
-
     <!-- Form -->
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mt-4 text-left font-sans">
 

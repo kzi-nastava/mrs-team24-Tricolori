@@ -11,7 +11,7 @@ export const strongPasswordValidator: ValidatorFn = (control: AbstractControl): 
 }
 
 export const passwordMatchValidator: ValidatorFn = (control: AbstractControl) : ValidationErrors | null => {
-  const password = control.get('password')?.value;
+  const password = control.get('newPassword')?.value;
   const confirmedPassword = control.get('confirmedPassword')?.value;
 
   if (!password || !confirmedPassword) {
