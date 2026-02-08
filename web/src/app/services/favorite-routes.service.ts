@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { FavoriteRoute } from '../model/route';
 import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -11,12 +12,19 @@ export class FavoriteRoutesService {
   private http = inject(HttpClient)
   private API_URL = `${environment.apiUrl}/favorite-routes`;
 
-  private favoriteRoutes_ = signal<FavoriteRoute[]>([]);
-  public favoriteRoutes = this.favoriteRoutes_.asReadonly();
+  addFavoriteRoute(routeId: number, title: string): Observable<any> {
+    const body = { routeId, title };
+    return this.http.post(`${this.API_URL}/add`, body);
+  }
 
-  getFavoriteRoutes(): void {
-    this.http.get<any[]>(`${this.API_URL}`).pipe(
+  removeFavoriteRoute(routeId: number): Observable<any> {
+    return this.http.delete(`${this.API_URL}/remove/${routeId}`)
+  }
+
+  getFavoriteRoutes(): Observable<FavoriteRoute[]> {
+    return this.http.get<any[]>(`${this.API_URL}`).pipe(
       map(backendData => backendData.map(item => ({
+        routeId: item.routeId,
         title: item.title,
         route: {
           pickup: {
@@ -42,9 +50,6 @@ export class FavoriteRoutesService {
           }))
         }
       } as FavoriteRoute)))
-    ).subscribe({
-      next: (routes) => this.favoriteRoutes_.set(routes),
-      error: (err) => console.error("Greška pri dobavljanju ruta:", err)
-    });
+    )
   }
 }
