@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef} from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,9 +10,12 @@ import * as L from 'leaflet';
 import { RideService } from '../../../services/ride.service';
 import { MapService } from '../../../services/map.service';
 import { PassengerRideHistoryResponse } from '../../../model/ride-history';
+import { FavoriteRoutesService } from '../../../services/favorite-routes.service';
+import { FavoriteRoute } from '../../../model/route';
 
 interface PassengerRide {
   id: number;
+  routeId: number;
   route: string;
   startDate: string;
   endDate: string;
@@ -80,15 +83,52 @@ export class PassengerHistory implements OnInit {
   statusFilter: string = 'all';
   searchQuery: string = '';
 
+  favoriteRoutes = signal<FavoriteRoute[]>([]);
+
   constructor(
     private router: Router,
     private rideService: RideService,
+    private favoriteRouteService: FavoriteRoutesService,
     private mapService: MapService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadRideHistory();
+    this.loadFavoriteRoutes();
+  }
+
+  // ================= favorite route =================
+
+  loadFavoriteRoutes(): void {
+    this.favoriteRouteService.getFavoriteRoutes().subscribe({
+      next: (routes) => this.favoriteRoutes.set(routes),
+      error: (err) => console.error("Greška pri učitavanju favorita:", err)
+    });
+  }
+
+  isFavorite(ride: PassengerRide): boolean {
+    if (!ride) return false;
+    return this.favoriteRoutes().some(fav => fav.routeId === ride.routeId);
+  }
+
+  toggleFavorite(ride: PassengerRide): void {
+    if (!ride) return;
+
+    if (this.isFavorite(ride)) {
+      const fav = this.favoriteRoutes().find(f => f.routeId === ride.routeId);
+      if (fav) {
+        this.favoriteRouteService.removeFavoriteRoute(fav.routeId).subscribe({
+          next: () => this.loadFavoriteRoutes(),
+          error: (err) => console.error("Greška pri brisanju:", err)
+        });
+      }
+    } else {
+      this.favoriteRouteService.addFavoriteRoute(ride.routeId, "My Favorite Ride").subscribe({
+        next: () => this.loadFavoriteRoutes(),
+        error: (err) => console.error("Greška pri dodavanju:", err)
+      });
+    }
   }
 
   // ================= load history =================
@@ -197,6 +237,7 @@ export class PassengerHistory implements OnInit {
 
       return {
         id: ride.id,
+        routeId: ride.routeId,
         route: this.formatRoute(ride.pickupAddress, ride.destinationAddress),
         startDate: start.toISOString().split('T')[0],
         endDate: end ? end.toISOString().split('T')[0] : start.toISOString().split('T')[0],
@@ -289,6 +330,7 @@ export class PassengerHistory implements OnInit {
 
     return {
       id: detail.id,
+      routeId: detail.routeId,
       route: this.formatRoute(detail.pickupAddress, detail.dropoffAddress),
       startDate: (started || created).toISOString().split('T')[0],
       endDate: (completed || created).toISOString().split('T')[0],
@@ -335,11 +377,6 @@ export class PassengerHistory implements OnInit {
     const within72Hours = !this.isRatingExpired(completedAt);
 
     return isCompleted && hasNoRating && within72Hours;
-  }
-
-  addToFavoriteRoutes(ride: PassengerRide): void {
-    // DELETE AFTER TESTING
-    console.log(`Adding ride ${ride.id} to favorite routes (to-do).`);
   }
 
   // ================= map =================

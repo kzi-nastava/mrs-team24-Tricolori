@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PassengerRideDetailResponse {
     private Long id;
+    private Long routeId;
     private String driverName;
     private String driverPhone;
     private String vehicleModel;
