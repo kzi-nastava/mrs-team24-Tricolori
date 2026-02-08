@@ -14,6 +14,7 @@ navigationRuntime = "2.9.6"
 osmdroid = "6.1.18"
 osmbonuspack = "6.9.0"
 preference = "1.2.1"
+glide = "4.16.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -33,6 +34,8 @@ osmbonuspack = { module = "com.github.MKergall:osmbonuspack", version.ref = "osm
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version = "4.12.0" }
 preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
