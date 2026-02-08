@@ -40,7 +40,7 @@ public class RideController {
     }
 
     @PutMapping("/cancel")
-    @PreAuthorize("hasRole('DRIVER')")
+    @PreAuthorize("hasAnyRole('DRIVER', 'PASSENGER')")
     public ResponseEntity<Void> cancelRide(
             @RequestBody CancelRideRequest request,
             @AuthenticationPrincipal Person person
