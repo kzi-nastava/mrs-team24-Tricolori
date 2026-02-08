@@ -11,6 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -169,6 +170,7 @@ public class NotificationService {
         saveAndSend(notification, passengerEmail);
     }
 
+    // TODO: implement scheduling for reminders for rating and upcoming rides
     // RATING_REMINDER
     public NotificationDto sendRatingReminderNotification(String passengerEmail, Long rideId,
                                                           String driverName, int hoursRemaining) {
@@ -205,20 +207,8 @@ public class NotificationService {
 
     // ==================== DRIVER NOTIFICATIONS ====================
 
-    // NEW_RIDE_REQUEST
-    public NotificationDto sendNewRideRequestNotification(String driverEmail, Long rideId,
-                                                          String passengerName, String pickup,
-                                                          String dropoff, double estimatedFare, double distance) {
-        String content = String.format("%s has requested a ride from %s to %s. Distance: %.1f km. Estimated fare: %.2f RSD.",
-                passengerName, pickup, dropoff, distance, estimatedFare);
-
-        Notification notification = new Notification(driverEmail, content, NotificationType.NEW_RIDE_REQUEST, rideId);
-        notification.setPassengerName(passengerName);
-        notification.setActionUrl("/driver/ride-requests/" + rideId);
-        return saveAndSend(notification, driverEmail);
-    }
-
     // UPCOMING_RIDE_REMINDER
+    // TODO: implement when scheduling is added
     public NotificationDto sendUpcomingRideReminderNotification(String driverEmail, Long rideId,
                                                                 int minutesUntilPickup, String pickupLocation,
                                                                 String passengerName) {
@@ -232,16 +222,25 @@ public class NotificationService {
     }
 
     // RATING_RECEIVED
-    public NotificationDto sendRatingReceivedNotification(String driverEmail, Long rideId,
-                                                          int stars, String passengerName, String comment) {
-        String content = String.format("%s rated you %d stars%s Keep up the great work!",
-                passengerName, stars,
-                comment != null && !comment.isEmpty() ? " with the comment: \"" + comment + ".\"" : ".");
+    public void sendRatingReceivedNotification(String driverEmail, Long rideId, Integer driverStars, Integer vehicleStars, String passengerName, String comment)
+    {
+
+        List<String> parts = new ArrayList<>();
+        if (driverStars != null)
+            parts.add("you " + driverStars + " stars");
+        if (vehicleStars != null)
+            parts.add("the vehicle " + vehicleStars + " stars");
+
+        String ratingPart = parts.isEmpty() ? "your ride" : String.join(" and ", parts);
+
+        String content = passengerName + " rated " + ratingPart
+                + (comment != null && !comment.isBlank() ? " with the comment: \"" + comment + "\"" : "") + ". Keep up the great work!";
 
         Notification notification = new Notification(driverEmail, content, NotificationType.RATING_RECEIVED, rideId);
         notification.setPassengerName(passengerName);
-        return saveAndSend(notification, driverEmail);
+        saveAndSend(notification, driverEmail);
     }
+
 
     // RIDE_STARTED
     public void sendRideStartedNotification(String driverEmail, Long rideId) {
@@ -267,40 +266,39 @@ public class NotificationService {
     }
 
     // NEW_REGISTRATION
-    public NotificationDto sendNewRegistrationNotification(String adminEmail, String driverName,
-                                                           String vehicleInfo) {
-        String content = String.format("New driver %s submitted registration documents for review. Vehicle: %s. Background check pending.",
-                driverName, vehicleInfo);
+    public void sendNewRegistrationNotification(String adminEmail, String driverName,
+                                                String vehicleModel) {
+        String content = String.format("New driver %s has been registered. Vehicle: %s. Wish him a warm welcome!",
+                driverName, vehicleModel);
 
         Notification notification = new Notification(adminEmail, content, NotificationType.NEW_REGISTRATION, null);
         notification.setDriverName(driverName);
-        notification.setActionUrl("/admin/pending-registrations");
-        return saveAndSend(notification, adminEmail);
+        saveAndSend(notification, adminEmail);
     }
 
     // PROFILE_CHANGE_REQUEST
-    public NotificationDto sendProfileChangeRequestNotification(String adminEmail, String driverName,
-                                                                Long driverId) {
-        String content = String.format("Driver %s has requested profile changes. Please review and approve/reject.",
-                driverName);
+    public void sendProfileChangeRequestNotification(String adminEmail, String driverName,
+                                                     Long driverId) {
+        String content = String.format("Driver %s with id %d has requested profile changes. Please review and approve/reject.",
+                driverName, driverId);
 
         Notification notification = new Notification(adminEmail, content,
                 NotificationType.PROFILE_CHANGE_REQUEST, null);
         notification.setDriverName(driverName);
-        notification.setActionUrl("/admin/driver-requests/" + driverId);
-        return saveAndSend(notification, adminEmail);
+        notification.setActionUrl("/admin/driver-requests/");
+        saveAndSend(notification, adminEmail);
     }
 
     // ==================== CHAT NOTIFICATIONS ====================
 
     // NEW_CHAT_MESSAGE
-    public NotificationDto sendNewChatMessageNotification(String email, String senderName, boolean isAdmin) {
+    public void sendNewChatMessageNotification(String email, String senderName, boolean isAdmin) {
         String content = String.format("New message from %s in support chat.",
                 isAdmin ? "Admin " + senderName : senderName);
 
         Notification notification = new Notification(email, content,
                 NotificationType.NEW_CHAT_MESSAGE, null);
         notification.setActionUrl("/chat");
-        return saveAndSend(notification, email);
+        saveAndSend(notification, email);
     }
 }

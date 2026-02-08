@@ -11,17 +11,16 @@ public enum NotificationType {
     RIDE_REMINDER,
 
     // Driver notifications
-    NEW_RIDE_REQUEST,
     UPCOMING_RIDE_REMINDER,
-    RATING_RECEIVED,
-    RIDE_STARTED,
+    RATING_RECEIVED, // ok
+    RIDE_STARTED, // ok
 
     // Admin notifications
     RIDE_REPORT, // ok
-    NEW_REGISTRATION,
-    PROFILE_CHANGE_REQUEST,
+    NEW_REGISTRATION, //ok
+    PROFILE_CHANGE_REQUEST, // ok
 
-    NEW_CHAT_MESSAGE,
+    NEW_CHAT_MESSAGE, //ok
 
     // General
     GENERAL
