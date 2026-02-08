@@ -178,4 +178,16 @@
 
     </fragment>
 
+    <fragment
+        android:id="@+id/pricelistFragment"
+        android:name="com.example.mobile.ui.fragments.PricelistFragment"
+        android:label="Pricelist"
+        tools:layout="@layout/fragment_pricelist">
+
+        <action
+            android:id="@+id/action_pricelist_to_home"
+            app:destination="@id/homeFragment" />
+
+    </fragment>
+
 </navigation>

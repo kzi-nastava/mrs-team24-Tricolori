@@ -134,6 +134,9 @@ public class LoginFragment extends Fragment {
             ((MainActivity) getActivity()).updateMenuVisibility();
         }
         Toast.makeText(getContext(), "Welcome back!", Toast.LENGTH_SHORT).show();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).updateNavigationHeader();
+        }
         navigateBasedOnRole(response.personDto.role.name());
     }
 

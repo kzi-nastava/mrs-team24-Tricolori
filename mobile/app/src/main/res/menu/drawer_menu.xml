@@ -28,11 +28,11 @@
 <!--            android:icon="@drawable/ic_notifications"-->
 <!--            android:title="Notifications" />-->
 
-<!--        &lt;!&ndash; Pricelist - admin only &ndash;&gt;-->
-<!--        <item-->
-<!--            android:id="@+id/pricelistFragment"-->
-<!--            android:icon="@drawable/ic_pricelist"-->
-<!--            android:title="Pricelist" />-->
+        <!-- Pricelist - admin only -->
+        <item
+            android:id="@+id/pricelistFragment"
+            android:icon="@drawable/ic_pricelist"
+            android:title="Pricelist" />
 
     <item
         android:id="@+id/userProfileFragment"
