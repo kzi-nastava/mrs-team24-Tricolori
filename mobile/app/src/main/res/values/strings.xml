@@ -33,6 +33,7 @@
     <string name="profile_picture_submit">Upload Picture</string>
     <string name="profile_picture_icon_desc">Profile icon</string>
     <string name="profile_user_picture_desc">User picture</string>
+    <string name="profile_user_picture_size_error">File is too large (max 5MB)</string>
     <!-- Personal information section -->
     <string name="profile_personal">Personal Information</string>
     <string name="profile_personal_desc">Update your personal details</string>
