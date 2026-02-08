@@ -91,6 +91,55 @@ public class EmailService {
         }
     }
 
+    public void sendLinkedPassengerEmail(String toEmail, String firstName, String organizerName,
+                                         String from, String to, String scheduledTime, Long rideId) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("You've Been Added to a Shared Ride - Cuber App");
+
+            String rideDetailsLink = frontendUrl + "/passenger/ride-details/" + rideId;
+
+            String htmlContent = buildLinkedPassengerEmailHtml(firstName, organizerName, from, to,
+                    scheduledTime, rideDetailsLink);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Linked passenger email sent to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            log.error("Failed to send linked passenger email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send linked passenger email", e);
+        }
+    }
+
+    public void sendRideReminderEmail(String toEmail, String firstName, int minutesUntilPickup,
+                                      String from, String to, Long rideId) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject(String.format("Ride Reminder: %d Minutes Until Pickup - Cuber App", minutesUntilPickup));
+
+            String trackingLink = frontendUrl + "/passenger/ride-tracking/" + rideId;
+
+            String htmlContent = buildRideReminderEmailHtml(firstName, minutesUntilPickup, from, to, trackingLink);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Ride reminder email sent to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            log.error("Failed to send ride reminder email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send ride reminder email", e);
+        }
+    }
+
     private String buildPasswordResetEmailHtml(String firstName, String resetLink) {
         return """
         <!DOCTYPE html>
@@ -227,5 +276,145 @@ public class EmailService {
             </body>
             </html>
             """.formatted(firstName, activationLink, activationLink);
+    }
+
+    private String buildLinkedPassengerEmailHtml(String firstName, String organizerName,
+                                                 String from, String to, String scheduledTime,
+                                                 String rideDetailsLink) {
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #00acc1 0%%, #0097a7 100%%); 
+                          color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+                .button { display: inline-block; padding: 12px 30px; background: #00acc1; 
+                          color: white; text-decoration: none; border-radius: 5px; 
+                          font-weight: bold; margin: 20px 0; }
+                .button:hover { background: #008ba3; }
+                .ride-details { background: white; padding: 20px; border-radius: 5px; 
+                               margin: 20px 0; border-left: 4px solid #00acc1; }
+                .detail-row { margin: 10px 0; }
+                .detail-label { font-weight: bold; color: #00acc1; }
+                .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🚗 You've Been Added to a Ride!</h1>
+                </div>
+                <div class="content">
+                    <h2>Hi %s,</h2>
+                    <p><strong>%s</strong> has added you as a passenger to their upcoming ride.</p>
+                    
+                    <div class="ride-details">
+                        <h3>Ride Details</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">📍 Pickup Location:</span> %s
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">🎯 Destination:</span> %s
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">🕐 Scheduled Time:</span> %s
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">👥 Organized By:</span> %s
+                        </div>
+                    </div>
+                    
+                    <p>You can track your ride and see all the details by clicking the button below:</p>
+                    
+                    <center>
+                        <a href="%s" class="button">View Ride Details</a>
+                    </center>
+                    
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; color: #00acc1;">%s</p>
+                    
+                    <p>We'll send you another notification when your ride is about to start!</p>
+                    
+                    <p>Safe travels,<br>The Cuber App Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated email. Please do not reply to this message.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """.formatted(firstName, organizerName, from, to, scheduledTime, organizerName,
+                rideDetailsLink, rideDetailsLink);
+    }
+
+    private String buildRideReminderEmailHtml(String firstName, int minutesUntilPickup,
+                                              String from, String to, String trackingLink) {
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #ff9800 0%%, #f57c00 100%%); 
+                          color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+                .button { display: inline-block; padding: 12px 30px; background: #ff9800; 
+                          color: white; text-decoration: none; border-radius: 5px; 
+                          font-weight: bold; margin: 20px 0; }
+                .button:hover { background: #f57c00; }
+                .timer { font-size: 48px; font-weight: bold; color: #ff9800; 
+                        text-align: center; margin: 20px 0; }
+                .ride-info { background: white; padding: 20px; border-radius: 5px; 
+                            margin: 20px 0; border-left: 4px solid #ff9800; }
+                .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>⏰ Ride Starting Soon!</h1>
+                </div>
+                <div class="content">
+                    <h2>Hi %s,</h2>
+                    <p>This is a friendly reminder that your scheduled ride is starting soon!</p>
+                    
+                    <div class="timer">
+                        %d minutes
+                    </div>
+                    <p style="text-align: center; color: #666; margin-top: -10px;">until pickup</p>
+                    
+                    <div class="ride-info">
+                        <div style="margin: 10px 0;">
+                            <strong>📍 Pickup:</strong> %s
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>🎯 Destination:</strong> %s
+                        </div>
+                    </div>
+                    
+                    <p><strong>Please be ready at your pickup location.</strong> Your driver will arrive shortly!</p>
+                    
+                    <p>Track your ride in real-time:</p>
+                    
+                    <center>
+                        <a href="%s" class="button">Track My Ride</a>
+                    </center>
+                    
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; color: #ff9800;">%s</p>
+                    
+                    <p>Have a great ride!<br>The Cuber App Team</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated reminder. Please do not reply to this message.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """.formatted(firstName, minutesUntilPickup, from, to, trackingLink, trackingLink);
     }
 }
