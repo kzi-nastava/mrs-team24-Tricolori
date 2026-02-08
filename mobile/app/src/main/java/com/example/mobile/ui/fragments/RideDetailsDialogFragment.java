@@ -21,6 +21,7 @@ import com.example.mobile.network.service.RideService;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.views.MapView;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.api.IMapController;
@@ -42,6 +43,7 @@ import retrofit2.Callback;
 public class RideDetailsDialogFragment extends DialogFragment {
 
     private static final String ARG_RIDE_ID = "ride_id";
+    private static final String TAG = "RideDetailsDialog";
 
     public static RideDetailsDialogFragment newInstance(Long rideId) {
         RideDetailsDialogFragment fragment = new RideDetailsDialogFragment();
@@ -93,14 +95,14 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
                             DriverRideDetailResponse dto = response.body();
 
-                            Log.d("RideDTO","createdAt=" + dto.getCreatedAt());
-                            Log.d("RideDTO","startedAt=" + dto.getStartedAt());
-                            Log.d("RideDTO","completedAt=" + dto.getCompletedAt());
+                            Log.d(TAG,"createdAt=" + dto.getCreatedAt());
+                            Log.d(TAG,"startedAt=" + dto.getStartedAt());
+                            Log.d(TAG,"completedAt=" + dto.getCompletedAt());
 
                             bindData(view, dto);
 
                         } else {
-                            Log.e("RideDetails","Error code: " + response.code());
+                            Log.e(TAG,"Error code: " + response.code());
                         }
                     }
 
@@ -108,7 +110,7 @@ public class RideDetailsDialogFragment extends DialogFragment {
                     public void onFailure(
                             Call<DriverRideDetailResponse> call,
                             Throwable t) {
-                        Log.e("RideDetails","FAILURE", t);
+                        Log.e(TAG,"FAILURE", t);
                     }
                 });
     }
@@ -209,11 +211,14 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
         MapView map = view.findViewById(R.id.rideMap);
 
+        // Check if we have coordinates
         if (dto.getPickupLatitude()==null || dto.getDropoffLatitude()==null) {
             map.setVisibility(View.GONE);
+            Log.w(TAG, "No coordinates available for map");
             return;
         }
 
+        map.setVisibility(View.VISIBLE);
         map.setMultiTouchControls(true);
 
         GeoPoint start = new GeoPoint(
@@ -226,30 +231,34 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 dto.getDropoffLongitude()
         );
 
+        // Add pickup marker
         Marker mStart = new Marker(map);
         mStart.setPosition(start);
         mStart.setTitle("Pickup");
+        mStart.setSnippet(safe(dto.getPickupAddress()));
         mStart.setIcon(
                 getResources().getDrawable(R.drawable.ic_marker_start)
         );
         mStart.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         map.getOverlays().add(mStart);
 
-
+        // Add dropoff marker
         Marker mEnd = new Marker(map);
         mEnd.setPosition(end);
         mEnd.setTitle("Dropoff");
+        mEnd.setSnippet(safe(dto.getDropoffAddress()));
         mEnd.setIcon(
                 getResources().getDrawable(R.drawable.ic_marker_end)
         );
         mEnd.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         map.getOverlays().add(mEnd);
 
-
+        // Initial map positioning (will be adjusted after route is drawn)
         IMapController controller = map.getController();
         controller.setZoom(13.0);
         controller.setCenter(start);
 
+        // Draw route and adjust bounds
         drawRoute(map, start, end);
     }
 
@@ -269,9 +278,21 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 Request request = new Request.Builder().url(url).build();
                 Response response = client.newCall(request).execute();
 
-                if (!response.isSuccessful()) return;
+                if (!response.isSuccessful()) {
+                    Log.e(TAG, "Route request failed: " + response.code());
+                    // Draw straight line as fallback
+                    drawFallbackLine(map, start, end);
+                    return;
+                }
 
-                JSONObject json = new JSONObject(response.body().string());
+                String responseBody = response.body().string();
+                JSONObject json = new JSONObject(responseBody);
+
+                if (!json.has("routes") || json.getJSONArray("routes").length() == 0) {
+                    Log.e(TAG, "No routes in response");
+                    drawFallbackLine(map, start, end);
+                    return;
+                }
 
                 JSONArray coords =
                         json.getJSONArray("routes")
@@ -281,8 +302,9 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
                 List<GeoPoint> pts = new ArrayList<>();
 
-                for(int i=0;i<coords.length();i++){
+                for(int i=0; i<coords.length(); i++){
                     JSONArray c = coords.getJSONArray(i);
+                    // GeoJSON format: [longitude, latitude]
                     pts.add(new GeoPoint(c.getDouble(1), c.getDouble(0)));
                 }
 
@@ -293,14 +315,53 @@ public class RideDetailsDialogFragment extends DialogFragment {
                             getResources().getColor(R.color.base_800)
                     );
                     line.setWidth(8f);
-                    map.getOverlays().add(line);
+                    map.getOverlays().add(0, line); // Add at index 0 so it's below markers
+
+                    // Adjust map bounds to show entire route with padding
+                    BoundingBox boundingBox = BoundingBox.fromGeoPoints(pts);
+                    map.post(() -> map.zoomToBoundingBox(boundingBox, true, 100));
+
                     map.invalidate();
+                    Log.d(TAG, "Route drawn successfully with " + pts.size() + " points");
                 });
 
             } catch(Exception e){
-                e.printStackTrace();
+                Log.e(TAG, "Error drawing route", e);
+                // Draw fallback line on error
+                drawFallbackLine(map, start, end);
             }
         }).start();
+    }
+
+    /**
+     * Draw a simple straight line between start and end points as fallback
+     */
+    private void drawFallbackLine(MapView map, GeoPoint start, GeoPoint end) {
+        requireActivity().runOnUiThread(() -> {
+            List<GeoPoint> pts = new ArrayList<>();
+            pts.add(start);
+            pts.add(end);
+
+            Polyline line = new Polyline();
+            line.setPoints(pts);
+            line.setColor(getResources().getColor(R.color.base_800));
+            line.setWidth(8f);
+            line.getOutlinePaint().setStrokeCap(android.graphics.Paint.Cap.ROUND);
+
+            map.getOverlays().add(0, line);
+
+            // Adjust bounds to show both points
+            BoundingBox boundingBox = new BoundingBox(
+                    Math.max(start.getLatitude(), end.getLatitude()),
+                    Math.max(start.getLongitude(), end.getLongitude()),
+                    Math.min(start.getLatitude(), end.getLatitude()),
+                    Math.min(start.getLongitude(), end.getLongitude())
+            );
+            map.post(() -> map.zoomToBoundingBox(boundingBox, true, 100));
+
+            map.invalidate();
+            Log.d(TAG, "Fallback line drawn");
+        });
     }
 
     private String safe(String s){
@@ -312,5 +373,23 @@ public class RideDetailsDialogFragment extends DialogFragment {
         for(int i=0;i<5;i++)
             s.append(i<r?"★":"☆");
         return s.toString();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MapView map = getView() != null ? getView().findViewById(R.id.rideMap) : null;
+        if (map != null) {
+            map.onResume();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        MapView map = getView() != null ? getView().findViewById(R.id.rideMap) : null;
+        if (map != null) {
+            map.onPause();
+        }
     }
 }

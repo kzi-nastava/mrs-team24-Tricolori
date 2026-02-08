@@ -1,6 +1,6 @@
 package com.example.mobile.ui.fragments;
 
-import android.annotation.SuppressLint;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,28 +23,33 @@ import com.example.mobile.dto.profile.ProfileRequest;
 import com.example.mobile.dto.profile.ProfileResponse;
 import com.example.mobile.dto.vehicle.VehicleDto;
 import com.example.mobile.network.RetrofitClient;
+import com.example.mobile.utils.FileUtils;
 
+import java.io.File;
+import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class UserProfileFragment extends Fragment {
     private EditText etFirstName, etLastName, etPhone, etAddress;
-    // Vehicle information & activity:
     private TextView tvEmail, tvModel, tvType, tvPlate, tvSeats, tvBabies, tvPets, tvActivity, tvProgressText;
     private ProgressBar progressBar;
     private View vehicleCard, activityCard;
-
     private Button btnUpdate;
-    // Current profile state:
-    private ProfileResponse originalProfile;
 
-    public UserProfileFragment() {
-    }
+    private Uri selectedFileUri = null;
+    private ProfileResponse originalProfile;
+    private ProfilePictureFragment pfpFragment;
+
+    public UserProfileFragment() {}
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_user_profile, container, false);
     }
 
@@ -52,50 +57,143 @@ public class UserProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Connect UI components:
-        etFirstName = view.findViewById(R.id.profile_first_name);
-        etLastName = view.findViewById(R.id.profile_last_name);
-        etPhone = view.findViewById(R.id.profile_phone);
-        etAddress = view.findViewById(R.id.profile_address);
-        tvEmail = view.findViewById(R.id.profile_user_email);
-        tvModel = view.findViewById(R.id.profile_vehicle_model);
-        tvType = view.findViewById(R.id.profile_vehicle_type);
-        tvPlate = view.findViewById(R.id.profile_vehicle_plate);
-        tvSeats = view.findViewById(R.id.profile_vehicle_seats);
-        tvBabies = view.findViewById(R.id.profile_vehicle_babies);
-        tvPets = view.findViewById(R.id.profile_vehicle_pets);
-        tvActivity = view.findViewById(R.id.profile_driver_activity);
+        initViews(view);
+        loadProfileData();
 
-        progressBar = view.findViewById(R.id.progressBar);
-        tvProgressText = view.findViewById(R.id.progressText);
+        btnUpdate.setOnClickListener(v -> handleProfileUpdate());
 
-        vehicleCard = view.findViewById(R.id.profile_vehicle_card);
-        activityCard = view.findViewById(R.id.profile_activity_card);
+        Button btnChangePassword = view.findViewById(R.id.profile_btn_change_password);
+        btnChangePassword.setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.action_profile_to_change_password));
 
+        pfpFragment = (ProfilePictureFragment) getChildFragmentManager()
+                .findFragmentById(R.id.pfp_fragment_container);
+
+        if (pfpFragment != null) {
+            pfpFragment.setOnFileSelectedListener(uri -> {
+                this.selectedFileUri = uri;
+                checkIfDataChanged();
+            });
+        }
+    }
+
+    private void loadProfileData() {
         RetrofitClient.getProfileService(requireContext())
-                .getUserProfile().enqueue(new Callback<>() {
+        .getUserProfile().enqueue(new Callback<ProfileResponse>() {
             @Override
             public void onResponse(@NonNull Call<ProfileResponse> call, @NonNull Response<ProfileResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     populateFields(response.body());
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<ProfileResponse> call, @NonNull Throwable t) {
-                Toast.makeText(getContext(), "Greska: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Greška: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        btnUpdate = view.findViewById(R.id.profile_update_profile);
-        setChangeTrackers();
-        btnUpdate.setOnClickListener(v -> handleProfileUpdate());
+    private void handleProfileUpdate() {
+        btnUpdate.setEnabled(false);
 
-        // Navigate to change password:
-        Button btnChangePassword = view.findViewById(R.id.profile_btn_change_password);
-        btnChangePassword.setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.action_profile_to_change_password);
+        if (selectedFileUri != null) {
+            uploadImageAndThenUpdate();
+        } else {
+            sendUpdateRequest(originalProfile.getPfp());
+        }
+    }
+
+    private void uploadImageAndThenUpdate() {
+        File file = FileUtils.getFileFromUri(requireContext(), selectedFileUri);
+        if (file == null) return;
+
+        RequestBody requestFile = RequestBody.create(
+                MediaType.parse(requireContext().getContentResolver().getType(selectedFileUri)),
+                file
+        );
+        MultipartBody.Part body = MultipartBody.Part.createFormData("pfp", file.getName(), requestFile);
+
+        RetrofitClient.getProfileService(requireContext())
+        .uploadPfp(body).enqueue(new Callback<Map<String, String>>() {
+            @Override
+            public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    sendUpdateRequest(response.body().get("url"));
+                } else {
+                    btnUpdate.setEnabled(true);
+                    Toast.makeText(getContext(), "Greška pri uploadu slike", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<Map<String, String>> call, Throwable t) {
+                btnUpdate.setEnabled(true);
+                Toast.makeText(getContext(), "Mrežna greška pri uploadu", Toast.LENGTH_SHORT).show();
+            }
         });
+    }
+
+    private void sendUpdateRequest(String pfpUrl) {
+        ProfileRequest request = new ProfileRequest(
+            etFirstName.getText().toString().trim(),
+            etLastName.getText().toString().trim(),
+            etAddress.getText().toString().trim(),
+            etPhone.getText().toString().trim(),
+            pfpUrl
+        );
+
+        if (isDriver()) {
+            RetrofitClient.getChangeDataRequestService(requireContext())
+            .createRequest(request).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                    btnUpdate.setEnabled(true);
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Zahtev poslat adminu!", Toast.LENGTH_LONG).show();
+                        resetSelection(); // Kao pfpPicker.reset() na frontu
+                        populateFields(originalProfile);
+                    } else {
+                        Toast.makeText(getContext(), "Već imate zahtev na čekanju!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                    btnUpdate.setEnabled(true);
+                }
+            });
+        } else {
+            // Verzija za PUTNIKA (Direktan update)
+            RetrofitClient.getProfileService(requireContext())
+            .updateProfile(request).enqueue(new Callback<ProfileResponse>() {
+                @Override
+                public void onResponse(@NonNull Call<ProfileResponse> call, @NonNull Response<ProfileResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        originalProfile = response.body();
+                        resetSelection();
+                        populateFields(originalProfile);
+                        Toast.makeText(getContext(), "Profil ažuriran!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(@NonNull Call<ProfileResponse> call, @NonNull Throwable t) {
+                    btnUpdate.setEnabled(true);
+                }
+            });
+        }
+    }
+
+    private void resetSelection() {
+        this.selectedFileUri = null;
+
+        ProfilePictureFragment pfpFragment = (ProfilePictureFragment) getChildFragmentManager()
+                .findFragmentById(R.id.pfp_fragment_container);
+
+        if (pfpFragment != null) {
+            if (originalProfile != null) {
+                pfpFragment.setPfpUrl(originalProfile.getPfp());
+            } else {
+                pfpFragment.setPfpUrl(null);
+            }
+        }
     }
 
     private void populateFields(ProfileResponse profile) {
@@ -107,131 +205,95 @@ public class UserProfileFragment extends Fragment {
         etAddress.setText(profile.getHomeAddress());
         tvEmail.setText(profile.getEmail());
 
-        VehicleDto vehicle = profile.getVehicle();
-        Double activeHours = profile.getActiveHours();
+        ProfilePictureFragment pfpFragment = (ProfilePictureFragment) getChildFragmentManager()
+            .findFragmentById(R.id.pfp_fragment_container);
 
-        if (profile.getVehicle() != null && activeHours != null) {
+        if (pfpFragment != null) {
+            pfpFragment.setPfpUrl(profile.getPfp());
+        }
+
+        VehicleDto vehicle = profile.getVehicle();
+        if (vehicle != null && profile.getActiveHours() != null) {
             vehicleCard.setVisibility(View.VISIBLE);
             activityCard.setVisibility(View.VISIBLE);
 
             tvModel.setText(vehicle.getModel());
-            tvType.setText(vehicle.getType());
             tvPlate.setText(vehicle.getPlateNumber());
-            tvSeats.setText(String.valueOf(vehicle.getNumSeats()));
+            tvType.setText(vehicle.getType());
+
+            String seatStr = vehicle.getNumSeats().toString();
+            tvSeats.setText(seatStr);
             tvBabies.setText(vehicle.getBabyFriendly() ? "Yes" : "No");
             tvPets.setText(vehicle.getPetFriendly() ? "Yes" : "No");
 
-            // Activity:
-            int percentage = (int) Math.round(activeHours / 8 * 100);
+            int percentage = (int) Math.round(profile.getActiveHours() / 8 * 100);
             progressBar.setProgress(percentage);
 
-            String formattedHours = String.format("%.1f hours", activeHours);
-            tvActivity.setText(formattedHours);
+            String percentageStr = percentage + " %";
+            tvProgressText.setText(percentageStr);
 
-            String formattedPercentage = String.format("%d %%", percentage);
-            tvProgressText.setText(formattedPercentage);
+            String activityStr = String.format("%.1f hours", profile.getActiveHours());
+            tvActivity.setText(activityStr);
         } else {
             vehicleCard.setVisibility(View.GONE);
             activityCard.setVisibility(View.GONE);
         }
-
         btnUpdate.setEnabled(false);
-    }
-
-
-    private void setChangeTrackers() {
-        TextWatcher watcher = new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {}
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                checkIfDataChanged();
-            }
-        };
-
-        etFirstName.addTextChangedListener(watcher);
-        etLastName.addTextChangedListener(watcher);
-        etPhone.addTextChangedListener(watcher);
-        etAddress.addTextChangedListener(watcher);
     }
 
     private void checkIfDataChanged() {
         if (originalProfile == null) return;
 
-        boolean changed =
+        boolean textChanged =
                 !etFirstName.getText().toString().equals(originalProfile.getFirstName()) ||
-                !etLastName.getText().toString().equals(originalProfile.getLastName()) ||
-                !etPhone.getText().toString().equals(originalProfile.getPhoneNumber()) ||
-                !etAddress.getText().toString().equals(originalProfile.getHomeAddress());
+                        !etLastName.getText().toString().equals(originalProfile.getLastName()) ||
+                        !etPhone.getText().toString().equals(originalProfile.getPhoneNumber()) ||
+                        !etAddress.getText().toString().equals(originalProfile.getHomeAddress());
 
-        boolean isValid =
-                !etFirstName.getText().toString().trim().isEmpty() &&
-                !etLastName.getText().toString().trim().isEmpty() &&
-                !etAddress.getText().toString().trim().isEmpty() &&
-                !etPhone.getText().toString().trim().isEmpty();
+        boolean imageChanged = (selectedFileUri != null);
 
-        btnUpdate.setEnabled(changed && isValid);
+        boolean isValid = !etFirstName.getText().toString().trim().isEmpty() &&
+                !etLastName.getText().toString().trim().isEmpty();
+
+        btnUpdate.setEnabled((textChanged || imageChanged) && isValid);
     }
 
-    private void handleProfileUpdate() {
-        String firstName = etFirstName.getText().toString().trim();
-        String lastName = etLastName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String address = etAddress.getText().toString().trim();
+    private void initViews(View view) {
+        etFirstName = view.findViewById(R.id.profile_first_name);
+        etLastName = view.findViewById(R.id.profile_last_name);
+        etPhone = view.findViewById(R.id.profile_phone);
+        etAddress = view.findViewById(R.id.profile_address);
+        tvEmail = view.findViewById(R.id.profile_user_email);
 
-        ProfileRequest request = new ProfileRequest(firstName, lastName, address, phone, originalProfile.getPfp());
+        tvModel = view.findViewById(R.id.profile_vehicle_model);
+        tvType = view.findViewById(R.id.profile_vehicle_type);
+        tvPlate = view.findViewById(R.id.profile_vehicle_plate);
+        tvSeats = view.findViewById(R.id.profile_vehicle_seats);
+        tvBabies = view.findViewById(R.id.profile_vehicle_babies);
+        tvPets = view.findViewById(R.id.profile_vehicle_pets);
 
-        // Disable button while data is being sent:
-        btnUpdate.setEnabled(false);
+        tvProgressText = view.findViewById(R.id.progressText);
+        tvActivity = view.findViewById(R.id.profile_driver_activity);
+        progressBar = view.findViewById(R.id.progressBar);
+        vehicleCard = view.findViewById(R.id.profile_vehicle_card);
+        activityCard = view.findViewById(R.id.profile_activity_card);
+        btnUpdate = view.findViewById(R.id.profile_update_profile);
 
-        if (isDriver()) {
-            RetrofitClient.getChangeDataRequestService(requireContext())
-            .createRequest(request).enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                    btnUpdate.setEnabled(true);
-                    if (response.isSuccessful()) {
-                        Toast.makeText(getContext(), "Zahtev za izmenu poslat administratoru!", Toast.LENGTH_LONG).show();
-                        populateFields(originalProfile);
-                    } else if (response.code() == 400 || response.code() == 409) {
-                        // 409 je tipičan kod za "DriverHasPendingProfileRequestException"
-                        Toast.makeText(getContext(), "Već imate aktivan zahtev na čekanju!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Greška pri slanju zahteva: " + response.code(), Toast.LENGTH_SHORT).show();
-                    }
-                }
+        setChangeTrackers();
+    }
 
-                @Override
-                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                    btnUpdate.setEnabled(true);
-                    Toast.makeText(getContext(), "Mrežna greška: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            RetrofitClient.getProfileService(requireContext())
-            .updateProfile(request).enqueue(new Callback<>() {
-                @Override
-                public void onResponse(@NonNull Call<ProfileResponse> call, @NonNull Response<ProfileResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        // Update current profile with returned profile data:
-                        originalProfile = response.body();
-                        populateFields(originalProfile);
-
-                        Toast.makeText(getContext(), "Profile successfully updated!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        btnUpdate.setEnabled(true);
-                        Toast.makeText(getContext(), "Error while saving!", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                @Override
-                public void onFailure(@NonNull Call<ProfileResponse> call, @NonNull Throwable t) {
-                    btnUpdate.setEnabled(true);
-                    Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+    private void setChangeTrackers() {
+        TextWatcher watcher = new TextWatcher() {
+            @Override public void afterTextChanged(Editable s) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkIfDataChanged();
+            }
+        };
+        etFirstName.addTextChangedListener(watcher);
+        etLastName.addTextChangedListener(watcher);
+        etPhone.addTextChangedListener(watcher);
+        etAddress.addTextChangedListener(watcher);
     }
 
     private boolean isDriver() {
