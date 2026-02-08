@@ -1,0 +1,11 @@
+package com.tricolori.backend.dto.pricelist;
+
+import java.time.LocalDateTime;
+
+public record PriceConfigResponse(
+        Double standardPrice,
+        Double luxuryPrice,
+        Double vanPrice,
+        Double kmPrice,
+        LocalDateTime createdAt
+) {}

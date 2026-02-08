@@ -1,0 +1,62 @@
+import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  heroMapPin,
+  heroFlag,
+  heroClock,
+  heroXMark,
+  heroUser,
+  heroShieldCheck
+} from '@ng-icons/heroicons/outline';
+import { CancelRideModalComponent } from '../../../driver/components/cancel-ride-modal/cancel-ride-modal';
+import { RideService } from '../../../../../services/ride.service';
+import { Router } from '@angular/router';
+import {ToastService} from '../../../../../services/toast.service';
+
+@Component({
+  selector: 'app-ride-wait',
+  standalone: true,
+  imports: [CommonModule, NgIcon, CancelRideModalComponent],
+  templateUrl: './ride-wait.html',
+  viewProviders: [provideIcons({
+    heroMapPin, heroFlag, heroClock, heroXMark, heroUser, heroShieldCheck
+  })]
+})
+export class RideWait {
+  private rideService = inject(RideService);
+  private router = inject(Router);
+  private toastService = inject(ToastService);
+
+  showCancelModal = signal(false);
+
+  activeRide = signal({
+    id: 123,
+    pickup: 'Kraljev park, Novi Sad',
+    destination: 'Jevrejska 23b, Novi Sad',
+    eta: 4,
+    driverName: 'Marko Marković',
+    carModel: 'Skoda Octavia',
+    plateNum: 'NS-123-TX',
+    price: 450
+  });
+
+  handleCancel() {
+    this.showCancelModal.set(true);
+  }
+
+  submitCancellation(reason: string) {
+    this.rideService.cancelRide(reason).subscribe({
+      next: () => {
+        this.showCancelModal.set(false);
+        this.toastService.show('Ride canceled successfully!', 'success');
+        this.router.navigate(['/passenger/home']);
+      },
+      error: (err) => {
+        this.showCancelModal.set(false);
+        const msg = err.error?.message || err.error || 'Something went wrong';
+        this.toastService.show(msg, 'error');
+      }
+    });
+  }
+}

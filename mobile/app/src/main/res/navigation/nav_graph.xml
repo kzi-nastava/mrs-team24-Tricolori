@@ -3,34 +3,48 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.mobile.ui.fragments.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_to_login"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_home_to_register"
+            app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_home_to_changeRequests"
+            app:destination="@id/changeRequestsReviewFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.mobile.ui.fragments.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
-
         <action
             android:id="@+id/action_login_to_register"
             app:destination="@id/registerFragment" />
-
         <action
             android:id="@+id/action_login_to_forgotPassword"
             app:destination="@id/forgotPasswordFragment" />
-
         <action
             android:id="@+id/action_login_to_profile"
             app:destination="@id/userProfileFragment"
-            app:popUpTo="@id/loginFragment"
-            app:popUpToInclusive="true" />
-
+            app:popUpTo="@id/homeFragment" />
         <action
             android:id="@+id/action_login_to_rideHistory"
             app:destination="@id/rideHistoryFragment"
-            app:popUpTo="@id/loginFragment"
+            app:popUpTo="@id/homeFragment" />
+        <action
+            android:id="@+id/action_login_to_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="true" />
-
     </fragment>
 
     <fragment
@@ -38,10 +52,9 @@
         android:name="com.example.mobile.ui.fragments.RideHistoryFragment"
         android:label="Ride History"
         tools:layout="@layout/fragment_ride_history">
-
         <action
-            android:id="@+id/action_driverHistory_to_login"
-            app:destination="@id/loginFragment" />
+            android:id="@+id/action_rideHistory_to_home"
+            app:destination="@id/homeFragment" />
     </fragment>
 
     <fragment
@@ -49,34 +62,81 @@
         android:name="com.example.mobile.ui.fragments.UserProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_user_profile">
-
         <action
             android:id="@+id/action_profile_to_change_password"
             app:destination="@id/changePasswordFragment" />
+        <action
+            android:id="@+id/action_profile_to_home"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_profile_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/homeFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/registerFragment"
         android:name="com.example.mobile.ui.fragments.RegisterFragment"
         android:label="Register"
-        tools:layout="@layout/fragment_register" />
+        tools:layout="@layout/fragment_register">
+        <action
+            android:id="@+id/action_register_to_login"
+            app:destination="@id/loginFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/forgotPasswordFragment"
         android:name="com.example.mobile.ui.fragments.ForgotPasswordFragment"
         android:label="Forgot Password"
-        tools:layout="@layout/fragment_forgot_password" />
-
-    <fragment
-        android:id="@+id/changePasswordFragment"
-        android:name="com.example.mobile.ui.fragments.ChangePasswordFragment"
-        android:label="Change Password"
-        tools:layout="@layout/fragment_change_password"/>
+        tools:layout="@layout/fragment_forgot_password">
+        <action
+            android:id="@+id/action_forgotPassword_to_login"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_forgotPassword_to_reset"
+            app:destination="@id/resetPasswordFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/resetPasswordFragment"
         android:name="com.example.mobile.ui.fragments.ResetPasswordFragment"
         android:label="Reset Password"
-        tools:layout="@layout/fragment_reset_password" />
+        tools:layout="@layout/fragment_reset_password">
+
+        <deepLink
+            app:uri="http://10.0.2.2:4200/reset-password?token={token}" />
+        <deepLink
+            app:uri="http://localhost:4200/reset-password?token={token}" />
+
+        <argument
+            android:name="token"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+
+        <action
+            android:id="@+id/action_resetPassword_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.example.mobile.ui.fragments.ChangePasswordFragment"
+        android:label="Change Password"
+        tools:layout="@layout/fragment_change_password" />
+
+    <fragment
+        android:id="@+id/changeRequestsReviewFragment"
+        android:name="com.example.mobile.ui.fragments.ChangeRequestsReviewFragment"
+        android:label="Profile Change Requests"
+        tools:layout="@layout/fragment_change_requests_review" />
+
+    <fragment
+        android:id="@+id/pricelistFragment"
+        android:name="com.example.mobile.ui.fragments.PricelistFragment"
+        android:label="Pricelist"
+        tools:layout="@layout/fragment_pricelist" />
 
 </navigation>

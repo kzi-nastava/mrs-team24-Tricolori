@@ -1,7 +1,10 @@
 package com.example.mobile.ui.fragments;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,14 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.mobile.dto.PageResponse;
+import com.example.mobile.dto.ride.DriverRideHistoryResponse;
+import com.example.mobile.network.RetrofitClient;
+import com.example.mobile.network.service.RideService;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import com.example.mobile.R;
 import com.example.mobile.ui.adapters.RideHistoryAdapter;
@@ -46,7 +57,6 @@ public class RideHistoryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the XML layout instead of creating programmatically
         return inflater.inflate(R.layout.fragment_ride_history, container, false);
     }
 
@@ -55,10 +65,14 @@ public class RideHistoryFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initViews(view);
-        loadMockData();
+        allRides = new ArrayList<>();
+        filteredRides = new ArrayList<>();
+
         setupRecyclerView();
         setupListeners();
+        fetchRideHistory();
     }
+
 
     private void initViews(View view) {
         etStartDate = view.findViewById(R.id.etStartDate);
@@ -66,103 +80,89 @@ public class RideHistoryFragment extends Fragment {
         btnFilter = view.findViewById(R.id.btnFilter);
         rvRides = view.findViewById(R.id.rvRides);
 
-        // Make date fields non-editable (click to open calendar)
         etStartDate.setFocusable(false);
         etStartDate.setClickable(true);
         etEndDate.setFocusable(false);
         etEndDate.setClickable(true);
     }
 
-    private void loadMockData() {
-        allRides = new ArrayList<>();
+    private void fetchRideHistory() {
 
-        allRides.add(new Ride(
-                1,
-                "Narodnog fronta 23 → Dunavski park",
-                "2024-12-15",
-                "2024-12-15",
-                45.50,
-                "Completed",
-                "09:30 AM",
-                "11:15 AM",
-                "1h 45min",
-                "Marko Petrović",
-                "+381 64 123 4567",
-                89.5,
-                "Credit Card",
-                "Pleasant ride, passenger was on time."
-        ));
+        SharedPreferences prefs =
+                requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
 
-        allRides.add(new Ride(
-                2,
-                "Bulevar Oslobođenja 30 → Trg Slobode",
-                "2024-12-14",
-                "2024-12-14",
-                32.00,
-                "Completed",
-                "14:00 PM",
-                "15:30 PM",
-                "1h 30min",
-                "Ana Jovanović",
-                "+381 63 987 6543",
-                72.3,
-                "Cash",
-                "Smooth journey, no issues."
-        ));
+        String token = prefs.getString("jwt_token", null);
 
-        allRides.add(new Ride(
-                3,
-                "Železnička stanica Novi Sad → Limanski park",
-                "2024-12-13",
-                "2024-12-13",
-                85.00,
-                "Completed",
-                "08:00 AM",
-                "11:45 AM",
-                "3h 45min",
-                "Stefan Nikolić",
-                "+381 65 555 1234",
-                237.8,
-                "Credit Card",
-                "Long distance trip, passenger requested one rest stop."
-        ));
+        if (token == null || token.isEmpty()) {
+            Toast.makeText(getContext(),
+                    "Please log in first",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        allRides.add(new Ride(
-                4,
-                "Spens (Bulevar cara Lazara) → Petrovaradinska tvrđava",
-                "2024-12-12",
-                "2024-12-12",
-                38.50,
-                "Cancelled",
-                "16:00 PM",
-                "17:30 PM",
-                "1h 30min",
-                "Jelena Đorđević",
-                "+381 64 222 3333",
-                115.2,
-                "N/A",
-                "Ride cancelled by passenger 30 minutes before scheduled time."
-        ));
+        RideService rideService =
+                RetrofitClient.getClient(requireContext()).create(RideService.class);
 
-        allRides.add(new Ride(
-                5,
-                "Grbavica (Danila Kiša 18) → Spens",
-                "2024-12-11",
-                "2024-12-11",
-                25.00,
-                "Completed",
-                "11:00 AM",
-                "12:00 PM",
-                "1h",
-                "Milan Stojanović",
-                "+381 66 777 8888",
-                46.5,
-                "Cash",
-                null
-        ));
+        rideService.getDriverRideHistory(
+                null,
+                null,
+                "createdAt",
+                "DESC"
+        ).enqueue(new Callback<List<DriverRideHistoryResponse>>() {
 
-        filteredRides = new ArrayList<>(allRides);
+            @Override
+            public void onResponse(
+                    Call<List<DriverRideHistoryResponse>> call,
+                    Response<List<DriverRideHistoryResponse>> response) {
+
+                Log.d("RideHistory", "Response code: " + response.code());
+
+                if (!response.isSuccessful() || response.body() == null) {
+
+                    String errorBody = "";
+
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.e("RideHistory",
+                            "Error " + response.code() + " : " + errorBody);
+
+                    Toast.makeText(getContext(),
+                            "Error loading rides",
+                            Toast.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                List<DriverRideHistoryResponse> dtos = response.body();
+
+                Log.d("RideHistory",
+                        "Rides fetched: " + dtos.size());
+
+                mapDtosToRides(dtos);
+            }
+
+            @Override
+            public void onFailure(
+                    Call<List<DriverRideHistoryResponse>> call,
+                    Throwable t) {
+
+                Log.e("RideHistory",
+                        "Network failure: " + t.getMessage());
+
+                Toast.makeText(getContext(),
+                        "Network error",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+
 
     private void setupRecyclerView() {
         adapter = new RideHistoryAdapter(filteredRides, ride -> {
@@ -250,8 +250,45 @@ public class RideHistoryFragment extends Fragment {
         }
     }
 
+    private void mapDtosToRides(List<DriverRideHistoryResponse> dtos) {
+
+        allRides = new ArrayList<>();
+
+        for (DriverRideHistoryResponse dto : dtos) {
+
+            Ride ride = new Ride(
+                    dto.getId().intValue(),
+                    dto.getPickupAddress() + " → " + dto.getDestinationAddress(),
+
+                    dto.getStartDate().substring(0,10),
+                    dto.getEndDate() != null ? dto.getEndDate().substring(0,10) : "",
+
+                    dto.getPrice() != null ? dto.getPrice() : 0.0,
+                    dto.getStatus(),
+
+                    "", "", "",
+
+                    "", "",
+
+                    dto.getDistance() != null ? dto.getDistance() : 0.0,
+
+                    "",
+                    null
+            );
+
+            allRides.add(ride);
+        }
+
+        filteredRides = new ArrayList<>(allRides);
+        adapter.updateData(filteredRides);
+    }
+
+
     private void showRideDetailsDialog(Ride ride) {
-        RideDetailsDialogFragment dialog = RideDetailsDialogFragment.newInstance(ride);
+        RideDetailsDialogFragment dialog =
+                RideDetailsDialogFragment.newInstance((long) ride.getId());
+
         dialog.show(getParentFragmentManager(), "RideDetailsDialog");
     }
+
 }

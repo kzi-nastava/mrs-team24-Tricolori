@@ -1,0 +1,46 @@
+@if (results(); as res) {
+  <div class="animate-in fade-in duration-300">
+    <div class="mb-4 pb-4 border-b border-gray-200">
+      <div class="flex items-start gap-2 mb-2">
+        <ng-icon name="heroMapPin" class="w-5 h-5 text-cyan-500 mt-0.5"></ng-icon>
+        <span class="text-sm text-gray-700 leading-tight">{{ res.pickup }}</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <ng-icon name="heroMapPin" class="w-5 h-5 text-pink-500 mt-0.5"></ng-icon>
+        <span class="text-sm text-gray-700 leading-tight">{{ res.destination }}</span>
+      </div>
+    </div>
+
+    <div class="bg-cyan-50/50 rounded-lg py-4 mb-4 flex items-center justify-center">
+
+      <div class="flex-1 flex items-center justify-center gap-3 px-2">
+        <ng-icon name="heroMap" class="w-6 h-6 text-slate-600 mb-0.5"></ng-icon>
+        <div class="flex items-baseline gap-1">
+          <span class="text-2xl font-black text-slate-800 tracking-tight">{{ res.distance }}</span>
+          <span class="text-[10px] font-bold text-slate-500 uppercase">km</span>
+        </div>
+      </div>
+
+      <div class="h-8 w-[1px] bg-cyan-200/60"></div>
+
+      <div class="flex-1 flex items-center justify-center gap-3 px-2">
+        <ng-icon name="heroClock" class="w-6 h-6 text-slate-600 mb-0.5"></ng-icon>
+        <div class="flex items-baseline gap-1">
+          <span class="text-2xl font-black text-slate-800 tracking-tight">{{ res.duration }}</span>
+          <span class="text-[10px] font-bold text-slate-500 uppercase">min</span>
+        </div>
+      </div>
+
+    </div>
+
+    <button (click)="handleReset()" class="w-full bg-white border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-sm flex items-center justify-center gap-2">
+      <ng-icon name="heroArrowPath" class="w-4 h-4"></ng-icon>
+      New Estimate
+    </button>
+
+    <div class="mt-5 text-center">
+      <p class="text-[13px] text-gray-500 mb-1">Want to book this ride?</p>
+      <a routerLink="/login" class="text-cyan-600 font-bold text-[13px] hover:text-cyan-700 transition-colors">Login or Register</a>
+    </div>
+  </div>
+}

@@ -1,0 +1,32 @@
+<div class="max-w-xl font-sans mx-auto p-3">
+    <div>
+        <h2 class="text-5xl text-light-800 text-center">Register a driver on Cuber</h2>
+        <p class="text-gray-400 text-center">Add a new driver to the system</p>
+    </div>
+
+    <div class="flex items-center justify-center mb-12 mt-6">
+        <div class="flex flex-col items-center">
+            <div [class]="step() == 1 ? selectedStepClasses : otherStepClasses">1</div>
+            <p [class]="step() == 1 ? selectedTextClasses : otherTextClasses">Driver Info</p>
+        </div>
+        <div class="w-32 h-0.5 bg-gray-300 mx-4 -mt-6"></div>
+        <div class="flex flex-col items-center">
+            <div [class]="step() == 2 ? selectedStepClasses : otherStepClasses">2</div>
+            <p [class]="step() == 2 ? selectedTextClasses : otherTextClasses">Car & Account</p>
+        </div>
+    </div>
+
+    @if(step() == 1) {
+        <app-step-one-form
+            [oldStepData]="savedStepOneData"
+            (newStepData)="handleStepOne($event)"
+        />
+    }
+    @else {
+        <app-step-two-form 
+            [oldStepData]="savedStepTwoData"
+            (newStepData)="handleStepTwo($event)"
+            (back)="prevStep($event)"
+        />
+    }
+</div>

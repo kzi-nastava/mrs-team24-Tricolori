@@ -1,0 +1,13 @@
+<div class="flex flex-col lg:flex-row w-full h-[calc(100vh-64px)] bg-gray-100">
+
+  <!-- Panel -->
+  <div class="w-full lg:w-1/4 bg-white shadow-lg p-6 overflow-y-auto z-10 lg:h-full">
+    <router-outlet></router-outlet>
+  </div>
+
+  <!-- Map Component -->
+  <div class="w-full lg:w-3/4 h-[50vh] lg:h-full relative z-0">
+    <app-map></app-map>
+  </div>
+
+</div>

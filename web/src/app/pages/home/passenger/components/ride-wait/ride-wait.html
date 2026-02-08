@@ -1,0 +1,78 @@
+<div class="h-full flex flex-col bg-white">
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+    <h2 class="text-xl font-bold text-slate-800 m-0 tracking-tight">Driver is on the way</h2>
+  </div>
+
+  <div class="bg-slate-50 rounded-lg p-5 border border-slate-200 mb-6 shadow-sm">
+    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">Your Trip</h3>
+
+    <div class="relative">
+      <div class="flex items-center gap-4 mb-8 relative z-10">
+        <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+          <ng-icon name="heroMapPin" class="w-5 h-5"></ng-icon>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Pickup Point</span>
+          <span class="text-sm font-bold text-slate-800 leading-tight">{{ activeRide().pickup }}</span>
+        </div>
+      </div>
+
+      <div class="absolute left-5 top-10 bottom-10 border-l-2 border-dotted border-slate-300"></div>
+
+      <div class="flex items-center gap-4 relative z-10">
+        <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-white shadow-md">
+          <ng-icon name="heroFlag" class="w-5 h-5"></ng-icon>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Destination</span>
+          <span class="text-sm font-bold text-slate-800 leading-tight">{{ activeRide().destination }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+        <ng-icon name="heroUser" class="w-6 h-6"></ng-icon>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-sm font-bold text-slate-800">{{ activeRide().driverName }}</span>
+        <span class="text-[10px] text-slate-500 font-medium">{{ activeRide().carModel }} • {{ activeRide().plateNum }}</span>
+      </div>
+    </div>
+    <div class="text-right">
+      <span class="block text-[10px] font-bold text-slate-400 uppercase">Estimated Price</span>
+      <span class="text-sm font-black text-emerald-600">{{ activeRide().price }} RSD</span>
+    </div>
+  </div>
+
+  <div class="bg-cyan-50 border border-cyan-100 rounded-lg p-5 flex items-center gap-4 mb-auto">
+    <div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-cyan-600 shadow-sm border border-cyan-100">
+      <ng-icon name="heroClock" class="w-6 h-6"></ng-icon>
+    </div>
+    <div class="flex flex-col">
+      <span class="text-[10px] text-cyan-700 font-bold uppercase tracking-widest">Arriving in</span>
+      <div class="flex items-baseline gap-1">
+        <span class="text-2xl font-black text-cyan-900 leading-none">{{ activeRide().eta }}</span>
+        <span class="text-xs font-bold text-cyan-700 uppercase">min</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <button (click)="handleCancel()"
+            class="w-full bg-white border border-red-200 text-red-500 hover:bg-red-50 font-bold py-4 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95 text-sm uppercase tracking-wide">
+      <ng-icon name="heroXMark" class="w-4 h-4"></ng-icon> Cancel Request
+    </button>
+  </div>
+
+</div>
+
+<app-cancel-ride-modal
+  [isVisible]="showCancelModal()"
+  (onClose)="showCancelModal.set(false)"
+  (onConfirm)="submitCancellation($event)">
+</app-cancel-ride-modal>

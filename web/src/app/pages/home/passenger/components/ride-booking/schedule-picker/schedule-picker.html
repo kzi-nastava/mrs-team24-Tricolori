@@ -1,0 +1,46 @@
+<div class="max-w-sm flex flex-col justify-between bg-white rounded-2xl overflow-hidden font-sans h-fit">
+  <h2 class="text-deep-700 text-center text-2xl p-5">Schedule time</h2>
+  @if (!isCustomMode()) {
+    <div>
+      <p class="text-lg text-gray-400 pl-5 pb-2">Predefined timeslots</p>
+      <div class="grid grid-cols-2 gap-2 h-56 overflow-y-auto px-3">
+        @for (time of timeSlots(); track time.getTime()) {
+          <button 
+            (click)="selectTimeSlot(time)"
+            class="py-4 px-2 rounded-xl text-lg font-medium cursor-pointer"
+            [class.bg-deep-100]="selectedTime() === time"
+            [class.text-white]="selectedTime() === time"
+            [class.bg-gray-100]="selectedTime() !== time"
+            [class.text-gray-600]="selectedTime() !== time">
+            {{ time | date:'HH:mm' }}
+          </button>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="flex flex-col items-center gap-3">
+      <label class="text-gray-400 text-lg">Enter preferred time:</label>
+      <div>
+        <input 
+          type="time" 
+          (input)="onCustomTimeChange($event)"
+          class="text-4xl font-bold text-deep-300 bg-gray-100 p-5 rounded-2xl outline-none text-center">
+      </div>
+      <p class="text-sm text-gray-400">Select any time within the next 5 hours.</p>
+    </div>
+  }
+
+  <div class="flex flex-col gap-3 p-3 mt-2">
+    <button 
+      (click)="toggleCustomMode()"
+      class="w-full py-3 rounded-2xl bg-deep-300 text-white font-bold text-lg transition-all active:scale-[0.98] cursor-pointer">
+      {{ isCustomMode() ? 'Back to quick slots' : 'Enter time manually' }}
+    </button>
+    <button 
+      (click)="confirmDate()"
+      [disabled]="!selectedTime()"
+      class="w-full py-3 rounded-2xl bg-deep-400 text-white font-bold text-lg disabled:opacity-50 disabled:bg-gray-300 transition-all active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed">
+      Confirm Pickup Time
+    </button>
+  </div>
+</div>

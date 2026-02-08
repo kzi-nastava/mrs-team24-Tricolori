@@ -19,7 +19,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="John Doe"
+        android:id="@+id/nav_header_user_name"
+        android:text="Guest User"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textStyle="bold"
         android:textColor="@color/white"/>
@@ -27,7 +28,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="john@example.com"
+        android:id="@+id/nav_header_user_email"
+        android:text="Not logged in"
         android:textSize="14sp"
         android:textColor="@color/white"/>
 

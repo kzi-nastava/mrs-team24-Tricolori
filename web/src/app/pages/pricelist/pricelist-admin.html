@@ -1,0 +1,111 @@
+<div class="flex justify-center items-start p-12 px-8 min-h-[calc(100vh-200px)] bg-white">
+  <div class="bg-white rounded-xl shadow-md border border-gray-100 p-10 w-full max-w-[500px]">
+
+    <!-- PRICE PER KM -->
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="flex items-center justify-center w-10 h-10 bg-[#00d4d4] rounded-lg text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M2 12h20"/>
+          </svg>
+        </div>
+        <h2 class="text-lg font-semibold text-[#1a1a1a] m-0">Price per Kilometer</h2>
+      </div>
+
+      <input
+        type="number"
+        [(ngModel)]="pricePerKm"
+        [disabled]="loading || initialLoading"
+        class="w-full py-3 px-4 text-[0.9375rem] bg-gray-50 border border-gray-200 rounded-lg
+               focus:bg-white focus:border-[#00d4d4] focus:ring-2 focus:ring-[#00d4d4]/20
+               disabled:opacity-50 disabled:cursor-not-allowed"
+      />
+    </div>
+
+    <!-- START PRICES -->
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="flex items-center justify-center w-10 h-10 bg-[#00d4d4] rounded-lg text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <h2 class="text-lg font-semibold text-[#1a1a1a] m-0">Start Prices</h2>
+      </div>
+
+      <!-- STANDARD -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-500 mb-2">Standard</label>
+        <input
+          type="number"
+          [(ngModel)]="standardPrice"
+          [disabled]="loading || initialLoading"
+          class="w-full py-3 px-4 bg-gray-50 border border-gray-200 rounded-lg
+                 focus:bg-white focus:border-[#00d4d4] focus:ring-2 focus:ring-[#00d4d4]/20
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </div>
+
+      <!-- LUXURY -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-500 mb-2">Luxury</label>
+        <input
+          type="number"
+          [(ngModel)]="luxuryPrice"
+          [disabled]="loading || initialLoading"
+          class="w-full py-3 px-4 bg-gray-50 border border-gray-200 rounded-lg
+                 focus:bg-white focus:border-[#00d4d4] focus:ring-2 focus:ring-[#00d4d4]/20
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </div>
+
+      <!-- VAN -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-500 mb-2">Van</label>
+        <input
+          type="number"
+          [(ngModel)]="vanPrice"
+          [disabled]="loading || initialLoading"
+          class="w-full py-3 px-4 bg-gray-50 border border-gray-200 rounded-lg
+                 focus:bg-white focus:border-[#00d4d4] focus:ring-2 focus:ring-[#00d4d4]/20
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </div>
+    </div>
+
+    <p class="text-sm text-gray-500 mb-6">
+      All prices are calculated in RSD – Serbian Dinars.
+    </p>
+
+    <!-- SAVE BUTTON -->
+    <button
+      (click)="onSaveChanges()"
+      [disabled]="loading || initialLoading"
+      class="w-full py-3.5 bg-[#00d4d4] text-white font-semibold rounded-lg
+             hover:bg-[#00b8b8] transition
+             disabled:opacity-50 disabled:cursor-not-allowed">
+      {{ loading ? 'Saving...' : 'Save changes' }}
+    </button>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div
+  *ngIf="showSuccessModal"
+  class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+  (click)="showSuccessModal = false"
+>
+  <div
+    class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <h3 class="text-xl font-semibold mb-2">Success!</h3>
+    <p class="text-gray-600">Prices updated successfully</p>
+  </div>
+</div>

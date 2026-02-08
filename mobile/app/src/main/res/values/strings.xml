@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">mobile</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="app_name">Cuber</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!--   Strings used on Change password page   -->
@@ -31,16 +30,13 @@
     <!-- Profile picture section -->
     <string name="profile_picture">Profile Picture</string>
     <string name="profile_picture_desc">Change your profile picture</string>
-    <string name="profile_picture_info">Picture must be in .jpg or .png format</string>
     <string name="profile_picture_submit">Upload Picture</string>
     <string name="profile_picture_icon_desc">Profile icon</string>
     <string name="profile_user_picture_desc">User picture</string>
+    <string name="profile_user_picture_size_error">File is too large (max 5MB)</string>
     <!-- Personal information section -->
     <string name="profile_personal">Personal Information</string>
     <string name="profile_personal_desc">Update your personal details</string>
-    <string name="profile_personal_edit">Edit</string>
-    <string name="profile_personal_save">Save</string>
-    <string name="profile_personal_cancel">X</string>
     <string name="profile_personal_first_name">First Name</string>
     <string name="profile_personal_last_name">Last Name</string>
     <string name="profile_personal_phone">Phone Number</string>
@@ -50,6 +46,8 @@
     <string name="profile_personal_last_name_example">Doe</string>
     <string name="profile_personal_phone_example">+381601234567</string>
     <string name="profile_personal_home_example">123 Main Street, Belgrade</string>
+    <!-- Update profile button -->
+    <string name="profile_update_profile">Update Profile</string>
     <!-- Password section -->
     <string name="profile_security">Security</string>
     <string name="profile_security_desc">Update password to protect your account</string>
@@ -61,22 +59,16 @@
     <string name="profile_vehicle_info">Vehicle information is managed by administrators. Contact support for any changes</string>
     <string name="profile_vehicle_model">Model</string>
     <string name="profile_vehicle_model_icon_desc">Vehicle model icon</string>
-    <string name="profile_vehicle_model_example">Volkswagen Passat</string>
-    <string name="profile_vehicle_place">Place</string>
-    <string name="profile_vehicle_place_icon_desc">Place icon</string>
-    <string name="profile_vehicle_place_example">Novi Sad</string>
+    <string name="profile_vehicle_seats">Seat number</string>
+    <string name="profile_vehicle_seats_icon_desc">Seat number icon</string>
     <string name="profile_vehicle_licence">Licence plate</string>
     <string name="profile_vehicle_licence_icon_desc">Licence plate icon</string>
-    <string name="profile_vehicle_licence_example">NS 123-AB</string>
     <string name="profile_vehicle_type">Vehicle type</string>
     <string name="profile_vehicle_type_icon_desc">Vehicle type icon</string>
-    <string name="profile_vehicle_type_example">Standard</string>
     <string name="profile_vehicle_baby">Does it drive babies?</string>
     <string name="profile_vehicle_baby_icon_desc">Baby icon</string>
-    <string name="profile_vehicle_baby_example">Yes</string>
     <string name="profile_vehicle_pet">Does it drive pets?</string>
     <string name="profile_vehicle_pet_icon_desc">Pet icon</string>
-    <string name="profile_vehicle_pet_example">Yes</string>
     <!-- Driver activity section -->
     <string name="profile_activity">Active Hours</string>
     <string name="profile_activity_desc">Your activity in last 24 hours</string>
@@ -164,8 +156,57 @@
     <string name="req_1">• At least 8 characters</string>
     <string name="req_2">• Upper and lowercase letters</string>
     <string name="req_3">• At least one number</string>
+    <string name="reset_token">Reset Token:</string>
+    <string name="enter_token_from_email">Enter token from email</string>
 
     <!-- Menu -->
     <string name="nav_ride_history">Ride History</string>
     <string name="nav_profile">Profile</string>
+
+    <!-- Home Fragment -->
+    <string name="active_vehicles">Active Vehicles</string>
+    <string name="available_vehicles">Available</string>
+    <string name="busy_vehicles">Busy</string>
+    <string name="available_count">Available: %1$d</string>
+    <string name="busy_count">Busy: %1$d</string>
+    <string name="btn_get_started">Get Started - Login</string>
+    <string name="refresh_vehicles">Refresh vehicles</string>
+    <string name="refreshing_vehicles">Refreshing vehicle locations...</string>
+    <string name="loading_map">Loading map...</string>
+    <string name="status_available">Available</string>
+    <string name="status_busy">Busy</string>
+
+    <!-- Ride Estimation -->
+    <string name="ride_estimation">Ride Estimation</string>
+    <string name="expand">Expand</string>
+    <string name="label_start_location">Start Location</string>
+    <string name="label_end_location">End Location</string>
+    <string name="hint_enter_start_location">Enter start location</string>
+    <string name="hint_enter_end_location">Enter end location</string>
+    <string name="btn_calculate_route">Calculate Route</string>
+    <string name="label_estimated_price">Estimated Price</string>
+    <string name="distance">Distance</string>
+    <string name="duration">Duration</string>
+    <string name="estimated_price">Estimated Price</string>
+    <string name="error_empty_locations">Please enter both locations</string>
+    <string name="calculating_route">Calculating route...</string>
+    <string name="error_geocoding">Could not find location. Please try again.</string>
+    <string name="error_route_calculation">Could not calculate route. Please try again.</string>
+    <string name="start_location">Start</string>
+    <string name="end_location">End</string>
+
+    <!-- Change Requests -->
+    <string name="change_request_approve">Approve</string>
+    <string name="change_request_reject">Reject</string>
+    <string name="change_request_arrow"> -> </string>
+    <string name="change_request_header">Driver Profile Change Requests</string>
+    <string name="change_request_desc">Review and approve/reject driver change requests</string>
+    <string name="change_request_no_requests">There are currently no pending requests</string>
+    <string name="change_request_pfp_changed">New profile picture is set</string>
+    <string name="change_request_pfp_changed_desc">New profile picture</string>
+    <string name="change_request_driver_id">Driver ID: #%1$d</string>
+    <string name="change_request_first_name">First name</string>
+    <string name="change_request_last_name">Last name</string>
+    <string name="change_request_phone">Phone number</string>
+    <string name="change_request_address">Home address</string>
 </resources>

@@ -1,0 +1,163 @@
+<div class="max-w-xl mx-auto font-sans p-3">
+    <h2 class="text-2xl text-light-700 px-3">Your Profile</h2>
+    <p class="text-gray-500 px-3">Manage your personal information and settings</p>
+
+    <form (submit)="updateProfile()" [formGroup]="personalForm" class="flex flex-col gap-12 mt-12">
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <ng-icon name="matAccountCircleOutline" size="2.5rem" style="color: var(--color-light-700);"/>
+                <div>
+                    <h3 class="text-lg text-light-700">Profile Picture</h3>
+                    <p class="text-gray-400 text-sm">Others can see your profile picture</p>
+                </div>
+            </div>
+            <app-pfp-picker 
+                [pfpSrc]="userProfile()?.pfp" 
+                (fileSelected)="handleNewFile($event)"
+                #pfpPicker />
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <ng-icon name="heroEnvelope" size="2.5rem" style="color: var(--color-light-700);"/>
+                <div>
+                    <h3 class="text-lg text-light-700">Email Address</h3>
+                    <p class="text-gray-400 text-sm">Your contact email address</p>
+                </div>
+            </div>
+            <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3 w-full" type="email" readonly formControlName="email">
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <ng-icon name="heroUser" size="2.5rem" style="color: var(--color-light-700);"/>
+                <div>
+                    <h3 class="text-lg text-light-700">Personal Information</h3>
+                    <p class="text-gray-400 text-sm">Update your personal details</p>
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">First Name</p>
+                <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" type="text" formControlName="firstName">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Last Name</p>
+                <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" type="text" formControlName="lastName">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Phone Number</p>
+                <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" type="text" formControlName="phoneNumber">
+            </div>
+            <div class="flex flex-col">
+                <p class="text-gray-500 ml-2">Home Address</p>
+                <input class="bg-gray-100 rounded-2xl py-3 pl-4 pr-3" type="text" formControlName="homeAddress">
+            </div>
+        </div>
+
+        <button [disabled]="!hasChanges() || personalForm.invalid" type="submit" 
+                class="disabled:bg-dark-300 disabled:cursor-not-allowed bg-light-700 px-10 py-2.5 mx-auto rounded-xl w-fit text-white cursor-pointer">
+            Update Profile
+        </button>
+    </form>
+
+    <!-- Vehicle Information -->
+    <div class="flex flex-col gap-4 my-12">
+        <div class="flex items-center gap-4">
+            <ng-icon name="hugeCar03" size="2.5rem" style="color: var(--color-light-700);" />
+            <div>
+                <h3 class="text-xl text-light-700">Vehicle Information</h3>
+                <p class="text-gray-400 text-sm">Assigned by administrator</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 grid-rows-3 gap-3">
+            <!-- Vehicle model -->
+            <div class="flex flex-col justify-between order-1 rounded-2xl bg-gray-200 p-3">
+                <div class="flex justify-start items-center gap-3">
+                    <ng-icon name="boxCar" size="1.5rem"/>
+                    <p>Model</p>
+                </div>
+                <p class="text-lg">{{ vehicle()?.model }}</p>
+            </div>
+
+            <!-- Vehicle type -->
+            <div class="flex flex-col justify-between order-2 rounded-2xl bg-gray-200 p-3">
+                <div class="flex justify-start items-center gap-3">
+                    <ng-icon name="bootstrapType" size="1.5rem" />
+                    <p class="text-sm">Type</p>
+                </div>
+                <p class="text-xl">{{ vehicle()?.type }}</p>
+            </div>
+
+            <!-- Plate number -->
+            <div class="flex flex-col justify-between order-3 rounded-2xl bg-gray-200 p-3">
+                <div class="flex justify-start items-center gap-3">
+                    <ng-icon name="heroHashtag" size="1.5rem"/>
+                    <p>Licence plate</p>
+                </div>
+                <p class="text-lg">{{ vehicle()?.plateNumber }}</p>
+            </div>
+
+            <!-- Number of seats -->
+            <div class="flex flex-col justify-between order-4 rounded-2xl bg-gray-200 p-3">
+                <div class="flex justify-start items-center gap-3">
+                    <ng-icon name="bootstrap123" size="1.5rem" />
+                    <p class="text-sm">Seat number</p>
+                </div>
+                <p class="text-xl">{{ vehicle()?.numSeats }}</p>
+            </div>
+
+            <!-- Baby friendly -->
+            <div class="flex flex-col gap-2 justify-between order-5 rounded-2xl bg-gray-200 p-3">
+                <div class="flex justify-start items-center gap-3">
+                    <ng-icon name="mynaBaby" size="1.5rem" />
+                    <p class="text-sm">Does it drive babies?</p>
+                </div>
+                <p class="text-xl">{{ vehicle()?.babyFriendly ? "Yes" : "No"}}</p>
+            </div>
+
+            <!-- Pet friendly -->
+            <div class="flex flex-col justify-between order-6 rounded-2xl bg-gray-200 p-3">
+                <div class="flex justify-start items-center gap-3">
+                    <ng-icon name="phosphorDog" size="1.5rem" />
+                    <p class="text-sm">Does it drive pets?</p>
+                </div>
+                <p class="text-xl">{{ vehicle()?.petFriendly ? "Yes" : "No"}}</p>
+            </div>
+        </div>
+        <div class="bg-deep-100 rounded-2xl p-5 size-full">
+            <p class="text-deep">Vehicle information is managed by administrators. Contact support for any changes</p>
+        </div>
+    </div>
+
+    <!-- Activity -->
+    <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+            <ng-icon name="matAssistantPhotoOutline" size="2.5rem" style="color: var(--color-light-700);"/>
+            <div>
+                <h3 class="text-lg text-light-700">Active Hours</h3>
+                <p class="text-gray-400 text-sm">Your activity in last 24 hours</p>
+            </div>
+        </div>
+        <div class="flex flex-col justify-between bg-dark-200 rounded-2xl p-5 gap-5">
+            <div class="flex justify-between items-center">
+                <div class="flex flex-col">
+                    <p>Total Active Time</p>
+                    <p class="text-3xl"><strong>{{ activeHoursRounded }} hours</strong></p>
+                </div>
+                <div class="bg-white rounded-full flex items-center justify-center p-4">
+                    <ng-icon name="bootstrapClock" size="2rem" style="color: var(--color-light-700);" />
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between mb-1">
+                    <p>Daily Goal: {{ WORK_GOAL }} hours</p>
+                    <p>{{ activityPercentage() }}%</p>
+                </div>
+                <div class="rounded-3xl bg-white w-full p-px">
+                    <div class="rounded-3xl bg-light-600 h-5 transition-all duration-500"
+                         [style.width.%]="progressBarWidth()"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

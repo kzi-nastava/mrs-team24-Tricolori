@@ -1,18 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group android:checkableBehavior="single">
+        <!-- Home - shown to all logged in users -->
+        <item
+            android:id="@+id/homeFragment"
+            android:icon="@drawable/ic_home"
+            android:title="Home" />
+
+        <!-- History - shown to all logged in users -->
         <item
             android:id="@+id/rideHistoryFragment"
             android:icon="@drawable/ic_history"
-            android:title="Ride History" />
+            android:title="History" />
 
+        <!-- TODO: COMMENT OUT AFTER ADDING FRAGMENTS -->
+        <!-- Supervise - admin only -->
+<!--        <item-->
+<!--            android:id="@+id/rideSupervisorFragment"-->
+<!--            android:icon="@drawable/ic_supervise"-->
+<!--            android:title="Supervise" />-->
+
+<!--        &lt;!&ndash; Notifications - passenger and admin &ndash;&gt;-->
+<!--        <item-->
+<!--            android:id="@+id/notificationsFragment"-->
+<!--            android:icon="@drawable/ic_notifications"-->
+<!--            android:title="Notifications" />-->
+
+        <!-- Pricelist - admin only -->
         <item
-            android:id="@+id/userProfileFragment"
-            android:icon="@drawable/ic_person"
-            android:title="Profile" />
+            android:id="@+id/pricelistFragment"
+            android:icon="@drawable/ic_pricelist"
+            android:title="Pricelist" />
 
-    </group>
+    <item
+        android:id="@+id/userProfileFragment"
+        android:icon="@drawable/ic_person"
+        android:title="Profile" />
+
+    <item
+        android:id="@+id/changeRequestsReviewFragment"
+        android:title="Change Requests"
+        android:icon="@drawable/ic_change_requests" />
+<!--        &lt;!&ndash; Support - shown to all logged in users &ndash;&gt;-->
+<!--        <item-->
+<!--            android:id="@+id/supportFragment"-->
+<!--            android:icon="@drawable/ic_support"-->
+<!--            android:title="Support" />-->
+</group>
+
 
     <item android:title="Account">
         <menu>
@@ -22,5 +59,12 @@
                 android:title="Log Out" />
         </menu>
     </item>
+
+    <!-- Driver status switch -->
+    <item
+        android:id="@+id/nav_status_switch"
+        android:title="Active Status"
+        app:actionViewClass="com.google.android.material.switchmaterial.SwitchMaterial"
+        app:showAsAction="always" />
 
 </menu>

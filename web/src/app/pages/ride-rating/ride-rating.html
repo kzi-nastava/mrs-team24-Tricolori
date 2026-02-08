@@ -1,0 +1,204 @@
+<div class="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] bg-gray-100">
+  <div class="w-full lg:w-1/4 bg-white shadow-lg p-6 overflow-y-auto z-10 lg:h-full">
+    <div class="flex items-center gap-3 mb-6">
+      <button (click)="handleBack()" class="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg text-gray-700 font-medium text-sm">
+        <ng-icon name="heroArrowLeft" class="w-4 h-4"></ng-icon> Back
+      </button>
+      <h2 class="text-xl font-semibold text-base-900 m-0">Rate Your Ride</h2>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex flex-col items-center justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mb-4"></div>
+        <p class="text-sm text-gray-600">Loading ride details...</p>
+      </div>
+    } @else {
+      @if (errorMessage()) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div class="flex items-start gap-3">
+            <ng-icon name="heroExclamationCircle" class="w-5 h-5 text-red-600 mt-0.5"></ng-icon>
+            <div>
+              <h3 class="text-sm font-semibold text-red-900 m-0 mb-1">Error</h3>
+              <p class="text-xs text-red-700 m-0">{{ errorMessage() }}</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (isExpired()) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div class="flex items-start gap-3">
+            <ng-icon name="heroExclamationCircle" class="w-5 h-5 text-red-600 mt-0.5"></ng-icon>
+            <div>
+              <h3 class="text-sm font-semibold text-red-900 m-0 mb-1">Rating Period Expired</h3>
+              <p class="text-xs text-red-700 m-0">The 3-day rating period for this ride has ended.</p>
+            </div>
+          </div>
+        </div>
+      } @else if (isSubmitted()) {
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <div class="flex items-start gap-3">
+            <ng-icon name="heroCheckCircle" class="w-5 h-5 text-green-600 mt-0.5"></ng-icon>
+            <div>
+              <h3 class="text-sm font-semibold text-green-900 m-0 mb-1">Thank You!</h3>
+              <p class="text-xs text-green-700 m-0">Your rating has been submitted successfully.</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (rideDetails(); as ride) {
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <h3 class="text-sm font-semibold text-base-900 mb-3 m-0">Ride Details</h3>
+
+          <div class="space-y-3">
+            <div class="flex items-start gap-3">
+              <ng-icon name="heroMapPin" class="w-4 h-4 text-teal-600 mt-1"></ng-icon>
+              <div class="flex-1">
+                <p class="text-xs text-gray-500 m-0 mb-1">Pickup</p>
+                <p class="text-sm text-gray-900 m-0">{{ ride.pickupAddress }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <ng-icon name="heroMapPin" class="w-4 h-4 text-red-600 mt-1"></ng-icon>
+              <div class="flex-1">
+                <p class="text-xs text-gray-500 m-0 mb-1">Destination</p>
+                <p class="text-sm text-gray-900 m-0">{{ ride.dropoffAddress }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <ng-icon name="heroCalendar" class="w-4 h-4 text-gray-600"></ng-icon>
+              <div class="flex-1">
+                <p class="text-xs text-gray-500 m-0 mb-1">Date</p>
+                <p class="text-sm text-gray-900 m-0">{{ (ride.startedAt || ride.createdAt) | date: 'MMM dd, yyyy - HH:mm' }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+              <span class="text-xs text-gray-500">Driver</span>
+              <span class="text-sm font-medium text-gray-900">{{ ride.driverName }}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-500">Vehicle</span>
+              <span class="text-sm font-medium text-gray-900">{{ ride.vehicleModel }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (!isExpired() && !isSubmitted()) {
+          <form [formGroup]="ratingForm" (ngSubmit)="submitRating()">
+            <div class="mb-6">
+              <label class="block text-sm font-semibold text-base-900 mb-3">Rate Your Driver</label>
+              <div class="flex gap-2 justify-center mb-2">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <button
+                    type="button"
+                    (click)="setDriverRating(star)"
+                    class="focus:outline-none transition-transform hover:scale-110">
+                    <ng-icon
+                      [name]="star <= driverRating() ? 'heroStarSolid' : 'heroStar'"
+                      [class]="star <= driverRating() ? 'w-10 h-10 text-yellow-400 fill-yellow-400' : 'w-10 h-10 text-gray-300'">
+                    </ng-icon>
+                  </button>
+                }
+              </div>
+              @if (driverRating() > 0) {
+                <p class="text-xs text-center text-gray-600 m-0">{{ getRatingText(driverRating()) }}</p>
+              }
+              @if (ratingForm.get('driverRating')?.invalid && ratingForm.get('driverRating')?.touched) {
+                <p class="text-xs text-red-600 text-center mt-2 m-0">Please rate the driver</p>
+              }
+            </div>
+
+            <div class="mb-6">
+              <label class="block text-sm font-semibold text-base-900 mb-3">Rate the Vehicle</label>
+              <div class="flex gap-2 justify-center mb-2">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <button
+                    type="button"
+                    (click)="setVehicleRating(star)"
+                    class="focus:outline-none transition-transform hover:scale-110">
+                    <ng-icon
+                      [name]="star <= vehicleRating() ? 'heroStarSolid' : 'heroStar'"
+                      [class]="star <= vehicleRating() ? 'w-10 h-10 text-yellow-400 fill-yellow-400' : 'w-10 h-10 text-gray-300'">
+                    </ng-icon>
+                  </button>
+                }
+              </div>
+              @if (vehicleRating() > 0) {
+                <p class="text-xs text-center text-gray-600 m-0">{{ getRatingText(vehicleRating()) }}</p>
+              }
+              @if (ratingForm.get('vehicleRating')?.invalid && ratingForm.get('vehicleRating')?.touched) {
+                <p class="text-xs text-red-600 text-center mt-2 m-0">Please rate the vehicle</p>
+              }
+            </div>
+
+            <div class="mb-6">
+              <label class="block text-sm font-semibold text-base-900 mb-2">
+                Comment <span class="text-gray-500 font-normal">(Optional)</span>
+              </label>
+              <textarea
+                formControlName="comment"
+                placeholder="Share your experience..."
+                rows="4"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none text-sm resize-none"
+                [class.border-red-500]="ratingForm.get('comment')?.invalid && ratingForm.get('comment')?.touched">
+              </textarea>
+              @if (ratingForm.get('comment')?.hasError('maxlength')) {
+                <p class="text-xs text-red-600 mt-1 m-0">Comment is too long (max 500 characters)</p>
+              }
+              <p class="text-xs text-gray-500 mt-1 m-0 text-right">
+                {{ ratingForm.get('comment')?.value?.length || 0 }}/500
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="!ratingForm.valid || isSubmitting()"
+              class="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors">
+              @if (isSubmitting()) {
+                <span>Submitting...</span>
+              } @else {
+                <span>Submit Rating</span>
+              }
+            </button>
+
+            <button
+              type="button"
+              (click)="skipRating()"
+              class="w-full mt-3 text-gray-600 hover:text-gray-800 font-medium py-2 text-sm">
+              Skip for now
+            </button>
+          </form>
+        }
+      }
+    }
+  </div>
+
+  <div class="w-full lg:w-3/4 h-[50vh] lg:h-full relative">
+    <app-map [vehicles]="[]"></app-map>
+
+    @if (rideDetails(); as ride) {
+      <div class="absolute top-6 left-6 bg-white rounded-lg shadow-lg p-4 z-20">
+        <h3 class="text-sm font-semibold text-base-900 mb-2 m-0">Trip Summary</h3>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <ng-icon name="heroArrowsRightLeft" class="w-4 h-4 text-gray-600"></ng-icon>
+            <span class="text-xs text-gray-700">{{ ride.distance }} km</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <ng-icon name="heroClock" class="w-4 h-4 text-gray-600"></ng-icon>
+            <span class="text-xs text-gray-700">{{ ride.duration }} min</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <ng-icon name="heroCurrencyDollar" class="w-4 h-4 text-gray-600"></ng-icon>
+            <span class="text-xs text-gray-700">{{ ride.totalPrice }} RSD</span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
