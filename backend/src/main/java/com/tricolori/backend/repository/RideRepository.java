@@ -33,27 +33,6 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     List<Ride> findAllByStatusIn(Collection<RideStatus> statuses);
 
     boolean existsByDriverIdAndStatus(Long driverId, RideStatus rideStatus);
-    
-    // current ride for driver
-    @Query("""
-        SELECT r
-        FROM Ride r
-        WHERE r.driver.id = :driverId
-          AND r.status IN ('ACCEPTED', 'IN_PROGRESS')
-        ORDER BY r.createdAt DESC
-    """)
-    Optional<Ride> findCurrentRideByDriver(@Param("driverId") Long driverId);
-
-    // current ride for passenger
-    @Query("""
-        SELECT r
-        FROM Ride r
-        JOIN r.passengers p
-        WHERE p.id = :passengerId
-          AND r.status IN ('PENDING', 'ACCEPTED', 'IN_PROGRESS')
-        ORDER BY r.createdAt DESC
-    """)
-    Optional<Ride> findCurrentRideByPassenger(@Param("passengerId") Long passengerId);
 
     @Query("""
     SELECT r
@@ -119,5 +98,31 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable
+    );
+
+    // Find completed rides within a time window for rating reminders
+    @Query("""
+    SELECT r
+    FROM Ride r
+    WHERE r.status = 'COMPLETED'
+      AND r.completedAt >= :startWindow
+      AND r.completedAt <= :endWindow
+""")
+    List<Ride> findCompletedRidesBetween(
+            @Param("startWindow") LocalDateTime startWindow,
+            @Param("endWindow") LocalDateTime endWindow
+    );
+
+    // Find scheduled rides within a time window for ride reminders
+    @Query("""
+    SELECT r
+    FROM Ride r
+    WHERE r.status = 'SCHEDULED'
+      AND r.scheduledTime >= :startWindow
+      AND r.scheduledTime <= :endWindow
+""")
+    List<Ride> findScheduledRidesBetween(
+            @Param("startWindow") LocalDateTime startWindow,
+            @Param("endWindow") LocalDateTime endWindow
     );
 }

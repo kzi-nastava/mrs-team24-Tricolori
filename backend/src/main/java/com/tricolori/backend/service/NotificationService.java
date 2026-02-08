@@ -160,7 +160,7 @@ public class NotificationService {
     }
 
     // RIDE_COMPLETED
-    public void sendRideCompletedNotification(String passengerEmail, Long rideId,
+    public void sendRideCompletedNotification(String passengerEmail, String passengerFirstName, Long rideId,
                                               String from, String to, double totalFare) {
         String content = String.format("Your ride from %s to %s has been completed. Total fare: %.2f RSD. Thank you for riding with us!",
                 from, to, totalFare);
@@ -168,25 +168,32 @@ public class NotificationService {
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_COMPLETED, rideId);
         notification.setActionUrl("/passenger/history");
         saveAndSend(notification, passengerEmail);
+
+        try {
+            emailService.sendRideCompletedEmail(passengerEmail, passengerFirstName, from, to, totalFare, rideId);
+            log.info("Ride completed email sent to: {}", passengerEmail);
+        } catch (Exception e) {
+            log.error("Failed to send ride completed email to: {}", passengerEmail, e);
+        }
     }
 
     // TODO: implement scheduling for reminders for rating and upcoming rides
     // RATING_REMINDER
-    public NotificationDto sendRatingReminderNotification(String passengerEmail, Long rideId,
-                                                          String driverName, int hoursRemaining) {
+    public void sendRatingReminderNotification(String passengerEmail, Long rideId,
+                                               String driverName, int hoursRemaining) {
         String content = String.format("How was your ride with %s? Your feedback helps us maintain quality service. You have %d hours remaining to submit your rating.",
                 driverName, hoursRemaining);
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RATING_REMINDER, rideId);
         notification.setDriverName(driverName);
         notification.setActionUrl("/passenger/ride-rating/" + rideId);
-        return saveAndSend(notification, passengerEmail);
+        saveAndSend(notification, passengerEmail);
     }
 
     // RIDE_REMINDER (with email)
-    public NotificationDto sendRideReminderNotification(String passengerEmail, Long rideId,
-                                                        String passengerFirstName, int minutesUntilPickup,
-                                                        String from, String to) {
+    public void sendRideReminderNotification(String passengerEmail, Long rideId,
+                                             String passengerFirstName, int minutesUntilPickup,
+                                             String from, String to) {
         String content = String.format("Reminder: Your scheduled ride starts in %d minutes. Be ready for pickup!",
                 minutesUntilPickup);
 
@@ -202,23 +209,23 @@ public class NotificationService {
             log.error("Failed to send ride reminder email to: {}", passengerEmail, e);
         }
 
-        return saveAndSend(notification, passengerEmail);
+        saveAndSend(notification, passengerEmail);
     }
 
     // ==================== DRIVER NOTIFICATIONS ====================
 
     // UPCOMING_RIDE_REMINDER
     // TODO: implement when scheduling is added
-    public NotificationDto sendUpcomingRideReminderNotification(String driverEmail, Long rideId,
-                                                                int minutesUntilPickup, String pickupLocation,
-                                                                String passengerName) {
+    public void sendUpcomingRideReminderNotification(String driverEmail, Long rideId,
+                                                     int minutesUntilPickup, String pickupLocation,
+                                                     String passengerName) {
         String content = String.format("You have a ride scheduled in %d minutes. Pickup location: %s. Passenger: %s. Make sure to arrive on time!",
                 minutesUntilPickup, pickupLocation, passengerName);
 
         Notification notification = new Notification(driverEmail, content, NotificationType.UPCOMING_RIDE_REMINDER, rideId);
         notification.setPassengerName(passengerName);
         notification.setActionUrl("/driver/upcoming-rides/" + rideId);
-        return saveAndSend(notification, driverEmail);
+        saveAndSend(notification, driverEmail);
     }
 
     // RATING_RECEIVED

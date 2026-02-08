@@ -106,7 +106,7 @@ public class RideService {
         // notify passengers
         for (Passenger p : ride.getPassengers()) {
             notificationService.sendRideCompletedNotification(
-                    p.getEmail(), ride.getId(), ride.getRoute().getPickupStop().getAddress(), ride.getRoute().getDestinationStop().getAddress(),
+                    p.getEmail(), p.getFirstName(), ride.getId(), ride.getRoute().getPickupStop().getAddress(), ride.getRoute().getDestinationStop().getAddress(),
                     ride.getPrice()
             );
         }
@@ -269,7 +269,7 @@ public class RideService {
     }
 
     public RideStatusResponse getCurrentRideByDriver(Long driverId) {
-        Ride ride = rideRepository.findCurrentRideByDriver(driverId)
+        Ride ride = rideRepository.findOngoingRideByDriver(driverId)
                 .orElseThrow(() ->
                         new RideNotFoundException("no active ride for this driver")
                 );
@@ -324,7 +324,7 @@ public class RideService {
         Ride ride;
 
         if (person.getRole().equals(PersonRole.ROLE_DRIVER)) {
-            ride = rideRepository.findCurrentRideByDriver(person.getId())
+            ride = rideRepository.findOngoingRideByDriver(person.getId())
                     .orElseThrow();
             cancelByDriver(ride, request);
 
@@ -338,7 +338,7 @@ public class RideService {
             }
 
         } else if (person.getRole().equals(PersonRole.ROLE_PASSENGER)) {
-            ride = rideRepository.findCurrentRideByPassenger(person.getId())
+            ride = rideRepository.findOngoingRideByPassenger(person.getId())
                     .orElseThrow();
             cancelByPassenger(ride);
 
