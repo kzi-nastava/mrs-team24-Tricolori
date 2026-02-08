@@ -2,8 +2,11 @@ package com.tricolori.backend.service;
 
 import com.tricolori.backend.entity.InconsistencyReport;
 import com.tricolori.backend.entity.Passenger;
+import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.entity.Ride;
+import com.tricolori.backend.enums.PersonRole;
 import com.tricolori.backend.repository.InconsistencyReportRepository;
+import com.tricolori.backend.repository.PersonRepository;
 import com.tricolori.backend.repository.RideRepository;
 import com.tricolori.backend.exception.RideNotFoundException;
 import com.tricolori.backend.dto.ride.InconsistencyReportRequest;
@@ -21,6 +24,8 @@ public class InconsistencyReportService {
 
     private final InconsistencyReportRepository inconsistencyReportRepository;
     private final RideRepository rideRepository;
+    private final NotificationService notificationService;
+    private final PersonRepository personRepository;
 
     // ================= create =================
 
@@ -45,6 +50,12 @@ public class InconsistencyReportService {
         report.setReporter(passenger);
         report.setDescription(request.getDescription());
 
+        String adminEmail = personRepository.findByRole(PersonRole.ROLE_ADMIN)
+                .stream()
+                .findFirst()
+                .map(Person::getEmail)
+                .orElseThrow(() -> new RuntimeException("admin user not found"));
+        notificationService.sendRideReportNotification(adminEmail, rideId, "Route inconsistency", request.getDescription());
         inconsistencyReportRepository.save(report);
     }
 

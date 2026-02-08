@@ -106,43 +106,42 @@ public class NotificationService {
     // ==================== PASSENGER NOTIFICATIONS ====================
 
     // RIDE_STARTING
-    public NotificationDto sendRideStartingNotification(String passengerEmail, Long rideId,
-                                                        String driverName, String vehicleInfo,
-                                                        String pickupLocation, int minutesUntilArrival) {
-        String content = String.format("Your driver %s will arrive at %s in approximately %d minutes. The vehicle is %s.",
-                driverName, pickupLocation, minutesUntilArrival, vehicleInfo);
+    public void sendRideStartingNotification(String passengerEmail, Long rideId,
+                                             String driverName, String vehicleInfo,
+                                             String pickupLocation) {
+        String content = String.format("Your driver %s will arrive at %s very soon. The vehicle model is %s.",
+                driverName, pickupLocation, vehicleInfo);
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_STARTING, rideId);
         notification.setDriverName(driverName);
         notification.setActionUrl("/passenger/ride-tracking/" + rideId);
-        return saveAndSend(notification, passengerEmail);
+        saveAndSend(notification, passengerEmail);
     }
 
     // RIDE_CANCELLED
-    public NotificationDto sendRideCancelledNotification(String passengerEmail, Long rideId,
-                                                         String scheduledTime, String from, String to, String reason) {
+    public void sendRideCancelledNotification(String passengerEmail, Long rideId,
+                                              String scheduledTime, String from, String to, String reason) {
         String content = String.format("Your ride scheduled for %s from %s to %s has been cancelled%s. Your payment has been refunded.",
                 scheduledTime, from, to, reason != null && !reason.isEmpty() ? " due to " + reason : "");
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_CANCELLED, rideId);
-        return saveAndSend(notification, passengerEmail);
+        saveAndSend(notification, passengerEmail);
     }
 
     // RIDE_REJECTED
-    public NotificationDto sendRideRejectedNotification(String passengerEmail, Long rideId) {
+    public void sendRideRejectedNotification(String passengerEmail, Long rideId) {
         String content = "Unfortunately, there are no available drivers at the moment. Please try again later.";
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_REJECTED, rideId);
-        return saveAndSend(notification, passengerEmail);
+        saveAndSend(notification, passengerEmail);
     }
 
     // ADDED_TO_RIDE (with email)
-    public NotificationDto sendAddedToRideNotification(String passengerEmail, Long rideId,
-                                                       String organizerName, String passengerFirstName,
-                                                       String from, String to, String scheduledTime,
-                                                       int totalPassengers) {
-        String content = String.format("%s added you to a shared ride from %s to %s scheduled for %s. Total cost will be split between %d passengers.",
-                organizerName, from, to, scheduledTime, totalPassengers);
+    public void sendAddedToRideNotification(String passengerEmail, Long rideId,
+                                            String organizerName, String passengerFirstName,
+                                            String from, String to, String scheduledTime) {
+        String content = String.format("%s added you to a shared ride from %s to %s scheduled for %s. Total cost will be paid by the organizer.",
+                organizerName, from, to, scheduledTime);
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.ADDED_TO_RIDE, rideId);
         notification.setPassengerName(organizerName);
@@ -156,18 +155,18 @@ public class NotificationService {
             log.error("Failed to send email to linked passenger: {}", passengerEmail, e);
         }
 
-        return saveAndSend(notification, passengerEmail);
+        saveAndSend(notification, passengerEmail);
     }
 
     // RIDE_COMPLETED
-    public NotificationDto sendRideCompletedNotification(String passengerEmail, Long rideId,
-                                                         String from, String to, double totalFare) {
+    public void sendRideCompletedNotification(String passengerEmail, Long rideId,
+                                              String from, String to, double totalFare) {
         String content = String.format("Your ride from %s to %s has been completed. Total fare: %.2f RSD. Thank you for riding with us!",
                 from, to, totalFare);
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_COMPLETED, rideId);
         notification.setActionUrl("/passenger/history");
-        return saveAndSend(notification, passengerEmail);
+        saveAndSend(notification, passengerEmail);
     }
 
     // RATING_REMINDER
@@ -245,24 +244,26 @@ public class NotificationService {
     }
 
     // RIDE_STARTED
-    public NotificationDto sendRideStartedNotification(String driverEmail, Long rideId) {
-        String content = "Your ride has started. Drive safely and provide excellent service!";
+    public void sendRideStartedNotification(String driverEmail, Long rideId) {
+        String content = String.format("Your ride with id %d has started. Drive safely and provide excellent service!",
+                rideId);
 
         Notification notification = new Notification(driverEmail, content, NotificationType.RIDE_STARTED, rideId);
-        return saveAndSend(notification, driverEmail);
+        notification.setActionUrl("/driver/ride-tracking/" + rideId);
+        saveAndSend(notification, driverEmail);
     }
 
     // ==================== ADMIN NOTIFICATIONS ====================
 
     // RIDE_REPORT
-    public NotificationDto sendRideReportNotification(String adminEmail, Long rideId,
-                                                      String reportType, String reportDetails) {
-        String content = String.format("%s reported on ride #%d. %s",
+    public void sendRideReportNotification(String adminEmail, Long rideId,
+                                           String reportType, String reportDetails) {
+        String content = String.format("%s reported on ride #%d. User comment: %s",
                 reportType, rideId, reportDetails);
 
         Notification notification = new Notification(adminEmail, content, NotificationType.RIDE_REPORT, rideId);
         notification.setActionUrl("/admin/ride-reports/" + rideId);
-        return saveAndSend(notification, adminEmail);
+        saveAndSend(notification, adminEmail);
     }
 
     // NEW_REGISTRATION

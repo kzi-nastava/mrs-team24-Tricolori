@@ -2,11 +2,11 @@ package com.tricolori.backend.enums;
 
 public enum NotificationType {
     // Passenger notifications
-    RIDE_STARTING,
-    RIDE_CANCELLED,
-    RIDE_REJECTED,
-    ADDED_TO_RIDE,
-    RIDE_COMPLETED,
+    RIDE_STARTING, // ok
+    RIDE_CANCELLED, //ok
+    RIDE_REJECTED, // ok
+    ADDED_TO_RIDE, // ok
+    RIDE_COMPLETED, // ok
     RATING_REMINDER,
     RIDE_REMINDER,
 
@@ -17,7 +17,7 @@ public enum NotificationType {
     RIDE_STARTED,
 
     // Admin notifications
-    RIDE_REPORT,
+    RIDE_REPORT, // ok
     NEW_REGISTRATION,
     PROFILE_CHANGE_REQUEST,
 
