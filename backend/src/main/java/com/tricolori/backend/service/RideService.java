@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.tricolori.backend.dto.ride.*;
@@ -88,6 +89,7 @@ public class RideService {
         response.setVehicleRating(
                 round(reviewService.getAverageVehicleRating(rideId))
         );
+        response.setRouteId(ride.getRoute().getId());
 
         return response;
     }
@@ -143,6 +145,7 @@ public class RideService {
         response.setVehicleRating(
                 round(reviewService.getAverageVehicleRating(rideId))
         );
+        response.setRouteId(ride.getRoute().getId());
 
         return response;
     }
@@ -429,7 +432,7 @@ public class RideService {
     }
 
     @Transactional
-    public void rideOrder(OrderRequest request) {
+    public void rideOrder(Person passenger, OrderRequest request) {
         RidePreferences preferences = request.getPreferences();
 
         // Extracting and creating route:
@@ -445,6 +448,12 @@ public class RideService {
         ));
 
         // Find passengers by email:
+        // Add owner passenger as first email:
+        List<String> allPassengerEmails = new ArrayList<>();
+        allPassengerEmails.add(passenger.getEmail());
+        if (request.getTrackers() != null) {
+            allPassengerEmails.addAll(Arrays.asList(request.getTrackers()));
+        }
         List<Passenger> trackingPassengers = passengerService.getTrackingPassengers(
             request.getTrackers()
         );
