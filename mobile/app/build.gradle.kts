@@ -57,6 +57,10 @@ dependencies {
     implementation(libs.osmbonuspack)
     implementation(libs.preference)
 
+    // Glide
+    implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
