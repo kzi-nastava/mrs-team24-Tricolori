@@ -73,7 +73,7 @@ export const routes: Routes = [
       {
         path: 'support',
         loadComponent: () =>
-          import('./pages/support-chat/driver/driver-support').then(m => m.DriverSupport)
+          import('./pages/support-chat/user/user-support').then(m => m.UserSupport)
       },
       {
         path: 'profile',
