@@ -4,24 +4,24 @@ public enum NotificationType {
     // Passenger notifications
     RIDE_STARTING,
     RIDE_CANCELLED,
+    RIDE_REJECTED,
     ADDED_TO_RIDE,
     RIDE_COMPLETED,
-    DRIVER_ASSIGNED,
     RATING_REMINDER,
+    RIDE_REMINDER,
 
     // Driver notifications
     NEW_RIDE_REQUEST,
     UPCOMING_RIDE_REMINDER,
-    PASSENGER_ADDED,
     RATING_RECEIVED,
-    RIDE_ACCEPTED,
     RIDE_STARTED,
 
     // Admin notifications
     RIDE_REPORT,
-    DRIVER_ISSUE,
-    SYSTEM_ALERT,
     NEW_REGISTRATION,
+    PROFILE_CHANGE_REQUEST,
+
+    NEW_CHAT_MESSAGE,
 
     // General
     GENERAL
