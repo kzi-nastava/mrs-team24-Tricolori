@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation("commons-io:commons-io:2.21.0")
 
     // Navigation
     implementation(libs.navigation.fragment)
