@@ -66,6 +66,11 @@ export const routes: Routes = [
           import('./pages/ride-history/driver/driver-history').then(m => m.DriverHistory)
       },
       {
+        path: 'notifications',
+        loadComponent: () => import('./pages/notifications/driver/driver-notifications').then(m => m.DriverNotifications),
+        canActivate: [authGuard]
+      },
+      {
         path: 'support',
         loadComponent: () =>
           import('./pages/support-chat/driver/driver-support').then(m => m.DriverSupport)
