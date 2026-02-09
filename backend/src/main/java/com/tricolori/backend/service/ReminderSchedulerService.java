@@ -115,8 +115,7 @@ public class ReminderSchedulerService {
             for (Passenger passenger : ride.getPassengers()) {
                 try {
                     notificationService.sendRideReminderNotification(passenger.getEmail(), ride.getId(),
-                            passenger.getFirstName(), minutesUntilPickup, from, to
-                    );
+                            passenger.getFirstName(), minutesUntilPickup, from, to);
                     log.debug("Sent ride reminder to {} for ride {} ({} min)",
                             passenger.getEmail(), ride.getId(), minutesUntilPickup);
                 } catch (Exception e) {

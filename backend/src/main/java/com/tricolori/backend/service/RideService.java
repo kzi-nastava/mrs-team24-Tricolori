@@ -437,7 +437,7 @@ public class RideService {
 
         for (Passenger p : ride.getPassengers()) {
             notificationService.sendRideStartingNotification(
-                    p.getEmail(), ride.getId(), ride.getDriver().getFirstName()+ride.getDriver().getLastName(),
+                    p.getEmail(), ride.getId(), ride.getDriver().getFirstName()+" "+ride.getDriver().getLastName(),
                     ride.getDriver().getVehicle().getModel(), ride.getRoute().getPickupStop().getAddress()
             );
         }
@@ -485,7 +485,7 @@ public class RideService {
                 if (p.getId().equals(organizer.getId()))
                     continue; // skip main passenger
                 notificationService.sendAddedToRideNotification(
-                        p.getEmail(), ride.getId(), organizer.getFirstName() + organizer.getLastName(),
+                        p.getEmail(), ride.getId(), organizer.getFirstName() + " " + organizer.getLastName(),
                         p.getFirstName(), ride.getRoute().getPickupStop().getAddress(), ride.getRoute().getDestinationStop().getAddress(),
                         ride.getScheduledFor().toString()
                 );

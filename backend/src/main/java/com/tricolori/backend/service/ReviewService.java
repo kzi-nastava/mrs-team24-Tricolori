@@ -61,7 +61,7 @@ public class ReviewService {
         // Notify driver about new review
         if (ride.getDriver() != null) {
             notificationService.sendRatingReceivedNotification(ride.getDriver().getEmail(), ride.getId(), request.getDriverRating(),
-                    request.getVehicleRating(), passenger.getFirstName(), request.getComment());
+                    request.getVehicleRating(), passenger.getFirstName() +" "+ passenger.getLastName(), request.getComment());
         }
     }
 

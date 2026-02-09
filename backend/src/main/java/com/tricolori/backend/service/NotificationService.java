@@ -28,20 +28,6 @@ public class NotificationService {
 
     // ==================== CORE METHODS ====================
 
-    @Transactional
-    public NotificationDto sendNotification(String email, String content, NotificationType type, Long rideId) {
-        log.info("Sending notification to {}: type={}, rideId={}", email, type, rideId);
-
-        Notification notification = new Notification(email, content, type, rideId);
-        notification = notificationRepository.save(notification);
-
-        NotificationDto dto = notificationMapper.toDto(notification);
-        messagingTemplate.convertAndSend("/topic/notifications/" + email, dto);
-
-        log.info("Notification sent successfully: id={}", notification.getId());
-        return dto;
-    }
-
     @Transactional(readOnly = true)
     public List<NotificationDto> getAllNotifications(String email) {
         log.info("Fetching all notifications for user: {}", email);
@@ -99,11 +85,10 @@ public class NotificationService {
 
     // ==================== HELPER METHOD ====================
 
-    private NotificationDto saveAndSend(Notification notification, String email) {
+    private void saveAndSend(Notification notification, String email) {
         notification = notificationRepository.save(notification);
         NotificationDto dto = notificationMapper.toDto(notification);
         messagingTemplate.convertAndSend("/topic/notifications/" + email, dto);
-        return dto;
     }
 
     // ==================== PASSENGER NOTIFICATIONS ====================
@@ -179,7 +164,6 @@ public class NotificationService {
         }
     }
 
-    // TODO: implement scheduling for reminders for rating and upcoming rides
     // RATING_REMINDER
     public void sendRatingReminderNotification(String passengerEmail, Long rideId,
                                                String driverName, int hoursRemaining) {
@@ -217,7 +201,6 @@ public class NotificationService {
     // ==================== DRIVER NOTIFICATIONS ====================
 
     // UPCOMING_RIDE_REMINDER
-    // TODO: implement when scheduling is added
     public void sendUpcomingRideReminderNotification(String driverEmail, Long rideId,
                                                      int minutesUntilPickup, String pickupLocation,
                                                      String passengerName) {
@@ -253,7 +236,7 @@ public class NotificationService {
 
     // RIDE_STARTED
     public void sendRideStartedNotification(String driverEmail, Long rideId) {
-        String content = String.format("Your ride with id %d has started. Drive safely and provide excellent service!",
+        String content = String.format("Your ride with id #%d has started. Drive safely and provide excellent service!",
                 rideId);
 
         Notification notification = new Notification(driverEmail, content, NotificationType.RIDE_STARTED, rideId);
@@ -264,10 +247,10 @@ public class NotificationService {
     // ==================== ADMIN NOTIFICATIONS ====================
 
     // RIDE_REPORT
-    public void sendRideReportNotification(String adminEmail, Long rideId,
+    public void sendRideReportNotification(String adminEmail, Long rideId, String driverName,
                                            String reportType, String reportDetails) {
-        String content = String.format("%s reported on ride #%d. User comment: %s",
-                reportType, rideId, reportDetails);
+        String content = String.format("%s reported on ride #%d (by driver %s). User comment: %s",
+                reportType, rideId, driverName, reportDetails != null && !reportDetails.isBlank() ? reportDetails : "No additional details provided.");
 
         Notification notification = new Notification(adminEmail, content, NotificationType.RIDE_REPORT, rideId);
         notification.setActionUrl("/admin/ride-reports/" + rideId);

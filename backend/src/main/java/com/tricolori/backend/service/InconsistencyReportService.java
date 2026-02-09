@@ -55,7 +55,9 @@ public class InconsistencyReportService {
                 .findFirst()
                 .map(Person::getEmail)
                 .orElseThrow(() -> new RuntimeException("admin user not found"));
-        notificationService.sendRideReportNotification(adminEmail, rideId, "Route inconsistency", request.getDescription());
+        notificationService.sendRideReportNotification(adminEmail, rideId,
+                ride.getDriver().getFirstName() +" " + ride.getDriver().getLastName(),
+                "Route inconsistency", request.getDescription());
         inconsistencyReportRepository.save(report);
     }
 

@@ -223,7 +223,7 @@ public class AuthService {
         );
 
         notificationService.sendNewRegistrationNotification(personRepository.findByRole(PersonRole.ROLE_ADMIN).getFirst().getEmail(),
-                driver.getFirstName() + driver.getLastName(), vehicle.getModel());
+                driver.getFirstName() + " " + driver.getLastName(), vehicle.getModel());
     }
 
     @Transactional
