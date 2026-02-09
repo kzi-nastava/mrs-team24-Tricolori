@@ -11,6 +11,7 @@ import {
 import {
   RideEstimationResult
 } from './pages/home/unregistered/components/ride-estimation/ride-estimation-result/ride-estimation-result';
+import {HomeDriver} from './pages/home/driver/driver-home';
 
 export const routes: Routes = [
   // Public routes
@@ -32,46 +33,53 @@ export const routes: Routes = [
 
   // Driver routes
   {
-  path: 'driver',
-  canActivate: [authGuard],
-  children: [
-    {
-      path: 'home',
-      loadComponent: () =>
-        import('./pages/home/driver/driver-home').then(m => m.HomeDriver),
-      children: [
-        {
-          path: '',
-          loadComponent: () =>
-            import('./pages/home/driver/components/driver-waiting/driver-waiting')
-              .then(m => m.DriverWaiting)
-        },
-        {
-          path: 'ride-assign/:id',
-          loadComponent: () =>
-            import('./pages/home/driver/components/driver-ride-assignment/driver-ride-assignment')
-              .then(m => m.DriverRideAssignment)
-        }
-      ]
-    },
+    path: 'driver',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/home/driver/driver-home').then(m => m.HomeDriver),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./pages/home/driver/components/driver-waiting/driver-waiting')
+                .then(m => m.DriverWaiting)
+          },
+          {
+            path: 'ride-assign/:id',
+            loadComponent: () =>
+              import('./pages/home/driver/components/driver-ride-assignment/driver-ride-assignment')
+                .then(m => m.DriverRideAssignment)
+          }
+        ]
+      },
       {
         path: 'ride-tracking/:id',
-        loadComponent: () => import('./pages/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent)
+        loadComponent: () =>
+          import('./pages/ride-tracking/driver/driver-ride-tracking').then(m => m.DriverRideTrackingComponent)
       },
       {
         path: 'history',
-        loadComponent: () => import('./pages/ride-history/driver/driver-history').then(m => m.DriverHistory),
+        loadComponent: () =>
+          import('./pages/ride-history/driver/driver-history').then(m => m.DriverHistory)
+      },
+      {
+        path: 'notifications',
+        loadComponent: () => import('./pages/notifications/driver/driver-notifications').then(m => m.DriverNotifications),
         canActivate: [authGuard]
       },
       {
         path: 'support',
-        loadComponent: () => import('./pages/support-chat/user/user-support').then(m => m.UserSupport)
+        loadComponent: () =>
+          import('./pages/support-chat/user/user-support').then(m => m.UserSupport)
       },
       {
         path: 'profile',
-        loadComponent: () => import('./pages/profile/driver-profile/driver-profile').then(m => m.DriverProfile)
-      },
-      { path: '', redirectTo: 'home', pathMatch: 'full' }
+        loadComponent: () =>
+          import('./pages/profile/driver-profile/driver-profile').then(m => m.DriverProfile)
+      }
     ]
   },
 

@@ -12,6 +12,7 @@ import {
 import { CancelRideModalComponent } from '../../../driver/components/cancel-ride-modal/cancel-ride-modal';
 import { RideService } from '../../../../../services/ride.service';
 import { Router } from '@angular/router';
+import {ToastService} from '../../../../../services/toast.service';
 
 @Component({
   selector: 'app-ride-wait',
@@ -25,9 +26,9 @@ import { Router } from '@angular/router';
 export class RideWait {
   private rideService = inject(RideService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   showCancelModal = signal(false);
-  errorMessage = signal<string | null>(null);
 
   activeRide = signal({
     id: 123,
@@ -45,16 +46,16 @@ export class RideWait {
   }
 
   submitCancellation(reason: string) {
-    this.errorMessage.set(null);
-
     this.rideService.cancelRide(reason).subscribe({
       next: () => {
         this.showCancelModal.set(false);
+        this.toastService.show('Ride canceled successfully!', 'success');
         this.router.navigate(['/passenger/home']);
       },
       error: (err) => {
-        console.error("Cancellation failed", err);
-        this.errorMessage.set("Could not cancel ride. Please try again.");
+        this.showCancelModal.set(false);
+        const msg = err.error?.message || err.error || 'Something went wrong';
+        this.toastService.show(msg, 'error');
       }
     });
   }

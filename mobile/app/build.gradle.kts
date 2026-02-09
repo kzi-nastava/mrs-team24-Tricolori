@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation("commons-io:commons-io:2.21.0")
 
     // Navigation
     implementation(libs.navigation.fragment)
@@ -56,6 +57,10 @@ dependencies {
     implementation(libs.osmdroid.android)
     implementation(libs.osmbonuspack)
     implementation(libs.preference)
+
+    // Glide
+    implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

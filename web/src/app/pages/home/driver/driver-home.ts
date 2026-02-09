@@ -8,8 +8,7 @@ import {Map} from '../../../components/map/map';
   selector: 'app-home-driver',
   standalone: true,
   imports: [CommonModule, RouterOutlet, Map],
-  templateUrl: './driver-home.html',
-  styleUrl: './driver-home.css'
+  templateUrl: './driver-home.html'
 })
 export class HomeDriver {
 }

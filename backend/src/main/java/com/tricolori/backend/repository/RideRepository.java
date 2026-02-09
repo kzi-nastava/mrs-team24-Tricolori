@@ -35,6 +35,31 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     boolean existsByDriverIdAndStatus(Long driverId, RideStatus rideStatus);
 
     @Query("""
+        SELECT r 
+        FROM Ride r 
+        WHERE r.driver.id = :driverId 
+          AND r.status IN :statuses 
+        ORDER BY r.createdAt DESC
+    """)
+    Optional<Ride> findRideByDriverAndStatuses(
+            @Param("driverId") Long driverId,
+            @Param("statuses") Collection<RideStatus> statuses
+    );
+
+    @Query("""
+        SELECT r 
+        FROM Ride r 
+        JOIN r.passengers p 
+        WHERE p.id = :passengerId 
+          AND r.status IN :statuses 
+        ORDER BY r.createdAt DESC
+    """)
+    Optional<Ride> findRideByPassengerAndStatuses(
+            @Param("passengerId") Long passengerId,
+            @Param("statuses") Collection<RideStatus> statuses
+    );
+
+    @Query("""
     SELECT r
     FROM Ride r
     WHERE r.driver.id = :driverId

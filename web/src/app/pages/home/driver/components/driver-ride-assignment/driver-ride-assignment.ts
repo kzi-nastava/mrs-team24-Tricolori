@@ -16,8 +16,7 @@ import { CancelRideModalComponent } from '../cancel-ride-modal/cancel-ride-modal
 import { RideService } from '../../../../../services/ride.service';
 import { MapService } from '../../../../../services/map.service';
 import { RideAssignment } from '../../../../../model/ride';
-import * as L from 'leaflet';
-import {LatLng} from 'leaflet';
+import {ToastService} from '../../../../../services/toast.service';
 
 @Component({
   selector: 'app-driver-ride-assignment',
@@ -39,10 +38,7 @@ import {LatLng} from 'leaflet';
 })
 export class DriverRideAssignment implements OnInit, OnDestroy {
 
-  // ================= state =================
-
   showCancelModal = signal(false);
-  errorMessage = signal<string | null>(null);
 
   activeRide = signal<RideAssignment>({
     id: 1,
@@ -58,63 +54,17 @@ export class DriverRideAssignment implements OnInit, OnDestroy {
     eta: 5
   });
 
-  get pickup(): string {
-  return this.activeRide().pickupAddress;
-}
-get destination(): string {
-  return this.activeRide().destinationAddress;
-}
-get eta(): number {
-  return this.activeRide().eta;
-}
-
-  // ================= services =================
-
   private rideService = inject(RideService);
   private mapService = inject(MapService);
+  private toastService = inject(ToastService);
   private router = inject(Router);
 
-  // ================= lifecycle =================
-
   ngOnInit(): void {
-    setTimeout(() => this.drawRoute(), 500);
+    this.mapService.drawRoute([]);
   }
 
   ngOnDestroy(): void {
     this.mapService.clearRouteAndMarkers();
-  }
-
-  // ================= map =================
-
-  private async drawRoute(): Promise<void> {
-    const { pickupCoords, destinationCoords } = this.activeRide();
-    const map = this.mapService.getMap();
-    if (!map) return;
-
-    try {
-      this.mapService.drawRoute([]);
-    } catch {
-      this.mapService.drawRoute([]);
-    }
-  }
-
-  private async fetchOsrmRoute(
-    pickup: [number, number],
-    dropoff: [number, number]
-  ): Promise<L.LatLng[]> {
-    const url = `https://router.project-osrm.org/route/v1/driving/${pickup[1]},${pickup[0]};${dropoff[1]},${dropoff[0]}?overview=full&geometries=geojson`;
-    const res = await fetch(url);
-    const data = await res.json();
-
-    return data.routes?.[0]?.geometry?.coordinates.map(
-      (c: number[]) => L.latLng(c[1], c[0])
-    ) ?? [];
-  }
-
-  // ================= actions =================
-
-  handleBack(): void {
-    this.router.navigate(['/driver/home']);
   }
 
   handleCancel(): void {
@@ -122,22 +72,21 @@ get eta(): number {
   }
 
   submitCancellation(reason: string): void {
-    this.errorMessage.set(null);
-
     this.rideService.cancelRide(reason).subscribe({
       next: () => {
         this.showCancelModal.set(false);
-        this.router.navigate(['/driver/home']);
+        this.toastService.show('Ride canceled successfully!', 'success');
+        this.router.navigate(['/driver']);
       },
-      error: () => {
-        this.errorMessage.set('Failed to cancel ride. Please try again.');
+      error: (err) => {
+        this.showCancelModal.set(false);
+        const msg = err.error?.message || err.error || 'Something went wrong';
+        this.toastService.show(msg, 'error');
       }
     });
   }
 
   handleStartRide() {
-    this.errorMessage.set(null);
-
     this.rideService.startRide(this.activeRide().id).subscribe({
       next: () => {
         console.log("Ride started successfully.");
@@ -148,5 +97,17 @@ get eta(): number {
         this.router.navigate(['/driver/ride-tracking', this.activeRide().id]);
       }
     });
+  }
+
+  get pickup(): string {
+    return this.activeRide().pickupAddress;
+  }
+
+  get destination(): string {
+    return this.activeRide().destinationAddress;
+  }
+
+  get eta(): number {
+    return this.activeRide().eta;
   }
 }
