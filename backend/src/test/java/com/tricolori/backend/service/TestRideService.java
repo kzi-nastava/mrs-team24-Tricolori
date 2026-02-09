@@ -51,7 +51,7 @@ public class TestRideService {
 
     @Test
     void testSuccessByDriver() {
-        when(rideRepository.findCurrentRideByDriver(driver.getId()))
+        when(rideRepository.findOngoingRideByDriver(driver.getId()))
                 .thenReturn(Optional.of(mockRide));
 
         CancelRideRequest req = new CancelRideRequest("Car breakdown");
@@ -64,7 +64,7 @@ public class TestRideService {
 
     @Test
     void testSuccessByPassenger() {
-        when(rideRepository.findCurrentRideByPassenger(passenger.getId()))
+        when(rideRepository.findOngoingRideByPassenger(passenger.getId()))
                 .thenReturn(Optional.of(mockRide));
 
         CancelRideRequest req = new CancelRideRequest("Changed my mind");
@@ -76,7 +76,7 @@ public class TestRideService {
 
     @Test
     void testRideNotFoundForDriver() {
-        when(rideRepository.findCurrentRideByDriver(driver.getId()))
+        when(rideRepository.findOngoingRideByDriver(driver.getId()))
                 .thenReturn(Optional.empty());
 
         assertThrows(RideNotFoundException.class, () -> {

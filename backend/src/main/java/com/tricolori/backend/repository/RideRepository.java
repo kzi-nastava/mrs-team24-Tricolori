@@ -101,12 +101,13 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     );
 
     // Find completed rides within a time window for rating reminders
+    // Change from completedAt to endTime
     @Query("""
     SELECT r
     FROM Ride r
     WHERE r.status = 'COMPLETED'
-      AND r.completedAt >= :startWindow
-      AND r.completedAt <= :endWindow
+      AND r.endTime >= :startWindow
+      AND r.endTime <= :endWindow
 """)
     List<Ride> findCompletedRidesBetween(
             @Param("startWindow") LocalDateTime startWindow,
@@ -118,8 +119,8 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     SELECT r
     FROM Ride r
     WHERE r.status = 'SCHEDULED'
-      AND r.scheduledTime >= :startWindow
-      AND r.scheduledTime <= :endWindow
+      AND r.scheduledFor >= :startWindow
+      AND r.scheduledFor <= :endWindow
 """)
     List<Ride> findScheduledRidesBetween(
             @Param("startWindow") LocalDateTime startWindow,
