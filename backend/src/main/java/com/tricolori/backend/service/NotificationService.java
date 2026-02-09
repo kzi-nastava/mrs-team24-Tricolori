@@ -293,7 +293,7 @@ public class NotificationService {
         personRepository.findByEmail(email).ifPresent(person -> {
             if (person.getRole().name().equals("ADMIN")) {
                 notification.setActionUrl("/admin/support");
-            } if (person.getRole().name().equals("DRIVER")) {
+            } else if (person.getRole().name().equals("DRIVER")) {
                 notification.setActionUrl("/driver/support");
             } else {
                 notification.setActionUrl("/passenger/support");
