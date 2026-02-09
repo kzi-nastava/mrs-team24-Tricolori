@@ -37,7 +37,7 @@ public class ChatService {
         message.setRead(false);
 
         Message savedMessage = messageRepository.save(message);
-        notificationService.sendNewChatMessageNotification(recipient.getEmail(), sender.getFirstName() + sender.getLastName(),
+        notificationService.sendNewChatMessageNotification(recipient.getEmail(), sender.getFirstName() + " " + sender.getLastName(),
                 sender.getRole() == PersonRole.ROLE_ADMIN);
 
         return new ChatMessageResponse(

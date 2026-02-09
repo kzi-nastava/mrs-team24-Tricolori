@@ -5,6 +5,7 @@ import com.tricolori.backend.entity.Notification;
 import com.tricolori.backend.enums.NotificationType;
 import com.tricolori.backend.mapper.NotificationMapper;
 import com.tricolori.backend.repository.NotificationRepository;
+import com.tricolori.backend.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,6 +24,7 @@ public class NotificationService {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationMapper notificationMapper;
     private final EmailService emailService;
+    private final PersonRepository personRepository;
 
     // ==================== CORE METHODS ====================
 
@@ -305,7 +307,15 @@ public class NotificationService {
 
         Notification notification = new Notification(email, content,
                 NotificationType.NEW_CHAT_MESSAGE, null);
-        notification.setActionUrl("/chat");
+        personRepository.findByEmail(email).ifPresent(person -> {
+            if (person.getRole().name().equals("ADMIN")) {
+                notification.setActionUrl("/admin/support");
+            } if (person.getRole().name().equals("DRIVER")) {
+                notification.setActionUrl("/driver/support");
+            } else {
+                notification.setActionUrl("/passenger/support");
+            }
+        });
         saveAndSend(notification, email);
     }
 }
