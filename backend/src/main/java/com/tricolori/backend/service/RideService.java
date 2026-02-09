@@ -8,10 +8,12 @@ import com.tricolori.backend.exception.*;
 import com.tricolori.backend.mapper.PersonMapper;
 import com.tricolori.backend.mapper.RouteMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.tricolori.backend.dto.ride.*;
@@ -34,6 +36,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class RideService {
 
     private final RideRepository rideRepository;
@@ -325,7 +328,7 @@ public class RideService {
 
         if (person.getRole().equals(PersonRole.ROLE_DRIVER)) {
             ride = rideRepository.findOngoingRideByDriver(person.getId())
-                    .orElseThrow();
+                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
             cancelByDriver(ride, request);
 
             // notify passengers
@@ -339,7 +342,7 @@ public class RideService {
 
         } else if (person.getRole().equals(PersonRole.ROLE_PASSENGER)) {
             ride = rideRepository.findOngoingRideByPassenger(person.getId())
-                    .orElseThrow();
+                   .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
             cancelByPassenger(ride);
 
             // notify driver
@@ -356,6 +359,8 @@ public class RideService {
 
         ride.setCancellationReason(request.reason());
         rideRepository.save(ride);
+
+        log.info("Ride with id {{}} got cancelled by {{}}", ride.getId(), person.getEmail());
     }
 
     private void terminateRideAtLocation(Ride ride, Location stopLocation, RideStatus status) {
@@ -534,7 +539,7 @@ public class RideService {
 
     private void cancelByPassenger(Ride ride) {
         if (LocalDateTime.now().isAfter(ride.getStartTime().minusMinutes(10))) {
-            throw new CancelRideExpiredException("cancel expired");
+            throw new CancelRideExpiredException("Cancel failed. Ride starts within 10 minutes");
         }
         ride.setStatus(RideStatus.CANCELLED_BY_PASSENGER);
     }

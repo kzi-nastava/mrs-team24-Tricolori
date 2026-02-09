@@ -1,7 +1,9 @@
 package com.example.mobile.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -9,6 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -22,6 +25,7 @@ import com.example.mobile.R;
 import com.example.mobile.dto.profile.ChangeDriverStatusRequest;
 import com.example.mobile.dto.profile.ProfileResponse;
 import com.example.mobile.network.RetrofitClient;
+import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.service.DriverDailyLogService;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -29,6 +33,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import java.util.HashSet;
 import java.util.Set;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -41,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
 
     private DriverDailyLogService dailyLogService;
+    private AuthService authService;
 
     // nav header fields
     private TextView navHeaderUserName;
@@ -52,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         dailyLogService = RetrofitClient.getClient(this).create(DriverDailyLogService.class);
+        authService = RetrofitClient.getClient(this).create(AuthService.class);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -64,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
+
+            findViewById(android.R.id.content).post(() -> {
+                handleIntent(getIntent());
+            });
         }
 
         Set<Integer> topLevelDestinations = new HashSet<>();
@@ -281,5 +292,55 @@ public class MainActivity extends AppCompatActivity {
             navHeaderUserName.setText("Guest User");
             navHeaderUserEmail.setText("Not logged in");
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        Uri data = intent.getData();
+        if (data != null && data.getPath() != null) {
+            String path = data.getPath();
+
+            if (path.contains("activate")) {
+                String token = data.getQueryParameter("token");
+                if (token != null) {
+                    executeActivation(token);
+                }
+            }
+            else if (path.contains("reset-password")) {
+                String token = data.getQueryParameter("token");
+                if (token != null) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("token", token);
+                    navController.navigate(R.id.resetPasswordFragment, bundle);
+                }
+            }
+        }
+    }
+
+    private void executeActivation(String token) {
+        authService.activateAccount(token).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "Account activated successfully! You can now login.", Toast.LENGTH_LONG).show();
+                    if (navController != null) {
+                        navController.navigate(R.id.loginFragment);
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Activation failed. The link might be expired.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                Toast.makeText(MainActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

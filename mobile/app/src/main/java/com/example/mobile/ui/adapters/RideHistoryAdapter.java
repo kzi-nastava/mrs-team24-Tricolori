@@ -96,22 +96,33 @@ public class RideHistoryAdapter extends RecyclerView.Adapter<RideHistoryAdapter.
             switch (status) {
 
                 case "FINISHED":
-                    tvStatus.setTextColor(Color.parseColor("#4CAF50"));
+                    tvStatus.setTextColor(Color.parseColor("#4CAF50")); 
+                    break;
+
+                case "ONGOING":
+                    tvStatus.setTextColor(Color.parseColor("#2196F3"));
+                    break;
+
+                case "SCHEDULED":
+                    tvStatus.setTextColor(Color.parseColor("#9C27B0"));
                     break;
 
                 case "CANCELLED_BY_DRIVER":
                 case "CANCELLED_BY_PASSENGER":
-                case "DECLINED":
-                case "REJECTED":
-                case "PANIC":
-                    tvStatus.setTextColor(Color.parseColor("#F44336"));
+                    tvStatus.setText("CANCELLED");
+                    tvStatus.setTextColor(Color.parseColor("#FF9800"));
                     break;
 
-                case "CREATED":
-                case "SCHEDULED":
-                case "ONGOING":
+                case "REJECTED":
+                    tvStatus.setTextColor(Color.parseColor("#FF9800"));
+                    break;
+
                 case "STOPPED":
                     tvStatus.setTextColor(Color.parseColor("#FF9800"));
+                    break;
+
+                case "PANIC":
+                    tvStatus.setTextColor(Color.parseColor("#F44336"));
                     break;
 
                 default:

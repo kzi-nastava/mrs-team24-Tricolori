@@ -33,10 +33,11 @@
             android:textColor="@color/gray_500"
             android:textSize="@dimen/text_base"
             android:layout_marginBottom="@dimen/spacing_8"
-            android:layout_marginLeft="@dimen/spacing_3_5"/>
+            android:layout_marginStart="@dimen/spacing_3_5"/>
 
         <!-- Profile Picture -->
         <LinearLayout
+            android:gravity="center_horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -51,7 +52,6 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:layout_marginBottom="@dimen/spacing_3">
-
                 <!-- Icon placeholder -->
                 <ImageView
                     android:layout_width="@dimen/spacing_10"
@@ -60,7 +60,6 @@
                     app:tint="@color/light_700"
                     android:layout_marginEnd="@dimen/spacing_3"
                     android:src="@drawable/ic_profile_picture"/>
-                <!-- android:src="@drawable/ic_picture" -->
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -82,40 +81,13 @@
                         android:textSize="@dimen/text_xs" />
                 </LinearLayout>
             </LinearLayout>
-
-            <!-- Centered Profile Image -->
-            <FrameLayout
+            <!-- PFP Fragment -->
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/pfp_fragment_container"
+                android:name="com.example.mobile.ui.fragments.ProfilePictureFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center">
-
-                <ImageView
-                    android:layout_width="@dimen/spacing_40"
-                    android:layout_height="@dimen/spacing_40"
-                    android:layout_gravity="center"
-                    android:background="@drawable/profile_picture_background"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="@string/profile_user_picture_desc"
-                    android:src="@drawable/ic_person"
-                    app:tint="@color/gray_400"/>
-                <!-- android:src="@drawable/logo" -->
-            </FrameLayout>
-
-            <!-- Instructions & Upload Button -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_marginTop="@dimen/spacing_6">
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/profile_picture_submit"
-                    android:backgroundTint="@color/light_700"
-                    android:textColor="@color/white"/>
-            </LinearLayout>
+                tools:layout="@layout/fragment_profile_picture" />
         </LinearLayout>
 
         <!-- Email Address Card -->
