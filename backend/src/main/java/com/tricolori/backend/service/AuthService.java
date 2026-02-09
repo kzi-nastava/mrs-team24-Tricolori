@@ -24,6 +24,7 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,6 +46,7 @@ public class AuthService {
     private final CloudinaryService cloudinaryService;
     private final EmailService emailService;
     private final VehicleService vehicleService;
+    private final NotificationService notificationService;
     private final JwtUtil jwtUtil;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final DriverDailyLogService driverDailyLogService;
@@ -218,7 +220,10 @@ public class AuthService {
             savedDriver.getEmail(),
             savedDriver.getFirstName(),
             token.getToken()
-        );        
+        );
+
+        notificationService.sendNewRegistrationNotification(personRepository.findByRole(PersonRole.ROLE_ADMIN).getFirst().getEmail(),
+                driver.getFirstName() + " " + driver.getLastName(), vehicle.getModel());
     }
 
     @Transactional

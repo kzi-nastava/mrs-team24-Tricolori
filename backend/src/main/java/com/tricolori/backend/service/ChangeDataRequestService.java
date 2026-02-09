@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.tricolori.backend.enums.PersonRole;
+import com.tricolori.backend.repository.PersonRepository;
 import org.springframework.stereotype.Service;
 
 import com.tricolori.backend.dto.profile.ChangeDataRequestResponse;
@@ -21,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 public class ChangeDataRequestService {
     private final ChangeDataRequestRepository repository;
     private final ChangeDataRequestMapper mapper;
+    private final NotificationService notificationService;
+    private final PersonRepository personRepository;
 
     public void createRequest(Driver person, ProfileRequest request) {
         ChangeDataRequest changeRequest = new ChangeDataRequest();
@@ -30,6 +34,11 @@ public class ChangeDataRequestService {
         changeRequest.setProfile(person);
 
         repository.save(changeRequest);
+
+        // notify admin about new change request
+        notificationService.sendProfileChangeRequestNotification(personRepository.findByRole(PersonRole.ROLE_ADMIN).getFirst().getEmail(),
+                person.getFirstName() + " " + person.getLastName(),
+                person.getId());
     }
 
     public void approve(ChangeDataRequest request) {
