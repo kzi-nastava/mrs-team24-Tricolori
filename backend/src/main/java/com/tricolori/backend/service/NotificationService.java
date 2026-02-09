@@ -209,7 +209,7 @@ public class NotificationService {
 
         Notification notification = new Notification(driverEmail, content, NotificationType.UPCOMING_RIDE_REMINDER, rideId);
         notification.setPassengerName(passengerName);
-        notification.setActionUrl("/driver/upcoming-rides/" + rideId);
+        notification.setActionUrl("/driver/history/");
         saveAndSend(notification, driverEmail);
     }
 
@@ -253,7 +253,7 @@ public class NotificationService {
                 reportType, rideId, driverName, reportDetails != null && !reportDetails.isBlank() ? reportDetails : "No additional details provided.");
 
         Notification notification = new Notification(adminEmail, content, NotificationType.RIDE_REPORT, rideId);
-        notification.setActionUrl("/admin/ride-reports/" + rideId);
+        notification.setActionUrl("/admin/history/");
         saveAndSend(notification, adminEmail);
     }
 
@@ -277,7 +277,7 @@ public class NotificationService {
         Notification notification = new Notification(adminEmail, content,
                 NotificationType.PROFILE_CHANGE_REQUEST, null);
         notification.setDriverName(driverName);
-        notification.setActionUrl("/admin/driver-requests/");
+        notification.setActionUrl("/admin/change-requests/");
         saveAndSend(notification, adminEmail);
     }
 
