@@ -148,11 +148,11 @@ public class UserProfileFragment extends Fragment {
                 public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                     btnUpdate.setEnabled(true);
                     if (response.isSuccessful()) {
-                        Toast.makeText(getContext(), "Zahtev poslat adminu!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "Request sent to admin!", Toast.LENGTH_LONG).show();
                         resetSelection(); // Kao pfpPicker.reset() na frontu
                         populateFields(originalProfile);
                     } else {
-                        Toast.makeText(getContext(), "Već imate zahtev na čekanju!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "You already have a pending request!", Toast.LENGTH_SHORT).show();
                     }
                 }
                 @Override
@@ -170,7 +170,7 @@ public class UserProfileFragment extends Fragment {
                         originalProfile = response.body();
                         resetSelection();
                         populateFields(originalProfile);
-                        Toast.makeText(getContext(), "Profil ažuriran!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Profile updated!", Toast.LENGTH_SHORT).show();
                     }
                 }
                 @Override
