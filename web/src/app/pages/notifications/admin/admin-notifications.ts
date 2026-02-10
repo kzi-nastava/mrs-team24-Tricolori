@@ -58,6 +58,7 @@ interface EnrichedNotification extends NotificationDto {
 export class AdminNotificationsComponent implements OnInit, OnDestroy {
   selectedNotification: EnrichedNotification | null = null;
   showUnreadOnly = signal<boolean>(false);
+  showClearAllDialog = signal<boolean>(false);
   private audioContext: AudioContext | null = null;
   private lastPanicCount = 0;
   
@@ -128,13 +129,13 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
   }
 
   private getUserEmail(): string {
-    const personData = localStorage.getItem('person_data');
-    if (personData) {
-      const person = JSON.parse(personData);
-      return person.email || '';
+      const personData = localStorage.getItem('person_data');
+      if (personData) {
+        const person = JSON.parse(personData);
+        return person.email || '';
+      }
+      return '';
     }
-    return '';
-  }
 
   setupWebSocket(): void {
     const userEmail = this.getUserEmail(); 
@@ -255,17 +256,25 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
   }
 
   clearAllNotifications(): void {
-    if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
-      this.notificationService.deleteAllNotifications().subscribe({
-        next: () => {
-          this.notificationService.clearAllNotifications();
-          this.notifications.set([]);
-        },
-        error: (error) => {
-          console.error('Failed to delete all notifications:', error);
-        }
-      });
-    }
+    this.showClearAllDialog.set(true);
+  }
+
+  confirmClearAll(): void {
+    this.notificationService.deleteAllNotifications().subscribe({
+      next: () => {
+        this.notificationService.clearAllNotifications();
+        this.notifications.set([]);
+        this.showClearAllDialog.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to delete all notifications:', error);
+        this.showClearAllDialog.set(false);
+      }
+    });
+  }
+
+  cancelClearAll(): void {
+    this.showClearAllDialog.set(false);
   }
 
   toggleFilter(): void {
@@ -290,6 +299,26 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
       )
     );
     this.selectedNotification = { ...notification, acknowledged: true, opened: true };
+  }
+
+  getActionButtonText(type: string): string {
+    const buttonTextMap: { [key: string]: string } = {
+      'NEW_CHAT_MESSAGE': 'Open Chat',
+      'RIDE_REPORT': 'View Report',
+      'NEW_REGISTRATION': 'View Details',
+      'PROFILE_CHANGE_REQUEST': 'Review Request',
+      'RIDE_STARTING': 'Track Ride',
+      'RIDE_CANCELLED': 'View Details',
+      'RIDE_REJECTED': 'View History',
+      'ADDED_TO_RIDE': 'View Details',
+      'RIDE_COMPLETED': 'View Details',
+      'RATING_REMINDER': 'Rate Now',
+      'RIDE_REMINDER': 'Track Ride',
+      'UPCOMING_RIDE_REMINDER': 'View Details',
+      'RATING_RECEIVED': 'View Details',
+      'RIDE_STARTED': 'Track Ride'
+    };
+    return buttonTextMap[type] || 'View Details';
   }
 
   // ==================== HELPER METHODS ====================

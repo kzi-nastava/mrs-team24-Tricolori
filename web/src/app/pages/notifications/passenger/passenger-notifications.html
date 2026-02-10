@@ -207,14 +207,7 @@
         
         <!-- Modal Footer -->
         <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
-          @if (selectedNotification.actionUrl) {
-            <button 
-              (click)="handleAction(selectedNotification)"
-              class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center gap-2">
-              <span>{{ getActionButtonText(selectedNotification.type) }}</span>
-              <ng-icon name="heroArrowRight" class="w-4 h-4"></ng-icon>
-            </button>
-          }
+          
           <button 
             (click)="closeModal()"
             class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
