@@ -296,12 +296,10 @@ public class NotificationService {
         Notification notification = new Notification(email, content,
                 NotificationType.NEW_CHAT_MESSAGE, null);
         personRepository.findByEmail(email).ifPresent(person -> {
-            if (person.getRole().name().equals("ADMIN")) {
-                notification.setActionUrl("/admin/support");
-            } else if (person.getRole().name().equals("DRIVER")) {
-                notification.setActionUrl("/driver/support");
-            } else {
-                notification.setActionUrl("/passenger/support");
+            switch (person.getRole().name()) {
+                case "ROLE_ADMIN" -> notification.setActionUrl("/admin/support");
+                case "ROLE_DRIVER" -> notification.setActionUrl("/driver/support");
+                case "ROLE_PASSENGER" -> notification.setActionUrl("/passenger/support");
             }
         });
         saveAndSend(notification, email);
