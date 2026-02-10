@@ -113,6 +113,7 @@ public class NotificationService {
                 scheduledTime, from, to, reason != null && !reason.isEmpty() ? " due to " + reason : "");
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_CANCELLED, rideId);
+        notification.setActionUrl("/passenger/history");
         saveAndSend(notification, passengerEmail);
     }
 
@@ -230,6 +231,7 @@ public class NotificationService {
 
         Notification notification = new Notification(driverEmail, content, NotificationType.RATING_RECEIVED, rideId);
         notification.setPassengerName(passengerName);
+        notification.setActionUrl("/driver/history/");
         saveAndSend(notification, driverEmail);
     }
 
@@ -265,6 +267,7 @@ public class NotificationService {
 
         Notification notification = new Notification(adminEmail, content, NotificationType.NEW_REGISTRATION, null);
         notification.setDriverName(driverName);
+        // TODO: go to page with all users
         saveAndSend(notification, adminEmail);
     }
 
