@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark, heroStar } from '@ng-icons/heroicons/outline';
 import { heroHeartSolid, heroStarSolid } from '@ng-icons/heroicons/solid';
@@ -82,14 +82,32 @@ export class PassengerHistory implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private rideService: RideService,
     private mapService: MapService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.loadRideHistory();
-  }
+  this.loadRideHistory();
+  
+  // Check for query parameter to auto-open ride details
+  this.route.queryParams.subscribe(params => {
+    const openRideId = params['openRide'];
+    if (openRideId) {
+      // Wait for rides to load, then open the detail
+      setTimeout(() => {
+        this.viewRideDetails(parseInt(openRideId));
+        // Clear the query param after opening
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          queryParamsHandling: 'merge'
+        });
+      }, 500);
+    }
+  });
+}
 
   // ================= load history =================
 

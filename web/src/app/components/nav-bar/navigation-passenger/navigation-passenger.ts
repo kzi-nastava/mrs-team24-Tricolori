@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 export class NavigationPassenger implements OnInit, OnDestroy {
   unreadCount = 0;
   private unreadSubscription?: Subscription;
+  private isWebSocketConnected = false;
 
   constructor(
     private router: Router,
@@ -21,34 +22,53 @@ export class NavigationPassenger implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to unread count updates
-    this.unreadSubscription = this.notificationService.unreadCount$.subscribe(
-      count => {
-        this.unreadCount = count;
+    const userEmail = this.getUserEmail();
+    
+    if (userEmail) {
+      if (!this.isWebSocketConnected) {
+        this.notificationService.connectWebSocket(userEmail);
+        this.isWebSocketConnected = true;
       }
-    );
 
-    // Load initial unread count
-    this.notificationService.getUnreadCount().subscribe({
-      next: (count) => {
-        this.unreadCount = count;
-      },
-      error: (error) => {
-        console.error('Error loading unread count:', error);
-      }
-    });
+      // Subscribe to real-time unread count updates
+      this.unreadSubscription = this.notificationService.unreadCount$.subscribe(
+        count => {
+          this.unreadCount = count;
+        }
+      );
+
+      // Load initial unread count from API
+      this.notificationService.getUnreadCount().subscribe({
+        next: (count) => {
+          this.unreadCount = count;
+        },
+        error: (error) => {
+          console.error('Error loading unread count:', error);
+        }
+      });
+    }
   }
 
   ngOnDestroy(): void {
     this.unreadSubscription?.unsubscribe();
   }
 
+  private getUserEmail(): string {
+    const personData = localStorage.getItem('person_data');
+    if (personData) {
+      const person = JSON.parse(personData);
+      return person.email || '';
+    }
+    return '';
+  }
+
   onLogout() {
-    // Disconnect WebSocket before logout
     this.notificationService.disconnectWebSocket();
+    this.isWebSocketConnected = false;
     
     localStorage.removeItem('userRole');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('person_data');
     this.router.navigate(['/login']);
   }
 }

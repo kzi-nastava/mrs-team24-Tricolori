@@ -1,6 +1,6 @@
 import { Component, computed, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { 
   heroBell, 
@@ -67,6 +67,7 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
   selectedNotification: DisplayNotification | null = null;
   showUnreadOnly = signal<boolean>(false);
   notifications = signal<DisplayNotification[]>([]);
+  showClearAllDialog = signal<boolean>(false);
   
   private notificationsSubscription?: Subscription;
   private unreadCountSubscription?: Subscription;
@@ -80,17 +81,15 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    // Get user email from auth service or localStorage
-    const userEmail = this.getUserEmail(); // You'll need to implement this
+    const userEmail = this.getUserEmail();
     
-    // Load initial notifications
     this.loadNotifications();
     
-    // Connect to WebSocket for real-time updates
     this.notificationService.connectWebSocket(userEmail);
     
     // Subscribe to notification updates
@@ -99,6 +98,15 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
         this.notifications.set(this.mapNotifications(notifications));
       }
     );
+
+    // Check if we need to open a specific ride detail from query params
+    this.route.queryParams.subscribe(params => {
+      const rideId = params['rideId'];
+      if (rideId) {
+        // Navigate to history page with the ride detail modal
+        this.navigateToRideDetail(parseInt(rideId));
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -109,9 +117,12 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
   }
 
   private getUserEmail(): string {
-    // TODO: Replace with your actual auth service
-    // Example: return this.authService.getCurrentUser()?.email || '';
-    return localStorage.getItem('userEmail') || '';
+    const personData = localStorage.getItem('person_data');
+    if (personData) {
+      const person = JSON.parse(personData);
+      return person.email || '';
+    }
+    return '';
   }
 
   private loadNotifications(): void {
@@ -141,9 +152,7 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
   }
 
   private mapNotificationType(backendType: string): string {
-    // Map backend NotificationType enum to frontend display types
     const typeMap: { [key: string]: string } = {
-      // Passenger notifications
       'RIDE_STARTING': 'ride_starting',
       'RIDE_CANCELLED': 'ride_cancelled',
       'RIDE_REJECTED': 'ride_rejected',
@@ -151,21 +160,13 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
       'RIDE_COMPLETED': 'ride_completed',
       'RATING_REMINDER': 'rating_reminder',
       'RIDE_REMINDER': 'ride_reminder',
-      
-      // Driver notifications
       'UPCOMING_RIDE_REMINDER': 'upcoming_ride_reminder',
       'RATING_RECEIVED': 'rating_received',
       'RIDE_STARTED': 'ride_started',
-      
-      // Admin notifications
       'RIDE_REPORT': 'ride_report',
       'NEW_REGISTRATION': 'new_registration',
       'PROFILE_CHANGE_REQUEST': 'profile_change_request',
-      
-      // Chat
       'NEW_CHAT_MESSAGE': 'chat_message',
-      
-      // General
       'GENERAL': 'general'
     };
     return typeMap[backendType] || 'general';
@@ -173,7 +174,6 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
 
   private getNotificationTitle(backendType: string): string {
     const titleMap: { [key: string]: string } = {
-      // Passenger notifications
       'RIDE_STARTING': 'Your ride is starting soon',
       'RIDE_CANCELLED': 'Ride cancelled',
       'RIDE_REJECTED': 'Ride request rejected',
@@ -181,21 +181,13 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
       'RIDE_COMPLETED': 'Ride completed successfully',
       'RATING_REMINDER': 'Rate your recent ride',
       'RIDE_REMINDER': 'Upcoming ride reminder',
-      
-      // Driver notifications
       'UPCOMING_RIDE_REMINDER': 'Upcoming ride reminder',
       'RATING_RECEIVED': 'You received a rating',
       'RIDE_STARTED': 'Ride has started',
-      
-      // Admin notifications
       'RIDE_REPORT': 'Ride reported',
       'NEW_REGISTRATION': 'New driver registered',
       'PROFILE_CHANGE_REQUEST': 'Profile change request',
-      
-      // Chat
       'NEW_CHAT_MESSAGE': 'New support message',
-      
-      // General
       'GENERAL': 'Notification'
     };
     return titleMap[backendType] || 'Notification';
@@ -239,16 +231,24 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
   }
 
   clearAllNotifications(): void {
-    if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
-      this.notificationService.deleteAllNotifications().subscribe({
-        next: () => {
-          this.notificationService.clearAllNotifications();
-        },
-        error: (error) => {
-          console.error('Error clearing notifications:', error);
-        }
-      });
-    }
+    this.showClearAllDialog.set(true);
+  }
+
+  confirmClearAll(): void {
+    this.notificationService.deleteAllNotifications().subscribe({
+      next: () => {
+        this.notificationService.clearAllNotifications();
+        this.showClearAllDialog.set(false);
+      },
+      error: (error) => {
+        console.error('Error clearing notifications:', error);
+        this.showClearAllDialog.set(false);
+      }
+    });
+  }
+
+  cancelClearAll(): void {
+    this.showClearAllDialog.set(false);
   }
 
   toggleFilter(): void {
@@ -256,15 +256,93 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
   }
 
   handleAction(notification: DisplayNotification): void {
-    if (notification.actionUrl) {
-      this.router.navigate([notification.actionUrl]);
-    }
     this.closeModal();
+    
+    if (!notification.actionUrl) {
+      return;
+    }
+
+    // Handle different action types based on notification type
+    switch (notification.type) {
+      case 'chat_message':
+        // Navigate directly to support chat
+        this.router.navigate([notification.actionUrl]);
+        break;
+        
+      case 'rating_reminder':
+        // Navigate to rating page
+        this.router.navigate([notification.actionUrl]);
+        break;
+        
+      case 'ride_starting':
+      case 'ride_reminder':
+      case 'ride_started':
+        // Navigate to ride tracking
+        this.router.navigate([notification.actionUrl]);
+        break;
+        
+      case 'ride_completed':
+      case 'ride_cancelled':
+      case 'added_to_ride':
+        // Navigate to history with query param to open ride detail modal
+        if (notification.actionUrl.includes('openRide=')) {
+          // URL already contains query param
+          const url = notification.actionUrl.split('?')[0];
+          const params = new URLSearchParams(notification.actionUrl.split('?')[1]);
+          this.router.navigate([url], {
+            queryParams: Object.fromEntries(params)
+          });
+        } else if (notification.rideId) {
+          // Fallback: construct URL with rideId
+          this.router.navigate(['/passenger/history'], {
+            queryParams: { openRide: notification.rideId }
+          });
+        }
+        break;
+        
+      default:
+        // For all other notifications, try to parse the actionUrl
+        if (notification.actionUrl.includes('?')) {
+          const [path, queryString] = notification.actionUrl.split('?');
+          const params = new URLSearchParams(queryString);
+          this.router.navigate([path], {
+            queryParams: Object.fromEntries(params)
+          });
+        } else {
+          this.router.navigate([notification.actionUrl]);
+        }
+    }
+  }
+
+  getActionButtonText(type: string): string {
+    const buttonTextMap: { [key: string]: string } = {
+      'chat_message': 'Open Chat',
+      'rating_reminder': 'Rate Now',
+      'ride_starting': 'Track Ride',
+      'ride_reminder': 'Track Ride',
+      'ride_started': 'Track Ride',
+      'ride_completed': 'View Details',
+      'ride_cancelled': 'View Details',
+      'added_to_ride': 'View Details',
+      'ride_rejected': 'View History',
+      'upcoming_ride_reminder': 'View Details',
+      'rating_received': 'View Details',
+      'ride_report': 'View Report',
+      'new_registration': 'View Users',
+      'profile_change_request': 'Review Request'
+    };
+    return buttonTextMap[type] || 'View';
+  }
+
+  private navigateToRideDetail(rideId: number): void {
+    // Navigate to history page with query parameter to open specific ride
+    this.router.navigate(['/passenger/history'], {
+      queryParams: { openRide: rideId }
+    });
   }
 
   getNotificationIcon(type: string): string {
     switch (type) {
-      // Passenger notifications
       case 'ride_starting':
       case 'ride_reminder':
       case 'upcoming_ride_reminder':
@@ -279,24 +357,16 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
         return 'heroCheckCircle';
       case 'rating_reminder':
         return 'heroBell';
-      
-      // Driver notifications
       case 'rating_received':
         return 'heroStar';
-      
-      // Admin notifications
       case 'ride_report':
         return 'heroFlag';
       case 'new_registration':
         return 'heroUserCircle';
       case 'profile_change_request':
         return 'heroDocumentText';
-      
-      // Chat
       case 'chat_message':
         return 'heroChatBubbleLeftRight';
-      
-      // General
       case 'general':
       default:
         return 'heroInformationCircle';
@@ -305,7 +375,6 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
 
   getNotificationIconBg(type: string): string {
     switch (type) {
-      // Passenger notifications
       case 'ride_starting':
       case 'ride_reminder':
       case 'upcoming_ride_reminder':
@@ -320,24 +389,16 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
         return 'bg-green-100';
       case 'rating_reminder':
         return 'bg-yellow-100';
-      
-      // Driver notifications
       case 'rating_received':
         return 'bg-amber-100';
-      
-      // Admin notifications
       case 'ride_report':
         return 'bg-orange-100';
       case 'new_registration':
         return 'bg-emerald-100';
       case 'profile_change_request':
         return 'bg-sky-100';
-      
-      // Chat
       case 'chat_message':
         return 'bg-indigo-100';
-      
-      // General
       case 'general':
       default:
         return 'bg-gray-100';
@@ -346,7 +407,6 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
 
   getNotificationIconColor(type: string): string {
     switch (type) {
-      // Passenger notifications
       case 'ride_starting':
       case 'ride_reminder':
       case 'upcoming_ride_reminder':
@@ -361,24 +421,16 @@ export class PassengerNotificationsComponent implements OnInit, OnDestroy {
         return 'text-green-600';
       case 'rating_reminder':
         return 'text-yellow-600';
-      
-      // Driver notifications
       case 'rating_received':
         return 'text-amber-600';
-      
-      // Admin notifications
       case 'ride_report':
         return 'text-orange-600';
       case 'new_registration':
         return 'text-emerald-600';
       case 'profile_change_request':
         return 'text-sky-600';
-      
-      // Chat
       case 'chat_message':
         return 'text-indigo-600';
-      
-      // General
       case 'general':
       default:
         return 'text-gray-600';
