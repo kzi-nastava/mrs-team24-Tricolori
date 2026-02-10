@@ -57,6 +57,7 @@ public interface RideMapper {
     /**
      * Map Ride to Passenger History Response (List view)
      */
+    @Mapping(target = "routeId", source = "ride.route.id")
     @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
     @Mapping(target = "destinationAddress", expression = "java(getDropoffAddress(ride))")
     @Mapping(source = "price", target = "totalPrice")
