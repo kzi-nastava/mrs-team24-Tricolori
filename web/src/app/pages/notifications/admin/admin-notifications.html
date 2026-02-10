@@ -25,68 +25,172 @@
     <!-- Subtitle -->
     <p class="text-gray-600 mb-6">Monitor system alerts and panic notifications</p>
     
-    <!-- Stats Bar -->
-    <div class="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-4 mb-6">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-6">
-          @if (panicCount() > 0) {
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      </div>
+    } @else {
+      
+      <!-- Stats Bar -->
+      <div class="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-6">
+            @if (panicCount() > 0) {
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <span class="text-sm text-gray-700">
+                  <span class="font-semibold text-red-600">{{ panicCount() }}</span> panic alerts
+                </span>
+              </div>
+            }
             <div class="flex items-center gap-2">
-              <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+              <div class="w-3 h-3 bg-teal-500 rounded-full animate-pulse"></div>
               <span class="text-sm text-gray-700">
-                <span class="font-semibold text-red-600">{{ panicCount() }}</span> panic alerts
+                <span class="font-semibold text-teal-700">{{ unreadCount() }}</span> unread
               </span>
             </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+              <span class="text-sm text-gray-700">
+                <span class="font-semibold">{{ readCount() }}</span> read
+              </span>
+            </div>
+            <div class="h-4 w-px bg-gray-300"></div>
+            <span class="text-sm text-gray-600">{{ notifications().length }} total</span>
+          </div>
+          @if (notifications().length > 0) {
+            <button 
+              (click)="toggleFilter()"
+              class="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 font-medium transition">
+              <ng-icon name="heroFunnel" class="w-4 h-4"></ng-icon>
+              {{ showUnreadOnly() ? 'Show All' : 'Unread Only' }}
+            </button>
           }
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-teal-500 rounded-full animate-pulse"></div>
-            <span class="text-sm text-gray-700">
-              <span class="font-semibold text-teal-700">{{ unreadCount() }}</span> unread
-            </span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
-            <span class="text-sm text-gray-700">
-              <span class="font-semibold">{{ readCount() }}</span> read
-            </span>
-          </div>
-          <div class="h-4 w-px bg-gray-300"></div>
-          <span class="text-sm text-gray-600">{{ notifications().length }} total</span>
         </div>
-        @if (notifications().length > 0) {
-          <button 
-            (click)="toggleFilter()"
-            class="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 font-medium transition">
-            <ng-icon name="heroFunnel" class="w-4 h-4"></ng-icon>
-            {{ showUnreadOnly() ? 'Show All' : 'Unread Only' }}
-          </button>
-        }
       </div>
-    </div>
-    
-    <!-- Panic Notifications Section -->
-    @if (panicNotifications().length > 0) {
-      <div class="mb-6">
-        <div class="flex items-center gap-2 mb-3">
-          <ng-icon name="heroExclamationTriangle" class="w-5 h-5 text-red-600"></ng-icon>
-          <h2 class="text-lg font-semibold text-red-600">PANIC ALERTS - Immediate Action Required</h2>
+      
+      <!-- Panic Notifications Section (placeholder - will be handled separately) -->
+      @if (panicNotifications().length > 0) {
+        <div class="mb-6">
+          <div class="flex items-center gap-2 mb-3">
+            <ng-icon name="heroExclamationTriangle" class="w-5 h-5 text-red-600"></ng-icon>
+            <h2 class="text-lg font-semibold text-red-600">PANIC ALERTS - Immediate Action Required</h2>
+          </div>
+          
+          <div class="bg-white border-2 border-red-500 rounded-lg overflow-hidden shadow-lg">
+            <div class="divide-y divide-red-200">
+              @for (notification of panicNotifications(); track notification.id) {
+                <div 
+                  (click)="openNotification(notification)"
+                  [class]="'px-6 py-4 hover:bg-red-50 transition cursor-pointer relative bg-red-50/80 border-l-4 border-l-red-600'">
+                  
+                  <!-- Unread indicator -->
+                  @if (!notification.opened) {
+                    <div class="absolute left-1 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+                  }
+                  
+                  <div class="flex items-start gap-4">
+                    <!-- Icon -->
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center shadow-md bg-red-600 animate-pulse">
+                      <ng-icon name="heroExclamationTriangle" class="w-6 h-6 text-white"></ng-icon>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-start justify-between gap-4 mb-2">
+                        <div class="flex-1">
+                          <div class="flex items-center gap-2 mb-1">
+                            <h3 class="text-base font-bold text-red-900">
+                              {{ notification.title }}
+                            </h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-600 text-white animate-pulse">
+                              PANIC
+                            </span>
+                            @if (!notification.opened) {
+                              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500 text-white">
+                                New
+                              </span>
+                            }
+                          </div>
+                          <p class="text-sm text-red-800 font-medium mb-2">
+                            {{ notification.content }}
+                          </p>
+                          <div class="flex items-center gap-4 text-xs text-red-700">
+                            @if (notification.rideId) {
+                              <div class="flex items-center gap-1">
+                                <ng-icon name="heroTicket" class="w-3.5 h-3.5"></ng-icon>
+                                <span class="font-semibold">Ride #{{ notification.rideId }}</span>
+                              </div>
+                            }
+                            @if (notification.driverName) {
+                              <div class="flex items-center gap-1">
+                                <ng-icon name="heroTruck" class="w-3.5 h-3.5"></ng-icon>
+                                <span class="font-semibold">{{ notification.driverName }}</span>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                          <span class="text-xs text-red-700 font-semibold whitespace-nowrap">
+                            {{ getTimeAgo(notification.time) }}
+                          </span>
+                          @if (!notification.acknowledged) {
+                            <button 
+                              (click)="acknowledgePanic($event, notification)"
+                              class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition">
+                              Acknowledge
+                            </button>
+                          } @else {
+                            <span class="text-xs text-green-700 font-medium">
+                              ✓ Acknowledged
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
         </div>
+      }
+      
+      <!-- Regular Notifications List -->
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         
-        <div class="bg-white border-2 border-red-500 rounded-lg overflow-hidden shadow-lg">
-          <div class="divide-y divide-red-200">
-            @for (notification of panicNotifications(); track notification.id) {
+        @if (regularNotifications().length === 0 && !showUnreadOnly()) {
+          <div class="px-6 py-12 text-center">
+            <ng-icon name="heroBell" class="w-12 h-12 text-gray-300 mx-auto mb-3"></ng-icon>
+            <p class="text-gray-500">No notifications yet</p>
+            <p class="text-sm text-gray-400 mt-1">System notifications will appear here</p>
+          </div>
+        } @else if (regularNotifications().length === 0 && showUnreadOnly()) {
+          <div class="px-6 py-12 text-center">
+            <ng-icon name="heroCheckCircle" class="w-12 h-12 text-green-300 mx-auto mb-3"></ng-icon>
+            <p class="text-gray-500">All caught up!</p>
+            <p class="text-sm text-gray-400 mt-1">You have no unread notifications</p>
+          </div>
+        } @else {
+          <div class="divide-y divide-gray-200">
+            @for (notification of regularNotifications(); track notification.id) {
               <div 
                 (click)="openNotification(notification)"
-                [class]="'px-6 py-4 hover:bg-red-50 transition cursor-pointer relative bg-red-50/80 border-l-4 border-l-red-600'">
+                [class]="'px-6 py-4 hover:bg-gray-50 transition cursor-pointer relative ' + (!notification.opened ? 'bg-teal-50/50 border-l-4 border-l-teal-500' : '')">
                 
                 <!-- Unread indicator -->
-                @if (!notification.isRead) {
-                  <div class="absolute left-1 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+                @if (!notification.opened) {
+                  <div class="absolute left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-teal-500 rounded-full"></div>
                 }
                 
                 <div class="flex items-start gap-4">
                   <!-- Icon -->
-                  <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center shadow-md bg-red-600 animate-pulse">
-                    <ng-icon name="heroExclamationTriangle" class="w-6 h-6 text-white"></ng-icon>
+                  <div [class]="'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm ' + getNotificationIconBg(notification.type)">
+                    <ng-icon 
+                      [name]="getNotificationIcon(notification.type)" 
+                      [class]="'w-5 h-5 ' + getNotificationIconColor(notification.type)">
+                    </ng-icon>
                   </div>
                   
                   <!-- Content -->
@@ -94,140 +198,52 @@
                     <div class="flex items-start justify-between gap-4 mb-2">
                       <div class="flex-1">
                         <div class="flex items-center gap-2 mb-1">
-                          <h3 class="text-base font-bold text-red-900">
+                          <h3 [class]="'text-sm ' + (!notification.opened ? 'font-semibold text-gray-900' : 'font-medium text-gray-800')">
                             {{ notification.title }}
                           </h3>
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-600 text-white animate-pulse">
-                            PANIC
-                          </span>
-                          @if (!notification.isRead) {
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500 text-white">
+                          @if (!notification.opened) {
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-700">
                               New
                             </span>
                           }
                         </div>
-                        <p class="text-sm text-red-800 font-medium mb-2">
-                          {{ notification.body }}
+                        <p class="text-sm text-gray-600 line-clamp-2 mb-2">
+                          {{ notification.content }}
                         </p>
-                        <div class="flex items-center gap-4 text-xs text-red-700">
+                        <div class="flex items-center gap-4 text-xs text-gray-500">
                           @if (notification.rideId) {
                             <div class="flex items-center gap-1">
                               <ng-icon name="heroTicket" class="w-3.5 h-3.5"></ng-icon>
-                              <span class="font-semibold">Ride #{{ notification.rideId }}</span>
+                              <span>Ride #{{ notification.rideId }}</span>
                             </div>
                           }
-                          @if (notification.vehicleId) {
+                          @if (notification.driverName) {
                             <div class="flex items-center gap-1">
                               <ng-icon name="heroTruck" class="w-3.5 h-3.5"></ng-icon>
-                              <span class="font-semibold">{{ notification.vehicleId }}</span>
+                              <span>{{ notification.driverName }}</span>
                             </div>
                           }
-                          @if (notification.location) {
+                          @if (notification.passengerName) {
                             <div class="flex items-center gap-1">
-                              <ng-icon name="heroMapPin" class="w-3.5 h-3.5"></ng-icon>
-                              <span class="font-semibold">{{ notification.location }}</span>
+                              <ng-icon name="heroUserPlus" class="w-3.5 h-3.5"></ng-icon>
+                              <span>{{ notification.passengerName }}</span>
                             </div>
                           }
                         </div>
                       </div>
-                      <div class="flex flex-col items-end gap-2">
-                        <span class="text-xs text-red-700 font-semibold whitespace-nowrap">
-                          {{ getTimeAgo(notification.timestamp) }}
-                        </span>
-                        @if (!notification.acknowledged) {
-                          <button 
-                            (click)="acknowledgePanic($event, notification)"
-                            class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition">
-                            Acknowledge
-                          </button>
-                        } @else {
-                          <span class="text-xs text-green-700 font-medium">
-                            ✓ Acknowledged
-                          </span>
-                        }
-                      </div>
+                      <span class="text-xs text-gray-500 whitespace-nowrap">
+                        {{ getTimeAgo(notification.time) }}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             }
           </div>
-        </div>
+        }
+        
       </div>
     }
-    
-    <!-- Regular Notifications List -->
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-      
-      @if (regularNotifications().length === 0 && !showUnreadOnly()) {
-        <div class="px-6 py-12 text-center">
-          <ng-icon name="heroBell" class="w-12 h-12 text-gray-300 mx-auto mb-3"></ng-icon>
-          <p class="text-gray-500">No notifications yet</p>
-          <p class="text-sm text-gray-400 mt-1">System notifications will appear here</p>
-        </div>
-      } @else if (regularNotifications().length === 0 && showUnreadOnly()) {
-        <div class="px-6 py-12 text-center">
-          <ng-icon name="heroCheckCircle" class="w-12 h-12 text-green-300 mx-auto mb-3"></ng-icon>
-          <p class="text-gray-500">All caught up!</p>
-          <p class="text-sm text-gray-400 mt-1">You have no unread notifications</p>
-        </div>
-      } @else {
-        <div class="divide-y divide-gray-200">
-          @for (notification of regularNotifications(); track notification.id) {
-            <div 
-              (click)="openNotification(notification)"
-              [class]="'px-6 py-4 hover:bg-gray-50 transition cursor-pointer relative ' + (!notification.isRead ? 'bg-teal-50/50 border-l-4 border-l-teal-500' : '')">
-              
-              <!-- Unread indicator -->
-              @if (!notification.isRead) {
-                <div class="absolute left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-teal-500 rounded-full"></div>
-              }
-              
-              <div class="flex items-start gap-4">
-                <!-- Icon -->
-                <div [class]="'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm ' + getNotificationIconBg(notification.type)">
-                  <ng-icon 
-                    [name]="getNotificationIcon(notification.type)" 
-                    [class]="'w-5 h-5 ' + getNotificationIconColor(notification.type)">
-                  </ng-icon>
-                </div>
-                
-                <!-- Content -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-start justify-between gap-4 mb-2">
-                    <div class="flex-1">
-                      <div class="flex items-center gap-2 mb-1">
-                        <h3 [class]="'text-sm ' + (!notification.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-800')">
-                          {{ notification.title }}
-                        </h3>
-                        @if (!notification.isRead) {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-700">
-                            New
-                          </span>
-                        }
-                      </div>
-                      <p class="text-sm text-gray-600 line-clamp-2 mb-2">
-                        {{ notification.body }}
-                      </p>
-                      @if (notification.rideId) {
-                        <div class="flex items-center gap-2 text-xs text-gray-500">
-                          <ng-icon name="heroTicket" class="w-3.5 h-3.5"></ng-icon>
-                          <span>Ride #{{ notification.rideId }}</span>
-                        </div>
-                      }
-                    </div>
-                    <span class="text-xs text-gray-500 whitespace-nowrap">
-                      {{ getTimeAgo(notification.timestamp) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      }
-      
-    </div>
     
   </div>
   
@@ -237,15 +253,15 @@
       <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
         
         <!-- Modal Header -->
-        <div [class]="'flex items-center justify-between p-6 border-b ' + (selectedNotification.type === 'panic' ? 'border-red-200 bg-red-50' : 'border-gray-200')">
+        <div [class]="'flex items-center justify-between p-6 border-b ' + (selectedNotification.isPanic ? 'border-red-200 bg-red-50' : 'border-gray-200')">
           <div class="flex items-center gap-3">
-            <div [class]="'w-10 h-10 rounded-full flex items-center justify-center ' + (selectedNotification.type === 'panic' ? 'bg-red-600' : getNotificationIconBg(selectedNotification.type))">
+            <div [class]="'w-10 h-10 rounded-full flex items-center justify-center ' + (selectedNotification.isPanic ? 'bg-red-600' : getNotificationIconBg(selectedNotification.type))">
               <ng-icon 
                 [name]="getNotificationIcon(selectedNotification.type)" 
-                [class]="'w-5 h-5 ' + (selectedNotification.type === 'panic' ? 'text-white' : getNotificationIconColor(selectedNotification.type))">
+                [class]="'w-5 h-5 ' + (selectedNotification.isPanic ? 'text-white' : getNotificationIconColor(selectedNotification.type))">
               </ng-icon>
             </div>
-            <h2 [class]="'text-xl font-semibold ' + (selectedNotification.type === 'panic' ? 'text-red-900' : 'text-gray-900')">
+            <h2 [class]="'text-xl font-semibold ' + (selectedNotification.isPanic ? 'text-red-900' : 'text-gray-900')">
               {{ selectedNotification.title }}
             </h2>
           </div>
@@ -261,17 +277,17 @@
           
           <div>
             <h3 class="text-sm font-medium text-gray-500 mb-2">Message</h3>
-            <p [class]="'leading-relaxed ' + (selectedNotification.type === 'panic' ? 'text-red-900 font-medium' : 'text-gray-900')">
-              {{ selectedNotification.body }}
+            <p [class]="'leading-relaxed ' + (selectedNotification.isPanic ? 'text-red-900 font-medium' : 'text-gray-900')">
+              {{ selectedNotification.content }}
             </p>
           </div>
           
           <div>
             <h3 class="text-sm font-medium text-gray-500 mb-2">Received</h3>
-            <p class="text-gray-900">{{ formatFullDate(selectedNotification.timestamp) }}</p>
+            <p class="text-gray-900">{{ formatFullDate(selectedNotification.time) }}</p>
           </div>
           
-          @if (selectedNotification.type === 'panic') {
+          @if (selectedNotification.isPanic) {
             <div class="bg-red-50 border-2 border-red-200 rounded-lg p-4">
               <h3 class="text-sm font-semibold text-red-900 mb-3">Emergency Details</h3>
               <div class="space-y-2 text-sm">
@@ -279,12 +295,6 @@
                   <div class="flex justify-between">
                     <span class="text-red-700">Ride ID:</span>
                     <span class="font-semibold text-red-900">#{{ selectedNotification.rideId }}</span>
-                  </div>
-                }
-                @if (selectedNotification.vehicleId) {
-                  <div class="flex justify-between">
-                    <span class="text-red-700">Vehicle:</span>
-                    <span class="font-semibold text-red-900">{{ selectedNotification.vehicleId }}</span>
                   </div>
                 }
                 @if (selectedNotification.driverName) {
@@ -297,12 +307,6 @@
                   <div class="flex justify-between">
                     <span class="text-red-700">Passenger:</span>
                     <span class="font-semibold text-red-900">{{ selectedNotification.passengerName }}</span>
-                  </div>
-                }
-                @if (selectedNotification.location) {
-                  <div class="flex justify-between">
-                    <span class="text-red-700">Location:</span>
-                    <span class="font-semibold text-red-900">{{ selectedNotification.location }}</span>
                   </div>
                 }
               </div>
@@ -319,21 +323,53 @@
                 </div>
               }
             </div>
-          } @else if (selectedNotification.rideId) {
-            <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-xs text-teal-700 mb-1 font-medium">Related Ride</p>
-                  <p class="text-sm font-semibold text-teal-900">Ride #{{ selectedNotification.rideId }}</p>
+          } @else {
+            @if (selectedNotification.rideId || selectedNotification.driverName || selectedNotification.passengerName) {
+              <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                <h3 class="text-xs text-teal-700 mb-2 font-medium">Related Information</h3>
+                <div class="space-y-1 text-sm">
+                  @if (selectedNotification.rideId) {
+                    <div class="flex items-center gap-2">
+                      <ng-icon name="heroTicket" class="w-4 h-4 text-teal-600"></ng-icon>
+                      <span class="text-teal-900">Ride #{{ selectedNotification.rideId }}</span>
+                    </div>
+                  }
+                  @if (selectedNotification.driverName) {
+                    <div class="flex items-center gap-2">
+                      <ng-icon name="heroTruck" class="w-4 h-4 text-teal-600"></ng-icon>
+                      <span class="text-teal-900">{{ selectedNotification.driverName }}</span>
+                    </div>
+                  }
+                  @if (selectedNotification.passengerName) {
+                    <div class="flex items-center gap-2">
+                      <ng-icon name="heroUserPlus" class="w-4 h-4 text-teal-600"></ng-icon>
+                      <span class="text-teal-900">{{ selectedNotification.passengerName }}</span>
+                    </div>
+                  }
                 </div>
+                @if (selectedNotification.actionUrl && selectedNotification.actionUrl !== '#') {
+                  <a 
+                    [href]="selectedNotification.actionUrl"
+                    class="inline-flex items-center gap-1 mt-3 text-sm text-teal-700 hover:text-teal-800 font-medium">
+                    View Details
+                    <ng-icon name="heroArrowRight" class="w-4 h-4"></ng-icon>
+                  </a>
+                }
               </div>
-            </div>
+            }
           }
           
         </div>
         
         <!-- Modal Footer -->
         <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+          @if (selectedNotification.actionUrl && selectedNotification.actionUrl !== '#' && !selectedNotification.isPanic) {
+            <a 
+              [href]="selectedNotification.actionUrl"
+              class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+              View Details
+            </a>
+          }
           <button 
             (click)="closeModal()"
             class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
