@@ -254,7 +254,7 @@ public class RideController {
         @RequestBody OrderRequest request
     ) {
         try {
-            rideService.rideOrder(request);
+            rideService.rideOrder(passenger, request);
         } catch (Exception e) {
             String errorResponse = "ODGOVOR: " + e.getClass().getSimpleName() + ": " + e.getMessage();
             return ResponseEntity.ok(errorResponse);

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, output } from '@angular/core';
+import { Component, inject, OnInit, output, signal } from '@angular/core';
 import { FavoriteRoute } from '../../../../../../model/route';
 import { MatDialogRef, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FavoriteRoutesService } from '../../../../../../services/favorite-routes.service';
@@ -18,10 +18,17 @@ export class FavoriteRouteSelector implements OnInit {
 
   selectedRoute = output<FavoriteRoute>();
 
-  favoriteRoutes = this.favRouteService.favoriteRoutes;
+  favoriteRoutes = signal<FavoriteRoute[]>([]);
 
   ngOnInit(): void {
-      this.favRouteService.getFavoriteRoutes();
+    this.loadFavorites();
+  }
+
+  loadFavorites(): void {
+    this.favRouteService.getFavoriteRoutes().subscribe({
+      next: (routes) => this.favoriteRoutes.set(routes),
+      error: (err) => console.error("Greška pri učitavanju favorita:", err)
+    });
   }
 
   selectRoute(route: FavoriteRoute) {

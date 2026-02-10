@@ -12,6 +12,7 @@ export interface Route {
 }
 
 export interface FavoriteRoute {
+  routeId: number;
   route: Route;
   title: string;
 }

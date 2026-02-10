@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PassengerRideHistoryResponse {
     private Long id;
+    private Long routeId;
     private String pickupAddress;
     private String destinationAddress;
     private LocalDateTime createdAt;

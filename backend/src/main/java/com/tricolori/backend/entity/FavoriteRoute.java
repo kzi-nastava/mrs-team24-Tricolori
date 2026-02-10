@@ -43,4 +43,9 @@ public class FavoriteRoute {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Column(
+        nullable = false,
+        length = 100
+    )
+    private String title;
 }
