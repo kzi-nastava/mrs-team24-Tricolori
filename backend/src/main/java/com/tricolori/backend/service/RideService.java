@@ -12,9 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import com.tricolori.backend.dto.ride.*;
@@ -120,11 +121,13 @@ public class RideService {
     // ================= passenger =================
 
     public Page<PassengerRideHistoryResponse> getPassengerHistory(
-            Long passengerId,
-            Pageable pageable
+            Person person, LocalDate startDate, LocalDate endDate, Pageable pageable
     ) {
+        LocalDateTime start = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime end = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
+
         return rideRepository
-                .findAllPassengerRides(passengerId, pageable)
+                .findAllPassengerRides(person.getId(), start, end, pageable)
                 .map(rideMapper::toPassengerHistoryResponse);
     }
 

@@ -102,12 +102,17 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             Pageable pageable
     );
 
-    // all passenger rides
     @Query("SELECT r FROM Ride r " +
             "JOIN r.passengers p " +
             "WHERE p.id = :passengerId " +
-            "ORDER BY r.createdAt DESC")
-    Page<Ride> findAllPassengerRides(@Param("passengerId") Long passengerId, Pageable pageable);
+            "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
+            "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate)")
+    Page<Ride> findAllPassengerRides(
+            @Param("passengerId") Long passengerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
 
     // passenger rides filtered by date
     @Query("""
