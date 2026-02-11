@@ -34,6 +34,12 @@
             android:icon="@drawable/ic_pricelist"
             android:title="Pricelist" />
 
+        <item
+            android:id="@+id/adminDriverRegistrationFragment"
+            android:title="Driver registration"
+            android:icon="@drawable/ic_vehicle"
+            app:showAsAction="never" />
+
     <item
         android:id="@+id/userProfileFragment"
         android:icon="@drawable/ic_person"
