@@ -53,5 +53,25 @@ export interface RideAssignment {
   estimatedPrice: number;
   pickupCoords: [number, number];
   destinationCoords: [number, number];
-  eta: number; 
+  eta: number;
+}
+
+export type RideStatus =
+  | 'SCHEDULED'
+  | 'ONGOING'
+  | 'FINISHED'
+  | 'PANIC'
+  | 'CANCELLED_BY_DRIVER'
+  | 'CANCELLED_BY_PASSENGER'
+  | 'DECLINED'
+  | 'STOPPED'
+  | 'REJECTED';
+
+export interface PassengerRide {
+  id: number;
+  pickupAddress: string;
+  destinationAddress: string;
+  createdAt: string;
+  status: RideStatus;
+  price: number;
 }
