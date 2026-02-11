@@ -467,7 +467,7 @@ public class RideService {
         ride.setScheduledFor(preferences.scheduledFor());
         ride.setRoute(route);
         ride.setPrice(calculatePrice(
-            preferences.vehicleType(), route.getDistanceKm()
+                preferences.vehicleType(), route.getDistanceKm()
         ));
 
         // Find passengers by email:
@@ -477,8 +477,9 @@ public class RideService {
         if (request.getTrackers() != null) {
             allPassengerEmails.addAll(Arrays.asList(request.getTrackers()));
         }
+
         List<Passenger> trackingPassengers = passengerService.getTrackingPassengers(
-            request.getTrackers()
+                allPassengerEmails.toArray(new String[0])
         );
         ride.setPassengers(trackingPassengers);
 
@@ -492,7 +493,7 @@ public class RideService {
             ride.setStatus(RideStatus.SCHEDULED);
             ride.setVehicleSpecification(driver.getVehicle().getSpecification());
 
-            rideRepository.save(ride);
+            ride = rideRepository.save(ride);
 
             Passenger organizer = trackingPassengers.getFirst();
             for (Passenger p : trackingPassengers) {
