@@ -34,7 +34,7 @@ export const routes: Routes = [
   // Driver routes
   {
     path: 'driver',
-    canActivate: [authGuard],
+    // canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -79,6 +79,10 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () =>
           import('./pages/profile/driver-profile/driver-profile').then(m => m.DriverProfile)
+      },
+      {
+        path: 'reports',
+        loadComponent: () => import('./pages/report/personal-report/personal-report').then(m => m.PersonalReport)
       }
     ]
   },
@@ -86,7 +90,7 @@ export const routes: Routes = [
   // Passenger routes
   {
     path: 'passenger',
-    canActivate: [authGuard],
+    // canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -130,6 +134,10 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () => import('./pages/profile/base-profile/base-profile').then(m => m.BaseProfile)
       },
+      {
+        path: 'reports',
+        loadComponent: () => import('./pages/report/personal-report/personal-report').then(m => m.PersonalReport)
+      },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
@@ -137,7 +145,7 @@ export const routes: Routes = [
   // Admin routes
   {
     path: 'admin',
-    canActivate: [authGuard],
+    // canActivate: [authGuard],
     children: [
       {
         path: 'home',
@@ -174,6 +182,10 @@ export const routes: Routes = [
       {
         path: 'pricelist',
         loadComponent: () => import('./pages/pricelist/pricelist-admin').then(m => m.PricelistAdmin)
+      },
+      {
+        path: 'reports',
+        loadComponent: () => import('./pages/report/admin-report/admin-report').then(m => m.AdminReport)
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
