@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PanicRequest, RideRequest, StopRideRequest, StopRideResponse } from '../model/ride';
+import {PanicRequest, PassengerRide, RideRequest, StopRideRequest, StopRideResponse} from '../model/ride';
 import { RideHistoryResponse, RideDetailResponse, RideRatingRequest, PassengerRideHistoryResponse } from '../model/ride-history';
 import { environment } from '../../environments/environment';
 import {
@@ -40,16 +40,18 @@ export class RideService {
     return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
   }
 
-  // Get passenger's ride history with optional date filtering
   getPassengerHistory(
     startDate?: string,
     endDate?: string,
-    sortBy: string = 'createdAt',
-    sortDirection: string = 'DESC'
-  ): Observable<PassengerRideHistoryResponse[]> {
+    page: number = 0,
+    size: number = 10,
+    sort: string = 'createdAt,desc',
+  ): Observable<PassengerRide[]> {
+
     let params = new HttpParams()
-      .set('sortBy', sortBy)
-      .set('sortDirection', sortDirection);
+      .set('page', page)
+      .set('size', size)
+      .set('sort', sort)
 
     if (startDate) {
       params = params.set('startDate', startDate);
@@ -58,7 +60,7 @@ export class RideService {
       params = params.set('endDate', endDate);
     }
 
-    return this.http.get<PassengerRideHistoryResponse[]>(`${this.API_URL}/history/passenger`, { params });
+    return this.http.get<PassengerRide[]>(`${this.API_URL}/passenger`, { params });
   }
 
   // Get detailed information for a specific ride (for driver)
