@@ -5,8 +5,11 @@
   <a routerLink="/passenger/history" routerLinkActive="active" class="nav-link">
     <span>History</span>
   </a>
-  <a routerLink="/passenger/notifications" routerLinkActive="active" class="nav-link">
+  <a routerLink="/passenger/notifications" routerLinkActive="active" class="nav-link relative">
     <span>Notifications</span>
+    @if (unreadCount > 0) {
+      <span class="notification-badge"></span>
+    }
   </a>
   <a routerLink="/passenger/support" routerLinkActive="active" class="nav-link">
     <span>Support</span>
