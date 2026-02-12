@@ -57,8 +57,13 @@ public interface RideMapper {
     /**
      * Map Ride to Passenger History Response (List view)
      */
+    @Mapping(target = "routeId", source = "ride.route.id")
     @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
-    @Mapping(target = "destinationAddress", expression = "java(getDestinationAddress(ride))")
+    @Mapping(target = "destinationAddress", expression = "java(getDropoffAddress(ride))")
+    @Mapping(source = "price", target = "totalPrice")
+    @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
+    @Mapping(target = "driverRating", expression = "java(getAverageDriverRating(ride))")
+    @Mapping(target = "vehicleRating", expression = "java(getAverageVehicleRating(ride))")
     PassengerRideHistoryResponse toPassengerHistoryResponse(Ride ride);
 
     /**
@@ -88,18 +93,11 @@ public interface RideMapper {
 
     // ================= helpers =================
 
-    default String getDestinationAddress(Ride ride) {
-        if (ride.getRoute() == null || ride.getRoute().getStops().isEmpty()) {
-            return null;
-        }
-        return ride.getRoute().getDestinationStop().getAddress();
-    }
-
     default String getPickupAddress(Ride ride) {
         if (ride.getRoute() == null || ride.getRoute().getStops().isEmpty()) {
             return null;
         }
-        return ride.getRoute().getPickupStop().getAddress();
+        return ride.getRoute().getStops().getFirst().getAddress();
     }
 
     default String getDropoffAddress(Ride ride) {
