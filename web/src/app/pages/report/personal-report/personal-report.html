@@ -60,34 +60,46 @@
     <div class="space-y-9 mt-9">
         <!-- Rides per day -->
         <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <div class="bg-deep-300 p-4 flex items-center gap-3 text-white">
+            <div class="bg-base-700 p-4 flex items-center gap-3 text-white">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
                 <h3 class="font-medium">Rides per days</h3>
             </div>
             <div class="p-6 h-72 flex items-center justify-center text-gray-400 italic bg-gray-50/50">
-                [ Mesto za Chart.js / ngx-charts ]
+                <canvas baseChart
+                    [data]="barChartData"
+                    [options]="chartOptions"
+                    [type]="'bar'">
+                </canvas>
             </div>
         </div>
 
         <!-- Kilometers per day -->
         <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <div class="bg-deep-400 p-4 flex items-center gap-3 text-white">
+            <div class="bg-base-700 p-4 flex items-center gap-3 text-white">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
                 <h3 class="font-medium">Kilometers per days</h3>
             </div>
             <div class="p-6 h-72 flex items-center justify-center text-gray-400 italic bg-gray-50/50">
-                [ Mesto za Chart.js / ngx-charts ]
+                <canvas baseChart
+                    [data]="lineChartData"
+                    [options]="chartOptions"
+                    [type]="'line'">
+                </canvas>
             </div>
         </div>
 
         <!-- Money per day -->
         <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <div class="bg-deep p-4 flex items-center gap-3 text-white">
+            <div class="bg-base-700 p-4 flex items-center gap-3 text-white">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
                 <h3 class="font-medium">Money spent/gained per days</h3>
             </div>
             <div class="p-6 h-72 flex items-center justify-center text-gray-400 italic bg-gray-50/50">
-                [ Mesto za Chart.js / ngx-charts ]
+                <canvas baseChart
+                    [data]="barChartData" 
+                    [options]="chartOptions"
+                    [type]="'bar'">
+                </canvas>
             </div>
         </div>
 

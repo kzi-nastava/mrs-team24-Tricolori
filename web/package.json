@@ -41,8 +41,10 @@
     "@ng-icons/mynaui": "^33.0.0",
     "@ng-icons/phosphor-icons": "^33.0.0",
     "@stomp/stompjs": "^7.3.0",
+    "chart.js": "^4.5.1",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
+    "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
     "tailwindcss": "^4.1.18",
     "tslib": "^2.3.0"
