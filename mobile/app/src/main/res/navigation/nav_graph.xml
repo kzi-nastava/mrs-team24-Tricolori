@@ -58,6 +58,42 @@
     </fragment>
 
     <fragment
+        android:id="@+id/adminDriverRegistrationFragment"
+        android:name="com.example.mobile.ui.fragments.AdminDriverRegistrationFragment"
+        android:label="@string/admin_driver_fragment_label"
+        tools:layout="@layout/fragment_admin_driver_registration">
+        <action
+            android:id="@+id/action_driverRegister_to_profile"
+            app:destination="@id/userProfileFragment" />
+
+        <!-- TODO: add actions to other fragments -->
+    </fragment>
+
+    <fragment
+        android:id="@+id/passwordSetupFragment"
+        android:name="com.example.mobile.ui.fragments.PasswordSetupFragment"
+        android:label="Password Setup"
+        tools:layout="@layout/fragment_password_setup">
+
+        <deepLink
+            app:uri="http://10.0.2.2:4200/password-setup?token={registrationToken}" />
+        <deepLink
+            app:uri="http://localhost:4200/password-setup?token={registrationToken}" />
+
+        <argument
+            android:name="registrationToken"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+
+        <action
+            android:id="@+id/action_passwordSetup_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
         android:id="@+id/userProfileFragment"
         android:name="com.example.mobile.ui.fragments.UserProfileFragment"
         android:label="Profile"
