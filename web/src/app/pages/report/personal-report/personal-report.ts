@@ -1,62 +1,90 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { NgIcon } from "@ng-icons/core";
 
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-
+import { ReportService } from '../../../services/report.service';
+import { DailyStatisticDTO, PersonalReportResponse } from '../../../model/report';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 @Component({
   selector: 'app-personal-report',
+  standalone: true,
   imports: [
     NgIcon, 
-    BaseChartDirective
+    BaseChartDirective, 
+    CommonModule, 
+    ReactiveFormsModule
   ],
   templateUrl: './personal-report.html',
   styleUrl: './personal-report.css',
 })
 export class PersonalReport {
+  private fb = inject(FormBuilder);
+  private reportService = inject(ReportService);
 
-  public barChartData: ChartData<'bar'> = {
-    labels: ['01.01', '02.01', '03.01', '04.01', '05.01'], // Ovo puniš iz DTO.dailyData
-    datasets: [
-      { 
-        data: [12, 15, 8, 18, 14], // d.rideCount
-        label: 'Broj vožnji',
-        backgroundColor: '#00cc92', // Tvoja --color-light-600
-        borderRadius: 6, // Zaobljeni vrhovi stubića kao na slici
-      }
-    ]
-  };
+  reportData = signal<PersonalReportResponse | undefined>(undefined);
+  isLoading = signal<boolean>(false);
+  errorMessage = signal<string | null>(null);
 
-  // 2. Podaci za Kilometre (Line Chart)
-  public lineChartData: ChartData<'line'> = {
-    labels: ['01.01', '02.01', '03.01', '04.01', '05.01'],
-    datasets: [
-      {
-        data: [140, 180, 90, 210, 160], // d.distance
-        label: 'Kilometri',
-        borderColor: '#00a2ff', // Tvoja --color-dark
-        pointBackgroundColor: '#00a2ff',
-        tension: 0.4, // Ovo pravi "smooth" krivu liniju sa slike
-        fill: 'origin',
-        backgroundColor: 'rgba(0, 162, 255, 0.1)', // Blaga senka ispod linije
-      }
-    ]
-  };
+  // Reactive Form definicija
+  reportForm = this.fb.group({
+    from: ['', [Validators.required]],
+    to: ['', [Validators.required]]
+  });
+
+  // Computed signali (automatsko mapiranje za grafikone)
+  barChartData = computed<ChartData<'bar'>>(() => this.mapChartData('count', '#00cc92', 'Rides'));
+  lineChartData = computed<ChartData<'line'>>(() => this.mapChartData('distance', '#00a2ff', 'Kilometers', true));
+  moneyChartData = computed<ChartData<'bar'>>(() => this.mapChartData('money', '#6366f1', 'Money'));
 
   public chartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false } // Sakrivamo legendu jer imamo naslov u HTML-u
-    },
-    scales: {
-      x: {
-        grid: { display: false } // Sklanjamo vertikalne linije
-      },
-      y: {
-        border: { display: false },
-        grid: { color: '#f3f4f6' } // Svetlo sive horizontalne linije
-      }
-    }
+    plugins: { legend: { display: false } }
   };
+
+  generateReport(): void {
+    if (this.reportForm.invalid) {
+      this.errorMessage.set("Please select both dates.");
+      return;
+    }
+
+    const { from, to } = this.reportForm.value;
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    const fromStr = this.reportService.formatLocalDateTime(new Date(from!));
+    const toDate = new Date(to!);
+    toDate.setHours(23, 59, 59);
+    const toStr = this.reportService.formatLocalDateTime(toDate);
+
+    this.reportService.getPersonalReport(fromStr!, toStr!).subscribe({
+      next: (res) => {
+        this.reportData.set(res);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || "Server error.");
+        this.isLoading.set(false);
+        this.reportData.set(undefined);
+      }
+    });
+  }
+
+  private mapChartData(key: keyof DailyStatisticDTO, color: string, label: string, isLine = false): any {
+    const stats = this.reportData()?.dailyStatistics || [];
+    return {
+      labels: stats.map(d => d.date),
+      datasets: [{
+        data: stats.map(d => d[key]),
+        label: label,
+        backgroundColor: isLine ? 'rgba(0, 162, 255, 0.1)' : color,
+        borderColor: color,
+        borderRadius: isLine ? 0 : 6,
+        tension: isLine ? 0.4 : 0,
+        fill: isLine ? 'origin' : false
+      }]
+    };
+  }
 }
