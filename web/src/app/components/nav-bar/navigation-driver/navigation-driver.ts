@@ -65,10 +65,6 @@ export class NavigationDriver implements OnInit, OnDestroy {
   onLogout() {
     this.notificationService.disconnectWebSocket();
     this.isWebSocketConnected = false;
-    
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('person_data');
-    this.router.navigate(['/login']);
+
   }
 }
