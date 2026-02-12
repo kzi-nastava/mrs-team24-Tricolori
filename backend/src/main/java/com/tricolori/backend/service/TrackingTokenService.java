@@ -1,5 +1,6 @@
 package com.tricolori.backend.service;
 
+import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.entity.Ride;
 import com.tricolori.backend.entity.TrackingToken;
 import com.tricolori.backend.repository.PersonRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,15 +23,26 @@ public class TrackingTokenService {
     private final PersonRepository personRepository;
 
     @Transactional
-    public String createTrackingToken(String email, Ride ride) {
+    public String createTrackingToken(String email, String firstName, Ride ride) {
+        return createTrackingToken(email, firstName, null, ride);
+    }
+
+    @Transactional
+    public String createTrackingToken(String email, String firstName, String lastName, Ride ride) {
         // Check if token already exists for this email and ride
         return trackingTokenRepository.findByEmailAndRideId(email, ride.getId())
                 .map(TrackingToken::getToken)
                 .orElseGet(() -> {
                     String token = UUID.randomUUID().toString();
-                    TrackingToken trackingToken = new TrackingToken(token, email, ride);
+                    TrackingToken trackingToken = new TrackingToken(token, email, firstName, lastName, ride);
+
+                    // If this is a registered user, link their Person entity
+                    Optional<Person> person = personRepository.findByEmail(email);
+                    person.ifPresent(trackingToken::setPerson);
+
                     trackingTokenRepository.save(trackingToken);
-                    log.info("Created tracking token for email: {} and ride: {}", email, ride.getId());
+                    log.info("Created tracking token for email: {} (registered: {}) and ride: {}",
+                            email, person.isPresent(), ride.getId());
                     return token;
                 });
     }
@@ -47,5 +60,9 @@ public class TrackingTokenService {
 
     public boolean isRegisteredUser(String email) {
         return personRepository.findByEmail(email).isPresent();
+    }
+
+    public java.util.List<TrackingToken> getTokensForRide(Long rideId) {
+        return trackingTokenRepository.findByRideId(rideId);
     }
 }

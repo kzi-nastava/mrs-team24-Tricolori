@@ -21,6 +21,16 @@ public class TrackingToken {
     @Column(nullable = false)
     private String email;
 
+    @Column(nullable = false)
+    private String firstName;
+
+    @Column
+    private String lastName;
+
+    @ManyToOne
+    @JoinColumn(name = "person_id")
+    private Person person; // only set if user is registered
+
     @ManyToOne
     @JoinColumn(name = "ride_id", nullable = false)
     private Ride ride;
@@ -33,11 +43,21 @@ public class TrackingToken {
 
     private boolean used = false;
 
-    public TrackingToken(String token, String email, Ride ride) {
+    public TrackingToken(String token, String email, String firstName, Ride ride) {
         this.token = token;
         this.email = email;
+        this.firstName = firstName;
         this.ride = ride;
         this.createdAt = LocalDateTime.now();
-        this.expiresAt = LocalDateTime.now().plusDays(1); // Valid for 24 hours
+        this.expiresAt = LocalDateTime.now().plusDays(7); // Valid for 7 days (duration of ride history)
+    }
+
+    public TrackingToken(String token, String email, String firstName, String lastName, Ride ride) {
+        this(token, email, firstName, ride);
+        this.lastName = lastName;
+    }
+
+    public boolean isRegisteredUser() {
+        return person != null;
     }
 }

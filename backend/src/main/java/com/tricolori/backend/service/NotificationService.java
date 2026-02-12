@@ -153,9 +153,10 @@ public class NotificationService {
                 trackingLink = frontendUrl + "/login?redirect=/passenger/ride-tracking/" + rideId;
             } else {
                 // Unregistered users: direct tracking with token
+                // Create tracking token with passenger details
                 Ride ride = rideRepository.findById(rideId)
                         .orElseThrow(() -> new RuntimeException("Ride not found"));
-                String token = trackingTokenService.createTrackingToken(passengerEmail, ride);
+                String token = trackingTokenService.createTrackingToken(passengerEmail, passengerFirstName, ride);
                 trackingLink = frontendUrl + "/track-ride?token=" + token;
             }
 
@@ -169,13 +170,14 @@ public class NotificationService {
                     trackingLink,
                     isRegistered
             );
-            log.info("Email sent to linked passenger: {}", passengerEmail);
+            log.info("Email sent to linked passenger: {} (registered: {})", passengerEmail, isRegistered);
         } catch (Exception e) {
             log.error("Failed to send email to linked passenger: {}", passengerEmail, e);
         }
 
         saveAndSend(notification, passengerEmail);
     }
+
 
     // RIDE_COMPLETED
     public void sendRideCompletedNotification(String passengerEmail, String passengerFirstName, Long rideId,
