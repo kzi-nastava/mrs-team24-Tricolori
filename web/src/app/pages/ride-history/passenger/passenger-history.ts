@@ -6,8 +6,9 @@ import { heroEye, heroXMark, heroStar, heroArrowUp, heroArrowDown } from '@ng-ic
 import { heroHeartSolid, heroStarSolid } from '@ng-icons/heroicons/solid';
 import { RideService } from '../../../services/ride.service';
 import {ToastService} from '../../../services/toast.service';
-import {PassengerRide} from '../../../model/ride';
+import {getStatusClass, PassengerRide} from '../../../model/ride';
 import {finalize} from 'rxjs/operators';
+import {RideDetailsModal} from './components/ride-details-modal/ride-details-modal';
 
 @Component({
   selector: 'app-passenger-old-history',
@@ -15,7 +16,8 @@ import {finalize} from 'rxjs/operators';
   imports: [
     CommonModule,
     FormsModule,
-    NgIconComponent
+    NgIconComponent,
+    RideDetailsModal
   ],
   providers: [
     provideIcons({ heroEye, heroXMark, heroStar, heroStarSolid, heroHeartSolid,
@@ -104,24 +106,5 @@ export class PassengerHistory implements OnInit {
     this.selectedRide.set(ride);
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'FINISHED':
-        return 'bg-green-100 text-green-700 border-green-200';
-      case 'ONGOING':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'SCHEDULED':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'PANIC':
-        return 'bg-red-600 text-white border-red-700 animate-pulse';
-      case 'CANCELLED_BY_PASSENGER':
-      case 'CANCELLED_BY_DRIVER':
-      case 'REJECTED':
-      case 'DECLINED':
-        return 'bg-red-100 text-red-700 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
-  }
-
+  protected readonly getStatusClass = getStatusClass;
 }

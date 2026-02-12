@@ -124,3 +124,10 @@
     </div>
   </div>
 </div>
+
+@if (selectedRide()) {
+  <app-ride-details-modal
+    [ride]="selectedRide()!"
+    (onClose)="selectedRide.set(null)">
+  </app-ride-details-modal>
+}
