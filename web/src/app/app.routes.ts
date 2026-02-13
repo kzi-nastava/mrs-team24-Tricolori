@@ -187,6 +187,10 @@ export const routes: Routes = [
         path: 'reports',
         loadComponent: () => import('./pages/report/admin-report/admin-report').then(m => m.AdminReport)
       },
+      {
+        path: "blocks",
+        loadComponent: () => import('./pages/block/block').then(m => m.Block)
+      },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
