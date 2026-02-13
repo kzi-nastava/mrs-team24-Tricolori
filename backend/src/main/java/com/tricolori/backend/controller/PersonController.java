@@ -47,7 +47,8 @@ public class PersonController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/active")
+    @GetMapping("/statuses")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ActivePersonStatus>> getActivePersons(
         @RequestParam(required = false) Long id,
         @RequestParam(required = false) String firstName,
@@ -55,7 +56,7 @@ public class PersonController {
         @RequestParam(required = false) @Email String email,
         @PageableDefault(size = 10, sort = "id") Pageable pageable
     ) {
-        var page = service.getActivePersons(id, firstName, lastName, email, pageable);
+        var page = service.getPersonsStatuses(id, firstName, lastName, email, pageable);
         return ResponseEntity.ok(page);
     }
 }

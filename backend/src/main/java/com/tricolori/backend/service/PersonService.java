@@ -31,7 +31,7 @@ public class PersonService {
     private final PersonRepository personRepository;
     private final PersonMapper mapper;
 
-    public Page<ActivePersonStatus> getActivePersons(Long id, String firstName, String lastName, String email, Pageable pageable) {
+    public Page<ActivePersonStatus> getPersonsStatuses(Long id, String firstName, String lastName, String email, Pageable pageable) {
         Specification<Person> spec = PersonSpecifications.withFilters(id, firstName, lastName, email);
         Page<Person> personPage = personRepository.findAll(spec, pageable);
         

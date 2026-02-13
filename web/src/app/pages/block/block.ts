@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon } from "@ng-icons/core";
-import { ActivePersonStatus } from '../../model/block.model';
+import { ActivePersonStatus, BlockRequest } from '../../model/block.model';
 import { PersonService } from '../../services/person.service';
 import { CommonModule, DatePipe } from '@angular/common';
 
@@ -24,6 +24,10 @@ export class Block {
   totalElements = signal(0);
   currentPage = signal(0);
   pageSize = 5;
+
+  isModalOpen = signal(false);
+  selectedUser = signal<ActivePersonStatus | null>(null);
+  reasonControl = new FormControl('', { validators: [Validators.required] });
 
   totalPages = computed(() => Math.ceil(this.totalElements() / this.pageSize));
   
@@ -83,6 +87,43 @@ export class Block {
     if (this.currentPage() > 0) {
       this.currentPage.update(p => p - 1);
       this.loadUsers();
+    }
+  }
+
+  openModal(user: ActivePersonStatus) {
+    this.selectedUser.set(user);
+    this.reasonControl.reset();
+    this.isModalOpen.set(true);
+  }
+
+  closeModal() {
+    this.isModalOpen.set(false);
+    this.selectedUser.set(null);
+  }
+
+  confirmAction() {
+    const user = this.selectedUser();
+    if (!user) return;
+
+    if (user.status === 'SUSPENDED') {
+      this.personService.removeBlock(user.email).subscribe({
+        next: () => {
+          this.loadUsers();
+          this.closeModal();
+        }
+      });
+    } else {
+      const request: BlockRequest = { 
+        blockReason: this.reasonControl.value!, 
+        userEmail: user.email
+      };
+
+      this.personService.applyBlock(request).subscribe({
+        next: () => {
+          this.loadUsers();
+          this.closeModal();
+        }
+      });
     }
   }
 }

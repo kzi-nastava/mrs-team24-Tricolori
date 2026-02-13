@@ -8,3 +8,8 @@ export interface ActivePersonStatus {
   registrationDate: string;
   status: AccountStatus;
 }
+
+export interface BlockRequest {
+  blockReason: string;
+  userEmail: string;
+}

@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { environment } from "../../environments/environment";
 import { Observable } from "rxjs";
-import { ActivePersonStatus } from "../model/block.model";
+import { ActivePersonStatus, BlockRequest } from "../model/block.model";
 
 // This interface describes what Spring Boot returns...
 export interface PageResponse<T> {
@@ -32,6 +32,16 @@ export class PersonService {
       }
     });
 
-    return this.http.get<PageResponse<ActivePersonStatus>>(`${this.API_URL}/active`, { params });
+    return this.http.get<PageResponse<ActivePersonStatus>>(`${this.API_URL}/statuses`, { params });
+  }
+
+  applyBlock(request: BlockRequest): Observable<void> {
+    return this.http.patch<void>(`${this.API_URL}/block`, request);
+  }
+
+
+  removeBlock(email: string): Observable<void> {
+    const params = new HttpParams().set('email', email);
+    return this.http.delete<void>(`${this.API_URL}/unblock`, { params });
   }
 }

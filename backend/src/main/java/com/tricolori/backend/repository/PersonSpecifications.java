@@ -29,8 +29,8 @@ public class PersonSpecifications {
                 predicates.add(cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
             }
             
-            predicates.add(cb.equal(root.get("accountStatus"), AccountStatus.ACTIVE));
-
+            predicates.add(cb.notEqual(root.get("accountStatus"), AccountStatus.WAITING_FOR_ACTIVATION));
+            
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

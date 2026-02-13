@@ -80,7 +80,9 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ user.email }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ user.registrationDate | date: 'dd.MM.yyyy - HH:mm' }}</td>
                         <td class="px-6 py-4 text-sm">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm"
+                            <span
+                                (click)="openModal(user)" 
+                                class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm"
                                 [class]="{
                                     'bg-emerald-500': user.status === 'ACTIVE',
                                     'bg-amber-500': user.status === 'WAITING_FOR_ACTIVATION',
@@ -133,3 +135,44 @@
         </nav>
     </div>
 </div>
+
+@if (isModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            
+            <div class="p-6 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-dark-800">
+                    {{ selectedUser()?.status === 'SUSPENDED' ? 'Unblock user' : 'Block user' }}
+                </h3>
+                <p class="text-sm text-gray-500 mt-1">
+                    User: <span class="font-semibold text-dark-600">{{ selectedUser()?.email }}</span>
+                </p>
+            </div>
+
+            <div class="p-6">
+                @if (selectedUser()?.status !== 'SUSPENDED') {
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Block reason:</label>
+                    <textarea 
+                        [formControl]="reasonControl"
+                        placeholder="Enter reason..." 
+                        class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition h-32 resize-none">
+                    </textarea>
+                } @else {
+                    <p class="text-gray-600">Are you sure you want to unblock this user?</p>
+                }
+            </div>
+
+            <div class="p-6 bg-gray-50 flex gap-3 justify-end">
+                <button (click)="closeModal()" class="cursor-pointer px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition">
+                    Cancel
+                </button>
+                
+                <button (click)="confirmAction()" 
+                    [class]="selectedUser()?.status === 'SUSPENDED' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'"
+                    class="cursor-pointer px-6 py-2 text-sm font-semibold text-white rounded-lg transition shadow-md">
+                    {{ selectedUser()?.status === 'SUSPENDED' ? 'Confirm unblock' : 'Block now' }}
+                </button>
+            </div>
+        </div>
+    </div>
+}
