@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PersonalReportRequest {
+public class ReportRequest {
     @NotNull(message = "From date is mandatory")
     private LocalDateTime from;
 

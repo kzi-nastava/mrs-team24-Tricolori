@@ -43,6 +43,15 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             @Param("to") LocalDateTime to
     );
 
+    @Query("SELECT r FROM Ride r " +
+           "JOIN FETCH r.route " +
+           "WHERE r.status = 'FINISHED' " +
+           "AND r.startTime BETWEEN :from AND :to")
+    List<Ride> findAllFinishedRidesInPeriod(
+            @Param("from") LocalDateTime from, 
+            @Param("to") LocalDateTime to
+    );
+
     // Find rides where the passenger is in the passengers list
     @Query("SELECT r FROM Ride r JOIN r.passengers p WHERE p.id = :passengerId ORDER BY r.createdAt DESC")
     List<Ride> findByPassengerIdOrderByCreatedAtDesc(@Param("passengerId") Long passengerId);

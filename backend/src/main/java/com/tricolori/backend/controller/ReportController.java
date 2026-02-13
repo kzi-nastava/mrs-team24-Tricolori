@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tricolori.backend.dto.report.PersonalReportRequest;
-import com.tricolori.backend.dto.report.PersonalReportResponse;
+import com.tricolori.backend.dto.report.AdminReportRequest;
+import com.tricolori.backend.dto.report.ReportRequest;
+import com.tricolori.backend.dto.report.ReportResponse;
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.service.ReportService;
 
@@ -20,11 +21,20 @@ public class ReportController {
     private final ReportService service;
     
     @GetMapping("/personal")
-    public ResponseEntity<PersonalReportResponse> getPersonalReport(
+    public ResponseEntity<ReportResponse> getPersonalReport(
         @AuthenticationPrincipal Person person,
-        PersonalReportRequest request
+        ReportRequest request
     ) {
         var response = service.getPersonalResponse(person, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/comprehensive")
+    public ResponseEntity<ReportResponse> getAdminReport(
+        @AuthenticationPrincipal Person person,
+        AdminReportRequest request
+    ) {
+        var response = service.getAdminResponse(person, request);
         return ResponseEntity.ok(response);
     }
 }

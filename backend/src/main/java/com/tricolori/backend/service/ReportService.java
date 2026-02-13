@@ -13,13 +13,19 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tricolori.backend.dto.report.AdminReportRequest;
 import com.tricolori.backend.dto.report.DailyStatisticDTO;
-import com.tricolori.backend.dto.report.PersonalReportRequest;
-import com.tricolori.backend.dto.report.PersonalReportResponse;
+import com.tricolori.backend.dto.report.ReportRequest;
+import com.tricolori.backend.dto.report.ReportResponse;
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.entity.Ride;
 import com.tricolori.backend.enums.PersonRole;
+import com.tricolori.backend.enums.ReportScope;
+import com.tricolori.backend.exception.BadReportIndividualEmailException;
 import com.tricolori.backend.exception.InvalidReportDateException;
+import com.tricolori.backend.exception.PersonNotFoundException;
+import com.tricolori.backend.exception.ReportAdminEmailProvidedException;
+import com.tricolori.backend.repository.PersonRepository;
 import com.tricolori.backend.repository.RideRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,13 +35,14 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class ReportService {
     private final RideRepository rideRepository;
+    private final PersonRepository personRepository;
 
-    public PersonalReportResponse getPersonalResponse(Person person, PersonalReportRequest request) {
+    public ReportResponse getPersonalResponse(Person person, ReportRequest request) {
         LocalDateTime start = request.getFrom();
         LocalDateTime end = request.getTo();
 
         if (start.isAfter(end)) {
-            throw new InvalidReportDateException("'From date' is after 'to date'.");
+            throw new InvalidReportDateException("'From date' can't be after 'to date'.");
         }
         
         Long userId = person.getId();
@@ -44,14 +51,62 @@ public class ReportService {
             rideRepository.findAllFinishedRidesByDriver(userId, start, end);
         
 
-        PersonalReportResponse response = new PersonalReportResponse();
+        ReportResponse response = new ReportResponse();
         populatePersonalReport(response, rides, start, end);
 
         return response;
     }
 
+    public ReportResponse getAdminResponse(Person person, AdminReportRequest request) {
+        LocalDateTime start = request.getFrom();
+        LocalDateTime end = request.getTo();
+
+        if (start.isAfter(end)) {
+            throw new InvalidReportDateException("'From date' can't be after 'to date'.");
+        }
+
+        var rides = getAdminReportRides(request);
+
+        ReportResponse response = new ReportResponse();
+        populatePersonalReport(response, rides, start, end);
+
+        return response;
+    }
+
+    private List<Ride> getAdminReportRides(AdminReportRequest request) {
+        var email = request.getIndividualEmail();
+        var scope = request.getScope();
+        var from = request.getFrom();
+        var to = request.getTo();
+
+        if (scope.equals(ReportScope.ALL)) {
+            return rideRepository.findAllFinishedRidesInPeriod(from, to);
+        } 
+
+        // For individual user...
+        if (email == null || email.isEmpty()) {
+            throw new BadReportIndividualEmailException("Email of individual user can't be empty.");
+        }
+
+        var person = personRepository.findByEmail(email)
+        .orElseThrow(() -> new PersonNotFoundException(
+            String.format("Person with email %s doesn't exist.", email)
+        ));
+
+        PersonRole role = person.getRole();
+        if (role.equals(PersonRole.ROLE_ADMIN))
+            throw new ReportAdminEmailProvidedException(
+                String.format("Email %s is email of an Admin.", email)
+            );
+    
+        Long personId = person.getId();
+        return person.getRole().equals(PersonRole.ROLE_PASSENGER) ?
+            rideRepository.findAllFinishedRidesByPassenger(personId, from, to) :
+            rideRepository.findAllFinishedRidesByDriver(personId, from, to);
+    }
+
     private void populatePersonalReport(
-        PersonalReportResponse response, 
+        ReportResponse response, 
         List<Ride> rides, 
         LocalDateTime start, 
         LocalDateTime end

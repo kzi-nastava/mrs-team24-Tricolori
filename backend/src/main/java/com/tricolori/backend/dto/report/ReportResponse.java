@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter 
 @NoArgsConstructor 
 @AllArgsConstructor
-public class PersonalReportResponse {
+public class ReportResponse {
     private Long totalCount;
     private Double totalDistance;
     private Double totalMoney;
