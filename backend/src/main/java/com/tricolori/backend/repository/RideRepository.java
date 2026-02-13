@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.time.LocalDateTime;
@@ -141,6 +142,18 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate)")
     Page<Ride> findAllPassengerRides(
             @Param("passengerId") Long passengerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
+
+    @Query("SELECT DISTINCT r FROM Ride r " +
+            "LEFT JOIN r.passengers p " +
+            "WHERE (:personEmail IS NULL OR r.driver.email = :personEmail OR p.email = :personEmail) " +
+            "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
+            "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate)")
+    Page<Ride> findAdminRideHistory(
+            @Param("personEmail") String personEmail,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable

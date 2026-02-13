@@ -1,5 +1,6 @@
 package com.tricolori.backend.controller;
 
+import com.tricolori.backend.dto.history.AdminRideHistoryResponse;
 import com.tricolori.backend.dto.ride.*;
 import com.tricolori.backend.entity.Location;
 import com.tricolori.backend.entity.Person;
@@ -20,7 +21,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -60,12 +60,25 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/history")
-    public ResponseEntity<Page<RideHistoryResponse>> getAdminRideHistory(
-            @RequestBody RideHistoryFilter filter,
-            Pageable pageable
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<AdminRideHistoryResponse>> getAdminRideHistory(
+            @RequestParam(required = false) String personEmail,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ResponseEntity.ok(Page.empty());
+
+        Page<AdminRideHistoryResponse> history = rideService.getAdminRideHistory(personEmail, startDate, endDate, pageable);
+
+        return ResponseEntity.ok(history);
+    }
+
+    @GetMapping("/{id}/details/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RideDetailResponse> getAdminRideDetail(@PathVariable Long id) {
+        RideDetailResponse detail = rideService.getAdminRideDetail(id);
+        return ResponseEntity.ok(detail);
     }
 
     @GetMapping("/details/{id}")

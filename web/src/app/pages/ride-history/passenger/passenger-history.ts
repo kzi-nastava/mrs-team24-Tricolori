@@ -6,7 +6,7 @@ import { heroEye, heroXMark, heroStar, heroArrowUp, heroArrowDown } from '@ng-ic
 import { heroHeartSolid, heroStarSolid } from '@ng-icons/heroicons/solid';
 import { RideService } from '../../../services/ride.service';
 import {ToastService} from '../../../services/toast.service';
-import {getStatusClass, PassengerRide} from '../../../model/ride';
+import {getStatusClass, RideHistory} from '../../../model/ride';
 import {finalize} from 'rxjs/operators';
 import {RideDetailsModal} from './components/ride-details-modal/ride-details-modal';
 
@@ -39,8 +39,8 @@ export class PassengerHistory implements OnInit {
   size = signal(10);
   totalElements = signal(0);
 
-  rides = signal<PassengerRide[]>([]);
-  selectedRide = signal<PassengerRide | null>(null);
+  rides = signal<RideHistory[]>([]);
+  selectedRide = signal<RideHistory | null>(null);
   isLoading = signal(false);
 
   private rideService = inject(RideService);
@@ -102,7 +102,7 @@ export class PassengerHistory implements OnInit {
     this.loadRideHistory();
   }
 
-  viewRideDetails(ride: PassengerRide): void {
+  viewRideDetails(ride: RideHistory): void {
     this.selectedRide.set(ride);
   }
 

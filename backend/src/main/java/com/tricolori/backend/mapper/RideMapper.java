@@ -1,4 +1,5 @@
 package com.tricolori.backend.mapper;
+import com.tricolori.backend.dto.history.AdminRideHistoryResponse;
 import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.Passenger;
 import com.tricolori.backend.entity.Review;
@@ -60,6 +61,13 @@ public interface RideMapper {
     @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
     @Mapping(target = "destinationAddress", expression = "java(getDestinationAddress(ride))")
     PassengerRideHistoryResponse toPassengerHistoryResponse(Ride ride);
+
+    /**
+     * Map Ride to Admin History Response (List view)
+     */
+    @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
+    @Mapping(target = "destinationAddress", expression = "java(getDestinationAddress(ride))")
+    AdminRideHistoryResponse toAdminHistoryResponse(Ride ride);
 
     /**
      * Map Ride to Passenger Detail Response (Detail view)
