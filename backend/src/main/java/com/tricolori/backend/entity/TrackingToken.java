@@ -21,7 +21,7 @@ public class TrackingToken {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Column
     private String firstName;
 
     @Column
@@ -49,7 +49,7 @@ public class TrackingToken {
         this.firstName = firstName;
         this.ride = ride;
         this.createdAt = LocalDateTime.now();
-        this.expiresAt = LocalDateTime.now().plusDays(7); // Valid for 7 days (duration of ride history)
+        this.expiresAt = LocalDateTime.now().plusDays(2); // valid for 2 days
     }
 
     public TrackingToken(String token, String email, String firstName, String lastName, Ride ride) {
