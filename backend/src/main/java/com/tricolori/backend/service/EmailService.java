@@ -459,21 +459,21 @@ public class EmailService {
         <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #4CAF50 0%%, #45a049 100%%); 
+            .header { background: linear-gradient(135deg, #00acc1 0%%, #0097a7 100%%); 
                       color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
             .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-            .button { display: inline-block; padding: 12px 30px; background: #4CAF50; 
+            .button { display: inline-block; padding: 12px 30px; background: #00acc1; 
                       color: white; text-decoration: none; border-radius: 5px; 
                       font-weight: bold; margin: 20px 0; }
-            .button:hover { background: #45a049; }
+            .button:hover { background: #008ba3; }
             .ride-summary { background: white; padding: 20px; border-radius: 5px; 
-                           margin: 20px 0; border-left: 4px solid #4CAF50; }
-            .price { font-size: 32px; font-weight: bold; color: #4CAF50; 
+                           margin: 20px 0; border-left: 4px solid #00acc1; }
+            .price { font-size: 32px; font-weight: bold; color: #00acc1; 
                     text-align: center; margin: 20px 0; }
             .detail-row { margin: 10px 0; }
-            .detail-label { font-weight: bold; color: #4CAF50; }
+            .detail-label { font-weight: bold; color: #00acc1; }
             .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-            .checkmark { font-size: 64px; text-align: center; margin: 10px 0; }
+            .checkmark { font-size: 64px; text-align: center; margin: 10px 0; color: #00acc1; }
         </style>
     </head>
     <body>
@@ -511,7 +511,7 @@ public class EmailService {
                 </center>
                 
                 <p>Or copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; color: #4CAF50;">%s</p>
+                <p style="word-break: break-all; color: #00acc1;">%s</p>
                 
                 <p><strong>Rate your experience:</strong> You have 3 days to rate your driver and help us maintain quality service.</p>
                 

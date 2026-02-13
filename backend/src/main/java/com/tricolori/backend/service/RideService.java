@@ -544,6 +544,8 @@ public class RideService {
             // Notify ALL passengers (registered and unregistered) about rejection
             for (String email : allPassengerEmails) {
                 notificationService.sendRideRejectedNotification(email, null);
+                log.info("Sent ride rejection notification to {}", email);
+                log.info("Reason: {}", e.getMessage());
             }
         }
     }
