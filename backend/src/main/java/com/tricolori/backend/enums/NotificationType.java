@@ -19,6 +19,7 @@ public enum NotificationType {
     RIDE_REPORT,
     NEW_REGISTRATION,
     PROFILE_CHANGE_REQUEST,
+    RIDE_PANIC,
 
     NEW_CHAT_MESSAGE,
 

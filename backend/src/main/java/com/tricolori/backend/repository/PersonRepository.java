@@ -3,6 +3,7 @@ package com.tricolori.backend.repository;
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.enums.PersonRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,4 +19,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     boolean existsByRole(PersonRole role);
 
     List<Person> findByRole(PersonRole role);
+
+    @Query("SELECT p.email FROM Person p WHERE p.role = 'ROLE_ADMIN'")
+    List<String> findAllAdminsEmails();
 }

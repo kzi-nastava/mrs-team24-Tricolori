@@ -2,9 +2,9 @@ import { Component, computed, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { 
-  heroBell, 
-  heroXMark, 
+import {
+  heroBell,
+  heroXMark,
   heroClock,
   heroXCircle,
   heroUserPlus,
@@ -33,11 +33,11 @@ interface EnrichedNotification extends NotificationDto {
   standalone: true,
   imports: [CommonModule, NgIconComponent],
   providers: [
-    provideIcons({ 
-      heroBell, 
-      heroXMark, 
-      heroClock, 
-      heroXCircle, 
+    provideIcons({
+      heroBell,
+      heroXMark,
+      heroClock,
+      heroXCircle,
       heroUserPlus,
       heroCheckCircle,
       heroExclamationTriangle,
@@ -55,19 +55,19 @@ interface EnrichedNotification extends NotificationDto {
   templateUrl: './admin-notifications.html',
   styleUrls: ['./admin-notifications.css']
 })
-export class AdminNotificationsComponent implements OnInit, OnDestroy {
+export class AdminNotificationsComponent implements OnInit {
   selectedNotification: EnrichedNotification | null = null;
   showUnreadOnly = signal<boolean>(false);
   showClearAllDialog = signal<boolean>(false);
   private audioContext: AudioContext | null = null;
   private lastPanicCount = 0;
-  
+
   notifications = signal<EnrichedNotification[]>([]);
   isLoading = signal<boolean>(true);
 
   // Computed panic notifications (will be separate - placeholder for now)
   panicNotifications = computed(() => {
-    const filtered = this.showUnreadOnly() 
+    const filtered = this.showUnreadOnly()
       ? this.notifications().filter(n => n.isPanic && !n.opened)
       : this.notifications().filter(n => n.isPanic);
     return filtered;
@@ -90,24 +90,8 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
     this.loadNotifications();
     this.setupWebSocket();
     this.subscribeToNotificationUpdates();
-    
-    this.lastPanicCount = this.panicCount();
-    
-    // Check for new panic notifications periodically
-    setInterval(() => {
-      const currentPanicCount = this.panicCount();
-      if (currentPanicCount > this.lastPanicCount) {
-        this.playPanicSound();
-      }
-      this.lastPanicCount = currentPanicCount;
-    }, 1000);
-  }
 
-  ngOnDestroy(): void {
-    this.notificationService.disconnectWebSocket();
-    if (this.audioContext) {
-      this.audioContext.close();
-    }
+    this.lastPanicCount = this.panicCount();
   }
 
   // ==================== DATA LOADING ====================
@@ -138,7 +122,7 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
     }
 
   setupWebSocket(): void {
-    const userEmail = this.getUserEmail(); 
+    const userEmail = this.getUserEmail();
     if (userEmail) {
       this.notificationService.connectWebSocket(userEmail);
     }
@@ -157,10 +141,12 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
   // ==================== NOTIFICATION ENRICHMENT ====================
 
   enrichNotification(notification: NotificationDto): EnrichedNotification {
+    const panic = notification.type === 'RIDE_PANIC';
     return {
       ...notification,
-      title: this.getNotificationTitle(notification),
-      isPanic: false // Panics will be handled separately
+      title: panic ? 'EMERGENCY PANIC ALERT' : this.getNotificationTitle(notification),
+      isPanic: panic,
+      acknowledged: notification.opened
     };
   }
 
@@ -220,7 +206,7 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
       this.notificationService.markAsRead(notification.id).subscribe({
         next: () => {
           this.notificationService.updateNotificationAsRead(notification.id);
-          this.notifications.update(notifications => 
+          this.notifications.update(notifications =>
             notifications.map(n => n.id === notification.id ? { ...n, opened: true } : n)
           );
         },
@@ -230,7 +216,7 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
       });
     }
     this.selectedNotification = { ...notification, opened: true };
-    
+
     // Navigate to action URL if present
     if (notification.actionUrl && notification.actionUrl !== '#') {
       // Optional: Auto-navigate or show link in modal
@@ -285,7 +271,7 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     // This will be implemented when panic functionality is added
     this.notifications.update(notifications =>
-      notifications.map(n => 
+      notifications.map(n =>
         n.id === notification.id ? { ...n, acknowledged: true, opened: true } : n
       )
     );
@@ -294,7 +280,7 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
   acknowledgePanicFromModal(notification: EnrichedNotification): void {
     // This will be implemented when panic functionality is added
     this.notifications.update(notifications =>
-      notifications.map(n => 
+      notifications.map(n =>
         n.id === notification.id ? { ...n, acknowledged: true, opened: true } : n
       )
     );
@@ -322,43 +308,6 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
   }
 
   // ==================== HELPER METHODS ====================
-
-  playPanicSound(): void {
-    // Create audio context and play emergency sound
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-
-    const oscillator = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(this.audioContext.destination);
-
-    // Create siren-like sound
-    oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.5);
-    oscillator.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 1);
-
-    gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 1);
-
-    oscillator.start(this.audioContext.currentTime);
-    oscillator.stop(this.audioContext.currentTime + 1);
-
-    // Play multiple times for urgency
-    setTimeout(() => {
-      const osc2 = this.audioContext!.createOscillator();
-      const gain2 = this.audioContext!.createGain();
-      osc2.connect(gain2);
-      gain2.connect(this.audioContext!.destination);
-      osc2.frequency.setValueAtTime(800, this.audioContext!.currentTime);
-      gain2.gain.setValueAtTime(0.3, this.audioContext!.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(0.01, this.audioContext!.currentTime + 0.5);
-      osc2.start(this.audioContext!.currentTime);
-      osc2.stop(this.audioContext!.currentTime + 0.5);
-    }, 1200);
-  }
 
   getNotificationIcon(type: string): string {
     switch (type) {
@@ -464,7 +413,7 @@ export class AdminNotificationsComponent implements OnInit, OnDestroy {
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    
+
     return notificationDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
