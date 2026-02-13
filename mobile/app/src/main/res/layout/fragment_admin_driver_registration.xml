@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/driver_registration_scroll_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/spacing_3"
+    android:paddingTop="@dimen/spacing_3"
+    android:background="@color/white"
+    tools:context=".ui.fragments.AdminDriverRegistrationFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/spacing_1"
+        android:paddingHorizontal="@dimen/spacing_4">
+
+        <!-- Header message -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_1"
+            android:text="@string/admin_driver_title"
+            android:textColor="@color/light_700"
+            android:textSize="@dimen/text_3xl"
+            android:layout_gravity="center_horizontal"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/admin_driver_desc"
+            android:textColor="@color/gray_500"
+            android:textSize="@dimen/text_base"
+            android:layout_marginBottom="@dimen/spacing_8"
+            android:layout_gravity="center_horizontal"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="@dimen/spacing_4"
+            android:layout_marginBottom="@dimen/spacing_10"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tvStep1Circle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_stepper_selected"
+                    android:gravity="center"
+                    android:text="@string/admin_driver_step_one_circle_number"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tvStep1Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/admin_driver_step_one_circle"
+                    android:textSize="12sp"
+                    android:textColor="@color/base_600"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="60dp"
+                android:layout_height="2dp"
+                android:background="@color/gray_300"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginBottom="20dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tvStep2Circle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_stepper_unselected"
+                    android:gravity="center"
+                    android:text="@string/admin_driver_step_two_circle_number"
+                    android:textColor="@color/gray_400"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tvStep2Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/admin_driver_step_two_circle"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray_400"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Step one -->
+        <LinearLayout
+            android:id="@+id/layoutStepOne"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_6"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/spacing_6">
+
+                <ImageView
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:src="@drawable/ic_profile_picture"
+                    app:tint="@color/light_700"
+                    android:layout_marginEnd="@dimen/spacing_3"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_one_pfp_title"
+                        android:textColor="@color/light_700"
+                        android:textSize="@dimen/text_base" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_one_pfp_desc"
+                        android:textColor="@color/gray_400"
+                        android:textSize="@dimen/text_xs" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/pfp_picker_container"
+                android:name="com.example.mobile.ui.fragments.ProfilePictureFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_6"
+                tools:layout="@layout/fragment_profile_picture"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/spacing_6"
+                android:layout_marginTop="@dimen/spacing_2">
+
+                <ImageView
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:src="@drawable/ic_person"
+                    app:tint="@color/light_700"
+                    android:layout_marginEnd="@dimen/spacing_3"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_one_info_title"
+                        android:textColor="@color/light_700"
+                        android:textSize="@dimen/text_base" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_one_info_desc"
+                        android:textColor="@color/gray_400"
+                        android:textSize="@dimen/text_xs" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin_driver_step_one_first_name"
+                android:textColor="@color/gray_500"
+                android:layout_marginStart="@dimen/spacing_2"/>
+            <EditText
+                android:id="@+id/etFirstName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_input"
+                android:padding="@dimen/spacing_4"
+                android:layout_marginBottom="@dimen/spacing_3"
+                android:hint="@string/admin_driver_step_one_first_name_hint"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin_driver_step_one_last_name"
+                android:textColor="@color/gray_500"
+                android:layout_marginStart="@dimen/spacing_2"/>
+            <EditText
+                android:id="@+id/etLastName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_input"
+                android:padding="@dimen/spacing_4"
+                android:layout_marginBottom="@dimen/spacing_3"
+                android:hint="@string/admin_driver_step_one_last_name_hint"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin_driver_step_one_phone"
+                android:textColor="@color/gray_500"
+                android:layout_marginStart="@dimen/spacing_2"/>
+            <EditText
+                android:id="@+id/etPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_input"
+                android:padding="@dimen/spacing_4"
+                android:layout_marginBottom="@dimen/spacing_3"
+                android:inputType="phone"
+                android:hint="@string/admin_driver_step_one_phone_hint"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin_driver_step_one_address"
+                android:textColor="@color/gray_500"
+                android:layout_marginStart="@dimen/spacing_2"/>
+            <EditText
+                android:id="@+id/etAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_input"
+                android:padding="@dimen/spacing_4"
+                android:layout_marginBottom="@dimen/spacing_6"
+                android:hint="@string/admin_driver_step_one_address_hint"
+                android:textColor="@color/black"/>
+
+            <Button
+                android:id="@+id/btnNext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/admin_driver_step_one_next"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:background="@drawable/submit_button_selector"
+                app:backgroundTint="@null" />
+        </LinearLayout>
+
+        <!-- Step two -->
+        <LinearLayout
+            android:id="@+id/layoutStepTwo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            android:layout_marginBottom="@dimen/spacing_6">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/spacing_2"
+                android:paddingBottom="@dimen/spacing_3">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_vehicle"
+                    app:tint="@color/light_700" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginStart="@dimen/spacing_3">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_two_title"
+                        android:textSize="20sp"
+                        android:textColor="@color/light_700" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_two_desc"
+                        android:textSize="14sp"
+                        android:textColor="@color/gray_400" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin_driver_step_two_email"
+                android:textColor="@color/gray_400"
+                android:layout_marginStart="@dimen/spacing_2" />
+
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/admin_driver_step_two_email_hint"
+                android:padding="20dp"
+                android:layout_marginTop="4dp"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/black"
+                android:background="@drawable/rounded_input"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin_driver_step_two_email_info"
+                android:textSize="12sp"
+                android:textColor="@color/gray_400"
+                android:layout_marginStart="@dimen/spacing_3"
+                android:layout_marginTop="4dp" />
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:rowCount="2"
+                android:layout_marginTop="@dimen/spacing_3"
+                android:alignmentMode="alignBounds">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_two_model"
+                        android:textColor="@color/gray_400" />
+                    <EditText
+                        android:id="@+id/etVehicleModel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/admin_driver_step_two_model_hint"
+                        android:textColor="@color/black"
+                        android:padding="16dp"
+                        android:background="@drawable/rounded_input" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_two_type"
+                        android:textColor="@color/gray_400" />
+                    <Spinner
+                        android:id="@+id/spinnerVehicleType"
+                        android:padding="16dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/rounded_input"
+                        android:textColor="@color/black" />
+                </LinearLayout>
+
+                <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:orientation="vertical" android:layout_marginTop="12dp" android:layout_marginEnd="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_two_plate"
+                        android:textColor="@color/gray_400" />
+                    <EditText
+                        android:id="@+id/etPlate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/admin_driver_step_two_plate_hint"
+                        android:padding="16dp"
+                        android:background="@drawable/rounded_input"
+                        android:textColor="@color/black" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:layout_marginTop="12dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_two_seats"
+                        android:textColor="@color/gray_400" />
+                    <EditText
+                        android:id="@+id/etSeats"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/admin_driver_step_two_seats_hint"
+                        android:padding="16dp"
+                        android:background="@drawable/rounded_input"
+                        android:inputType="number"
+                        android:textColor="@color/black"/>
+                </LinearLayout>
+            </GridLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin_driver_step_two_additional"
+                android:textColor="@color/light_700"
+                android:layout_marginTop="@dimen/spacing_3"
+                android:layout_marginStart="@dimen/spacing_2"
+                android:fontFamily="sans-serif-medium" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp"
+                android:weightSum="2">
+
+                <!-- Baby friendly -->
+                <LinearLayout
+                    android:id="@+id/babyFriendlyLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+                    <ImageView
+                        android:id="@+id/babyFriendlyIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_baby" />
+                    <TextView
+                        android:id="@+id/babyFriendlyText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_two_baby"
+                        android:layout_marginStart="8dp" />
+                </LinearLayout>
+
+                <!-- Pet friendly -->
+                <LinearLayout
+                    android:id="@+id/petFriendlyLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/petFriendlyIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_pets"
+                        />
+                    <TextView
+                        android:id="@+id/petFriendlyText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_driver_step_two_pet"
+                        android:layout_marginStart="8dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="@dimen/spacing_6"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btnPrevStep"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/admin_driver_step_two_prev"
+                    android:background="@drawable/button_selector"
+                    android:textColor="@android:color/white"
+                    android:layout_marginEnd="@dimen/spacing_2"
+                    android:textAllCaps="false"
+                    app:backgroundTint="@null"/>
+
+                <Button
+                    android:id="@+id/btnRegister"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/admin_driver_step_two_submit"
+                    android:background="@drawable/submit_button_selector"
+                    android:textColor="@android:color/white"
+                    android:layout_marginStart="@dimen/spacing_2"
+                    android:enabled="false"
+                    app:backgroundTint="@null" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

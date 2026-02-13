@@ -1,4 +1,5 @@
 package com.tricolori.backend.mapper;
+import com.tricolori.backend.dto.history.AdminRideHistoryResponse;
 import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.Passenger;
 import com.tricolori.backend.entity.Review;
@@ -57,14 +58,16 @@ public interface RideMapper {
     /**
      * Map Ride to Passenger History Response (List view)
      */
-    @Mapping(target = "routeId", source = "ride.route.id")
     @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
-    @Mapping(target = "destinationAddress", expression = "java(getDropoffAddress(ride))")
-    @Mapping(source = "price", target = "totalPrice")
-    @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
-    @Mapping(target = "driverRating", expression = "java(getAverageDriverRating(ride))")
-    @Mapping(target = "vehicleRating", expression = "java(getAverageVehicleRating(ride))")
+    @Mapping(target = "destinationAddress", expression = "java(getDestinationAddress(ride))")
     PassengerRideHistoryResponse toPassengerHistoryResponse(Ride ride);
+
+    /**
+     * Map Ride to Admin History Response (List view)
+     */
+    @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
+    @Mapping(target = "destinationAddress", expression = "java(getDestinationAddress(ride))")
+    AdminRideHistoryResponse toAdminHistoryResponse(Ride ride);
 
     /**
      * Map Ride to Passenger Detail Response (Detail view)
@@ -93,11 +96,18 @@ public interface RideMapper {
 
     // ================= helpers =================
 
+    default String getDestinationAddress(Ride ride) {
+        if (ride.getRoute() == null || ride.getRoute().getStops().isEmpty()) {
+            return null;
+        }
+        return ride.getRoute().getDestinationStop().getAddress();
+    }
+
     default String getPickupAddress(Ride ride) {
         if (ride.getRoute() == null || ride.getRoute().getStops().isEmpty()) {
             return null;
         }
-        return ride.getRoute().getStops().getFirst().getAddress();
+        return ride.getRoute().getPickupStop().getAddress();
     }
 
     default String getDropoffAddress(Ride ride) {

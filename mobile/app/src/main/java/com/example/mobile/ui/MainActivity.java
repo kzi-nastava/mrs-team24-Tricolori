@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         topLevelDestinations.add(R.id.rideHistoryFragment);
         topLevelDestinations.add(R.id.userProfileFragment);
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
+        topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -214,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem logout = menu.findItem(R.id.nav_logout);
         MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
         MenuItem changeRequests = menu.findItem(R.id.changeRequestsReviewFragment);
+        MenuItem driverRegistration = menu.findItem(R.id.adminDriverRegistrationFragment);
 
         if (token != null && role != null) {
             // Common items for all logged in users
@@ -230,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
                 changeRequests.setVisible(true);
+                driverRegistration.setVisible(true);
 
             } else if ("ROLE_DRIVER".equals(role)) {
 //                supervise.setVisible(false);
@@ -237,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
                 changeRequests.setVisible(false);
+                driverRegistration.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
 //                supervise.setVisible(false);
@@ -244,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
                 changeRequests.setVisible(false);
+                driverRegistration.setVisible(false);
             }
 
         } else {
@@ -258,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
             logout.setVisible(false);
             statusSwitch.setVisible(false);
             changeRequests.setVisible(false);
+            driverRegistration.setVisible(false);
         }
     }
 

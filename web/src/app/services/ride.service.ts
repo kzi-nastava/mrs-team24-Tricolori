@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PanicRequest, RideRequest, StopRideRequest, StopRideResponse } from '../model/ride';
+import {PanicRequest, RideDetails, RideHistory, RideRequest, StopRideRequest, StopRideResponse} from '../model/ride';
 import { RideHistoryResponse, RideDetailResponse, RideRatingRequest, PassengerRideHistoryResponse } from '../model/ride-history';
 import { environment } from '../../environments/environment';
 import {
@@ -40,16 +40,18 @@ export class RideService {
     return this.http.get<RideHistoryResponse[]>(`${this.API_URL}/history/driver`, { params });
   }
 
-  // Get passenger's ride history with optional date filtering
   getPassengerHistory(
     startDate?: string,
     endDate?: string,
-    sortBy: string = 'createdAt',
-    sortDirection: string = 'DESC'
-  ): Observable<PassengerRideHistoryResponse[]> {
+    page: number = 0,
+    size: number = 10,
+    sort: string = 'createdAt,desc',
+  ): Observable<RideHistory[]> {
+
     let params = new HttpParams()
-      .set('sortBy', sortBy)
-      .set('sortDirection', sortDirection);
+      .set('page', page)
+      .set('size', size)
+      .set('sort', sort)
 
     if (startDate) {
       params = params.set('startDate', startDate);
@@ -58,7 +60,38 @@ export class RideService {
       params = params.set('endDate', endDate);
     }
 
-    return this.http.get<PassengerRideHistoryResponse[]>(`${this.API_URL}/history/passenger`, { params });
+    return this.http.get<RideHistory[]>(`${this.API_URL}/passenger`, { params });
+  }
+
+  getAdminHistory(
+    personEmail?: string,
+    startDate?: string,
+    endDate?: string,
+    page: number = 0,
+    size: number = 10,
+    sort: string = 'createdAt,desc',
+  ): Observable<RideHistory[]> {
+
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size)
+      .set('sort', sort)
+
+    if(personEmail) {
+      params = params.set('personEmail', personEmail);
+    }
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+
+    return this.http.get<RideHistory[]>(`${this.API_URL}/admin`, { params });
+  }
+
+  getAdminRideDetail(rideId: number) : Observable<RideDetailResponse> {
+    return this.http.get<RideDetailResponse>(`${this.API_URL}/${rideId}/details/admin`);
   }
 
   // Get detailed information for a specific ride (for driver)
@@ -121,6 +154,7 @@ export class RideService {
       pad(date.getMinutes()) + ':' +
       pad(date.getSeconds());
   }
+  
   stopRide(stopRideRequest: StopRideRequest) : Observable<StopRideResponse> {
     return this.http.put<StopRideResponse>(`${this.API_URL}/stop`, stopRideRequest);
   }

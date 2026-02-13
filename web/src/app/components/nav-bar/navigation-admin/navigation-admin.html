@@ -13,6 +13,9 @@
 
   <a routerLink="/admin/notifications" routerLinkActive="active" class="nav-link">
     <span>Notifications</span>
+    @if (unreadCount > 0) {
+      <span class="notification-badge"></span>
+    }
   </a>
 
   <a routerLink="/admin/pricelist" routerLinkActive="active" class="nav-link">

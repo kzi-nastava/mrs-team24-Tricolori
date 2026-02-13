@@ -21,6 +21,8 @@ import { mynaBaby } from '@ng-icons/mynaui/outline'
 import { phosphorDog } from '@ng-icons/phosphor-icons/regular'
 import { boxCar } from '@ng-icons/boxicons/regular'
 import { hugeCar03 } from '@ng-icons/huge-icons'
+import { featherFile } from '@ng-icons/feather-icons'
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +40,9 @@ export const appConfig: ApplicationConfig = {
       heroChevronUp, heroArrowsUpDown, ionLocationOutline,
       matAssistantPhotoOutline, bootstrapClock, heroHashtag,
       mynaBaby, phosphorDog, bootstrap123, ionCarOutline,
-      boxCar, bootstrapType, hugeCar03, matAccountCircleOutline
-    })
+      boxCar, bootstrapType, hugeCar03, matAccountCircleOutline,
+      featherFile
+    }),
+    provideCharts(withDefaultRegisterables())
   ]
 };

@@ -121,6 +121,7 @@ public class NotificationService {
                 scheduledTime, from, to, reason != null && !reason.isEmpty() ? " due to " + reason : "");
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_CANCELLED, rideId);
+        notification.setActionUrl("/passenger/history?openRide=" + rideId);
         saveAndSend(notification, passengerEmail);
     }
 
@@ -129,6 +130,7 @@ public class NotificationService {
         String content = "Unfortunately, there are no available drivers at the moment. Please try again later.";
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_REJECTED, rideId);
+        notification.setActionUrl("/passenger/history");
         saveAndSend(notification, passengerEmail);
     }
 
@@ -186,7 +188,7 @@ public class NotificationService {
                 from, to, totalFare);
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_COMPLETED, rideId);
-        notification.setActionUrl("/passenger/history");
+        notification.setActionUrl("/passenger/history?openRide=" + rideId);
         saveAndSend(notification, passengerEmail);
 
         try {
@@ -242,7 +244,7 @@ public class NotificationService {
 
         Notification notification = new Notification(driverEmail, content, NotificationType.UPCOMING_RIDE_REMINDER, rideId);
         notification.setPassengerName(passengerName);
-        notification.setActionUrl("/driver/history/");
+        notification.setActionUrl("/driver/history?openRide=" + rideId);
         saveAndSend(notification, driverEmail);
     }
 
@@ -263,6 +265,7 @@ public class NotificationService {
 
         Notification notification = new Notification(driverEmail, content, NotificationType.RATING_RECEIVED, rideId);
         notification.setPassengerName(passengerName);
+        notification.setActionUrl("/driver/history?openRide=" + rideId);
         saveAndSend(notification, driverEmail);
     }
 
@@ -286,7 +289,7 @@ public class NotificationService {
                 reportType, rideId, driverName, reportDetails != null && !reportDetails.isBlank() ? reportDetails : "No additional details provided.");
 
         Notification notification = new Notification(adminEmail, content, NotificationType.RIDE_REPORT, rideId);
-        notification.setActionUrl("/admin/history/");
+        notification.setActionUrl("/admin/history?openRide=" + rideId);
         saveAndSend(notification, adminEmail);
     }
 
@@ -298,6 +301,8 @@ public class NotificationService {
 
         Notification notification = new Notification(adminEmail, content, NotificationType.NEW_REGISTRATION, null);
         notification.setDriverName(driverName);
+        // TODO: redirect to admins page with all users
+//        notification.setActionUrl("/admin/users");
         saveAndSend(notification, adminEmail);
     }
 
@@ -310,7 +315,7 @@ public class NotificationService {
         Notification notification = new Notification(adminEmail, content,
                 NotificationType.PROFILE_CHANGE_REQUEST, null);
         notification.setDriverName(driverName);
-        notification.setActionUrl("/admin/change-requests/");
+        notification.setActionUrl("/admin/change-requests");
         saveAndSend(notification, adminEmail);
     }
 
@@ -324,12 +329,10 @@ public class NotificationService {
         Notification notification = new Notification(email, content,
                 NotificationType.NEW_CHAT_MESSAGE, null);
         personRepository.findByEmail(email).ifPresent(person -> {
-            if (person.getRole().name().equals("ADMIN")) {
-                notification.setActionUrl("/admin/support");
-            } else if (person.getRole().name().equals("DRIVER")) {
-                notification.setActionUrl("/driver/support");
-            } else {
-                notification.setActionUrl("/passenger/support");
+            switch (person.getRole().name()) {
+                case "ROLE_ADMIN" -> notification.setActionUrl("/admin/support");
+                case "ROLE_DRIVER" -> notification.setActionUrl("/driver/support");
+                case "ROLE_PASSENGER" -> notification.setActionUrl("/passenger/support");
             }
         });
         saveAndSend(notification, email);

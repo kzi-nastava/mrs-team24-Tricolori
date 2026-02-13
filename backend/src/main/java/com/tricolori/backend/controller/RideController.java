@@ -1,10 +1,9 @@
 package com.tricolori.backend.controller;
 
+import com.tricolori.backend.dto.history.AdminRideHistoryResponse;
 import com.tricolori.backend.dto.ride.*;
 import com.tricolori.backend.entity.Location;
 import com.tricolori.backend.entity.Person;
-import com.tricolori.backend.entity.Route;
-import com.tricolori.backend.entity.Stop;
 import com.tricolori.backend.service.AuthService;
 import com.tricolori.backend.service.InconsistencyReportService;
 import com.tricolori.backend.service.ReviewService;
@@ -13,16 +12,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -61,12 +60,25 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/history")
-    public ResponseEntity<Page<RideHistoryResponse>> getAdminRideHistory(
-            @RequestBody RideHistoryFilter filter,
-            Pageable pageable
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<AdminRideHistoryResponse>> getAdminRideHistory(
+            @RequestParam(required = false) String personEmail,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ResponseEntity.ok(Page.empty());
+
+        Page<AdminRideHistoryResponse> history = rideService.getAdminRideHistory(personEmail, startDate, endDate, pageable);
+
+        return ResponseEntity.ok(history);
+    }
+
+    @GetMapping("/{id}/details/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RideDetailResponse> getAdminRideDetail(@PathVariable Long id) {
+        RideDetailResponse detail = rideService.getAdminRideDetail(id);
+        return ResponseEntity.ok(detail);
     }
 
     @GetMapping("/details/{id}")
@@ -153,22 +165,17 @@ public class RideController {
         return ResponseEntity.ok(detail);
     }
 
-    // Get passenger's ride history
-    @GetMapping("/history/passenger")
+    @GetMapping("/passenger")
     @PreAuthorize("hasRole('PASSENGER')")
-    public ResponseEntity<List<PassengerRideHistoryResponse>> getPassengerHistory(
+    public ResponseEntity<Page<PassengerRideHistoryResponse>> getPassengerHistory(
+            @AuthenticationPrincipal Person person,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Long passengerId = authenticationService.getAuthenticatedUserId();
 
-        Pageable pageable = Pageable.unpaged();
-
-        List<PassengerRideHistoryResponse> history =
-                rideService.getPassengerHistory(passengerId, pageable)
-                        .getContent();
+        Page<PassengerRideHistoryResponse> history =
+                rideService.getPassengerHistory(person, startDate, endDate, pageable);
 
         return ResponseEntity.ok(history);
     }

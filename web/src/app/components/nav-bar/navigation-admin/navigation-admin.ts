@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { NotificationService } from '../../../services/notification.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navigation-admin',
@@ -9,12 +11,26 @@ import { RouterLink, RouterLinkActive, Router } from '@angular/router';
   templateUrl: './navigation-admin.html',
   styleUrl: './navigation-admin.css'
 })
-export class NavigationAdmin {
-  constructor(private router: Router) {}
+export class NavigationAdmin implements OnInit, OnDestroy {
+  unreadCount = 0;
+  private unreadSubscription?: Subscription;
+
+  constructor(
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    this.unreadSubscription = this.notificationService.unreadCount$.subscribe(
+      count => {
+        this.unreadCount = count;
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.unreadSubscription?.unsubscribe();
+  }
 
   onLogout() {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('authToken');
-    this.router.navigate(['/login']);
   }
 }

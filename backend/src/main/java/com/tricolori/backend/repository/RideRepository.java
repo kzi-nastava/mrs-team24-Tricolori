@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.time.LocalDateTime;
@@ -19,6 +20,38 @@ import java.util.Optional;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride, Long> {
+
+    @Query("SELECT r FROM Ride r " +
+           "JOIN FETCH r.route " +
+           "WHERE r.status = 'FINISHED' " +
+           "AND r.startTime BETWEEN :from AND :to " +
+           "AND r.driver.id = :userId")
+    List<Ride> findAllFinishedRidesByDriver(
+            @Param("userId") Long userId, 
+            @Param("from") LocalDateTime from, 
+            @Param("to") LocalDateTime to
+    );
+
+    @Query("SELECT r FROM Ride r " +
+           "JOIN FETCH r.route " +
+           "JOIN r.passengers p " +
+           "WHERE r.status = 'FINISHED' " +
+           "AND r.startTime BETWEEN :from AND :to " +
+           "AND p.id = :userId")
+    List<Ride> findAllFinishedRidesByPassenger(
+            @Param("userId") Long userId, 
+            @Param("from") LocalDateTime from, 
+            @Param("to") LocalDateTime to
+    );
+
+    @Query("SELECT r FROM Ride r " +
+           "JOIN FETCH r.route " +
+           "WHERE r.status = 'FINISHED' " +
+           "AND r.startTime BETWEEN :from AND :to")
+    List<Ride> findAllFinishedRidesInPeriod(
+            @Param("from") LocalDateTime from, 
+            @Param("to") LocalDateTime to
+    );
 
     // Find rides where the passenger is in the passengers list
     @Query("SELECT r FROM Ride r JOIN r.passengers p WHERE p.id = :passengerId ORDER BY r.createdAt DESC")
@@ -102,12 +135,29 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             Pageable pageable
     );
 
-    // all passenger rides
     @Query("SELECT r FROM Ride r " +
             "JOIN r.passengers p " +
             "WHERE p.id = :passengerId " +
-            "ORDER BY r.createdAt DESC")
-    Page<Ride> findAllPassengerRides(@Param("passengerId") Long passengerId, Pageable pageable);
+            "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
+            "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate)")
+    Page<Ride> findAllPassengerRides(
+            @Param("passengerId") Long passengerId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
+
+    @Query("SELECT DISTINCT r FROM Ride r " +
+            "LEFT JOIN r.passengers p " +
+            "WHERE (:personEmail IS NULL OR r.driver.email = :personEmail OR p.email = :personEmail) " +
+            "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
+            "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate)")
+    Page<Ride> findAdminRideHistory(
+            @Param("personEmail") String personEmail,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
 
     // passenger rides filtered by date
     @Query("""

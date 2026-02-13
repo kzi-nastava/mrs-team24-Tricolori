@@ -52,6 +52,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/vehicles/active").permitAll()
                 .requestMatchers("/api/v1/rides/history/driver/**").hasRole("DRIVER")
                 .requestMatchers("/api/v1/rides/*/details/driver").hasRole("DRIVER")
+                .requestMatchers("/api/v1/reports/**").authenticated()
+                .requestMatchers("/api/v1/persons/**").authenticated()
                 .anyRequest().permitAll() // replace this last permitAll with authenticated()
             );
             
