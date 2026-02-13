@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/tracking")
+@RequestMapping("/api/v1/tracking")
 @RequiredArgsConstructor
 public class RideTrackingController {
 
