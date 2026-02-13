@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @Validated
-@RequestMapping("/api/v1/blocks")
+@RequestMapping("/api/v1/persons")
 public class PersonController {
     private final PersonService service;
 
