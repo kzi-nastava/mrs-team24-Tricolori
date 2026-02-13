@@ -1,6 +1,7 @@
 package com.tricolori.backend.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ public class ReportController {
     private final ReportService service;
     
     @GetMapping("/personal")
+    @PreAuthorize("hasAnyRole('DRIVER', 'PASSENGER')")
     public ResponseEntity<ReportResponse> getPersonalReport(
         @AuthenticationPrincipal Person person,
         ReportRequest request
@@ -30,6 +32,7 @@ public class ReportController {
     }
 
     @GetMapping("/comprehensive")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ReportResponse> getAdminReport(
         @AuthenticationPrincipal Person person,
         AdminReportRequest request
