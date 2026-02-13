@@ -1,4 +1,3 @@
-// RideTrackingController.java
 package com.tricolori.backend.controller;
 
 import com.tricolori.backend.dto.ride.RideTrackingResponse;
