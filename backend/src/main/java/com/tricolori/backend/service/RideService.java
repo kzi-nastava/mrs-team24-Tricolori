@@ -7,6 +7,7 @@ import com.tricolori.backend.enums.PersonRole;
 import com.tricolori.backend.exception.*;
 import com.tricolori.backend.mapper.PersonMapper;
 import com.tricolori.backend.mapper.RouteMapper;
+import com.tricolori.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.tricolori.backend.dto.ride.*;
-import com.tricolori.backend.repository.PanicRepository;
-import com.tricolori.backend.repository.PassengerRepository;
-import com.tricolori.backend.repository.PersonRepository;
-import com.tricolori.backend.repository.RideRepository;
-import com.tricolori.backend.repository.VehicleSpecificationRepository;
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import com.tricolori.backend.mapper.RideMapper;
@@ -42,7 +38,6 @@ public class RideService {
 
     private final RideRepository rideRepository;
     private final PersonRepository personRepository;
-    private final PassengerRepository passengerRepository;
     private final PanicRepository panicRepository;
     private final OSRMService osrmService;
     private final GeocodingService geocodingService;
@@ -50,6 +45,7 @@ public class RideService {
     private final PassengerService passengerService;
     private final DriverService driverService;
     private final NotificationService notificationService;
+    private final TrackingTokenRepository trackingTokenRepository;
 
     private final VehicleSpecificationRepository vehicleSpecificationRepository;
     private final RideMapper rideMapper;
@@ -113,6 +109,14 @@ public class RideService {
             notificationService.sendRideCompletedNotification(
                     p.getEmail(), p.getFirstName(), ride.getId(), ride.getRoute().getPickupStop().getAddress(), ride.getRoute().getDestinationStop().getAddress(),
                     ride.getPrice()
+            );
+        }
+        // notify passengers who don't have an account but were tracking the ride via email
+        List<TrackingToken> linkedPassengers = trackingTokenRepository.findByRideId(rideId);
+        for (TrackingToken token : linkedPassengers) {
+            notificationService.sendRideCompletedNotification(
+                    token.getEmail(), token.getFirstName(), token.getRide().getId(), token.getRide().getRoute().getPickupStop().getAddress(),
+                    token.getRide().getRoute().getDestinationStop().getAddress(), token.getRide().getPrice()
             );
         }
     }
