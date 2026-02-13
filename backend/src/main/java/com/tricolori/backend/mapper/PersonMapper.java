@@ -5,15 +5,24 @@ import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.Passenger;
 import com.tricolori.backend.dto.profile.PersonDto;
 import com.tricolori.backend.dto.profile.ProfileResponse;
+import com.tricolori.backend.dto.block.ActivePersonStatus;
 import com.tricolori.backend.dto.profile.DriverDto;
 import com.tricolori.backend.dto.profile.PassengerDto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
+import org.springframework.data.domain.Page;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PersonMapper {
+    @Mapping(source = "createdAt", target = "registrationDate")
+    @Mapping(source = "accountStatus", target = "status")
+    ActivePersonStatus toActivePersonStatus(Person person);
+
+    default Page<ActivePersonStatus> toActivePersonStatusPage(Page<Person> personPage) {
+        return personPage.map(this::toActivePersonStatus);
+    }
 
     PersonDto toDto(Person person);
 
