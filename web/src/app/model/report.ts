@@ -1,4 +1,4 @@
-export interface PersonalReportResponse {
+export interface ReportResponse {
     totalCount: number;
     totalDistance: number;
     totalMoney: number;    
@@ -14,3 +14,6 @@ export interface DailyStatisticDTO {
     distance: number;
     money: number;
 }
+
+export type ReportScope = 'ALL' | 'INDIVIDUAL';
+

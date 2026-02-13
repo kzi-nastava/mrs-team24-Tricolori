@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PersonalReportResponse } from '../model/report';
+import { ReportResponse, ReportScope } from '../model/report';
 
 @Injectable({
   providedIn: 'root',
@@ -12,12 +12,22 @@ export class ReportService {
 
   constructor(private http: HttpClient) {}
 
-  getPersonalReport(from: string, to: string): Observable<PersonalReportResponse> {
+  getPersonalReport(from: string, to: string): Observable<ReportResponse> {
     const params = new HttpParams()
       .set('from', from)
       .set('to', to);
     
-    return this.http.get<PersonalReportResponse>(`${this.API_URL}/personal`, { params });
+    return this.http.get<ReportResponse>(`${this.API_URL}/personal`, { params });
+  }
+
+  getAdminReport(from:string, to:string, scope:ReportScope, optionalEmail:string): Observable<ReportResponse> {
+    const params = new HttpParams()
+      .set('from', from)
+      .set('to', to)
+      .set('scope', scope)
+      .set('individualEmail', optionalEmail);
+    
+    return this.http.get<ReportResponse>(`${this.API_URL}/comprehensive`, { params });
   }
 
   formatLocalDateTime(date: Date | null): string | null {

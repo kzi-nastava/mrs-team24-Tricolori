@@ -34,7 +34,7 @@ export const routes: Routes = [
   // Driver routes
   {
     path: 'driver',
-    // canActivate: [authGuard],
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -90,7 +90,7 @@ export const routes: Routes = [
   // Passenger routes
   {
     path: 'passenger',
-    // canActivate: [authGuard],
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -145,7 +145,7 @@ export const routes: Routes = [
   // Admin routes
   {
     path: 'admin',
-    // canActivate: [authGuard],
+    canActivate: [authGuard],
     children: [
       {
         path: 'home',

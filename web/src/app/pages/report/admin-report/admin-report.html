@@ -1,1 +1,137 @@
-<p>admin-report works!</p>
+<div class="max-w-5xl mx-auto font-sans p-3">
+    <!-- Title and description -->
+    <h2 class="text-2xl text-light-700 px-3">Ride Reports</h2>
+    <p class="text-gray-500 px-3">Generate detailed statistical reports for the selected period</p>
+
+    <form [formGroup]="reportForm" (ngSubmit)="generateReport()" class="mt-9 border border-gray-200 rounded-2xl p-4 shadow-sm bg-white">
+        <h3 class="text-dark-600 mb-4 text-lg">Report Scope & Parameters</h3>
+        
+        <!-- Scope -->
+        <div class="flex flex-wrap gap-2 mb-6 p-1 bg-gray-100 rounded-xl w-fit">
+            <button type="button" 
+                (click)="setScope('ALL')"
+                [class]="scope() === 'ALL' ? 'bg-white shadow-sm text-deep-600' : 'text-gray-500 hover:text-gray-700'"
+                class="px-4 py-2 rounded-lg text-sm font-semibold transition">All Users</button>
+            <button type="button" 
+                (click)="setScope('INDIVIDUAL')"
+                [class]="scope() === 'INDIVIDUAL' ? 'bg-white shadow-sm text-deep-600' : 'text-gray-500 hover:text-gray-700'"
+                class="px-4 py-2 rounded-lg text-sm font-semibold transition">Specific Person</button>
+        </div>
+
+        @if (scope() === 'INDIVIDUAL') {
+            <div class="mb-6 animate-in fade-in duration-300">
+                <label class="text-dark-800 text-sm">Search User (Email)</label>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        formControlName="userEmail"
+                        placeholder="Enter user email..."
+                        class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-base-600 outline-none transition">
+                    <ng-icon name="heroEnvelope" class="absolute left-3 top-4 text-gray-400" />
+                </div>
+            </div>
+        }
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div>
+                <label class="text-dark-800 text-sm">Date from</label>
+                <input type="date" formControlName="from" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-base-600 outline-none transition">
+            </div>
+            <div>
+                <label class="text-dark-800 text-sm">Date to</label>
+                <input type="date" formControlName="to" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-base-600 outline-none transition">
+            </div>
+        </div>
+        
+        <button 
+            type="submit" 
+            [disabled]="reportForm.invalid || isLoading()" 
+            class="bg-deep-400 hover:bg-deep text-white px-6.5 py-2.5 rounded-2xl transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (isLoading()) {
+                <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+                Generating...
+            } @else {
+                <ng-icon name="featherFile" />
+                Generate report
+            }
+        </button>
+    </form>
+
+    @if (reportData(); as data) {
+        <!-- Cumulative Sum and Mean -->
+        <div class="grid grid-cols-3 gap-4 mt-9">
+            <!-- Total rides -->
+            <div class="bg-light-100 rounded-xl p-3 border border-blue-100 shadow-sm">
+                <p class="text-xs pl-1 text-light-700 font-bold uppercase tracking-wider mb-2">Total rides</p>
+                <p class="text-3xl pl-2 font-bold text-light-800">{{ data.totalCount }}</p>
+                <div class="mt-4 pt-3 border-t border-light-800">
+                    <p class="pl-2 text-xs text-light-700 font-medium">Average: <span class="text-light-800">{{ data.averageCount }} / dan</span></p>
+                </div>
+            </div>
+
+            <!-- Total kilometers -->
+            <div class="bg-accent-100 rounded-xl p-3 border border-accent-100 shadow-sm">
+                <p class="text-xs pl-1 text-accent-700 font-bold uppercase tracking-wider mb-2">Total kilometers</p>
+                <p class="text-3xl pl-2 font-bold text-accent-800">{{ data.totalDistance }} <span class="text-lg">km</span></p>
+                <div class="mt-4 pt-3 border-t border-accent-800">
+                    <p class="pl-2 text-xs text-accent-700 font-medium">Average: <span class="text-accent-800">{{ data.averageDistance }} / dan</span></p>
+                </div>
+            </div>
+
+            <!-- Total money -->
+            <div class="bg-deep-100 rounded-xl p-3 border border-deep-100 shadow-sm">
+                <p class="text-xs pl-1 text-deep-700 font-bold uppercase tracking-wider mb-2">Total amount</p>
+                <p class="text-3xl pl-2 font-bold text-deep-800">{{ data.totalMoney }} <span class="text-lg">RSD</span></p>
+                <div class="mt-4 pt-3 border-t border-deep-800">
+                    <p class="pl-2 text-xs text-deep-700 font-medium">Average: <span class="text-deep-800">{{ data.averageMoney }} RSD / dan</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-9 mt-9">
+            <!-- Rides per day -->
+            <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                <div class="bg-base-700 p-4 flex items-center gap-3 text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                    <h3 class="font-medium">Rides per days</h3>
+                </div>
+                <div class="p-6 h-72 flex items-center justify-center text-gray-400 italic bg-gray-50/50">
+                    <canvas baseChart [data]="barChartData()" [options]="chartOptions" [type]="'bar'"></canvas>
+                </div>
+            </div>
+
+            <!-- Kilometers per day -->
+            <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                <div class="bg-base-700 p-4 flex items-center gap-3 text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                    <h3 class="font-medium">Kilometers per days</h3>
+                </div>
+                <div class="p-6 h-72 flex items-center justify-center text-gray-400 italic bg-gray-50/50">
+                    <canvas baseChart [data]="lineChartData()" [options]="chartOptions" [type]="'line'"></canvas>
+                </div>
+            </div>
+
+            <!-- Money per day -->
+            <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                <div class="bg-base-700 p-4 flex items-center gap-3 text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                    <h3 class="font-medium">Money spent/gained per days</h3>
+                </div>
+                <div class="p-6 h-72 flex items-center justify-center text-gray-400 italic bg-gray-50/50">
+                    <canvas baseChart [data]="moneyChartData()" [options]="chartOptions" [type]="'bar'"></canvas>
+                </div>
+            </div>
+
+        </div>
+    } 
+    @else if (errorMessage()) {
+        <div class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            {{ errorMessage() }}
+        </div>
+    } 
+    @else {
+        <div class="mt-9 text-center text-gray-400">
+            Select dates and click generate to see the results.
+        </div>
+    }
+</div>

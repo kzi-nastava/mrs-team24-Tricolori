@@ -4,7 +4,7 @@ import { NgIcon } from "@ng-icons/core";
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { ReportService } from '../../../services/report.service';
-import { DailyStatisticDTO, PersonalReportResponse } from '../../../model/report';
+import { DailyStatisticDTO, ReportResponse } from '../../../model/report';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 @Component({
@@ -23,17 +23,15 @@ export class PersonalReport {
   private fb = inject(FormBuilder);
   private reportService = inject(ReportService);
 
-  reportData = signal<PersonalReportResponse | undefined>(undefined);
+  reportData = signal<ReportResponse | undefined>(undefined);
   isLoading = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
 
-  // Reactive Form definicija
   reportForm = this.fb.group({
     from: ['', [Validators.required]],
     to: ['', [Validators.required]]
   });
 
-  // Computed signali (automatsko mapiranje za grafikone)
   barChartData = computed<ChartData<'bar'>>(() => this.mapChartData('count', '#00cc92', 'Rides'));
   lineChartData = computed<ChartData<'line'>>(() => this.mapChartData('distance', '#00a2ff', 'Kilometers', true));
   moneyChartData = computed<ChartData<'bar'>>(() => this.mapChartData('money', '#6366f1', 'Money'));
@@ -53,7 +51,8 @@ export class PersonalReport {
     const { from, to } = this.reportForm.value;
     this.isLoading.set(true);
     this.errorMessage.set(null);
-
+    
+    // Creating date data :)
     const fromStr = this.reportService.formatLocalDateTime(new Date(from!));
     const toDate = new Date(to!);
     toDate.setHours(23, 59, 59);
@@ -65,7 +64,7 @@ export class PersonalReport {
         this.isLoading.set(false);
       },
       error: (err) => {
-        this.errorMessage.set(err.error?.message || "Server error.");
+        this.errorMessage.set(err.error?.message || "Error fetching personal data.");
         this.isLoading.set(false);
         this.reportData.set(undefined);
       }
