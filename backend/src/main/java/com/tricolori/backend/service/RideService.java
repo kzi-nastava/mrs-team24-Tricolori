@@ -1,5 +1,6 @@
 package com.tricolori.backend.service;
 
+import com.tricolori.backend.dto.history.AdminRideHistoryResponse;
 import com.tricolori.backend.dto.osrm.OSRMRouteResponse;
 import com.tricolori.backend.dto.profile.DriverDto;
 import com.tricolori.backend.dto.profile.PassengerDto;
@@ -284,6 +285,40 @@ public class RideService {
                 );
 
         return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
+    }
+
+    public Page<AdminRideHistoryResponse> getAdminRideHistory(
+            String personEmail, LocalDate startDate, LocalDate endDate, Pageable pageable
+    ) {
+
+        LocalDateTime start = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime end = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
+
+        return rideRepository
+                .findAdminRideHistory(personEmail, start, end, pageable)
+                .map(rideMapper::toAdminHistoryResponse);
+    }
+
+    public RideDetailResponse getAdminRideDetail(Long rideId) {
+        Ride ride = getRideOrThrow(rideId);
+
+        RideDetailResponse response = rideMapper.toDriverDetailResponse(ride);
+
+        response.setDriverRating(
+                round(reviewService.getAverageDriverRating(rideId))
+        );
+        response.setVehicleRating(
+                round(reviewService.getAverageVehicleRating(rideId))
+        );
+
+        if (ride.getRoute() != null) {
+            response.setRouteId(ride.getRoute().getId());
+            response.setDistance(ride.getRoute().getDistanceKm());
+        }
+
+        response.setTotalPrice(ride.getPrice());
+
+        return response;
     }
 
     // ================= location updates =================

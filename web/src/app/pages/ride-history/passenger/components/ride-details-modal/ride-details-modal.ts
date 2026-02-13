@@ -2,7 +2,7 @@ import {Component, inject, input, OnInit, output, signal} from '@angular/core';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import { heroXMark, heroStar } from '@ng-icons/heroicons/outline';
 import { heroStarSolid, heroHeartSolid } from '@ng-icons/heroicons/solid';
-import {getStatusClass, PassengerRide} from '../../../../../model/ride';
+import {getStatusClass, RideHistory} from '../../../../../model/ride';
 import {RideService} from '../../../../../services/ride.service';
 import {MapService} from '../../../../../services/map.service';
 import {FavoriteRoutesService} from '../../../../../services/favorite-routes.service';
@@ -21,7 +21,7 @@ import {DatePipe, DecimalPipe} from '@angular/common';
   templateUrl: './ride-details-modal.html'
 })
 export class RideDetailsModal implements OnInit {
-  ride = input.required<PassengerRide>();
+  ride = input.required<RideHistory>();
   onClose = output<void>();
 
   private rideService = inject(RideService);

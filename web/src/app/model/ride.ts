@@ -87,7 +87,7 @@ export function getStatusClass(status: string): string {
   }
 }
 
-export interface PassengerRide {
+export interface RideHistory {
   id: number;
   pickupAddress: string;
   destinationAddress: string;
