@@ -273,10 +273,6 @@ public class RideService {
     }
 
     // ================= admin ========================
-    public RideStatusResponse getRideStatus(Long rideId) {
-        Ride ride = getRideOrThrow(rideId);
-        return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
-    }
 
     public RideStatusResponse getCurrentRideByDriver(Long driverId) {
         Ride ride = rideRepository.findOngoingRideByDriver(driverId)
@@ -285,6 +281,65 @@ public class RideService {
                 );
 
         return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
+    }
+
+    @Transactional(readOnly = true)
+    public List<RideTrackingResponse> getAllOngoingRides() {
+        List<Ride> ongoingRides = rideRepository.findByStatus(RideStatus.ONGOING);
+        return ongoingRides.stream()
+                .map(this::toTrackingResponse)
+                .toList();
+    }
+
+    // Single method to map Ride to RideTrackingResponse
+    private RideTrackingResponse toTrackingResponse(Ride ride) {
+        // Use mapper for basic fields
+        RideTrackingResponse response = rideMapper.toTrackingResponse(ride);
+
+        if (ride.getRoute() != null) {
+            response = new RideTrackingResponse(
+                    response.rideId(), response.status(), response.currentLocation(),
+                    routeMapper.toDetailedRoute(ride.getRoute()), response.estimatedTimeMinutes(),
+                    response.estimatedArrival(), response.scheduledFor(), response.startTime(),
+                    response.price(), response.driver(), response.passengers()
+            );
+        }
+
+        if (ride.getDriver() != null) {
+            Double rating = null;
+            try {
+                rating = reviewService.getAverageDriverRating(ride.getDriver().getId());
+            } catch (Exception ignored) {}
+
+            DriverDto driverDto = personMapper.toDriverDto(ride.getDriver(), rating);
+
+            response = new RideTrackingResponse(
+                    response.rideId(), response.status(), response.currentLocation(), response.route(),
+                    response.estimatedTimeMinutes(), response.estimatedArrival(), response.scheduledFor(),
+                    response.startTime(), response.price(), driverDto, response.passengers()
+            );
+        }
+
+        // TODO: add passenegers from ride tracking tokens table
+        if (ride.getPassengers() != null && !ride.getPassengers().isEmpty()) {
+            Long mainId = ride.getPassengers().getFirst().getId();
+
+            List<PassengerDto> passengerDtos = ride.getPassengers().stream()
+                    .map(p -> {
+                        PassengerDto dto = personMapper.toPassengerDto(p);
+                        dto.setMainPassenger(p.getId().equals(mainId));
+                        return dto;
+                    })
+                    .toList();
+
+            response = new RideTrackingResponse(
+                    response.rideId(), response.status(), response.currentLocation(), response.route(),
+                    response.estimatedTimeMinutes(), response.estimatedArrival(), response.scheduledFor(),
+                    response.startTime(), response.price(), response.driver(), passengerDtos
+            );
+        }
+
+        return response;
     }
 
     public Page<AdminRideHistoryResponse> getAdminRideHistory(

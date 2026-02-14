@@ -1,14 +1,14 @@
 package com.tricolori.backend.mapper;
 import com.tricolori.backend.dto.history.AdminRideHistoryResponse;
+import com.tricolori.backend.dto.ride.*;
+import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.Passenger;
 import com.tricolori.backend.entity.Review;
 import com.tricolori.backend.entity.Ride;
-import com.tricolori.backend.dto.ride.RideHistoryResponse;
-import com.tricolori.backend.dto.ride.RideDetailResponse;
-import com.tricolori.backend.dto.ride.PassengerRideHistoryResponse;
-import com.tricolori.backend.dto.ride.PassengerRideDetailResponse;
 import org.mapstruct.*;
+
+import java.time.LocalDateTime;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RideMapper {
@@ -93,6 +93,19 @@ public interface RideMapper {
     @Mapping(target = "vehicleRating", expression = "java(getAverageVehicleRating(ride))")
     @Mapping(target = "ratingComment", expression = "java(getFirstRatingComment(ride))")
     PassengerRideDetailResponse toPassengerDetailResponse(Ride ride);
+
+    /**
+     * Map Ride to RideTrackingResponse for real-time tracking
+     */
+    @Mapping(source = "id", target = "rideId")
+    @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
+    @Mapping(target = "currentLocation", expression = "java(getVehicleLocation(ride))")
+    @Mapping(target = "estimatedTimeMinutes", expression = "java(getEstimatedMinutes(ride))")
+    @Mapping(target = "estimatedArrival", expression = "java(getEstimatedArrival(ride))")
+    @Mapping(target = "driver", ignore = true)  // Set manually in service
+    @Mapping(target = "passengers", ignore = true)  // Set manually in service
+    @Mapping(target = "route", ignore = true)  // Set manually in service
+    RideTrackingResponse toTrackingResponse(Ride ride);
 
     // ================= helpers =================
 
@@ -212,6 +225,38 @@ public interface RideMapper {
                 .filter(c -> c != null && !c.isBlank())
                 .findFirst()
                 .orElse(null);
+    }
+
+    default VehicleLocationResponse getVehicleLocation(Ride ride) {
+        if (ride.getDriver() == null ||
+                ride.getDriver().getVehicle() == null ||
+                ride.getDriver().getVehicle().getLocation() == null) {
+            return null;
+        }
+
+        var vehicle = ride.getDriver().getVehicle();
+        var location = vehicle.getLocation();
+
+        return new VehicleLocationResponse(
+                vehicle.getId(), vehicle.getModel(), vehicle.getPlateNum(), location.getLatitude(),
+                location.getLongitude(), vehicle.isAvailable()
+        );
+    }
+
+    default Integer getEstimatedMinutes(Ride ride) {
+        if (ride.getRoute() == null || ride.getRoute().getEstimatedTimeSeconds() == null) {
+            return null;
+        }
+        return (int) Math.round(ride.getRoute().getEstimatedTimeSeconds() / 60.0);
+    }
+
+    default LocalDateTime getEstimatedArrival(Ride ride) {
+        if (ride.getStartTime() == null) {
+            return null;
+        }
+
+        Integer minutes = getEstimatedMinutes(ride);
+        return minutes != null ? ride.getStartTime().plusMinutes(minutes) : null;
     }
 
     @Named("statusToString")
