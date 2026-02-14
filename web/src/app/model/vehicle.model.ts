@@ -25,3 +25,8 @@ export interface Vehicle {
   available: boolean;
   specification: VehicleSpecification;
 }
+
+export interface VehicleLocationUpdate {
+  latitude: number;
+  longitude: number;
+}

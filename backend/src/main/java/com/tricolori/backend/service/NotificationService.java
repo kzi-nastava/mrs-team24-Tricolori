@@ -2,12 +2,15 @@ package com.tricolori.backend.service;
 
 import com.tricolori.backend.dto.notifications.NotificationDto;
 import com.tricolori.backend.entity.Notification;
+import com.tricolori.backend.entity.Ride;
 import com.tricolori.backend.enums.NotificationType;
 import com.tricolori.backend.mapper.NotificationMapper;
 import com.tricolori.backend.repository.NotificationRepository;
 import com.tricolori.backend.repository.PersonRepository;
+import com.tricolori.backend.repository.RideRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,11 @@ public class NotificationService {
     private final NotificationMapper notificationMapper;
     private final EmailService emailService;
     private final PersonRepository personRepository;
+    private final RideRepository rideRepository;
+    private final TrackingTokenService trackingTokenService;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     // ==================== CORE METHODS ====================
 
@@ -135,18 +143,43 @@ public class NotificationService {
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.ADDED_TO_RIDE, rideId);
         notification.setPassengerName(organizerName);
-        notification.setActionUrl("/passenger/history?openRide=" + rideId);
+        notification.setActionUrl("/passenger/ride-tracking/" + rideId);
 
         try {
-            emailService.sendLinkedPassengerEmail(passengerEmail, passengerFirstName, organizerName,
-                    from, to, scheduledTime, rideId);
-            log.info("Email sent to linked passenger: {}", passengerEmail);
+            // Preprocessing: Check if user is registered and generate appropriate tracking link
+            boolean isRegistered = personRepository.findByEmail(passengerEmail).isPresent();
+
+            String trackingLink;
+            if (isRegistered) {
+                // Registered users: redirect through login
+                trackingLink = frontendUrl + "/login?redirect=/passenger/ride-tracking/" + rideId;
+            } else {
+                // Unregistered users: direct tracking with token
+                // Create tracking token with passenger details
+                Ride ride = rideRepository.findById(rideId)
+                        .orElseThrow(() -> new RuntimeException("Ride not found"));
+                String token = trackingTokenService.createTrackingToken(passengerEmail, passengerFirstName, ride);
+                trackingLink = frontendUrl + "/track-ride?token=" + token;
+            }
+
+            emailService.sendLinkedPassengerEmail(
+                    passengerEmail,
+                    passengerFirstName,
+                    organizerName,
+                    from,
+                    to,
+                    scheduledTime,
+                    trackingLink,
+                    isRegistered
+            );
+            log.info("Email sent to linked passenger: {} (registered: {})", passengerEmail, isRegistered);
         } catch (Exception e) {
             log.error("Failed to send email to linked passenger: {}", passengerEmail, e);
         }
 
         saveAndSend(notification, passengerEmail);
     }
+
 
     // RIDE_COMPLETED
     public void sendRideCompletedNotification(String passengerEmail, String passengerFirstName, Long rideId,

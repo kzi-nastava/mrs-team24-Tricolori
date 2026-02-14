@@ -8,6 +8,7 @@ import com.tricolori.backend.enums.PersonRole;
 import com.tricolori.backend.exception.*;
 import com.tricolori.backend.mapper.PersonMapper;
 import com.tricolori.backend.mapper.RouteMapper;
+import com.tricolori.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.tricolori.backend.dto.ride.*;
-import com.tricolori.backend.repository.PanicRepository;
-import com.tricolori.backend.repository.PassengerRepository;
-import com.tricolori.backend.repository.PersonRepository;
-import com.tricolori.backend.repository.RideRepository;
-import com.tricolori.backend.repository.VehicleSpecificationRepository;
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import com.tricolori.backend.mapper.RideMapper;
@@ -43,8 +39,7 @@ import java.time.LocalDateTime;
 public class RideService {
 
     private final RideRepository rideRepository;
-    private final PersonRepository personRepository;
-    private final PassengerRepository passengerRepository;
+    private final VehicleRepository vehicleRepository;
     private final PanicRepository panicRepository;
     private final OSRMService osrmService;
     private final GeocodingService geocodingService;
@@ -52,6 +47,8 @@ public class RideService {
     private final PassengerService passengerService;
     private final DriverService driverService;
     private final NotificationService notificationService;
+    private final TrackingTokenRepository trackingTokenRepository;
+    private final TrackingTokenService trackingTokenService;
 
     private final VehicleSpecificationRepository vehicleSpecificationRepository;
     private final RideMapper rideMapper;
@@ -109,13 +106,34 @@ public class RideService {
         // calculate final price
         ride.setPrice(calculatePrice(ride));
         rideRepository.save(ride);
+        ride.getDriver().getVehicle().setAvailable(true); // mark vehicle as available again
+        vehicleRepository.save(ride.getDriver().getVehicle());
 
-        // notify passengers
+        // notify registered passengers
         for (Passenger p : ride.getPassengers()) {
             notificationService.sendRideCompletedNotification(
-                    p.getEmail(), p.getFirstName(), ride.getId(), ride.getRoute().getPickupStop().getAddress(), ride.getRoute().getDestinationStop().getAddress(),
-                    ride.getPrice()
+                    p.getEmail(), p.getFirstName(), ride.getId(), ride.getRoute().getPickupStop().getAddress(),
+                    ride.getRoute().getDestinationStop().getAddress(), ride.getPrice()
             );
+        }
+
+        // notify unregistered passengers who have tracking tokens
+        List<TrackingToken> linkedPassengers = trackingTokenRepository.findByRideId(rideId);
+        if (!linkedPassengers.isEmpty()) {
+            log.info("Found {} linked passengers for completed ride {}", linkedPassengers.size(), rideId);
+
+            for (TrackingToken token : linkedPassengers) {
+                // Use "there" if firstName is null
+                String firstName = token.getFirstName() != null && !token.getFirstName().isEmpty()
+                        ? token.getFirstName()
+                        : "there";
+
+                notificationService.sendRideCompletedNotification(
+                        token.getEmail(), firstName, ride.getId(), ride.getRoute().getPickupStop().getAddress(),
+                        ride.getRoute().getDestinationStop().getAddress(), ride.getPrice()
+                );
+                log.info("Sent completion notification to linked passenger: {}", token.getEmail());
+            }
         }
     }
 
@@ -225,52 +243,6 @@ public class RideService {
         );
     }
 
-    @Transactional
-    public Ride createRide(CreateRideRequest request, Long passengerId) {
-        Person passenger = personRepository.findById(passengerId)
-                .orElseThrow(() -> new PersonNotFoundException("Passenger not found"));
-
-        List<Stop> stops = new ArrayList<>();
-
-        stops.add(new Stop(
-                request.getPickupAddress(),
-                new Location(request.getPickupLongitude(), request.getPickupLatitude())
-        ));
-
-        if (request.getStops() != null && !request.getStops().isEmpty()) {
-            for (StopDto stopReq : request.getStops()) {
-                stops.add(new Stop(
-                        stopReq.getAddress(),
-                        new Location(stopReq.getLongitude(), stopReq.getLatitude())
-                ));
-            }
-        }
-
-        stops.add(new Stop(
-                request.getDestinationAddress(),
-                new Location(request.getDestinationLongitude(), request.getDestinationLatitude())
-        ));
-
-        Route route = routeService.findOrCreateRoute(stops);
-
-        // hard coded id 13
-        VehicleSpecification vehicleSpec = vehicleSpecificationRepository.findById(13L)
-                .orElseThrow(() -> new RuntimeException("VehicleSpecification not found"));
-
-        Ride ride = new Ride();
-        ride.setRoute(route);
-        ride.setPassengers(List.of((Passenger) passenger));
-        ride.setStatus(RideStatus.SCHEDULED);
-        ride.setScheduledFor(request.getScheduledFor() != null
-                ? request.getScheduledFor()
-                : LocalDateTime.now());
-
-        ride.setVehicleSpecification(vehicleSpec);
-
-        ride.setPrice(calculatePrice(ride));
-
-        return rideRepository.save(ride);
-    }
 
     // ================= admin ========================
 
@@ -548,6 +520,8 @@ public class RideService {
         notificationService.sendRideStartedNotification(ride.getDriver().getEmail(), ride.getId());
         
         rideRepository.save(ride);
+        ride.getDriver().getVehicle().setAvailable(false); // mark vehicle as unavailable
+        vehicleRepository.save(ride.getDriver().getVehicle());
     }
 
     @Transactional
@@ -563,7 +537,7 @@ public class RideService {
         ride.setScheduledFor(preferences.scheduledFor());
         ride.setRoute(route);
         ride.setPrice(calculatePrice(
-            preferences.vehicleType(), route.getDistanceKm()
+                preferences.vehicleType(), route.getDistanceKm()
         ));
 
         // Find passengers by email:
@@ -573,8 +547,10 @@ public class RideService {
         if (request.getTrackers() != null) {
             allPassengerEmails.addAll(Arrays.asList(request.getTrackers()));
         }
+
+        // Get only registered passengers for the ride's passenger list
         List<Passenger> trackingPassengers = passengerService.getTrackingPassengers(
-            request.getTrackers()
+                allPassengerEmails.toArray(new String[0])
         );
         ride.setPassengers(trackingPassengers);
 
@@ -582,33 +558,56 @@ public class RideService {
             Driver driver = driverService.findDriverForRide(
                     route.getPickupStop().getLocation(),
                     preferences,
-                    trackingPassengers.size()
+                    allPassengerEmails.size()
             );
             ride.setDriver(driver);
             ride.setStatus(RideStatus.SCHEDULED);
             ride.setVehicleSpecification(driver.getVehicle().getSpecification());
 
-            rideRepository.save(ride);
+            ride = rideRepository.save(ride);
 
-            Passenger organizer = trackingPassengers.getFirst();
+            String organizerName = passenger.getFirstName() + " " + passenger.getLastName();
+            // separate registered and unregistered passengers
+            List<String> registeredEmails = trackingPassengers.stream()
+                    .map(Passenger::getEmail)
+                    .toList();
+
+            // Send notifications to registered passengers (skip organizer)
             for (Passenger p : trackingPassengers) {
-                if (p.getId().equals(organizer.getId()))
-                    continue; // skip main passenger
+                if (p.getEmail().equals(passenger.getEmail()))
+                    continue; // skip main passenger (organizer)
+
                 notificationService.sendAddedToRideNotification(
-                        p.getEmail(), ride.getId(), organizer.getFirstName() + " " + organizer.getLastName(),
-                        p.getFirstName(), ride.getRoute().getPickupStop().getAddress(), ride.getRoute().getDestinationStop().getAddress(),
-                        ride.getScheduledFor().toString()
+                        p.getEmail(), ride.getId(), organizerName, p.getFirstName(), ride.getRoute().getPickupStop().getAddress(),
+                        ride.getRoute().getDestinationStop().getAddress(), ride.getScheduledFor().toString()
                 );
             }
 
-        } catch (NoSuitableDriversException | NoFreeDriverCloseException e) {
+            // handle unregistered passengers (those in allPassengerEmails but not in trackingPassengers)
+            for (String email : allPassengerEmails) {
+                if (email.equals(passenger.getEmail())) {
+                    continue; // skip organizer
+                }
 
-            // notify passengers about rejection
-            for (Passenger p : trackingPassengers) {
-                notificationService.sendRideRejectedNotification(
-                        p.getEmail(),
-                        null
-                );
+                if (!registeredEmails.contains(email)) {
+                    // an unregistered passenger - create tracking token and send notification
+                    log.info("Creating tracking token for unregistered passenger: {}", email);
+                    String firstName = "there"; // so the email says hi there
+                    String token = trackingTokenService.createTrackingToken(email, firstName, ride);
+                    // Send notification
+                    notificationService.sendAddedToRideNotification(
+                            email, ride.getId(), organizerName, firstName, ride.getRoute().getPickupStop().getAddress(),
+                            ride.getRoute().getDestinationStop().getAddress(), ride.getScheduledFor().toString()
+                    );
+                }
+            }
+
+        } catch (NoSuitableDriversException | NoFreeDriverCloseException e) {
+            // Notify ALL passengers (registered and unregistered) about rejection
+            for (String email : allPassengerEmails) {
+                notificationService.sendRideRejectedNotification(email, null);
+                log.info("Sent ride rejection notification to {}", email);
+                log.info("Reason: {}", e.getMessage());
             }
         }
     }
