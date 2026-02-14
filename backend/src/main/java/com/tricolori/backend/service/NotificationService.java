@@ -286,6 +286,20 @@ public class NotificationService {
         saveAndSend(notification, adminEmail);
     }
 
+    public void sendPanicNotification(Long rideId, String senderEmail) {
+        List<String> adminEmails = personRepository.findAllAdminsEmails();
+
+        String content = String.format("!!! PANIC !!! Ride #%d. User %s has activated the panic button!",
+                rideId, senderEmail);
+
+        for (String adminEmail : adminEmails) {
+            Notification notification = new Notification(adminEmail, content, NotificationType.RIDE_PANIC, rideId);
+            notification.setActionUrl("/admin/history?openRide=" + rideId);
+
+            saveAndSend(notification, adminEmail);
+        }
+    }
+
     // ==================== CHAT NOTIFICATIONS ====================
 
     // NEW_CHAT_MESSAGE
