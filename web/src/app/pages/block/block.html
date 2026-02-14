@@ -1,0 +1,178 @@
+<div class="min-h-screen max-w-5xl p-3 mx-auto font-sans">
+    <form [formGroup]="filterForm" (ngSubmit)="filterUsers()" class="mt-9 border border-gray-200 rounded-2xl p-4 shadow-sm bg-white">
+        <div class="flex justify-between items-center">
+            <h3 class="text-dark-600 font-bold text-lg">Filter Users</h3>
+            <button type="button" (click)="resetFilters()" class="text-sm text-base-600 hover:underline transition font-medium cursor-pointer">
+                Reset filters
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-6">
+            <div class="flex flex-col gap-1.5">
+                <label class="text-dark-800 text-sm">Filter by ID</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                        <ng-icon name="bootstrap123"></ng-icon>
+                    </span>
+                    <input formControlName="id" type="text" placeholder="1" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-base-600 focus:bg-white outline-none transition">
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label class="text-dark-800 text-sm">Filter by first name</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                        <ng-icon name="heroUser"></ng-icon>
+                    </span>
+                    <input formControlName="firstName" type="text" placeholder="Joe" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-base-600 focus:bg-white outline-none transition">
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label class="text-dark-800 text-sm">Filter by last name</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                        <ng-icon name="heroUser"></ng-icon>
+                    </span>
+                    <input formControlName="lastName" type="text" placeholder="Doe" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-base-600 focus:bg-white outline-none transition">
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label class="text-dark-800 text-sm">Filter by email</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                        <ng-icon name="heroEnvelope"></ng-icon>
+                    </span>
+                    <input formControlName="email" type="email" placeholder="joedoe@example.com" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-base-600 focus:bg-white outline-none transition">
+                </div>
+            </div>
+        </div>
+        <div class="mt-6 flex justify-start">
+            <button type="submit" class="px-6 py-2 bg-deep-400 hover:bg-deep text-white rounded-lg font-semibold cursor-pointer transition shadow-sm">
+                Apply filters
+            </button>
+        </div>
+    </form>
+
+    <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm mt-9">
+        <table class="w-full text-center bg-white">
+            <thead class="bg-base-700 text-white">
+                <tr>
+                    <th class="px-6 py-4 font-semibold uppercase text-xs tracking-wider">ID</th>
+                    <th class="px-6 py-4 font-semibold uppercase text-xs tracking-wider">First name</th>
+                    <th class="px-6 py-4 font-semibold uppercase text-xs tracking-wider">Last name</th>
+                    <th class="px-6 py-4 font-semibold uppercase text-xs tracking-wider">Email</th>
+                    <th class="px-6 py-4 font-semibold uppercase text-xs tracking-wider">Registration date</th>
+                    <th class="px-6 py-4 font-semibold uppercase text-xs tracking-wider">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @for (user of users(); track user.id) {
+                    <tr class="hover:bg-gray-50/50 transition">
+                        <td class="px-6 py-4 text-sm font-medium text-dark-700">{{ user.id }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-800 font-medium">{{ user.firstName }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-800 font-medium">{{ user.lastName }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ user.email }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ user.registrationDate | date: 'dd.MM.yyyy - HH:mm' }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <span
+                                (click)="openModal(user)" 
+                                class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm"
+                                [class]="{
+                                    'bg-emerald-500': user.status === 'ACTIVE',
+                                    'bg-amber-500': user.status === 'WAITING_FOR_ACTIVATION',
+                                    'bg-red-500': user.status === 'SUSPENDED'
+                                }">
+                                {{ user.status }}
+                            </span>
+                        </td>
+                    </tr>
+                } @empty {
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-gray-400">
+                            Nema pronađenih korisnika sa zadatim kriterijumima.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-9 flex items-center justify-between px-2 pb-10">
+        <p class="text-sm text-gray-500 font-medium">{{ displayRange() }}</p>
+        
+        <nav class="flex items-center gap-2">
+            <button 
+                type="button"
+                (click)="prevPage()" 
+                [disabled]="currentPage() === 0"
+                class="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg transition flex items-center gap-1 shadow-sm"
+                [class]="currentPage() === 0 ? 'text-gray-300 bg-gray-50 cursor-not-allowed' : 'text-dark-700 bg-white hover:bg-gray-50'">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Previous
+            </button>
+            
+            <div class="w-10 h-10 flex items-center justify-center text-sm font-bold bg-base-700 text-white rounded-lg shadow-md">
+                {{ currentPage() + 1 }}
+            </div>
+            
+            <span class="text-gray-400 px-1 text-sm">of {{ totalPages() }}</span>
+            
+            <button 
+                type="button"
+                (click)="nextPage()" 
+                [disabled]="(currentPage() + 1) >= totalPages()"
+                class="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg transition flex items-center gap-1 shadow-sm"
+                [class]="(currentPage() + 1) >= totalPages() ? 'text-gray-300 bg-gray-50 cursor-not-allowed' : 'text-dark-700 bg-white hover:bg-gray-50'">
+                Next
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+        </nav>
+    </div>
+</div>
+
+@if (isModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            
+            <div class="p-6 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-dark-800">
+                    {{ selectedUser()?.status === 'SUSPENDED' ? 'Unblock user' : 'Block user' }}
+                </h3>
+                <p class="text-sm text-gray-500 mt-1">
+                    User: <span class="font-semibold text-dark-600">{{ selectedUser()?.email }}</span>
+                </p>
+            </div>
+
+            <div class="p-6">
+                @if (selectedUser()?.status !== 'SUSPENDED') {
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Block reason:</label>
+                    <textarea 
+                        [formControl]="reasonControl"
+                        placeholder="Enter reason..." 
+                        class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition h-32 resize-none">
+                    </textarea>
+                } @else {
+                    <p class="text-gray-600">Are you sure you want to unblock this user?</p>
+                }
+            </div>
+
+            <div class="p-6 bg-gray-50 flex gap-3 justify-end">
+                <button (click)="closeModal()" class="cursor-pointer px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition">
+                    Cancel
+                </button>
+                
+                <button (click)="confirmAction()" 
+                    [class]="selectedUser()?.status === 'SUSPENDED' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'"
+                    class="cursor-pointer px-6 py-2 text-sm font-semibold text-white rounded-lg transition shadow-md">
+                    {{ selectedUser()?.status === 'SUSPENDED' ? 'Confirm unblock' : 'Block now' }}
+                </button>
+            </div>
+        </div>
+    </div>
+}
