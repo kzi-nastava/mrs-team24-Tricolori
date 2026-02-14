@@ -4,7 +4,7 @@
     <div class="bg-gradient-to-r from-[#00acc1] to-[#00838f] p-6 text-white flex-shrink-0">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold">Ride #{{ rideDetail().id }}</h2>
+          <h2 id="ride-details-welcome" class="text-2xl font-bold">Ride #{{ rideDetail().id }}</h2>
           <p class="text-white/90 text-sm mt-1">
             {{ rideDetail().createdAt | date:'dd.MM.yyyy' }} at {{ rideDetail().createdAt | date:'HH:mm' }}
           </p>
@@ -61,7 +61,8 @@
               <h3 class="text-lg font-semibold text-gray-900">Route Details</h3>
             </div>
 
-            <button (click)="toggleFavorite()"
+            <button id="add-remove-favorite"
+                    (click)="toggleFavorite()"
                     [class]="isFavorite() ? 'bg-gray-100 text-gray-700 border-gray-300' : 'bg-pink-50 text-pink-700 border-pink-200'"
                     class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition">
               <ng-icon [name]="isFavorite() ? 'heroHeartSolid' : 'heroHeart'" [class.text-pink-500]="!isFavorite()"></ng-icon>

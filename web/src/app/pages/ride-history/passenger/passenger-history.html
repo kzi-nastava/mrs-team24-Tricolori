@@ -1,7 +1,7 @@
 <div class="flex justify-center pt-8 bg-white min-h-[calc(100vh-80px)] relative">
   <div class="w-full max-w-5xl px-6">
 
-    <h1 class="text-3xl font-sans text-gray-900 mb-2 font-bold">My Ride History</h1>
+    <h1 id="ride-history-welcome" class="text-3xl font-sans text-gray-900 mb-2 font-bold">My Ride History</h1>
     <p class="text-gray-600 mb-6">View all your rides and leave ratings for completed trips</p>
 
     <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
@@ -11,6 +11,7 @@
         <div>
           <label class="block text-gray-700 mb-2 text-sm font-medium">Start Date</label>
           <input
+            id="start-date-input"
             type="date"
             [ngModel]="startDate()"
             (ngModelChange)="startDate.set($event)"
@@ -21,6 +22,7 @@
         <div>
           <label class="block text-gray-700 mb-2 text-sm font-medium">End Date</label>
           <input
+            id="end-date-input"
             type="date"
             [ngModel]="endDate()"
             (ngModelChange)="endDate.set($event)"
@@ -31,6 +33,7 @@
 
       <div class="flex gap-3 mt-6 pt-4 border-t border-gray-100">
         <button
+          id="apply-filter-btn"
           (click)="onFilterChange()"
           [disabled]="isLoading()"
           class="bg-[#00acc1] hover:bg-[#008c9e] text-white px-8 py-2.5 rounded-lg font-bold transition active:scale-95 shadow-md disabled:opacity-50">
@@ -65,13 +68,13 @@
 
       @if (isLoading()) {
         <div class="px-6 py-12 text-center">
-          <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#00acc1]"></div>
+          <div id="loading-spinner" class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#00acc1]"></div>
           <p class="mt-4 text-gray-500 font-sans font-medium">Fetching your rides...</p>
         </div>
       } @else {
         <div class="divide-y divide-gray-100">
           @for (ride of rides(); track ride.id) {
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
+            <div class="ride grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
               <div class="col-span-4 text-sm font-semibold text-gray-900 truncate">
                 {{ ride.pickupAddress }} - {{ ride.destinationAddress }}
               </div>
@@ -89,7 +92,7 @@
               <div class="col-span-2 text-right flex justify-end">
                 <button
                   (click)="viewRideDetails(ride)"
-                  class="text-[#00acc1] hover:text-[#008c9e] text-sm font-bold flex items-center gap-1 group">
+                  class="view-btn text-[#00acc1] hover:text-[#008c9e] text-sm font-bold flex items-center gap-1 group">
                   <ng-icon name="heroEye" class="w-4 h-4 group-hover:scale-110 transition-transform"></ng-icon>
                   View
                 </button>
