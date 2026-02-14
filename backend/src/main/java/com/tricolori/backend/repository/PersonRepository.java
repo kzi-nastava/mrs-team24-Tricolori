@@ -20,6 +20,6 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     List<Person> findByRole(PersonRole role);
 
-    @Query("SELECT p.email FROM Person p WHERE p.role = 'ROLE_ADMIN'")
+    @Query("SELECT p.email FROM Person p WHERE p.role = com.tricolori.backend.enums.PersonRole.ROLE_ADMIN")
     List<String> findAllAdminsEmails();
 }
