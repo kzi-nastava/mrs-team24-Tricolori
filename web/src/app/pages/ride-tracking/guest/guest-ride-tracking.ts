@@ -1,4 +1,4 @@
-// guest-ride-tracking.component.ts
+// guest-ride-tracking.component.ts - WITH BACKEND LOCATION UPDATES
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,8 @@ import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { GuestRideTrackingService } from '../../../services/guest.ride.tracking.service';
 import { MapService } from '../../../services/map.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 type ViewState = 'validating' | 'login-prompt' | 'tracking' | 'error';
 
@@ -34,6 +36,7 @@ export class GuestRideTrackingComponent implements OnInit, OnDestroy {
   
   token: string | null = null;
   rideId: number | null = null;
+  vehicleId: number | null = null; // Track vehicle ID for updates
   isRegisteredUser = signal(false);
   
   rideDetails = signal({
@@ -64,7 +67,8 @@ export class GuestRideTrackingComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private guestService: GuestRideTrackingService,
-    private mapService: MapService
+    private mapService: MapService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -107,7 +111,6 @@ export class GuestRideTrackingComponent implements OnInit, OnDestroy {
   continueToTracking() {
     this.viewState.set('tracking');
     this.loading.set(true);
-    // Use token-based tracking instead of ride ID
     this.guestService.trackRideByToken(this.token!).subscribe({
       next: (data) => {
         this.updateRideData(data);
@@ -136,6 +139,10 @@ export class GuestRideTrackingComponent implements OnInit, OnDestroy {
     this.prevStatus = newStatus;
     this.rideStatus.set(newStatus);
     if (data.price) this.finalPrice.set(data.price);
+
+    if (data.currentLocation?.id) {
+      this.vehicleId = data.currentLocation.id;
+    }
 
     this.rideDetails.set({
       pickup: data.route.pickupAddress,
@@ -191,26 +198,43 @@ export class GuestRideTrackingComponent implements OnInit, OnDestroy {
   }
 
   private startMockMovement() {
-    if (this.routeCoords.length === 0 || this.rideCompleted()) return;
+    if (this.routeCoords.length === 0 || this.rideCompleted() || !this.vehicleId) return;
+    
     this.routeIndex = 0;
     const [lat, lng] = this.routeCoords[0];
-    this.vehicleLocation.set({ lat, lng });
-    this.updateVehicleMarker();
+    
+    // Update backend with initial position
+    this.updateBackendVehicleLocation(lat, lng);
 
     const jumpSize = Math.ceil(this.routeCoords.length / 10);
     this.mockInterval = setInterval(() => {
       if (this.rideCompleted()) return clearInterval(this.mockInterval);
+      
       this.routeIndex += jumpSize;
-      if (this.routeIndex >= this.routeCoords.length) {
+      
+      // Check if reached destination
+      if (this.routeIndex >= this.routeCoords.length - 1) {
+        const [finalLat, finalLng] = this.routeCoords[this.routeCoords.length - 1];
+        
+        // Update backend with final position
+        this.updateBackendVehicleLocation(finalLat, finalLng);
+        
         this.estimatedArrival.set(0);
         this.remainingDistance.set(0);
+        
+        setTimeout(() => {
+          this.rideStatus.set('FINISHED');
+          this.showCompletionDialog.set(true);
+        }, 1000);
+        
         return clearInterval(this.mockInterval);
       }
-      const [lat, lng] = this.routeCoords[this.routeIndex];
-      this.vehicleLocation.set({ lat, lng });
-      this.updateVehicleMarker();
       
-      // Update progress
+      // Update backend with new position
+      const [lat, lng] = this.routeCoords[this.routeIndex];
+      this.updateBackendVehicleLocation(lat, lng);
+      
+      // Update progress metrics
       let remaining = 0;
       for (let i = this.routeIndex; i < this.routeCoords.length - 1; i++) {
         remaining += this.distance(this.routeCoords[i], this.routeCoords[i + 1]);
@@ -220,6 +244,24 @@ export class GuestRideTrackingComponent implements OnInit, OnDestroy {
         this.estimatedArrival.set(Math.max(0, Math.round((remaining / this.totalDist) * this.estimatedArrival())));
       }
     }, 5000);
+  }
+
+  // update vehicle location in backend
+  private updateBackendVehicleLocation(latitude: number, longitude: number) {
+    if (!this.vehicleId) return;
+    
+    this.http.put(`${environment.apiUrl}/vehicles/${this.vehicleId}/location`, {
+      latitude,
+      longitude
+    }).subscribe({
+      next: () => {
+        console.log(`Vehicle location updated: ${latitude}, ${longitude}`);
+      },
+      error: (err) => {
+        console.error('Failed to update vehicle location:', err);
+        // Don't stop the simulation if backend update fails
+      }
+    });
   }
 
   private distance([lat1, lon1]: [number, number], [lat2, lon2]: [number, number]): number {
@@ -236,8 +278,10 @@ export class GuestRideTrackingComponent implements OnInit, OnDestroy {
     if (!map) return;
 
     if (this.vehicleMarker) {
+      // update position
       this.vehicleMarker.setLatLng([lat, lng]);
     } else {
+      // create marker only once
       this.vehicleMarker = L.marker([lat, lng], {
         icon: L.divIcon({
           className: 'vehicle-marker',
@@ -255,7 +299,6 @@ export class GuestRideTrackingComponent implements OnInit, OnDestroy {
 
   private startLiveUpdates() {
     if (!this.token || this.rideCompleted()) return;
-    // Use token-based tracking for live updates
     this.updateSub = interval(5000).pipe(
       switchMap(() => this.guestService.trackRideByToken(this.token!))
     ).subscribe({
