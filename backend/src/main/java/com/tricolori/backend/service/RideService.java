@@ -446,6 +446,7 @@ public class RideService {
 
     @Transactional
     public void panicRide(Person person, PanicRideRequest request) {
+
         Ride ride = person.getRole().equals(PersonRole.ROLE_PASSENGER) ?
                 rideRepository.findOngoingRideByPassenger(person.getId())
                         .orElseThrow(() -> new RideNotFoundException("Ongoing ride not found for this passenger.")) :
@@ -453,6 +454,8 @@ public class RideService {
                         .orElseThrow(() -> new RideNotFoundException("Ongoing ride not found for this driver."));
 
         terminateRideAtLocation(ride, request.vehicleLocation(), RideStatus.PANIC);
+
+        notificationService.sendPanicNotification(ride.getId(), person.getEmail());
 
         Panic panic = new Panic();
         panic.setRide(ride);
