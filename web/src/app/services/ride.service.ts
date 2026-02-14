@@ -170,4 +170,8 @@ export class RideService {
   startRide(rideId: number): Observable<any> {
     return this.http.put(`${this.API_URL}/${rideId}/start`, {});
   }
+
+  getAllOngoingRides(): Observable<RideTrackingResponse[]> {
+  return this.http.get<RideTrackingResponse[]>(`${this.API_URL}/ongoing`);
+}
 }
