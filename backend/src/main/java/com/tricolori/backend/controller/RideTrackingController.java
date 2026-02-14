@@ -4,6 +4,7 @@ import com.tricolori.backend.dto.ride.RideTrackingResponse;
 import com.tricolori.backend.entity.TrackingToken;
 import com.tricolori.backend.service.RideService;
 import com.tricolori.backend.service.TrackingTokenService;
+import com.tricolori.backend.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ public class RideTrackingController {
 
     private final TrackingTokenService trackingTokenService;
     private final RideService rideService;
+    private final VehicleService vehicleService;
 
     @GetMapping("/validate")
     public ResponseEntity<?> validateToken(@RequestParam String token) {

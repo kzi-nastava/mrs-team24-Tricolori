@@ -39,7 +39,7 @@ import java.time.LocalDateTime;
 public class RideService {
 
     private final RideRepository rideRepository;
-    private final PersonRepository personRepository;
+    private final VehicleRepository vehicleRepository;
     private final PanicRepository panicRepository;
     private final OSRMService osrmService;
     private final GeocodingService geocodingService;
@@ -106,6 +106,8 @@ public class RideService {
         // calculate final price
         ride.setPrice(calculatePrice(ride));
         rideRepository.save(ride);
+        ride.getDriver().getVehicle().setAvailable(true); // mark vehicle as available again
+        vehicleRepository.save(ride.getDriver().getVehicle());
 
         // notify registered passengers
         for (Passenger p : ride.getPassengers()) {
@@ -460,6 +462,8 @@ public class RideService {
         notificationService.sendRideStartedNotification(ride.getDriver().getEmail(), ride.getId());
         
         rideRepository.save(ride);
+        ride.getDriver().getVehicle().setAvailable(false); // mark vehicle as unavailable
+        vehicleRepository.save(ride.getDriver().getVehicle());
     }
 
     @Transactional

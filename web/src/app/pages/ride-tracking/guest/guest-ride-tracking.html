@@ -1,7 +1,7 @@
 <!-- VALIDATING STATE -->
 @if (viewState() === 'validating') {
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-8 text-center">
+  <div class="min-h-screen bg-gray-900 bg-opacity-70 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 text-center">
       <div class="w-16 h-16 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
       <h2 class="text-xl font-semibold text-gray-900 mb-2">Validating your tracking link...</h2>
       <p class="text-gray-600">Please wait a moment</p>
@@ -11,8 +11,8 @@
 
 <!-- ERROR STATE -->
 @if (viewState() === 'error') {
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-8">
+  <div class="min-h-screen bg-gray-900 bg-opacity-70 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
       <div class="text-center">
         <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <ng-icon name="heroExclamationCircle" class="w-8 h-8 text-red-600"></ng-icon>
@@ -38,8 +38,8 @@
 
 <!-- LOGIN PROMPT STATE (for registered users) -->
 @if (viewState() === 'login-prompt') {
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-8">
+  <div class="min-h-screen bg-gray-900 bg-opacity-70 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
       <div class="text-center">
         <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg class="w-8 h-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -247,9 +247,9 @@
     </div>
   </div>
 
-  <!-- Ride Completion Dialog -->
+  <!-- Ride Completion Dialog - WITH BLURRED DARK BACKDROP -->
   @if (showCompletionDialog()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4 animate-fadeIn">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-fadeIn">
       <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slideUp">
         <!-- Dialog Header -->
         <div class="bg-gradient-to-br from-{{ getStatusColor() }}-500 to-{{ getStatusColor() }}-600 p-6 text-white text-center">
@@ -309,7 +309,6 @@
   }
 }
 
-<!-- Additional Styles -->
 <style>
   @keyframes fadeIn {
     from {
@@ -330,12 +329,37 @@
       opacity: 1;
     }
   }
+  .vehicle-marker-smooth {
+  transition: all 4.5s linear !important;
+}
+
+.leaflet-marker-icon.vehicle-marker-smooth {
+  transition: all 4.5s linear !important;
+}
+
+.leaflet-marker-pane .vehicle-marker-smooth {
+  transition: transform 4.5s linear !important;
+}
+
+  @keyframes vehiclePulse {
+  0%, 100% {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  }
+  50% {
+    box-shadow: 0 3px 6px rgba(16, 185, 129, 0.6), 
+                0 0 0 4px rgba(16, 185, 129, 0.2);
+  }
+}
+
+.vehicle-marker-smooth > div {
+  animation: vehiclePulse 2s ease-in-out infinite;
+}
 
   .animate-fadeIn {
-    animation: fadeIn 0.2s ease-out;
+    animation: fadeIn 0.3s ease-out;
   }
 
   .animate-slideUp {
-    animation: slideUp 0.3s ease-out;
+    animation: slideUp 0.4s ease-out;
   }
 </style>
