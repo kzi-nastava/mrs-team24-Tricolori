@@ -65,7 +65,10 @@ describe('RideRatingComponent', () => {
     };
     mockRatingService = jasmine.createSpyObj('RatingService', ['submitRating', 'getRatingStatus']);
     mockRideService = jasmine.createSpyObj('RideService', ['getPassengerRideDetail']);
-    mockMapService = jasmine.createSpyObj('MapService', ['drawRoute']);
+    mockMapService = jasmine.createSpyObj('MapService', [
+    'drawRoute',
+    'destroyMap'
+    ]);
     mockEstimationService = jasmine.createSpyObj('EstimationService', ['calculateRouteFromAddress']);
 
     await TestBed.configureTestingModule({
