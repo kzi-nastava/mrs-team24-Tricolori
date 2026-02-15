@@ -13,7 +13,7 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class RideHistoryPage {
+public class RideHistoryPassengerPage {
     @FindBy(id = "ride-history-welcome")
     private WebElement welcome;
 
@@ -36,7 +36,7 @@ public class RideHistoryPage {
     private WebDriverWait wait;
     private Actions actions;
 
-    public RideHistoryPage(WebDriver driver) {
+    public RideHistoryPassengerPage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(this.driver, Duration.ofSeconds(10));
         this.actions = new Actions(this.driver);

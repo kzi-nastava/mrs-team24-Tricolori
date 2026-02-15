@@ -22,7 +22,7 @@ class RideOrderThroughFavoriteRouteTest {
     private LoginPage loginPage;
     private RideBookingPage rideBookingPage;
     private FavoriteRoutesModal favoriteRoutesModal;
-    private RideHistoryPage rideHistoryPage;
+    private RideHistoryPassengerPage rideHistoryPage;
     private RideDetailsModal rideDetailsModal;
     private RouteSelectorPart routeSelectorPart;
 
@@ -40,7 +40,7 @@ class RideOrderThroughFavoriteRouteTest {
         this.loginPage = new LoginPage(this.driver);
         this.rideBookingPage = new RideBookingPage(this.driver);
         this.favoriteRoutesModal = new FavoriteRoutesModal(this.driver);
-        this.rideHistoryPage = new RideHistoryPage(this.driver);
+        this.rideHistoryPage = new RideHistoryPassengerPage(this.driver);
         this.rideDetailsModal = new RideDetailsModal(this.driver);
         this.routeSelectorPart = new RouteSelectorPart(this.driver);
     }
