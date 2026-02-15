@@ -1,5 +1,6 @@
 package com.tricolori.tests;
 
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import org.openqa.selenium.WebDriver;
@@ -12,6 +13,7 @@ import org.testng.annotations.Test;
 
 import com.tricolori.pages.LoginPage;
 import com.tricolori.pages.PassengerNavigation;
+import com.tricolori.pages.RideDetailsModal;
 import com.tricolori.pages.RideHistoryPassengerPage;
 import com.tricolori.pages.RideRatingPage;
 import com.tricolori.pages.UnregisteredHomePage;
@@ -23,6 +25,7 @@ public class RateRideThroughRideHistory {
     private LoginPage loginPage;
     private PassengerNavigation navigationBar;
     private RideHistoryPassengerPage rideHistoryPage;
+    private RideDetailsModal rideDetailsModal;
     private RideRatingPage rideRatingPage;
 
     private final static String PATH = "http://localhost:4200/";
@@ -39,6 +42,7 @@ public class RateRideThroughRideHistory {
         this.loginPage = new LoginPage(this.driver);
         this.navigationBar = new PassengerNavigation(this.driver);
         this.rideHistoryPage = new RideHistoryPassengerPage(this.driver);
+        this.rideDetailsModal = new RideDetailsModal(this.driver);
         this.rideRatingPage = new RideRatingPage(this.driver);
     }
 
@@ -54,8 +58,8 @@ public class RateRideThroughRideHistory {
                         "passenger@test.com",
                         "Password123",
                         "11", "02", "2026",
-                        "15", "02", "2026",
-                        0,
+                        "16", "02", "2026",
+                        19,
                         5,
                         4,
                         "Great ride! The driver was very professional and the vehicle was clean."
@@ -69,7 +73,7 @@ public class RateRideThroughRideHistory {
                 {
                         "passenger@test.com",
                         "Password123",
-                        0,
+                        19,
                         1,
                         1,
                         null
@@ -85,7 +89,7 @@ public class RateRideThroughRideHistory {
                         "Password123",
                         "01", "01", "2026",
                         "10", "01", "2026",
-                        0
+                        20
                 }
         };
     }
@@ -110,10 +114,14 @@ public class RateRideThroughRideHistory {
 
         assertTrue(rideHistoryPage.isOpened());
         rideHistoryPage.filterRides(startDay, startMonth, startYear, endDay, endMonth, endYear);
-        rideHistoryPage.rateRideByIndex(rideIndex);
+        rideHistoryPage.viewDetailsByRideIndex(rideIndex);
+
+        assertTrue(rideDetailsModal.isOpened());
+        assertTrue(rideDetailsModal.isRatingButtonDisplayed(), "Leave rating button should be displayed");
+        rideDetailsModal.clickLeaveRating();
 
         assertTrue(rideRatingPage.isOpened());
-        assertTrue(!rideRatingPage.isRatingExpired(), "Rating period should not be expired");
+        assertFalse(rideRatingPage.isRatingExpired(), "Rating period should not be expired");
 
         rideRatingPage.submitRating(driverRating, vehicleRating, comment);
 
@@ -137,10 +145,14 @@ public class RateRideThroughRideHistory {
         navigationBar.openRideHistory();
 
         assertTrue(rideHistoryPage.isOpened());
-        rideHistoryPage.rateRideByIndex(rideIndex);
+        rideHistoryPage.viewDetailsByRideIndex(rideIndex);
+
+        assertTrue(rideDetailsModal.isOpened());
+        assertTrue(rideDetailsModal.isRatingButtonDisplayed(), "Leave rating button should be displayed");
+        rideDetailsModal.clickLeaveRating();
 
         assertTrue(rideRatingPage.isOpened());
-        assertTrue(!rideRatingPage.isRatingExpired(), "Rating period should not be expired");
+        assertFalse(rideRatingPage.isRatingExpired(), "Rating period should not be expired");
 
         rideRatingPage.submitRating(driverRating, vehicleRating, comment);
 
@@ -164,9 +176,9 @@ public class RateRideThroughRideHistory {
 
         assertTrue(rideHistoryPage.isOpened());
         rideHistoryPage.filterRides(startDay, startMonth, startYear, endDay, endMonth, endYear);
-        rideHistoryPage.rateRideByIndex(rideIndex);
+        rideHistoryPage.viewDetailsByRideIndex(rideIndex);
 
-        assertTrue(rideRatingPage.isOpened());
-        assertTrue(rideRatingPage.isRatingExpired(), "Rating period should be expired for rides older than 3 days");
+        assertTrue(rideDetailsModal.isOpened());
+        assertFalse(rideDetailsModal.isRatingButtonDisplayed(), "Leave rating button should NOT be displayed for expired rides");
     }
 }
