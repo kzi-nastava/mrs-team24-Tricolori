@@ -89,13 +89,21 @@
                   {{ ride.status.replace('_', ' ') }}
                 </span>
               </div>
-              <div class="col-span-2 text-right flex justify-end">
+              <div class="col-span-2 text-right flex justify-end gap-2">
                 <button
                   (click)="viewRideDetails(ride)"
                   class="view-btn text-[#00acc1] hover:text-[#008c9e] text-sm font-bold flex items-center gap-1 group">
                   <ng-icon name="heroEye" class="w-4 h-4 group-hover:scale-110 transition-transform"></ng-icon>
                   View
                 </button>
+                @if (ride.status === 'COMPLETED' && !ride.rated) {
+                  <button
+                    (click)="rateRide(ride)"
+                    class="rate-btn text-amber-600 hover:text-amber-700 text-sm font-bold flex items-center gap-1 group">
+                    <ng-icon name="heroStar" class="w-4 h-4 group-hover:scale-110 transition-transform"></ng-icon>
+                    Rate
+                  </button>
+                }
               </div>
             </div>
           } @empty {

@@ -89,4 +89,17 @@ public class RideHistoryPassengerPage {
         // build().perform() is neccessary at the end of a chain...
         actions.sendKeys(day + month + year).build().perform();
     }
+
+    public void rateRideByIndex(int rideIndex) {
+        List<WebElement> allRides = getRides();
+
+        if (rideIndex >= 0 && rideIndex < allRides.size()) {
+            WebElement targetRide = allRides.get(rideIndex);
+            WebElement rateButton = targetRide.findElement(By.className("rate-btn"));
+            wait.until(ExpectedConditions.elementToBeClickable(rateButton));
+            actions.moveToElement(rateButton).click().perform();
+        } else {
+            throw new RuntimeException("Invalid index");
+        }
+    }
 }
