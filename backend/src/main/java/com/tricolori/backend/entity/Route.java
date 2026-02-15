@@ -2,9 +2,7 @@ package com.tricolori.backend.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +10,7 @@ import java.util.List;
 @Entity(name = "Route")
 @Table(name = "routes")
 @Getter @Setter @NoArgsConstructor
+@AllArgsConstructor @Builder
 public class Route {
 
     @Id

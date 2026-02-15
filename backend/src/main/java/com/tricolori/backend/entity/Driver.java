@@ -2,9 +2,8 @@ package com.tricolori.backend.entity;
 
 import com.tricolori.backend.enums.PersonRole;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +12,7 @@ import java.util.List;
 @Table(name = "drivers")
 @PrimaryKeyJoinColumn(name = "person_id")
 @Getter @Setter @NoArgsConstructor
+@AllArgsConstructor @SuperBuilder
 public class Driver extends Person {
 
     @OneToMany(
