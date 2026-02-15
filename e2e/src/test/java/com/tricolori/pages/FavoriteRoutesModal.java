@@ -1,4 +1,4 @@
-package com.tricolori.backend.e2e.s1.pages;
+package com.tricolori.pages;
 
 import java.time.Duration;
 import java.util.List;
@@ -12,7 +12,8 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.tricolori.backend.e2e.s1.dto.RouteSummary;
+import com.tricolori.utils.RouteSummary;
+
 
 public class FavoriteRoutesModal {
     @FindBy(id = "favorite-route-welcome")

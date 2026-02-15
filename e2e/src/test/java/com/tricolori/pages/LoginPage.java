@@ -1,4 +1,4 @@
-package com.tricolori.backend.e2e.s1.pages;
+package com.tricolori.pages;
 
 import java.time.Duration;
 
@@ -39,7 +39,7 @@ public class LoginPage {
         return wait.until(ExpectedConditions.visibilityOf(welcome)).isDisplayed();
     }
 
-    public void loginAsPassenger(String email, String password) {
+    public void login(String email, String password) {
         // Entering passenger email...
         this.wait.until(ExpectedConditions.elementToBeClickable(emailInput));
         this.actions.moveToElement(emailInput).click().sendKeys(email).perform();

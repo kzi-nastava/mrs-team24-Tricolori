@@ -1,4 +1,4 @@
-package com.tricolori.backend.e2e.s1.dto;
+package com.tricolori.utils;
 
 public class RouteSummary {
     public String from;

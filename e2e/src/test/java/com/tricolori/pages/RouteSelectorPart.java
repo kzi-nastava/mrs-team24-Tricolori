@@ -1,4 +1,4 @@
-package com.tricolori.backend.e2e.s1.pages;
+package com.tricolori.pages;
 
 import java.time.Duration;
 
@@ -9,7 +9,8 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.tricolori.backend.e2e.s1.dto.RouteSummary;
+import com.tricolori.utils.RouteSummary;
+
 
 public class RouteSelectorPart {
     @FindBy(id = "pickup-input")

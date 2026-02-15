@@ -1,4 +1,4 @@
-package com.tricolori.backend.e2e.s1.pages;
+package com.tricolori.pages;
 
 import java.time.Duration;
 import java.util.List;

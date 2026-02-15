@@ -1,6 +1,6 @@
-package com.tricolori.backend.e2e.s1.test;
+package com.tricolori.tests;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import org.openqa.selenium.WebDriver;
@@ -11,14 +11,8 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.tricolori.backend.e2e.s1.dto.RouteSummary;
-import com.tricolori.backend.e2e.s1.pages.FavoriteRoutesModal;
-import com.tricolori.backend.e2e.s1.pages.LoginPage;
-import com.tricolori.backend.e2e.s1.pages.RideBookingPage;
-import com.tricolori.backend.e2e.s1.pages.RideDetailsModal;
-import com.tricolori.backend.e2e.s1.pages.RideHistoryPage;
-import com.tricolori.backend.e2e.s1.pages.RouteSelectorPart;
-import com.tricolori.backend.e2e.s1.pages.UnregisteredHomePage;
+import com.tricolori.pages.*;
+import com.tricolori.utils.RouteSummary;
 
 class RideOrderThroughFavoriteRouteTest {
     private WebDriver driver;
@@ -77,7 +71,7 @@ class RideOrderThroughFavoriteRouteTest {
     }
 
 
-    @Test(dataProvider = "history")
+    @Test(dataProvider = "history", priority = 1)
     public void testRemoveRouteFromFavorites(
         String email, String password,
         String startDay, String startMonth, String startYear,
@@ -88,7 +82,7 @@ class RideOrderThroughFavoriteRouteTest {
         unregisteredHomePage.clickLoginButton();
 
         assertTrue(loginPage.isOpened());
-        loginPage.loginAsPassenger(email, password);
+        loginPage.login(email, password);
 
         assertTrue(rideBookingPage.isOpened());
         rideBookingPage.openRideHistory();
@@ -104,7 +98,7 @@ class RideOrderThroughFavoriteRouteTest {
     }
 
     
-    @Test(dataProvider = "history")
+    @Test(dataProvider = "history", priority = 2)
     public void testAddRouteToFavorites(
         String email, String password,
         String startDay, String startMonth, String startYear,
@@ -115,7 +109,7 @@ class RideOrderThroughFavoriteRouteTest {
         unregisteredHomePage.clickLoginButton();
 
         assertTrue(loginPage.isOpened());
-        loginPage.loginAsPassenger(email, password);
+        loginPage.login(email, password);
 
         assertTrue(rideBookingPage.isOpened());
         rideBookingPage.openRideHistory();
@@ -131,13 +125,13 @@ class RideOrderThroughFavoriteRouteTest {
     }
 
 
-    @Test(dataProvider = "ordering")
+    @Test(dataProvider = "ordering", priority = 3)
     public void testRideOrderFromExistingFavoriteRoute(String email, String password, int routeIndex) {
         assertTrue(unregisteredHomePage.isOpened());
         unregisteredHomePage.clickLoginButton();
 
         assertTrue(loginPage.isOpened());
-        loginPage.loginAsPassenger(email, password);
+        loginPage.login(email, password);
 
         assertTrue(rideBookingPage.isOpened());
         rideBookingPage.openFavoriteRoutes();
