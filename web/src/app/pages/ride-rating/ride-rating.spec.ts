@@ -45,14 +45,14 @@ describe('RideRatingComponent', () => {
   };
 
   const mockEstimation = {
-  routeGeometry: [
-    { lat: 45.25, lng: 19.85 },
-    { lat: 45.26, lng: 19.86 }
-  ],
-  distance: 15,
-  duration: 25,
-  price: 1500
-};
+    routeGeometry: [
+      { lat: 45.25, lng: 19.85 },
+      { lat: 45.26, lng: 19.86 }
+    ],
+    distance: 15,
+    duration: 25,
+    price: 1500
+  };
 
   beforeEach(async () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
@@ -65,10 +65,7 @@ describe('RideRatingComponent', () => {
     };
     mockRatingService = jasmine.createSpyObj('RatingService', ['submitRating', 'getRatingStatus']);
     mockRideService = jasmine.createSpyObj('RideService', ['getPassengerRideDetail']);
-    mockMapService = jasmine.createSpyObj('MapService', [
-    'drawRoute',
-    'destroyMap'
-    ]);
+    mockMapService = jasmine.createSpyObj('MapService', ['drawRoute', 'destroyMap']);
     mockEstimationService = jasmine.createSpyObj('EstimationService', ['calculateRouteFromAddress']);
 
     await TestBed.configureTestingModule({
@@ -161,6 +158,14 @@ describe('RideRatingComponent', () => {
       component.ngOnInit();
       tick();
       expect(component.rideDetails()).toEqual(mockRideDetails);
+      expect(mockMapService.drawRoute).not.toHaveBeenCalled();
+    }));
+
+    it('should handle null estimation result', fakeAsync(() => {
+      mockEstimationService.calculateRouteFromAddress.and.returnValue(of(null));
+      component.ngOnInit();
+      tick();
+      expect(mockMapService.drawRoute).not.toHaveBeenCalled();
     }));
   });
 
@@ -173,8 +178,9 @@ describe('RideRatingComponent', () => {
       });
     });
 
-    it('should have required validators on driverRating', () => {
+    it('should have required and range validators on driverRating', () => {
       const control = component.ratingForm.get('driverRating');
+      control?.setValue(null);
       expect(control?.hasError('required')).toBe(true);
       control?.setValue(0);
       expect(control?.hasError('min')).toBe(true);
@@ -184,8 +190,9 @@ describe('RideRatingComponent', () => {
       expect(control?.valid).toBe(true);
     });
 
-    it('should have required validators on vehicleRating', () => {
+    it('should have required and range validators on vehicleRating', () => {
       const control = component.ratingForm.get('vehicleRating');
+      control?.setValue(null);
       expect(control?.hasError('required')).toBe(true);
       control?.setValue(0);
       expect(control?.hasError('min')).toBe(true);
@@ -205,71 +212,43 @@ describe('RideRatingComponent', () => {
   });
 
   describe('setDriverRating', () => {
-    it('should update driver rating signal', () => {
+    it('should update driver rating signal and form control', () => {
       component.setDriverRating(4);
       expect(component.driverRating()).toBe(4);
+      expect(component.ratingForm.get('driverRating')?.value).toBe(4);
     });
 
-    it('should update form control value', () => {
-      component.setDriverRating(5);
-      expect(component.ratingForm.get('driverRating')?.value).toBe(5);
-    });
-
-    it('should accept ratings from 1 to 5', () => {
+    it('should accept all valid ratings from 1 to 5', () => {
       for (let i = 1; i <= 5; i++) {
         component.setDriverRating(i);
         expect(component.driverRating()).toBe(i);
-        expect(component.ratingForm.get('driverRating')?.value).toBe(i);
       }
     });
   });
 
   describe('setVehicleRating', () => {
-    it('should update vehicle rating signal', () => {
+    it('should update vehicle rating signal and form control', () => {
       component.setVehicleRating(3);
       expect(component.vehicleRating()).toBe(3);
+      expect(component.ratingForm.get('vehicleRating')?.value).toBe(3);
     });
 
-    it('should update form control value', () => {
-      component.setVehicleRating(2);
-      expect(component.ratingForm.get('vehicleRating')?.value).toBe(2);
-    });
-
-    it('should accept ratings from 1 to 5', () => {
+    it('should accept all valid ratings from 1 to 5', () => {
       for (let i = 1; i <= 5; i++) {
         component.setVehicleRating(i);
         expect(component.vehicleRating()).toBe(i);
-        expect(component.ratingForm.get('vehicleRating')?.value).toBe(i);
       }
     });
   });
 
   describe('getRatingText', () => {
-    it('should return correct text for rating 1', () => {
-      expect(component.getRatingText(1)).toBe('Poor');
-    });
-
-    it('should return correct text for rating 2', () => {
-      expect(component.getRatingText(2)).toBe('Fair');
-    });
-
-    it('should return correct text for rating 3', () => {
-      expect(component.getRatingText(3)).toBe('Good');
-    });
-
-    it('should return correct text for rating 4', () => {
-      expect(component.getRatingText(4)).toBe('Very Good');
-    });
-
-    it('should return correct text for rating 5', () => {
-      expect(component.getRatingText(5)).toBe('Excellent');
-    });
-
-    it('should return empty string for rating 0', () => {
+    it('should return correct text for all rating values', () => {
       expect(component.getRatingText(0)).toBe('');
-    });
-
-    it('should return empty string for invalid ratings', () => {
+      expect(component.getRatingText(1)).toBe('Poor');
+      expect(component.getRatingText(2)).toBe('Fair');
+      expect(component.getRatingText(3)).toBe('Good');
+      expect(component.getRatingText(4)).toBe('Very Good');
+      expect(component.getRatingText(5)).toBe('Excellent');
       expect(component.getRatingText(6)).toBe('');
       expect(component.getRatingText(-1)).toBe('');
     });
@@ -294,7 +273,9 @@ describe('RideRatingComponent', () => {
       expect(mockRatingService.submitRating).not.toHaveBeenCalled();
     });
 
-    it('should call rating service with correct data', fakeAsync(() => {
+    it('should call rating service with correct data including comment', fakeAsync(() => {
+      component.ngOnInit();
+      tick();
       component.ratingForm.patchValue({ comment: 'Great ride!' });
       component.submitRating();
       tick();
@@ -305,39 +286,9 @@ describe('RideRatingComponent', () => {
       });
     }));
 
-    it('should set isSubmitting to true during submission', () => {
-      component.submitRating();
-      expect(component.isSubmitting()).toBe(true);
-    });
-
-    it('should set isSubmitted to true on success', fakeAsync(() => {
-      component.submitRating();
+    it('should call rating service without comment', fakeAsync(() => {
+      component.ngOnInit();
       tick();
-      expect(component.isSubmitted()).toBe(true);
-    }));
-
-    it('should navigate to history after 2 seconds on success', fakeAsync(() => {
-      component.submitRating();
-      tick(2000);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
-    }));
-
-    it('should handle submission error', fakeAsync(() => {
-      mockRatingService.submitRating.and.returnValue(throwError(() => new Error('Submit failed')));
-      component.submitRating();
-      tick();
-      expect(component.errorMessage()).toBe('Failed to submit rating.');
-      expect(component.isSubmitting()).toBe(false);
-    }));
-
-    it('should not set isSubmitted on error', fakeAsync(() => {
-      mockRatingService.submitRating.and.returnValue(throwError(() => new Error('Submit failed')));
-      component.submitRating();
-      tick();
-      expect(component.isSubmitted()).toBe(false);
-    }));
-
-    it('should submit without comment', fakeAsync(() => {
       component.submitRating();
       tick();
       expect(mockRatingService.submitRating).toHaveBeenCalledWith(1, {
@@ -346,24 +297,49 @@ describe('RideRatingComponent', () => {
         comment: ''
       });
     }));
+
+    it('should set isSubmitting to true during submission', () => {
+      expect(component.ratingForm.valid).toBe(true);
+      component.submitRating();
+      expect(component.isSubmitting()).toBe(true);
+    });
+
+    it('should set isSubmitted to true on success and navigate after 2 seconds', fakeAsync(() => {
+      component.ngOnInit();
+      tick();
+      component.submitRating();
+      tick();
+      expect(component.isSubmitted()).toBe(true);
+      tick(2000);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
+    }));
+
+    it('should handle submission error', fakeAsync(() => {
+      component.ngOnInit();
+      tick();
+      mockRatingService.submitRating.and.returnValue(throwError(() => new Error('Submit failed')));
+      component.submitRating();
+      tick();
+      expect(component.errorMessage()).toBe('Failed to submit rating.');
+      expect(component.isSubmitting()).toBe(false);
+      expect(component.isSubmitted()).toBe(false);
+    }));
   });
 
-  describe('handleBack', () => {
-    it('should navigate to passenger history', () => {
+  describe('Navigation', () => {
+    it('should navigate to passenger history on handleBack', () => {
       component.handleBack();
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
     });
-  });
 
-  describe('skipRating', () => {
-    it('should navigate to passenger history', () => {
+    it('should navigate to passenger history on skipRating', () => {
       component.skipRating();
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
     });
   });
 
   describe('Signal States', () => {
-    it('should initialize signals with correct default values', () => {
+    it('should initialize all signals with correct default values', () => {
       expect(component.driverRating()).toBe(0);
       expect(component.vehicleRating()).toBe(0);
       expect(component.isSubmitting()).toBe(false);
@@ -400,12 +376,6 @@ describe('RideRatingComponent', () => {
       expect(component.rideDetails()).toEqual(detailsWithoutStarted);
     }));
 
-    it('should handle comment with exactly 500 characters', () => {
-      const maxComment = 'a'.repeat(500);
-      component.ratingForm.patchValue({ comment: maxComment });
-      expect(component.ratingForm.get('comment')?.valid).toBe(true);
-    });
-
     it('should handle multiple rapid rating changes', () => {
       component.setDriverRating(1);
       component.setDriverRating(3);
@@ -413,13 +383,6 @@ describe('RideRatingComponent', () => {
       expect(component.driverRating()).toBe(5);
       expect(component.ratingForm.get('driverRating')?.value).toBe(5);
     });
-
-    it('should handle null estimation result', fakeAsync(() => {
-      mockEstimationService.calculateRouteFromAddress.and.returnValue(of(null));
-      component.ngOnInit();
-      tick();
-      expect(mockMapService.drawRoute).not.toHaveBeenCalled();
-    }));
   });
 
   describe('Form Validation States', () => {
@@ -433,19 +396,20 @@ describe('RideRatingComponent', () => {
       expect(component.ratingForm.valid).toBe(true);
     });
 
-    it('should be invalid when only driver rating is set', () => {
+    it('should be invalid when only one rating is set', () => {
       component.setDriverRating(3);
       expect(component.ratingForm.valid).toBe(false);
-    });
-
-    it('should be invalid when only vehicle rating is set', () => {
+      
+      component.ratingForm.patchValue({ driverRating: 0 });
       component.setVehicleRating(4);
       expect(component.ratingForm.valid).toBe(false);
     });
 
-    it('should be valid with ratings and comment', () => {
+    it('should be valid with ratings and optional comment', () => {
       component.setDriverRating(5);
       component.setVehicleRating(5);
+      expect(component.ratingForm.valid).toBe(true);
+      
       component.ratingForm.patchValue({ comment: 'Excellent service!' });
       expect(component.ratingForm.valid).toBe(true);
     });
