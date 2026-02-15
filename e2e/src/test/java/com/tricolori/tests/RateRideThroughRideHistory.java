@@ -6,8 +6,8 @@ import static org.testng.Assert.assertTrue;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -30,7 +30,7 @@ public class RateRideThroughRideHistory {
 
     private final static String PATH = "http://localhost:4200/";
 
-    @BeforeSuite
+    @BeforeMethod
     public void initialize() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized", "--incognito", "--lang=sr-RS");
@@ -46,9 +46,11 @@ public class RateRideThroughRideHistory {
         this.rideRatingPage = new RideRatingPage(this.driver);
     }
 
-    @AfterSuite
+    @AfterMethod
     public void uninitialize() {
-        this.driver.quit();
+        if (this.driver != null) {
+            this.driver.quit();
+        }
     }
 
     @DataProvider
@@ -58,8 +60,8 @@ public class RateRideThroughRideHistory {
                         "passenger@test.com",
                         "Password123",
                         "11", "02", "2026",
-                        "16", "02", "2026",
-                        19,
+                        "15", "02", "2026",
+                        0,
                         5,
                         4,
                         "Great ride! The driver was very professional and the vehicle was clean."
@@ -73,7 +75,7 @@ public class RateRideThroughRideHistory {
                 {
                         "passenger@test.com",
                         "Password123",
-                        19,
+                        0,
                         1,
                         1,
                         null
@@ -89,7 +91,7 @@ public class RateRideThroughRideHistory {
                         "Password123",
                         "01", "01", "2026",
                         "10", "01", "2026",
-                        20
+                        0
                 }
         };
     }

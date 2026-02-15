@@ -3,10 +3,7 @@ package com.tricolori.pages;
 import java.time.Duration;
 import java.util.List;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
@@ -69,11 +66,18 @@ public class RideHistoryPassengerPage {
             WebElement viewButton = targetRide.findElement(By.className("view-btn"));
 
             wait.until(ExpectedConditions.elementToBeClickable(viewButton));
-            actions.moveToElement(viewButton).click().perform();
+
+            ((JavascriptExecutor) driver)
+                    .executeScript("arguments[0].click();", viewButton);
+
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector("app-ride-details-modal")
+            ));
         } else {
             throw new RuntimeException("Invalid index");
         }
     }
+
 
     private List<WebElement> getRides() {
         wait.until(ExpectedConditions.invisibilityOf(loadingSpinner));

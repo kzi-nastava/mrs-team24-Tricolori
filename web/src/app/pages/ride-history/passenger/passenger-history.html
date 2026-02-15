@@ -74,7 +74,7 @@
       } @else {
         <div class="divide-y divide-gray-100">
           @for (ride of rides(); track ride.id) {
-            <div class="ride grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
+            <div class="ride grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center" [attr.data-ride-id]="ride.id">
               <div class="col-span-4 text-sm font-semibold text-gray-900 truncate">
                 {{ ride.pickupAddress }} - {{ ride.destinationAddress }}
               </div>
@@ -91,6 +91,7 @@
               </div>
               <div class="col-span-2 text-right flex justify-end">
                 <button
+                  [id]="'view-ride-' + ride.id"
                   (click)="viewRideDetails(ride)"
                   class="view-btn text-[#00acc1] hover:text-[#008c9e] text-sm font-bold flex items-center gap-1 group">
                   <ng-icon name="heroEye" class="w-4 h-4 group-hover:scale-110 transition-transform"></ng-icon>
