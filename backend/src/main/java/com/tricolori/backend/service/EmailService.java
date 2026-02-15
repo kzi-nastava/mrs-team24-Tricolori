@@ -92,7 +92,8 @@ public class EmailService {
     }
 
     public void sendLinkedPassengerEmail(String toEmail, String firstName, String organizerName,
-                                         String from, String to, String scheduledTime, Long rideId) {
+                                         String from, String to, String scheduledTime,
+                                         String trackingLink, boolean isRegistered) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -101,10 +102,9 @@ public class EmailService {
             helper.setTo(toEmail);
             helper.setSubject("You've Been Added to a Shared Ride - Cuber App");
 
-            String rideDetailsLink = frontendUrl + "/passenger/ride-details/" + rideId;
-
-            String htmlContent = buildLinkedPassengerEmailHtml(firstName, organizerName, from, to,
-                    scheduledTime, rideDetailsLink);
+            String htmlContent = buildLinkedPassengerEmailHtml(
+                    firstName, organizerName, from, to, scheduledTime, trackingLink, isRegistered
+            );
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
@@ -304,74 +304,82 @@ public class EmailService {
 
     private String buildLinkedPassengerEmailHtml(String firstName, String organizerName,
                                                  String from, String to, String scheduledTime,
-                                                 String rideDetailsLink) {
+                                                 String trackingLink, boolean isRegistered) {
+        String ctaText = isRegistered ? "Log In to Track Ride" : "Track Your Ride";
+        String noteHtml = isRegistered ? "" :
+                "<div style=\"background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #2196f3;\">" +
+                        "💡 <strong>Note:</strong> You don't need an account to track your ride. Simply click the link below!" +
+                        "</div>";
+
         return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #00acc1 0%%, #0097a7 100%%); 
-                          color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-                .button { display: inline-block; padding: 12px 30px; background: #00acc1; 
-                          color: white; text-decoration: none; border-radius: 5px; 
-                          font-weight: bold; margin: 20px 0; }
-                .button:hover { background: #008ba3; }
-                .ride-details { background: white; padding: 20px; border-radius: 5px; 
-                               margin: 20px 0; border-left: 4px solid #00acc1; }
-                .detail-row { margin: 10px 0; }
-                .detail-label { font-weight: bold; color: #00acc1; }
-                .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🚗 You've Been Added to a Ride!</h1>
-                </div>
-                <div class="content">
-                    <h2>Hi %s,</h2>
-                    <p><strong>%s</strong> has added you as a passenger to their upcoming ride.</p>
-                    
-                    <div class="ride-details">
-                        <h3>Ride Details</h3>
-                        <div class="detail-row">
-                            <span class="detail-label">📍 Pickup Location:</span> %s
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">🎯 Destination:</span> %s
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">🕐 Scheduled Time:</span> %s
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">👥 Organized By:</span> %s
-                        </div>
-                    </div>
-                    
-                    <p>You can track your ride and see all the details by clicking the button below:</p>
-                    
-                    <center>
-                        <a href="%s" class="button">View Ride Details</a>
-                    </center>
-                    
-                    <p>Or copy and paste this link into your browser:</p>
-                    <p style="word-break: break-all; color: #00acc1;">%s</p>
-                    
-                    <p>We'll send you another notification when your ride is about to start!</p>
-                    
-                    <p>Safe travels,<br>The Cuber App Team</p>
-                </div>
-                <div class="footer">
-                    <p>This is an automated email. Please do not reply to this message.</p>
-                </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #00acc1 0%%, #0097a7 100%%); 
+                      color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; padding: 12px 30px; background: #00acc1; 
+                      color: white; text-decoration: none; border-radius: 5px; 
+                      font-weight: bold; margin: 20px 0; }
+            .button:hover { background: #008ba3; }
+            .ride-details { background: white; padding: 20px; border-radius: 5px; 
+                           margin: 20px 0; border-left: 4px solid #00acc1; }
+            .detail-row { margin: 10px 0; }
+            .detail-label { font-weight: bold; color: #00acc1; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🚗 You've Been Added to a Ride!</h1>
             </div>
-        </body>
-        </html>
-        """.formatted(firstName, organizerName, from, to, scheduledTime, organizerName,
-                rideDetailsLink, rideDetailsLink);
+            <div class="content">
+                <h2>Hi %s,</h2>
+                <p><strong>%s</strong> has added you as a passenger to their upcoming ride.</p>
+                
+                <div class="ride-details">
+                    <h3>Ride Details</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">📍 Pickup Location:</span> %s
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">🎯 Destination:</span> %s
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">🕐 Scheduled Time:</span> %s
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">👥 Organized By:</span> %s
+                    </div>
+                </div>
+                
+                %s
+                
+                <center>
+                    <a href="%s" class="button">%s</a>
+                </center>
+                
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #00acc1;">%s</p>
+                
+                <p>We'll send you another notification when your ride is about to start!</p>
+                
+                <p>Safe travels,<br>The Cuber App Team</p>
+            </div>
+            <div class="footer">
+                <p>This is an automated email. Please do not reply to this message.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """.formatted(
+                firstName, organizerName, from, to, scheduledTime, organizerName,
+                noteHtml, trackingLink, ctaText, trackingLink
+        );
     }
 
     private String buildRideReminderEmailHtml(String firstName, int minutesUntilPickup,
@@ -451,21 +459,21 @@ public class EmailService {
         <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #4CAF50 0%%, #45a049 100%%); 
+            .header { background: linear-gradient(135deg, #00acc1 0%%, #0097a7 100%%); 
                       color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
             .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-            .button { display: inline-block; padding: 12px 30px; background: #4CAF50; 
+            .button { display: inline-block; padding: 12px 30px; background: #00acc1; 
                       color: white; text-decoration: none; border-radius: 5px; 
                       font-weight: bold; margin: 20px 0; }
-            .button:hover { background: #45a049; }
+            .button:hover { background: #008ba3; }
             .ride-summary { background: white; padding: 20px; border-radius: 5px; 
-                           margin: 20px 0; border-left: 4px solid #4CAF50; }
-            .price { font-size: 32px; font-weight: bold; color: #4CAF50; 
+                           margin: 20px 0; border-left: 4px solid #00acc1; }
+            .price { font-size: 32px; font-weight: bold; color: #00acc1; 
                     text-align: center; margin: 20px 0; }
             .detail-row { margin: 10px 0; }
-            .detail-label { font-weight: bold; color: #4CAF50; }
+            .detail-label { font-weight: bold; color: #00acc1; }
             .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-            .checkmark { font-size: 64px; text-align: center; margin: 10px 0; }
+            .checkmark { font-size: 64px; text-align: center; margin: 10px 0; color: #00acc1; }
         </style>
     </head>
     <body>
@@ -503,7 +511,7 @@ public class EmailService {
                 </center>
                 
                 <p>Or copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; color: #4CAF50;">%s</p>
+                <p style="word-break: break-all; color: #00acc1;">%s</p>
                 
                 <p><strong>Rate your experience:</strong> You have 3 days to rate your driver and help us maintain quality service.</p>
                 

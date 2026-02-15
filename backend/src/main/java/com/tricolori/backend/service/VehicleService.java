@@ -1,6 +1,7 @@
 package com.tricolori.backend.service;
 
 import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.tricolori.backend.entity.Location;
@@ -76,5 +77,28 @@ public class VehicleService {
                         vehicle.isAvailable()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public VehicleLocationResponse updateVehicleLocation(Long vehicleId, double latitude, double longitude) {
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+        // Update location
+        Location location = vehicle.getLocation();
+        if (location == null) {
+            location = new Location(latitude, longitude);
+            vehicle.setLocation(location);
+        } else {
+            location.setLatitude(latitude);
+            location.setLongitude(longitude);
+        }
+
+        vehicleRepository.save(vehicle);
+
+        return new VehicleLocationResponse(
+                vehicle.getId(), vehicle.getModel(), vehicle.getPlateNum(),
+                latitude, longitude, vehicle.isAvailable()
+        );
     }
 }

@@ -30,6 +30,7 @@ export const routes: Routes = [
   { path: 'password-change', loadComponent: () => import('./pages/password-change/password-change').then(m => m.PasswordChange) },
   { path: 'activate', loadComponent: () => import('./pages/auth/activate-account/activate-account').then(m => m.ActivateAccount) },
   { path: 'password-setup', loadComponent: () => import('./pages/auth/password-setup/password-setup').then(m => m.PasswordSetup) },
+  { path: 'track-ride', loadComponent: () => import('./pages/ride-tracking/guest/guest-ride-tracking').then(m => m.GuestRideTrackingComponent)},
 
   // Driver routes
   {
@@ -186,6 +187,10 @@ export const routes: Routes = [
       {
         path: 'reports',
         loadComponent: () => import('./pages/report/admin-report/admin-report').then(m => m.AdminReport)
+      },
+      {
+        path: "blocks",
+        loadComponent: () => import('./pages/block/block').then(m => m.Block)
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]

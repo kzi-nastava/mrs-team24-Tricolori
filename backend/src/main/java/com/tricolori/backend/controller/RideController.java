@@ -278,4 +278,11 @@ public class RideController {
         rideService.startRide(driver, rideId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/ongoing")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RideTrackingResponse>> getAllOngoingRides() {
+        List<RideTrackingResponse> ongoingRides = rideService.getAllOngoingRides();
+        return ResponseEntity.ok(ongoingRides);
+    }
 }

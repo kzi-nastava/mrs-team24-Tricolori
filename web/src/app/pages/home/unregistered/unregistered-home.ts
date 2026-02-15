@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { provideIcons } from '@ng-icons/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroArrowLeft, heroArrowPath, heroCalculator, heroClock,
   heroCurrencyDollar, heroInformationCircle, heroMapPin, heroSparkles, heroStar
@@ -15,7 +15,7 @@ import { RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-unregistered-home',
   standalone: true,
-  imports: [CommonModule, Map, RouterOutlet],
+  imports: [CommonModule, Map, RouterOutlet, NgIconComponent],
   templateUrl: './unregistered-home.html',
   viewProviders: [provideIcons({
     heroArrowLeft, heroMapPin, heroCalculator, heroStar,
@@ -29,17 +29,30 @@ export class UnregisteredHome implements OnInit {
   private vehicleService = inject(VehicleService);
 
   vehicles = signal<Vehicle[]>([]);
+  loading = signal(false); 
 
   ngOnInit(): void {
     this.loadVehicles();
   }
 
   loadVehicles(): void {
+    this.loading.set(true); 
+
     this.vehicleService.getActiveVehicles().subscribe({
       next: (v) => {
         this.vehicles.set(v);
         this.mapService.updateVehicleMarkers(v);
+      },
+      error: () => {
+        this.loading.set(false); 
+      },
+      complete: () => {
+        setTimeout(() => this.loading.set(false), 500);
       }
     });
   }
+
+  availableDrivers = computed(() =>
+    this.vehicles().filter(v => v.available).length
+  );
 }

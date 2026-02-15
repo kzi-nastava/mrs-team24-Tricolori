@@ -42,9 +42,7 @@ public class SecurityConfig {
                     s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(a -> a
                 .requestMatchers("/api/v1/auth/**", "/error").permitAll()
-                // To access any favorite-route endpoint, we must be Passenger
-                // This can also be done by adding @PreAuthorize("hasRole('ROLE_PASSENGER')")
-                // in FavoriteRoute controller... 
+                .requestMatchers("/api/v1/tracking/**").permitAll()
                 .requestMatchers("/api/v1/favorite-routes/**").hasRole("PASSENGER")
                 .requestMatchers("/api/v1/profiles/**").authenticated()
                     .requestMatchers("/api/v1/rides/*/rate").hasRole("PASSENGER")

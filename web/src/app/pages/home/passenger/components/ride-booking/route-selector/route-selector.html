@@ -1,12 +1,14 @@
 <form [formGroup]="routeForm" class="flex flex-col gap-2 w-full max-w-lg">
     
     <div [formGroupName]="'pickup'" class="flex flex-col relative">
-        <p class="text-gray-400 pl-2">Pickup Location</p>
+        <p id="route-selector-welcome" class="text-gray-400 pl-2">Pickup Location</p>
         <div class="relative">
             <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <div class="size-3 rounded-full bg-dark"></div>
             </div>
-            <input formControlName="address" 
+            <input
+                id="pickup-input"
+                formControlName="address" 
                 placeholder="Bulevar kralja Petra 3"
                 autocomplete="off"
                 class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
@@ -56,7 +58,9 @@
             <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <div class="size-3 rounded-full bg-light-600"></div>
             </div>
-            <input formControlName="address" 
+            <input
+                id="destination-input" 
+                formControlName="address" 
                 placeholder="Laze Teleckog 13"
                 autocomplete="off"
                 class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">

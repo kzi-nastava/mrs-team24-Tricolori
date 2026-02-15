@@ -19,8 +19,8 @@ import 'leaflet-routing-machine';
 import { RideDetails, StopRideRequest, StopRideResponse } from '../../../model/ride';
 import { Location } from '../../../model/location';
 import { RideService } from '../../../services/ride.service';
+import { VehicleService } from '../../../services/vehicle.service';
 import { PanicRideRequest } from '../../../model/ride-tracking';
-
 
 @Component({
   selector: 'app-driver-ride-tracking',
@@ -90,11 +90,13 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   private routePoints: L.LatLng[] = [];
   private currentPointIndex = 0;
   private rideId: number | null = null;
+  private vehicleId: number | null = null; // Store vehicle ID for location updates
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private rideService: RideService
+    private rideService: RideService,
+    private vehicleService: VehicleService
   ) {}
 
   ngOnInit(): void {
@@ -109,25 +111,22 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    * Load ride data from backend
    */
   private loadRideData(rideId: number): void {
-
     this.rideService.trackRide(rideId).subscribe({
       next: (response) => {
-        // console.log('✅ Ride tracking data loaded:', response);
-
         // Extract pickup and destination from route DTO
         const route = response.route;
-        // console.log('🗺️ Route data:', {
-        //   pickupAddress: route?.pickupAddress,
-        //   destinationAddress: route?.destinationAddress,
-        //   distanceKm: route?.distanceKm,
-        //   estimatedTimeSeconds: route?.estimatedTimeSeconds
-        // });
 
         // If route is null (finished ride), load full details instead
         if (!route && (response.status === 'FINISHED' || response.status === 'CANCELLED_BY_DRIVER' || response.status === 'CANCELLED_BY_PASSENGER')) {
           console.log('⚠️ Route is null, loading full ride details instead...');
           this.loadFinishedRideDetails(rideId, response);
           return;
+        }
+
+        // Store vehicle ID for location updates
+        if (response.currentLocation?.vehicleId) {
+          this.vehicleId = response.currentLocation.vehicleId;
+          console.log('🚗 Vehicle ID set:', this.vehicleId);
         }
 
         // Update ride details with real data from RideTrackingResponse
@@ -182,11 +181,6 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('❌ Failed to load ride data:', err);
-        console.error('Error details:', {
-          status: err.status,
-          message: err.message,
-          error: err.error
-        });
         // Initialize map with default/mock data as fallback
         setTimeout(() => this.initMap(), 100);
       }
@@ -197,11 +191,8 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
    * Load full ride details for finished rides
    */
   private loadFinishedRideDetails(rideId: number, trackingResponse: any): void {
-
     this.rideService.getDriverRideDetail(rideId).subscribe({
       next: (detail) => {
-        // console.log('✅ Received full ride details:', detail);
-
         const rideDetails = {
           id: detail.id,
           pickup: detail.pickupAddress,
@@ -330,6 +321,9 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
             lng: startPoint.lng,
           });
 
+          // Update backend with initial position
+          this.updateBackendVehicleLocation(startPoint.lat, startPoint.lng);
+
           // Add vehicle marker at starting position
           this.vehicleMarker = L.marker([startPoint.lat, startPoint.lng], {
             icon: vehicleIcon,
@@ -369,7 +363,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   }
 
   private startTracking(): void {
-    // Simulate vehicle movement every 1 second for faster testing
+    // Simulate vehicle movement every 3 seconds
     this.updateInterval = setInterval(() => {
       this.updateVehiclePosition();
     }, 3000);
@@ -388,8 +382,7 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     // Move to next point in the route
     this.currentPointIndex++;
 
-    // Calculate how many points to skip for faster testing
-    // Skip more points per update for much faster movement (completes in ~15 seconds)
+    // Skip points for faster movement
     const pointsToSkip = 15;
     this.currentPointIndex = Math.min(
       this.currentPointIndex + pointsToSkip,
@@ -398,6 +391,11 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
     if (this.currentPointIndex >= this.routePoints.length - 1) {
       // Reached destination
+      const finalPoint = this.routePoints[this.routePoints.length - 1];
+      
+      // Update backend with final position
+      this.updateBackendVehicleLocation(finalPoint.lat, finalPoint.lng);
+      
       this.stopTracking();
       this.remainingDistance.set(0);
       this.estimatedArrival.set(0);
@@ -415,6 +413,9 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
       lng: nextPoint.lng
     });
 
+    // Update backend with new position
+    this.updateBackendVehicleLocation(nextPoint.lat, nextPoint.lng);
+
     // Update marker on map
     if (this.vehicleMarker) {
       this.vehicleMarker.setLatLng([nextPoint.lat, nextPoint.lng]);
@@ -428,6 +429,26 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
 
     this.remainingDistance.set(Math.max(0, parseFloat(remainingDist.toFixed(2))));
     this.estimatedArrival.set(Math.max(0, Math.ceil(remainingTime)));
+  }
+
+  /**
+   * Updates vehicle location in backend database
+   */
+  private updateBackendVehicleLocation(latitude: number, longitude: number): void {
+    if (!this.vehicleId) {
+      console.warn('⚠️ No vehicle ID available, skipping backend update');
+      return;
+    }
+
+    this.vehicleService.updateVehicleLocation(this.vehicleId, { latitude, longitude }).subscribe({
+      next: (response) => {
+        console.log(`✅ Vehicle ${this.vehicleId} location updated:`, { latitude, longitude });
+      },
+      error: (err) => {
+        console.error('❌ Failed to update vehicle location:', err);
+        // Don't stop tracking if backend update fails
+      }
+    });
   }
 
   /**
