@@ -13,7 +13,7 @@ import { RatingService } from '../../services/rating.service';
 import { RideService } from '../../services/ride.service';
 import { MapService } from '../../services/map.service';
 import { EstimationService } from '../../services/estimation.service';
-import { catchError, of, forkJoin, finalize } from 'rxjs';
+import { catchError, of, forkJoin } from 'rxjs';
 import {Map} from '../../components/map/map';
 
 @Component({
@@ -85,19 +85,17 @@ export class RideRatingComponent implements OnInit {
       if (rideDetails) {
         this.rideDetails.set(rideDetails);
 
-        // TODO: provide previously calculated route geometry instead of estimating each time
-              this.estimationService.calculateRouteFromAddress(
-        rideDetails.pickupAddress,
-        rideDetails.dropoffAddress
-      ).subscribe({
-        next: (estimation) => {
-          if (!estimation || !estimation.routeGeometry) return;
-          this.mapService.drawRoute(estimation.routeGeometry);
-        },
-        error: () => {
-          // swallow error (tests expect graceful handling)
-        }
-      });
+        this.estimationService.calculateRouteFromAddress(
+          rideDetails.pickupAddress,
+          rideDetails.dropoffAddress
+        ).subscribe({
+          next: (estimation) => {
+            if (!estimation || !estimation.routeGeometry) return;
+            this.mapService.drawRoute(estimation.routeGeometry);
+          },
+          error: () => {
+          }
+        });
       }
     });
   }
@@ -107,21 +105,23 @@ export class RideRatingComponent implements OnInit {
   getRatingText(r: number): string { return ['','Poor','Fair','Good','Very Good','Excellent'][r] || ''; }
 
   submitRating(): void {
-  if (this.ratingForm.invalid || this.isSubmitting()) return;
-  this.isSubmitting.set(true);
+    if (this.ratingForm.invalid || this.isSubmitting()) return;
+    this.isSubmitting.set(true);
 
-  this.ratingService.submitRating(this.rideId, this.ratingForm.value).pipe(
-    finalize(() => this.isSubmitting.set(false))  
-  ).subscribe({
-    next: () => {
-      this.isSubmitted.set(true);
-      setTimeout(() => this.router.navigate(['/passenger/history']), 2000);
-    },
-    error: () => {
-      this.errorMessage.set('Failed to submit rating.');
-    }
-  });
- }
+    this.ratingService.submitRating(this.rideId, this.ratingForm.value).subscribe({
+      next: () => {
+        this.isSubmitted.set(true);
+        setTimeout(() => {
+          this.isSubmitting.set(false);
+          this.router.navigate(['/passenger/history']);
+        }, 2000);
+      },
+      error: () => {
+        this.errorMessage.set('Failed to submit rating.');
+        this.isSubmitting.set(false);
+      }
+    });
+  }
 
   handleBack(): void { this.router.navigate(['/passenger/history']); }
   skipRating(): void { this.router.navigate(['/passenger/history']); }

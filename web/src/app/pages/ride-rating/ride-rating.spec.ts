@@ -299,7 +299,6 @@ describe('RideRatingComponent', () => {
     }));
 
     it('should set isSubmitting to true during submission', () => {
-      expect(component.ratingForm.valid).toBe(true);
       component.submitRating();
       expect(component.isSubmitting()).toBe(true);
     });
@@ -310,7 +309,9 @@ describe('RideRatingComponent', () => {
       component.submitRating();
       tick();
       expect(component.isSubmitted()).toBe(true);
+      expect(component.isSubmitting()).toBe(true);
       tick(2000);
+      expect(component.isSubmitting()).toBe(false);
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
     }));
 
