@@ -14,15 +14,15 @@ public class TestObjectFactory {
     // --- PASSENGER ---
     public static Passenger createTestPassenger() {
         return Passenger.builder()
-                .firstName("Marko")
-                .lastName("Dzek")
-                .email("passenger." + System.nanoTime() + "@tricolori.com")
-                .password("Password123")
-                .phoneNum("+381612587282")
-                .homeAddress("Bulevar Oslobodjenja 2, Novi Sad")
-                .accountStatus(AccountStatus.ACTIVE)
-                .role(PersonRole.ROLE_PASSENGER)
-                .build();
+            .firstName("Marko")
+            .lastName("Dzek")
+            .email("passenger." + System.nanoTime() + "@tricolori.com")
+            .password("Password123")
+            .phoneNum("+381612587282")
+            .homeAddress("Bulevar Oslobodjenja 2, Novi Sad")
+            .accountStatus(AccountStatus.ACTIVE)
+            .role(PersonRole.ROLE_PASSENGER)
+            .build();
     }
 
     // --- RIDE ---
@@ -49,15 +49,15 @@ public class TestObjectFactory {
     // --- DRIVER ---
     public static Driver createTestDriver() {
         return Driver.builder()
-                .firstName("Mali")
-                .lastName("Bobi")
-                .email("driver." + System.nanoTime() + "@tricolori.com")
-                .password("Password123")
-                .phoneNum("+381612587281")
-                .homeAddress("Bulevar Oslobodjenja 1, Novi Sad")
-                .accountStatus(AccountStatus.ACTIVE)
-                .role(PersonRole.ROLE_DRIVER)
-                .build();
+            .firstName("Mali")
+            .lastName("Bobi")
+            .email("driver." + System.nanoTime() + "@tricolori.com")
+            .password("Password123")
+            .phoneNum("+381612587281")
+            .homeAddress("Bulevar Oslobodjenja 1, Novi Sad")
+            .accountStatus(AccountStatus.ACTIVE)
+            .role(PersonRole.ROLE_DRIVER)
+            .build();
     }
 
     public static Driver createTestDriverWithId(Long id) {
@@ -68,12 +68,12 @@ public class TestObjectFactory {
 
     public static VehicleSpecification createTestVehicleSpecification() {
         return VehicleSpecification.builder()
-                .model("Pezo 307")
-                .type(VehicleType.STANDARD)
-                .numSeats(4)
-                .babyFriendly(true)
-                .petFriendly(true)
-                .build();
+            .model("Pezo 307")
+            .type(VehicleType.STANDARD)
+            .numSeats(4)
+            .babyFriendly(true)
+            .petFriendly(true)
+            .build();
     }
 
     // --- ROUTE, STOP, LOCATION ---
@@ -83,11 +83,11 @@ public class TestObjectFactory {
         stops.add(createTestStop("Centar", 19.8451, 45.2551));
 
         return Route.builder()
-                .stops(stops)
-                .distanceKm(5.5)
-                .estimatedTimeSeconds(600L)
-                .routeGeometry("random_geom_" + System.nanoTime())
-                .build();
+            .stops(stops)
+            .distanceKm(5.5)
+            .estimatedTimeSeconds(600L)
+            .routeGeometry("random_geom_" + System.nanoTime())
+            .build();
     }
 
     public static Stop createTestStop() {

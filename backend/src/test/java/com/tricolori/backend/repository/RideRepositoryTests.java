@@ -2,7 +2,7 @@ package com.tricolori.backend.repository;
 
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.enums.RideStatus;
-import com.tricolori.backend.util.TestObjectFactory; // Importuj tvoj factory
+import com.tricolori.backend.util.TestObjectFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;

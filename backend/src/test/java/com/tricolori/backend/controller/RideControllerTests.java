@@ -13,7 +13,6 @@ import com.tricolori.backend.service.ReviewService;
 import com.tricolori.backend.service.InconsistencyReportService;
 import com.tricolori.backend.service.AuthService;
 import com.tricolori.backend.util.TestObjectFactory;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +71,8 @@ class RideControllerTests {
 
     private final String driverToken = "Bearer test-token";
 
+    
+    /*--- Ride stoping: Student 3 ---*/
 
     @Test
     @DisplayName("Should successfully stop ongoing ride")
@@ -122,4 +123,6 @@ class RideControllerTests {
                         .content(invalidJson))
                 .andExpect(status().isBadRequest());
     }
+
+    /*--- Ride ordering: Student 1 ---*/
 }
