@@ -18,7 +18,7 @@ import com.tricolori.pages.RideHistoryPassengerPage;
 import com.tricolori.pages.RideRatingPage;
 import com.tricolori.pages.UnregisteredHomePage;
 
-public class RateRideThroughRideHistory {
+public class RateRideThroughRideHistoryTest {
     private WebDriver driver;
 
     private UnregisteredHomePage unregisteredHomePage;
