@@ -74,6 +74,7 @@ public class DriverDailyLogService {
 
         DriverDailyLog log = new DriverDailyLog();
         log.setDriver(driver);
+        log.setDate(LocalDate.now());
 
         return dailyLogRepository.save(log);
     }

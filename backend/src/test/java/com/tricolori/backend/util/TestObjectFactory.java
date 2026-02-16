@@ -2,6 +2,8 @@ package com.tricolori.backend.util;
 
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.enums.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +66,16 @@ public class TestObjectFactory {
         Driver driver = createTestDriver();
         driver.setId(id);
         return driver;
+    }
+
+    public static DriverDailyLog createTestDailyLog(LocalDate date, boolean active, Driver driver) {
+        return DriverDailyLog.builder()
+            .date(date)
+            .active(active)
+            .driver(driver)
+            .activeTimeSeconds(0L)
+            .lastActivationAt(LocalDateTime.now())
+            .build();
     }
 
     public static VehicleSpecification createTestVehicleSpecification() {
