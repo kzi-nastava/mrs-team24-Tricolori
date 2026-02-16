@@ -76,6 +76,16 @@ public class TestObjectFactory {
                 .build();
     }
 
+    public static Vehicle createTestVehicle() {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setPlateNum("NS-" + (1000 + random.nextInt(9000)) + "-AB");
+        vehicle.setModel("Pezo 307");
+        vehicle.setAvailable(true);
+        vehicle.setSpecification(createTestVehicleSpecification());
+        vehicle.setLocation(createTestLocation());
+        return vehicle;
+    }
+
     // --- ROUTE, STOP, LOCATION ---
     public static Route createTestRoute() {
         List<Stop> stops = new ArrayList<>();
