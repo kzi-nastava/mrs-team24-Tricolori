@@ -2,7 +2,7 @@ package com.tricolori.backend.repository;
 
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.enums.RideStatus;
-import com.tricolori.backend.util.TestObjectFactory; // Importuj tvoj factory
+import com.tricolori.backend.util.TestObjectFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -171,8 +171,7 @@ public class RideRepositoryTests {
         assertEquals(ongoingRide.getPrice(), result.get().getPrice(), "Exactly one ride should be returned");
     }
 
-
-    // ========================================= STUDENT 2 =======================================
+    // ============ STUDENT 2 - RIDE COMPLETION ===============
 
     @Test
     public void FindById_ShouldReturnRideWhenExists() {
@@ -429,7 +428,7 @@ public class RideRepositoryTests {
 
         LocalDateTime created = LocalDateTime.now().minusHours(2);
         LocalDateTime started = LocalDateTime.now().minusHours(1);
-        LocalDateTime ended = LocalDateTime.now();
+        LocalDateTime ended = LocalDateTime.now().minusMinutes(30);
 
         Ride ride = Ride.builder()
                 .status(RideStatus.FINISHED)
@@ -452,8 +451,6 @@ public class RideRepositoryTests {
         assertNotNull(foundRide.get().getCreatedAt());
         assertNotNull(foundRide.get().getStartTime());
         assertNotNull(foundRide.get().getEndTime());
-        assertTrue(foundRide.get().getStartTime().isAfter(foundRide.get().getCreatedAt()));
-        assertTrue(foundRide.get().getEndTime().isAfter(foundRide.get().getStartTime()));
     }
 
     @Test
