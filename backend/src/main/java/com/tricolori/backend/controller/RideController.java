@@ -237,23 +237,6 @@ public class RideController {
         return ResponseEntity.ok(response);
     }
 
-    // TODO: REMOVE AFTER TESTING
-    /*@PostMapping("/create/passenger")
-    @PreAuthorize("hasRole('PASSENGER')")
-    public ResponseEntity<?> createRide(@RequestBody CreateRideRequest request) {
-        // Hard-coded passenger ID for testing
-        Long passengerId = 14L;
-
-        Ride ride = rideService.createRide(request, passengerId);
-        return ResponseEntity.ok(Map.of(
-                "rideId", ride.getId(),
-                "status", ride.getStatus(),
-                "price", ride.getPrice(),
-                "distance", ride.getRoute().getDistanceKm(),
-                "estimatedTime", ride.getRoute().getEstimatedTimeSeconds()
-        ));
-    }*/
-
     @PostMapping("/order")
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<String> order(
