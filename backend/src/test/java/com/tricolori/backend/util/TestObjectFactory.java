@@ -91,6 +91,24 @@ public class TestObjectFactory {
             .build();
     }
 
+    // --- VEHICLE ---
+    public static Vehicle createTestVehicle() {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setId(random.nextLong(1000) + 1);
+        vehicle.setPlateNum("NS-" + (random.nextInt(900) + 100) + "-TX");
+        vehicle.setModel("Peugeot 307");
+        vehicle.setAvailable(true);
+        vehicle.setSpecification(createTestVehicleSpecification());
+        vehicle.setLocation(createTestLocation());
+        return vehicle;
+    }
+
+    public static Vehicle createTestVehicle(VehicleSpecification spec) {
+        Vehicle vehicle = createTestVehicle();
+        vehicle.setSpecification(spec);
+        return vehicle;
+    }
+
     // --- ROUTE, STOP, LOCATION ---
     public static Route createTestRoute() {
         List<Stop> stops = new ArrayList<>();
