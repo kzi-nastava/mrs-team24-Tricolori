@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -106,8 +107,10 @@ public class RideService {
         // calculate final price
         ride.setPrice(calculatePrice(ride));
         rideRepository.save(ride);
-        ride.getDriver().getVehicle().setAvailable(true); // mark vehicle as available again
-        vehicleRepository.save(ride.getDriver().getVehicle());
+        if (ride.getDriver() != null && ride.getDriver().getVehicle() != null) {
+            ride.getDriver().getVehicle().setAvailable(true);
+            vehicleRepository.save(ride.getDriver().getVehicle());
+        }
 
         // notify registered passengers
         for (Passenger p : ride.getPassengers()) {
@@ -392,44 +395,84 @@ public class RideService {
 
     @Transactional
     public void cancelRide(Person person, CancelRideRequest request) {
-        Ride ride;
 
-        if (person.getRole().equals(PersonRole.ROLE_DRIVER)) {
-            ride = rideRepository.findOngoingRideByDriver(person.getId())
-                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
-            cancelByDriver(ride, request);
-
-            // notify passengers
-            for (Passenger p : ride.getPassengers()) {
-                notificationService.sendRideCancelledNotification(
-                        p.getEmail(), ride.getId(), ride.getScheduledFor().toString(), ride.getRoute().getPickupStop().getAddress(),
-                        ride.getRoute().getDestinationStop().getAddress(),
-                        "Driver cancelled: " + request.reason()
-                );
-            }
-
-        } else if (person.getRole().equals(PersonRole.ROLE_PASSENGER)) {
-            ride = rideRepository.findOngoingRideByPassenger(person.getId())
-                   .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
-            cancelByPassenger(ride);
-
-            // notify driver
-            if (ride.getDriver() != null) {
-                notificationService.sendRideCancelledNotification(
-                        ride.getDriver().getEmail(), ride.getId(), ride.getScheduledFor().toString(), ride.getRoute().getPickupStop().getAddress(),
-                        ride.getRoute().getDestinationStop().getAddress(),
-                        "Passenger cancelled the ride"
-                );
-            }
-        } else {
-            throw new IllegalStateException("Unsupported role for cancelRide: " + person.getRole());
+        if (person == null) {
+            throw new IllegalArgumentException("Person cannot be null");
         }
 
-        ride.setCancellationReason(request.reason());
+        String reason = (request != null && request.reason() != null && !request.reason().isBlank())
+                ? request.reason()
+                : "No reason provided";
+
+        Ride ride;
+
+        if (person.getRole() == PersonRole.ROLE_DRIVER) {
+            ride = rideRepository.findOngoingRideByDriver(person.getId())
+                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
+        } else if (person.getRole() == PersonRole.ROLE_PASSENGER) {
+            ride = rideRepository.findOngoingRideByPassenger(person.getId())
+                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this passenger."));
+        } else {
+            throw new IllegalStateException("Unsupported role: " + person.getRole());
+        }
+
+        String pickup = "Unknown pickup";
+        String destination = "Unknown destination";
+
+        if (ride.getRoute() != null) {
+            if (ride.getRoute().getPickupStop() != null && ride.getRoute().getPickupStop().getAddress() != null) {
+                pickup = ride.getRoute().getPickupStop().getAddress();
+            }
+
+            if (ride.getRoute().getDestinationStop() != null && ride.getRoute().getDestinationStop().getAddress() != null) {
+                destination = ride.getRoute().getDestinationStop().getAddress();
+            }
+        }
+
+        String scheduled = ride.getScheduledFor() != null
+                ? ride.getScheduledFor().toString()
+                : "N/A";
+
+        if (person.getRole() == PersonRole.ROLE_DRIVER) { // DRIVER
+
+            if (request == null || request.reason() == null || request.reason().isBlank()) {
+                throw new IllegalArgumentException("Driver must provide cancellation reason");
+            }
+
+            cancelByDriver(ride, request);
+
+            if (ride.getPassengers() != null) {
+                for (Passenger p : ride.getPassengers()) {
+                    if (p == null) continue;
+
+                    notificationService.sendRideCancelledNotification(
+                            p.getEmail(), ride.getId(), scheduled, pickup, destination, "Driver cancelled: " + reason
+                    );
+                }
+            }
+
+        } else { // PASSENGER
+
+            if (ride.getStartTime() != null &&
+                    LocalDateTime.now().isAfter(ride.getStartTime().minusMinutes(10))) {
+                throw new CancelRideExpiredException("Cancel failed. Ride starts within 10 minutes");
+            }
+
+            cancelByPassenger(ride);
+
+            if (ride.getDriver() != null) {
+                notificationService.sendRideCancelledNotification(
+                        ride.getDriver().getEmail(), ride.getId(), scheduled, pickup, destination, "Passenger cancelled the ride"
+                );
+            }
+        }
+
+        ride.setCancellationReason(reason);
         rideRepository.save(ride);
 
-        log.info("Ride with id {{}} got cancelled by {{}}", ride.getId(), person.getEmail());
+        log.info("Ride with id {} got cancelled by {}", ride.getId(), person.getEmail());
     }
+
 
     private void terminateRideAtLocation(Ride ride, Location stopLocation, RideStatus status) {
 
@@ -499,7 +542,7 @@ public class RideService {
             () -> {throw new RideNotFoundException("Can't find a ride to start.");}
         );
 
-        if (ride.getDriver().getId() != driver.getId()) {
+        if (!Objects.equals(ride.getDriver().getId(), driver.getId())) {
             throw new ForeignRideException("Only a driver of this ride can start it.");
         }
 
