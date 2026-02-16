@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 import com.tricolori.pages.*;
 import com.tricolori.utils.RouteSummary;
 
-class RideOrderThroughFavoriteRouteTest {
+public class RideOrderThroughFavoriteRouteTest {
     private WebDriver driver;
 
     // Pages:

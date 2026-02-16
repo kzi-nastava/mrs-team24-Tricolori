@@ -31,7 +31,7 @@ export class RideDetailsModal implements OnInit {
   private rideService = inject(RideService);
   private mapService = inject(MapService);
 
-  rideDetail = signal<RideDetailResponse>({} as RideDetailResponse);
+  rideDetail = signal<RideDetailResponse | null>(null);
   isLoading = signal(true);
 
   ngOnInit() {
@@ -41,13 +41,19 @@ export class RideDetailsModal implements OnInit {
   fetchDetails() {
     this.isLoading.set(true);
     this.rideService.getAdminRideDetail(this.rideId())
-      .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (detail) => {
           this.rideDetail.set(detail);
-          setTimeout(() => this.initMap(detail), 100);
+          console.log('Detail response:', detail);
+
+          this.isLoading.set(false);
+
+          setTimeout(() => this.initMap(detail), 50);
         },
-        error: (err) => console.error('Error fetching ride details', err)
+        error: (err) => {
+          console.error('Error fetching ride details', err);
+          this.isLoading.set(false);
+        }
       });
   }
 
