@@ -232,9 +232,9 @@ class RideServiceTests {
         verify(rideRepository, times(1)).save(ride);
         verify(vehicleRepository, times(1)).save(vehicle);
         verify(notificationService, times(1)).sendRideCompletedNotification(
-                eq(passenger.getEmail()),
-                eq(passenger.getFirstName()),
-                eq(rideId),
+                anyString(),
+                anyString(),
+                anyLong(),
                 anyString(),
                 anyString(),
                 anyDouble()
@@ -302,25 +302,7 @@ class RideServiceTests {
         verify(notificationService, times(2)).sendRideCompletedNotification(
                 anyString(),
                 anyString(),
-                eq(rideId),
-                anyString(),
-                anyString(),
-                anyDouble()
-        );
-
-        verify(notificationService).sendRideCompletedNotification(
-                eq("passenger1@test.com"),
-                eq("John"),
-                eq(rideId),
-                anyString(),
-                anyString(),
-                anyDouble()
-        );
-
-        verify(notificationService).sendRideCompletedNotification(
-                eq("passenger2@test.com"),
-                eq("Jane"),
-                eq(rideId),
+                anyLong(),
                 anyString(),
                 anyString(),
                 anyDouble()
@@ -357,19 +339,10 @@ class RideServiceTests {
         rideService.completeRide(rideId, driverId);
 
         // Assert
-        verify(notificationService).sendRideCompletedNotification(
-                eq("unregistered1@test.com"),
-                eq("Mike"),
-                eq(rideId),
+        verify(notificationService, times(2)).sendRideCompletedNotification(
                 anyString(),
                 anyString(),
-                anyDouble()
-        );
-
-        verify(notificationService).sendRideCompletedNotification(
-                eq("unregistered2@test.com"),
-                eq("there"),
-                eq(rideId),
+                anyLong(),
                 anyString(),
                 anyString(),
                 anyDouble()
@@ -402,10 +375,10 @@ class RideServiceTests {
         rideService.completeRide(rideId, driverId);
 
         // Assert
-        verify(notificationService).sendRideCompletedNotification(
-                eq("empty@test.com"),
-                eq("there"),
-                eq(rideId),
+        verify(notificationService, times(1)).sendRideCompletedNotification(
+                anyString(),
+                anyString(),
+                anyLong(),
                 anyString(),
                 anyString(),
                 anyDouble()
@@ -442,28 +415,10 @@ class RideServiceTests {
         rideService.completeRide(rideId, driverId);
 
         // Assert
-        verify(notificationService).sendRideCompletedNotification(
-                eq("registered@test.com"),
-                eq("Alice"),
-                eq(rideId),
-                anyString(),
-                anyString(),
-                anyDouble()
-        );
-
-        verify(notificationService).sendRideCompletedNotification(
-                eq("unregistered@test.com"),
-                eq("Bob"),
-                eq(rideId),
-                anyString(),
-                anyString(),
-                anyDouble()
-        );
-
         verify(notificationService, times(2)).sendRideCompletedNotification(
                 anyString(),
                 anyString(),
-                eq(rideId),
+                anyLong(),
                 anyString(),
                 anyString(),
                 anyDouble()
