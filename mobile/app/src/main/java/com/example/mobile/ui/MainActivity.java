@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         topLevelDestinations.add(R.id.userProfileFragment);
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
+        topLevelDestinations.add(R.id.driverHomeFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -119,6 +120,22 @@ public class MainActivity extends AppCompatActivity {
                     logoutUser();
                     return true;
                 }
+
+                if (id == R.id.homeFragment) {
+                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    String role = prefs.getString("user_role", "");
+
+                    // If driver is logged in, navigate him to driver's home instead of unregistered home
+                    if ("ROLE_DRIVER".equals(role)) {
+                        drawerLayout.closeDrawer(GravityCompat.START);
+
+                        if (navController.getCurrentDestination().getId() != R.id.driverHomeFragment) {
+                            navController.navigate(R.id.driverHomeFragment);
+                        }
+                        return true;
+                    }
+                }
+
                 boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
                 if (handled) drawerLayout.closeDrawer(GravityCompat.START);
                 return handled;

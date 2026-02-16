@@ -261,4 +261,28 @@
     <string name="password_setup_req_1">• At least 8 characters</string>
     <string name="password_setup_req_2">• Upper and lowercase letters</string>
     <string name="password_setup_req_3">• At least one number</string>
+
+    <!-- Driver Ride Wait -->
+    <string name="waiting_for_rides">Waiting for rides</string>
+    <string name="stay_active_to_receive_requests">Stay active to receive requests</string>
+
+    <!-- Driver Cancel Ride Modal -->
+    <string name="cancel_ride">Cancel Ride</string>
+    <string name="please_provide_a_reason_for_cancelling_this_ride_assignment">Please provide a reason for cancelling this ride assignment.</string>
+    <string name="e_g_vehicle_trouble_traffic_etc">E.g., Vehicle trouble, traffic, etc…</string>
+    <string name="go_back">GO BACK</string>
+    <string name="confirm_cancel">CONFIRM CANCEL</string>
+    <string name="close">Close</string>
+
+    <!-- Driver Ride Assign -->
+    <string name="new_ride_assigned">New Ride Assigned!</string>
+    <string name="passenger">PASSENGER</string>
+    <string name="route_details">ROUTE DETAILS</string>
+    <string name="pickup">PICKUP</string>
+    <string name="destination">DESTINATION</string>
+    <string name="cancel">CANCEL</string>
+    <string name="start_ride">START RIDE</string>
+    <string name="p">P</string> <string name="pickup_location_desc">Pickup Location Icon</string>
+    <string name="destination_location_desc">Destination Location Icon</string>
+    <string name="price">Price</string>
 </resources>
