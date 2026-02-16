@@ -11,7 +11,6 @@ import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.entity.Ride;
 import com.tricolori.backend.entity.Route;
 import com.tricolori.backend.entity.Vehicle;
-import com.tricolori.backend.entity.VehicleSpecification;
 import com.tricolori.backend.enums.RideStatus;
 import com.tricolori.backend.enums.VehicleType;
 import com.tricolori.backend.exception.NoSuitableDriversException;
@@ -188,10 +187,10 @@ class RideServiceTests {
         // Assert
         verify(rideRepository, times(1)).save(any(Ride.class));
         verify(notificationService, times(1)).sendAddedToRideNotification(
-                eq("friend@gmail.com"), any(), any(), any(), any(), any(), any()
+            eq("friend@gmail.com"), any(), any(), any(), any(), any(), any()
         );
         verify(notificationService, never()).sendAddedToRideNotification(
-                eq("organizer@test.com"), any(), any(), any(), any(), any(), any()
+            eq("organizer@test.com"), any(), any(), any(), any(), any(), any()
         );
     }
 
@@ -234,7 +233,7 @@ class RideServiceTests {
         Driver mockDriver = TestObjectFactory.createTestDriver();
         Vehicle mockVehicle = TestObjectFactory.createTestVehicle();
         mockDriver.setVehicle(mockVehicle);
-        
+
         when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
         when(rideRepository.save(any(Ride.class))).thenAnswer(i -> i.getArguments()[0]);
 
