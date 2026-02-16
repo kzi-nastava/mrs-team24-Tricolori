@@ -1,5 +1,8 @@
 package com.tricolori.backend.util;
 
+import com.tricolori.backend.dto.ride.OrderRequest;
+import com.tricolori.backend.dto.ride.RidePreferences;
+import com.tricolori.backend.dto.ride.RideRoute;
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.enums.*;
 
@@ -116,5 +119,30 @@ public class TestObjectFactory {
 
     public static Location createTestLocation(double lon, double lat) {
         return new Location(lon, lat);
+    }
+
+    // --- ORDER REQUEST ---
+    public static OrderRequest createOrderRequest() {
+        OrderRequest request = new OrderRequest();
+        
+        // Kreiranje rute
+        Stop pickup = createTestStop("Bulevar Oslobođenja 1", 19.8335, 45.2671);
+        Stop destination = createTestStop("Centar", 19.8451, 45.2551);
+        RideRoute route = new RideRoute(pickup, destination, new ArrayList<>());
+        
+        // Kreiranje preferenci
+        RidePreferences preferences = new RidePreferences(
+                VehicleType.STANDARD, 
+                true, 
+                true, 
+                LocalDateTime.now().plusMinutes(15)
+        );
+
+        request.setRoute(route);
+        request.setPreferences(preferences);
+        request.setCreatedAt(LocalDateTime.now());
+        request.setTrackers(new String[]{"friend@gmail.com"});
+        
+        return request;
     }
 }

@@ -1,9 +1,11 @@
 package com.tricolori.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tricolori.backend.dto.ride.OrderRequest;
 import com.tricolori.backend.dto.ride.StopRideRequest;
 import com.tricolori.backend.dto.ride.StopRideResponse;
 import com.tricolori.backend.entity.Location;
+import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.exception.GlobalExceptionHandler;
 import com.tricolori.backend.exception.RideNotFoundException;
 import com.tricolori.backend.security.AuthTokenFilter;
@@ -27,10 +29,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.hamcrest.Matchers.containsString;
 
 @WebMvcTest(
         controllers = {
@@ -125,4 +131,52 @@ class RideControllerTests {
     }
 
     /*--- Ride ordering: Student 1 ---*/
+    @Test
+    @DisplayName("Should successfully order a ride")
+    void shouldOrderRideSuccessfully() throws Exception {
+        // Arrange
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        
+        doNothing().when(rideService).rideOrder(any(Person.class), any(OrderRequest.class));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", "Bearer passenger-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Created a ride."));
+
+        verify(rideService, times(1)).rideOrder(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return error message when service throws exception")
+    void shouldReturnErrorMessageOnServiceException() throws Exception {
+        // Arrange
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        String errorMsg = "No drivers available";
+        
+        doThrow(new RuntimeException(errorMsg))
+                .when(rideService).rideOrder(nullable(Person.class), any(OrderRequest.class));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("ODGOVOR: RuntimeException: " + errorMsg)));
+
+        verify(rideService, times(1)).rideOrder(nullable(Person.class), any(OrderRequest.class));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when request body is missing")
+    void shouldReturn400WhenOrderRequestIsMissing() throws Exception {
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", "Bearer passenger-token")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 }
