@@ -115,38 +115,51 @@ public class MainActivity extends AppCompatActivity {
             });
 
             navigationView.setNavigationItemSelectedListener(item -> {
-                int id = item.getItemId();
-                if (id == R.id.nav_status_switch) return false;
-                if (id == R.id.nav_logout) {
-                    logoutUser();
-                    return true;
-                }
+            int id = item.getItemId();
 
-                if (id == R.id.homeFragment) {
-                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                    String role = prefs.getString("user_role", "");
+            if (id == R.id.nav_status_switch) return false;
 
-                    // If driver is logged in, navigate him to driver's home instead of unregistered home
-                    if ("ROLE_DRIVER".equals(role)) {
-                        drawerLayout.closeDrawer(GravityCompat.START);
+            if (id == R.id.nav_logout) {
+                logoutUser();
+                return true;
+            }
 
-                        if (navController.getCurrentDestination().getId() != R.id.driverHomeFragment) {
-                            navController.navigate(R.id.driverHomeFragment);
-                        }
-                        return true;
-                    } else if ("ROLE_PASSENGER".equals(role)) {
-                        drawerLayout.closeDrawer(GravityCompat.START);
-                        if (navController.getCurrentDestination().getId() != R.id.passengerHomeFragment) {
-                            navController.navigate(R.id.passengerHomeFragment);
-                        }
-                        return true;
+            if (id == R.id.rideHistoryFragment) {
+                SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                String userRole = prefs.getString("user_role", "");
+
+                Bundle args = new Bundle();
+                args.putString("role", "ROLE_PASSENGER".equals(userRole) ? "PASSENGER" : "DRIVER");
+
+                drawerLayout.closeDrawer(GravityCompat.START);
+                navController.navigate(R.id.rideHistoryFragment, args);
+                return true;
+            }
+
+            if (id == R.id.homeFragment) {
+                SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                String role = prefs.getString("user_role", "");
+
+                drawerLayout.closeDrawer(GravityCompat.START);
+
+                if ("ROLE_DRIVER".equals(role)) {
+                    if (navController.getCurrentDestination() != null && 
+                        navController.getCurrentDestination().getId() != R.id.driverHomeFragment) {
+                        navController.navigate(R.id.driverHomeFragment);
+                    }
+                } else if ("ROLE_PASSENGER".equals(role)) {
+                    if (navController.getCurrentDestination() != null && 
+                        navController.getCurrentDestination().getId() != R.id.passengerHomeFragment) {
+                        navController.navigate(R.id.passengerHomeFragment);
                     }
                 }
+                return true;
+            }
 
-                boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
-                if (handled) drawerLayout.closeDrawer(GravityCompat.START);
-                return handled;
-            });
+            boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+            if (handled) drawerLayout.closeDrawer(GravityCompat.START);
+            return handled;
+        });
         }
     }
 
