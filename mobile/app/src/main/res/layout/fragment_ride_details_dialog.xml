@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -12,7 +13,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- TITLE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -22,7 +22,6 @@
             android:textColor="@color/base_900"
             android:layout_marginBottom="12dp" />
 
-        <!-- ROUTE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -38,7 +37,6 @@
             android:layout_marginBottom="12dp"
             tools:text="Bulevar Oslobođenja 12 → Trg Slobode 3" />
 
-        <!-- MAP -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,7 +51,6 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- TIME ROW -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -104,7 +101,6 @@
 
         </LinearLayout>
 
-        <!-- DURATION / DISTANCE ROW -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -155,7 +151,6 @@
 
         </LinearLayout>
 
-        <!-- PRICE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -172,7 +167,6 @@
             android:layout_marginBottom="10dp"
             tools:text="570.20 RSD" />
 
-        <!-- STATUS -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -189,11 +183,6 @@
             android:layout_marginBottom="10dp"
             tools:text="FINISHED" />
 
-        <!--
-            PERSON ROW — generic IDs used by both roles:
-              Driver view  → label="Passenger", name=passengerName, phone=passengerPhone
-              Passenger view → label="Driver",    name=driverName,    phone=driverPhone
-        -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -206,7 +195,6 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <!-- Dynamic label: "Passenger" or "Driver" -->
                 <TextView
                     android:id="@+id/tvDetailPersonLabel"
                     android:layout_width="wrap_content"
@@ -245,10 +233,6 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!--
-            VEHICLE CONTAINER — shown only in passenger view.
-            Hidden (gone) in driver view via bindDriverData().
-        -->
         <androidx.cardview.widget.CardView
             android:id="@+id/vehicleContainer"
             android:layout_width="match_parent"
@@ -311,7 +295,6 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- RATING CARD -->
         <androidx.cardview.widget.CardView
             android:id="@+id/ratingContainer"
             android:layout_width="match_parent"
@@ -330,11 +313,6 @@
                 android:padding="12dp"
                 android:background="#FFF8E1">
 
-                <!--
-                    Dynamic label:
-                      Driver view      → "Passenger Rating"
-                      Passenger view   → "Your Rating"
-                -->
                 <TextView
                     android:id="@+id/tvRatingSectionLabel"
                     android:layout_width="wrap_content"
@@ -362,7 +340,6 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- COMMENT CARD -->
         <androidx.cardview.widget.CardView
             android:id="@+id/notesContainer"
             android:layout_width="match_parent"
@@ -399,10 +376,6 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!--
-            RATE THIS RIDE — shown only for passenger when ride is FINISHED
-            and not yet rated. Hidden via bindDriverData() for driver.
-        -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRateRide"
             android:layout_width="match_parent"
@@ -415,9 +388,11 @@
             tools:visibility="gone"
             app:backgroundTint="@color/deep_700"
             app:cornerRadius="8dp"
-            xmlns:app="http://schemas.android.com/apk/res-auto" />
+            app:icon="@drawable/ic_star_filled"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="@color/white" />
 
-        <!-- CLOSE -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClose"
             android:layout_width="match_parent"
@@ -427,8 +402,7 @@
             android:textColor="@color/white"
             android:layout_marginTop="8dp"
             app:backgroundTint="@color/base_600"
-            app:cornerRadius="8dp"
-            xmlns:app="http://schemas.android.com/apk/res-auto" />
+            app:cornerRadius="8dp" />
 
     </LinearLayout>
 
