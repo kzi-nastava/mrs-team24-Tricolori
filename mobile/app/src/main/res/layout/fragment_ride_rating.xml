@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Header -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rate Your Ride"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/base_900"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="How was your experience?"
+                android:textSize="14sp"
+                android:textColor="@color/base_600"
+                android:layout_marginBottom="28dp" />
+
+            <!-- Driver card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rate Your Driver"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="@color/base_900"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvRatingDriverName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textColor="@color/base_600"
+                        android:layout_marginBottom="14dp"
+                        tools:text="Vozač Vozačević" />
+
+                    <!-- Driver star row -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:id="@+id/ivDriverStar1"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="1 star" />
+
+                        <ImageView
+                            android:id="@+id/ivDriverStar2"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="2 stars" />
+
+                        <ImageView
+                            android:id="@+id/ivDriverStar3"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="3 stars" />
+
+                        <ImageView
+                            android:id="@+id/ivDriverStar4"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="4 stars" />
+
+                        <ImageView
+                            android:id="@+id/ivDriverStar5"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="5 stars" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Vehicle card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rate the Vehicle"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="@color/base_900"
+                        android:layout_marginBottom="14dp" />
+
+                    <!-- Vehicle star row -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:id="@+id/ivVehicleStar1"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="1 star" />
+
+                        <ImageView
+                            android:id="@+id/ivVehicleStar2"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="2 stars" />
+
+                        <ImageView
+                            android:id="@+id/ivVehicleStar3"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="3 stars" />
+
+                        <ImageView
+                            android:id="@+id/ivVehicleStar4"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="4 stars" />
+
+                        <ImageView
+                            android:id="@+id/ivVehicleStar5"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_star_empty"
+                            android:contentDescription="5 stars" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Comment card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textColor="@color/base_600"
+                        android:layout_marginBottom="8dp">
+                        <![CDATA[Comment <font color="#AAAAAA">(Optional)</font>]]>
+                    </TextView>
+
+                    <!-- fallback plain label if HTML span causes issues -->
+                    <!--
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Comment (Optional)"
+                        android:textSize="13sp"
+                        android:textColor="@color/base_600"
+                        android:layout_marginBottom="8dp" />
+                    -->
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:hintEnabled="false"
+                        app:boxStrokeColor="@color/base_400"
+                        app:boxCornerRadiusTopStart="8dp"
+                        app:boxCornerRadiusTopEnd="8dp"
+                        app:boxCornerRadiusBottomStart="8dp"
+                        app:boxCornerRadiusBottomEnd="8dp"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="500">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etRatingComment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minLines="3"
+                            android:gravity="top"
+                            android:inputType="textMultiLine|textCapSentences"
+                            android:hint="Share your experience..."
+                            android:textSize="14sp"
+                            android:textColor="@color/base_900"
+                            android:maxLength="500" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Submit button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmitRating"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Submit Rating"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:enabled="false"
+                android:alpha="0.5"
+                android:layout_marginBottom="12dp"
+                app:backgroundTint="@color/base_600"
+                app:cornerRadius="8dp" />
+
+            <!-- Skip link -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSkipRating"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Skip for now"
+                android:textAllCaps="false"
+                android:textSize="14sp"
+                android:textColor="@color/base_600" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
