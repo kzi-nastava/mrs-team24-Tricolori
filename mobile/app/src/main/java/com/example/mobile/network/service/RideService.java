@@ -5,6 +5,8 @@ import com.example.mobile.dto.ride.DriverRideDetailResponse;
 import com.example.mobile.dto.ride.DriverRideHistoryResponse;
 import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.PassengerRideHistoryResponse;
+import com.example.mobile.dto.ride.RideRatingRequest;
+import com.example.mobile.dto.ride.RideRatingStatusResponse;
 
 import java.util.List;
 
@@ -19,27 +21,17 @@ import retrofit2.http.Query;
 
 public interface RideService {
 
-        @GET("api/v1/rides/history/driver")
-        Call<List<DriverRideHistoryResponse>> getDriverRideHistory(
-                @Query("startDate") String startDate,
-                @Query("endDate") String endDate,
-                @Query("sortBy") String sortBy,
-                @Query("sortDirection") String sortDirection
-        );
+    @GET("api/v1/rides/history/driver")
+    Call<List<DriverRideHistoryResponse>> getDriverRideHistory(
+            @Query("startDate") String startDate,
+            @Query("endDate") String endDate,
+            @Query("sortBy") String sortBy,
+            @Query("sortDirection") String sortDirection
+    );
 
     @GET("api/v1/rides/{rideId}/details/driver")
     Call<DriverRideDetailResponse> getDriverRideDetail(
             @Path("rideId") Long rideId
-    );
-
-    @GET("api/v1/rides/passenger")
-    Call<retrofit2.converter.gson.ResponseBodyDecoder<PassengerRideHistoryResponse>>
-    getPassengerRideHistoryRaw(
-            @Query("startDate") String startDate,
-            @Query("endDate") String endDate,
-            @Query("page") int page,
-            @Query("size") int size,
-            @Query("sort") String sort
     );
 
     @GET("api/v1/rides/passenger")

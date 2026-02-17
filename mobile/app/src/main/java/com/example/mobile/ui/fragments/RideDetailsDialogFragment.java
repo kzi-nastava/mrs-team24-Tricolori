@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.navigation.NavController;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
@@ -347,14 +348,15 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
     private void openRatingScreen(Long rideId, String driverName) {
         dismiss();
-        RideRatingFragment ratingFragment =
-                RideRatingFragment.newInstance(rideId, driverName);
-        requireActivity()
-                .getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, ratingFragment)
-                .addToBackStack(null)
-                .commit();
+
+        NavController navController = androidx.navigation.Navigation.findNavController(
+                requireActivity(), R.id.nav_host_fragment);
+
+        Bundle args = new Bundle();
+        args.putLong("ride_id", rideId);
+        args.putString("driver_name", driverName);
+
+        navController.navigate(R.id.action_to_rideRatingFragment, args);
     }
 
     // ── Map ───────────────────────────────────────────────────────────────────

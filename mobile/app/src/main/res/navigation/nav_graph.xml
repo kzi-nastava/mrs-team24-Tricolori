@@ -67,6 +67,24 @@
         <action
             android:id="@+id/action_rideHistory_to_home"
             app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_to_rideRatingFragment"
+            app:destination="@id/rideRatingFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/rideRatingFragment"
+        android:name="com.example.mobile.ui.fragments.RideRatingFragment"
+        android:label="Rate Ride"
+        tools:layout="@layout/fragment_ride_rating">
+        <argument
+            android:name="ride_id"
+            app:argType="long" />
+        <argument
+            android:name="driver_name"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
     <fragment
