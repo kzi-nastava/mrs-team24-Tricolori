@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
         topLevelDestinations.add(R.id.driverHomeFragment);
+        topLevelDestinations.add(R.id.passengerHomeFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -131,6 +132,12 @@ public class MainActivity extends AppCompatActivity {
 
                         if (navController.getCurrentDestination().getId() != R.id.driverHomeFragment) {
                             navController.navigate(R.id.driverHomeFragment);
+                        }
+                        return true;
+                    } else if ("ROLE_PASSENGER".equals(role)) {
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                        if (navController.getCurrentDestination().getId() != R.id.passengerHomeFragment) {
+                            navController.navigate(R.id.passengerHomeFragment);
                         }
                         return true;
                     }

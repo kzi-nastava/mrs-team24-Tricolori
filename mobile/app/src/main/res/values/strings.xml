@@ -280,9 +280,17 @@
     <string name="route_details">ROUTE DETAILS</string>
     <string name="pickup">PICKUP</string>
     <string name="destination">DESTINATION</string>
-    <string name="cancel">CANCEL</string>
+    <string name="cancel">CANCEL RIDE</string>
     <string name="start_ride">START RIDE</string>
-    <string name="p">P</string> <string name="pickup_location_desc">Pickup Location Icon</string>
+    <string name="p">P</string>
+    <string name="pickup_location_desc">Pickup Location Icon</string>
     <string name="destination_location_desc">Destination Location Icon</string>
     <string name="price">Price</string>
+
+    <!-- Passenger Home -->
+    <string name="order_ride">Order Ride</string>
+
+    <!-- Passenger Ride Waiting -->
+    <string name="waiting_for_driver_to_arrive">Waiting for driver to arrive…</string>
+    <string name="driver">DRIVER</string>
 </resources>
