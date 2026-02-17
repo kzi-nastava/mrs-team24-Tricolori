@@ -115,11 +115,11 @@ public class LoginFragment extends Fragment {
 
         int destination;
         if ("ROLE_DRIVER".equals(role)) {
-            destination = R.id.action_login_to_rideHistory;
+            destination = R.id.action_login_to_driverHome;
         } else if ("ROLE_ADMIN".equals(role)) {
             destination = R.id.action_login_to_profile;
         } else if ("ROLE_PASSENGER".equals(role)) {
-            destination = R.id.action_login_to_profile;
+            destination = R.id.action_login_to_passengerHome;
         } else {
             // fallback
             destination = R.id.action_login_to_home;

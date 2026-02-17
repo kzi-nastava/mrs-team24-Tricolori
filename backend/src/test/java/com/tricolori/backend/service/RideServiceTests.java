@@ -4,18 +4,14 @@ import com.tricolori.backend.dto.osrm.OSRMRouteResponse;
 import com.tricolori.backend.dto.ride.OrderRequest;
 import com.tricolori.backend.dto.ride.StopRideRequest;
 import com.tricolori.backend.dto.ride.StopRideResponse;
-import com.tricolori.backend.entity.Driver;
-import com.tricolori.backend.entity.Location;
-import com.tricolori.backend.entity.Passenger;
-import com.tricolori.backend.entity.Person;
-import com.tricolori.backend.entity.Ride;
-import com.tricolori.backend.entity.Route;
-import com.tricolori.backend.entity.Vehicle;
+import com.tricolori.backend.entity.*;
 import com.tricolori.backend.enums.RideStatus;
 import com.tricolori.backend.enums.VehicleType;
 import com.tricolori.backend.exception.NoSuitableDriversException;
 import com.tricolori.backend.exception.RideNotFoundException;
 import com.tricolori.backend.repository.RideRepository;
+import com.tricolori.backend.repository.TrackingTokenRepository;
+import com.tricolori.backend.repository.VehicleRepository;
 import com.tricolori.backend.util.TestObjectFactory;
 
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +20,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -48,6 +48,12 @@ class RideServiceTests {
     private GeocodingService geocodingService;
     @Mock
     private PriceListService priceListService;
+    @Mock
+    private VehicleRepository vehicleRepository;
+    @Mock
+    private NotificationService notificationService;
+    @Mock
+    private TrackingTokenRepository trackingTokenRepository;
 
     @Mock
     private RouteService routeService;
@@ -55,8 +61,6 @@ class RideServiceTests {
     private PassengerService passengerService;
     @Mock
     private DriverService driverService;
-    @Mock
-    private NotificationService notificationService;
     @Mock
     private TrackingTokenService trackingTokenService;
 
@@ -170,7 +174,7 @@ class RideServiceTests {
         when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
         
         Passenger p2 = TestObjectFactory.createTestPassenger();
-        p2.setEmail("friend@gmail.com"); // Email iz TestObjectFactory.createOrderRequest()
+        p2.setEmail("friend@gmail.com");
         when(passengerService.getTrackingPassengers(any())).thenReturn(List.of((Passenger)organizer, p2));
         
         Driver mockDriver = TestObjectFactory.createTestDriver();
@@ -216,6 +220,25 @@ class RideServiceTests {
         verify(rideRepository, never()).save(any());
     }
 
+    // ============ STUDENT 2 - RIDE COMPLETION ===============
+
+    @Test
+    void completeRide_ShouldThrowException_WhenRideNotFound() {
+        // Arrange
+        Long rideId = 999L;
+        Long driverId = 1L;
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(RideNotFoundException.class, () ->
+                rideService.completeRide(rideId, driverId)
+        );
+
+        verify(rideRepository, times(1)).findById(rideId);
+        verify(rideRepository, never()).save(any());
+    }
+
     @Test
     @DisplayName("Should create tracking token for unregistered passengers")
     void rideOrder_ShouldCreateToken_ForUnregisteredPassenger() {
@@ -245,7 +268,371 @@ class RideServiceTests {
         verify(trackingTokenService, times(1)).createTrackingToken(eq("unregistered@test.com"), anyString(), any());
         // Proveravamo da li je poslata notifikacija neregistrovanom putniku
         verify(notificationService, times(1)).sendAddedToRideNotification(
-                eq("unregistered@test.com"), any(), any(), any(), any(), any(), any()
+            eq("unregistered@test.com"), any(), any(), any(), any(), any(), any()
+        );
+    }
+
+    void completeRide_ShouldThrowException_WhenDriverNotAuthorized() {
+        // Arrange
+        Long rideId = 1L;
+        Long actualDriverId = 5L;
+        Long unauthorizedDriverId = 10L;
+
+        Driver actualDriver = TestObjectFactory.createTestDriverWithId(actualDriverId);
+        Ride ride = TestObjectFactory.createTestRide(actualDriver, RideStatus.ONGOING);
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+
+        // Act & Assert
+        assertThrows(AccessDeniedException.class, () ->
+                rideService.completeRide(rideId, unauthorizedDriverId)
+        );
+
+        verify(rideRepository, times(1)).findById(rideId);
+        verify(rideRepository, never()).save(any());
+    }
+
+    @Test
+    void completeRide_ShouldThrowException_WhenRideNotOngoing() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.SCHEDULED);
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+
+        // Act & Assert
+        assertThrows(IllegalStateException.class, () ->
+                rideService.completeRide(rideId, driverId)
+        );
+
+        verify(rideRepository, times(1)).findById(rideId);
+        verify(rideRepository, never()).save(any());
+    }
+
+    @Test
+    void completeRide_ShouldSuccessfullyCompleteRideAndMarkVehicleAvailable() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Vehicle vehicle = TestObjectFactory.createTestVehicle();
+        vehicle.setAvailable(false);
+        driver.setVehicle(vehicle);
+
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.ONGOING);
+        Passenger passenger = TestObjectFactory.createTestPassenger();
+        ride.setPassengers(List.of(passenger));
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(trackingTokenRepository.findByRideId(rideId)).thenReturn(List.of());
+
+        // Act
+        rideService.completeRide(rideId, driverId);
+
+        // Assert
+        assertEquals(RideStatus.FINISHED, ride.getStatus());
+        assertNotNull(ride.getEndTime());
+        assertTrue(vehicle.isAvailable());
+
+        verify(rideRepository, times(1)).save(ride);
+        verify(vehicleRepository, times(1)).save(vehicle);
+        verify(notificationService, times(1)).sendRideCompletedNotification(
+                anyString(),
+                anyString(),
+                anyLong(),
+                anyString(),
+                anyString(),
+                anyDouble()
+        );
+    }
+
+    @Test
+    void completeRide_ShouldCalculateFinalPrice() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Vehicle vehicle = TestObjectFactory.createTestVehicle();
+        driver.setVehicle(vehicle);
+
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.ONGOING);
+        ride.getRoute().setDistanceKm(5.0);
+        ride.setPassengers(List.of());
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+        when(priceListService.calculateBasePrice(any())).thenReturn(150.0);
+        when(priceListService.getKmPrice()).thenReturn(80.0);
+        when(trackingTokenRepository.findByRideId(rideId)).thenReturn(List.of());
+
+        // Act
+        rideService.completeRide(rideId, driverId);
+
+        // Assert
+        assertEquals(550.0, ride.getPrice());
+        verify(rideRepository, times(1)).save(ride);
+    }
+
+    @Test
+    void completeRide_ShouldNotifyAllRegisteredPassengers() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Vehicle vehicle = TestObjectFactory.createTestVehicle();
+        driver.setVehicle(vehicle);
+
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.ONGOING);
+
+        Passenger passenger1 = TestObjectFactory.createTestPassenger();
+        passenger1.setEmail("passenger1@test.com");
+        passenger1.setFirstName("John");
+
+        Passenger passenger2 = TestObjectFactory.createTestPassenger();
+        passenger2.setEmail("passenger2@test.com");
+        passenger2.setFirstName("Jane");
+
+        ride.setPassengers(List.of(passenger1, passenger2));
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(trackingTokenRepository.findByRideId(rideId)).thenReturn(List.of());
+
+        // Act
+        rideService.completeRide(rideId, driverId);
+
+        // Assert
+        verify(notificationService, times(2)).sendRideCompletedNotification(
+                anyString(),
+                anyString(),
+                anyLong(),
+                anyString(),
+                anyString(),
+                anyDouble()
+        );
+    }
+
+    @Test
+    void completeRide_ShouldNotifyUnregisteredPassengersWithTrackingTokens() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Vehicle vehicle = TestObjectFactory.createTestVehicle();
+        driver.setVehicle(vehicle);
+
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.ONGOING);
+        ride.setPassengers(List.of());
+
+        TrackingToken token1 = new TrackingToken();
+        token1.setEmail("unregistered1@test.com");
+        token1.setFirstName("Mike");
+
+        TrackingToken token2 = new TrackingToken();
+        token2.setEmail("unregistered2@test.com");
+        token2.setFirstName(null);
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(trackingTokenRepository.findByRideId(rideId)).thenReturn(List.of(token1, token2));
+
+        // Act
+        rideService.completeRide(rideId, driverId);
+
+        // Assert
+        verify(notificationService, times(2)).sendRideCompletedNotification(
+                anyString(),
+                anyString(),
+                anyLong(),
+                anyString(),
+                anyString(),
+                anyDouble()
+        );
+    }
+
+    @Test
+    void completeRide_ShouldHandleEmptyFirstNameInTrackingToken() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Vehicle vehicle = TestObjectFactory.createTestVehicle();
+        driver.setVehicle(vehicle);
+
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.ONGOING);
+        ride.setPassengers(List.of());
+
+        TrackingToken token = new TrackingToken();
+        token.setEmail("empty@test.com");
+        token.setFirstName("");
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(trackingTokenRepository.findByRideId(rideId)).thenReturn(List.of(token));
+
+        // Act
+        rideService.completeRide(rideId, driverId);
+
+        // Assert
+        verify(notificationService, times(1)).sendRideCompletedNotification(
+                anyString(),
+                anyString(),
+                anyLong(),
+                anyString(),
+                anyString(),
+                anyDouble()
+        );
+    }
+
+    @Test
+    void completeRide_ShouldNotifyBothRegisteredAndUnregisteredPassengers() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Vehicle vehicle = TestObjectFactory.createTestVehicle();
+        driver.setVehicle(vehicle);
+
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.ONGOING);
+
+        Passenger registeredPassenger = TestObjectFactory.createTestPassenger();
+        registeredPassenger.setEmail("registered@test.com");
+        registeredPassenger.setFirstName("Alice");
+        ride.setPassengers(List.of(registeredPassenger));
+
+        TrackingToken token = new TrackingToken();
+        token.setEmail("unregistered@test.com");
+        token.setFirstName("Bob");
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(trackingTokenRepository.findByRideId(rideId)).thenReturn(List.of(token));
+
+        // Act
+        rideService.completeRide(rideId, driverId);
+
+        // Assert
+        verify(notificationService, times(2)).sendRideCompletedNotification(
+                anyString(),
+                anyString(),
+                anyLong(),
+                anyString(),
+                anyString(),
+                anyDouble()
+        );
+    }
+
+    @Test
+    void completeRide_ShouldSetEndTimeToCurrentTime() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Vehicle vehicle = TestObjectFactory.createTestVehicle();
+        driver.setVehicle(vehicle);
+
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.ONGOING);
+        ride.setPassengers(List.of());
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(trackingTokenRepository.findByRideId(rideId)).thenReturn(List.of());
+
+        LocalDateTime beforeCompletion = LocalDateTime.now();
+
+        // Act
+        rideService.completeRide(rideId, driverId);
+
+        // Assert
+        assertNotNull(ride.getEndTime());
+        assertTrue(ride.getEndTime().isAfter(beforeCompletion.minusSeconds(5)));
+        assertTrue(ride.getEndTime().isBefore(LocalDateTime.now().plusSeconds(5)));
+    }
+
+    @Test
+    void completeRide_ShouldThrowException_WhenRideAlreadyFinished() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.FINISHED);
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+
+        // Act & Assert
+        assertThrows(IllegalStateException.class, () ->
+                rideService.completeRide(rideId, driverId)
+        );
+
+        verify(rideRepository, never()).save(any());
+    }
+
+    @Test
+    void completeRide_ShouldThrowException_WhenRideCancelled() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.CANCELLED_BY_DRIVER);
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+
+        // Act & Assert
+        assertThrows(IllegalStateException.class, () ->
+                rideService.completeRide(rideId, driverId)
+        );
+
+        verify(rideRepository, never()).save(any());
+    }
+
+    @Test
+    void completeRide_ShouldWorkWithNoPassengersAtAll() {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 1L;
+
+        Driver driver = TestObjectFactory.createTestDriverWithId(driverId);
+        Vehicle vehicle = TestObjectFactory.createTestVehicle();
+        driver.setVehicle(vehicle);
+
+        Ride ride = TestObjectFactory.createTestRide(driver, RideStatus.ONGOING);
+        ride.setPassengers(new ArrayList<>());
+
+        when(rideRepository.findById(rideId)).thenReturn(Optional.of(ride));
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(trackingTokenRepository.findByRideId(rideId)).thenReturn(List.of());
+
+        // Act
+        rideService.completeRide(rideId, driverId);
+
+        // Assert
+        assertEquals(RideStatus.FINISHED, ride.getStatus());
+        verify(notificationService, never()).sendRideCompletedNotification(
+                anyString(),
+                anyString(),
+                anyLong(),
+                anyString(),
+                anyString(),
+                anyDouble()
         );
     }
 }

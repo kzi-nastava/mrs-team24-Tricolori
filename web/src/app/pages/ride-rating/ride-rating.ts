@@ -64,7 +64,7 @@ export class RideRatingComponent implements OnInit {
       this.router.navigate(['/passenger/history']);
       return;
     }
-    this.rideId = parseInt(rideIdParam, 10);
+    this.rideId = Number(rideIdParam);
     this.loadRideData();
   }
 
@@ -85,13 +85,15 @@ export class RideRatingComponent implements OnInit {
       if (rideDetails) {
         this.rideDetails.set(rideDetails);
 
-        // TODO: provide previously calculated route geometry instead of estimating each time
         this.estimationService.calculateRouteFromAddress(
           rideDetails.pickupAddress,
           rideDetails.dropoffAddress
         ).subscribe({
           next: (estimation) => {
-            this.mapService.drawRoute(estimation!.routeGeometry)
+            if (!estimation || !estimation.routeGeometry) return;
+            this.mapService.drawRoute(estimation.routeGeometry);
+          },
+          error: () => {
           }
         });
       }
@@ -109,7 +111,10 @@ export class RideRatingComponent implements OnInit {
     this.ratingService.submitRating(this.rideId, this.ratingForm.value).subscribe({
       next: () => {
         this.isSubmitted.set(true);
-        setTimeout(() => this.router.navigate(['/passenger/history']), 2000);
+        setTimeout(() => {
+          this.isSubmitting.set(false);
+          this.router.navigate(['/passenger/history']);
+        }, 2000);
       },
       error: () => {
         this.errorMessage.set('Failed to submit rating.');

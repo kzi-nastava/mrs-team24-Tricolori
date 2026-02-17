@@ -23,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -178,5 +179,169 @@ class RideControllerTests {
                         .header("Authorization", "Bearer passenger-token")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+    }
+    // ============ STUDENT 2 - RIDE COMPLETION ===============
+
+    @Test
+    @DisplayName("Should successfully complete ride")
+    void shouldCompleteRide() throws Exception {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 10L;
+
+        when(authenticationService.getAuthenticatedUserId()).thenReturn(driverId);
+        doNothing().when(rideService).completeRide(rideId, driverId);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/rides/{id}/complete", rideId)
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(authenticationService, times(1)).getAuthenticatedUserId();
+        verify(rideService, times(1)).completeRide(rideId, driverId);
+    }
+
+    @Test
+    @DisplayName("Should return 404 when completing non-existent ride")
+    void shouldReturn404WhenCompletingNonExistentRide() throws Exception {
+        // Arrange
+        Long rideId = 999L;
+        Long driverId = 10L;
+
+        when(authenticationService.getAuthenticatedUserId()).thenReturn(driverId);
+        doThrow(new RideNotFoundException("ride not found"))
+                .when(rideService).completeRide(rideId, driverId);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/rides/{id}/complete", rideId)
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("ride not found"));
+
+        verify(rideService, times(1)).completeRide(rideId, driverId);
+    }
+
+    @Test
+    @DisplayName("Should return 403 when driver not authorized to complete ride")
+    void shouldReturn403WhenDriverNotAuthorized() throws Exception {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 10L;
+
+        when(authenticationService.getAuthenticatedUserId()).thenReturn(driverId);
+        doThrow(new AccessDeniedException("not authorized to complete this ride"))
+                .when(rideService).completeRide(rideId, driverId);
+
+        // Act & Assert
+        try {
+            mockMvc.perform(put("/api/v1/rides/{id}/complete", rideId)
+                    .header("Authorization", driverToken)
+                    .contentType(MediaType.APPLICATION_JSON));
+        } catch (Exception e) {
+            // Exception is expected
+        }
+
+        verify(rideService, times(1)).completeRide(rideId, driverId);
+    }
+
+    @Test
+    @DisplayName("Should return 400 when ride is not in ONGOING status")
+    void shouldReturn400WhenRideNotOngoing() throws Exception {
+        // Arrange
+        Long rideId = 1L;
+        Long driverId = 10L;
+
+        when(authenticationService.getAuthenticatedUserId()).thenReturn(driverId);
+        doThrow(new IllegalStateException("Ride is not in progress"))
+                .when(rideService).completeRide(rideId, driverId);
+
+        // Act & Assert
+        try {
+            mockMvc.perform(put("/api/v1/rides/{id}/complete", rideId)
+                    .header("Authorization", driverToken)
+                    .contentType(MediaType.APPLICATION_JSON));
+        } catch (Exception e) {
+            // Exception is expected
+        }
+
+        verify(rideService, times(1)).completeRide(rideId, driverId);
+    }
+
+    @Test
+    @DisplayName("Should return 403 when completing ride belonging to another driver")
+    void shouldReturn403WhenCompletingAnotherDriversRide() throws Exception {
+        // Arrange
+        Long rideId = 1L;
+        Long actualDriverId = 10L;
+
+        when(authenticationService.getAuthenticatedUserId()).thenReturn(actualDriverId);
+        doThrow(new AccessDeniedException("not authorized to complete this ride"))
+                .when(rideService).completeRide(rideId, actualDriverId);
+
+        // Act & Assert
+        try {
+            mockMvc.perform(put("/api/v1/rides/{id}/complete", rideId)
+                    .header("Authorization", driverToken)
+                    .contentType(MediaType.APPLICATION_JSON));
+        } catch (Exception e) {
+            // Exception is expected
+        }
+
+        verify(rideService, times(1)).completeRide(rideId, actualDriverId);
+    }
+
+    @Test
+    @DisplayName("Should handle invalid ride ID format")
+    void shouldHandleInvalidRideIdFormat() throws Exception {
+        // Arrange
+        String invalidRideId = "invalid";
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/rides/{id}/complete", invalidRideId)
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        verify(rideService, never()).completeRide(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should successfully complete ride with multiple passengers")
+    void shouldCompleteRideWithMultiplePassengers() throws Exception {
+        // Arrange
+        Long rideId = 5L;
+        Long driverId = 15L;
+
+        when(authenticationService.getAuthenticatedUserId()).thenReturn(driverId);
+        doNothing().when(rideService).completeRide(rideId, driverId);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/rides/{id}/complete", rideId)
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(rideService, times(1)).completeRide(rideId, driverId);
+    }
+
+    @Test
+    @DisplayName("Should complete ride when no tracking tokens exist")
+    void shouldCompleteRideWithoutTrackingTokens() throws Exception {
+        // Arrange
+        Long rideId = 3L;
+        Long driverId = 12L;
+
+        when(authenticationService.getAuthenticatedUserId()).thenReturn(driverId);
+        doNothing().when(rideService).completeRide(rideId, driverId);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/rides/{id}/complete", rideId)
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(rideService, times(1)).completeRide(rideId, driverId);
     }
 }

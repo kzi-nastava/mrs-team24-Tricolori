@@ -1,16 +1,18 @@
 <div class="flex justify-center pt-8 bg-white min-h-[calc(100vh-80px)] relative">
   <div class="w-full max-w-5xl px-6">
 
-    <h1 class="text-3xl font-sans text-gray-900 mb-2 font-bold">My Ride History</h1>
-    <p class="text-gray-600 mb-6">View all your rides and leave ratings for completed trips</p>
+    <h1 id="page-title" class="text-3xl font-sans text-gray-900 mb-2 font-bold">My Ride History</h1>
+    <p id="page-subtitle" class="text-gray-600 mb-6">View all your rides and leave ratings for completed trips</p>
 
-    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-      <h3 class="text-gray-800 font-medium mb-4 text-lg">Filters</h3>
+    <!-- FILTERS SECTION -->
+    <div id="filters-container" class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+      <h3 id="filters-title" class="text-gray-800 font-medium mb-4 text-lg">Filters</h3>
 
       <div>
-        <label class="block text-gray-700 mb-2 text-sm font-medium">User Email (Driver or Passenger)</label>
+        <label for="email-filter" class="block text-gray-700 mb-2 text-sm font-medium">User Email (Driver or Passenger)</label>
         <div class="relative">
           <input
+            id="email-filter"
             type="email"
             placeholder="search@example.com"
             [ngModel]="personEmail()"
@@ -23,8 +25,9 @@
 
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label class="block text-gray-700 mb-2 text-sm font-medium">Start Date</label>
+          <label for="start-date-filter" class="block text-gray-700 mb-2 text-sm font-medium">Start Date</label>
           <input
+            id="start-date-filter"
             type="date"
             [ngModel]="startDate()"
             (ngModelChange)="startDate.set($event)"
@@ -33,8 +36,9 @@
         </div>
 
         <div>
-          <label class="block text-gray-700 mb-2 text-sm font-medium">End Date</label>
+          <label for="end-date-filter" class="block text-gray-700 mb-2 text-sm font-medium">End Date</label>
           <input
+            id="end-date-filter"
             type="date"
             [ngModel]="endDate()"
             (ngModelChange)="endDate.set($event)"
@@ -45,12 +49,14 @@
 
       <div class="flex gap-3 mt-6 pt-4 border-t border-gray-100">
         <button
+          id="apply-filters-btn"
           (click)="onFilterChange()"
           [disabled]="isLoading()"
           class="bg-[#00acc1] hover:bg-[#008c9e] text-white px-8 py-2.5 rounded-lg font-bold transition active:scale-95 shadow-md disabled:opacity-50">
           Apply Filters
         </button>
         <button
+          id="clear-filters-btn"
           (click)="clearFilters()"
           [disabled]="isLoading()"
           class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-medium transition active:scale-95">
@@ -59,49 +65,54 @@
       </div>
     </div>
 
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+    <!-- RIDES TABLE SECTION -->
+    <div id="rides-table-container" class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
 
+      <!-- TABLE HEADER -->
       <div class="grid grid-cols-12 gap-4 bg-gray-50 px-6 py-4 border-b border-gray-200 font-bold text-sm text-gray-700 tracking-wider">
-        <div class="col-span-4 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('route')">
+        <div id="sort-route" class="col-span-4 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('route')">
           Route @if(sortBy() === 'route') { <ng-icon [name]="sortDirection() === 'asc' ? 'heroArrowUp' : 'heroArrowDown'" class="text-[#00acc1]"></ng-icon> }
         </div>
-        <div class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('createdAt')">
+        <div id="sort-date" class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('createdAt')">
           Date @if(sortBy() === 'createdAt') { <ng-icon [name]="sortDirection() === 'asc' ? 'heroArrowUp' : 'heroArrowDown'" class="text-[#00acc1]"></ng-icon> }
         </div>
-        <div class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('price')">
+        <div id="sort-price" class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('price')">
           Price @if(sortBy() === 'price') { <ng-icon [name]="sortDirection() === 'asc' ? 'heroArrowUp' : 'heroArrowDown'" class="text-[#00acc1]"></ng-icon> }
         </div>
-        <div class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('status')">
+        <div id="sort-status" class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('status')">
           Status @if(sortBy() === 'status') { <ng-icon [name]="sortDirection() === 'asc' ? 'heroArrowUp' : 'heroArrowDown'" class="text-[#00acc1]"></ng-icon> }
         </div>
         <div class="col-span-2 text-right">Actions</div>
       </div>
 
+      <!-- LOADING STATE -->
       @if (isLoading()) {
-        <div class="px-6 py-12 text-center">
+        <div id="loading-spinner" class="px-6 py-12 text-center">
           <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#00acc1]"></div>
-          <p class="mt-4 text-gray-500 font-sans font-medium">Fetching your rides...</p>
+          <p id="loading-text" class="mt-4 text-gray-500 font-sans font-medium">Fetching your rides...</p>
         </div>
       } @else {
-        <div class="divide-y divide-gray-100">
+        <!-- RIDES LIST -->
+        <div id="rides-list" class="divide-y divide-gray-100">
           @for (ride of rides(); track ride.id) {
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
+            <div id="ride-row-{{ ride.id }}" class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
               <div class="col-span-4 text-sm font-semibold text-gray-900 truncate">
                 {{ ride.pickupAddress }} - {{ ride.destinationAddress }}
               </div>
-              <div class="col-span-2 text-sm text-gray-600">
+              <div id="ride-date-{{ ride.id }}" class="col-span-2 text-sm text-gray-600">
                 {{ ride.createdAt | date:'dd.MM.yyyy' }}
               </div>
-              <div class="col-span-2 text-sm font-bold text-gray-900">
+              <div id="ride-price-{{ ride.id }}" class="col-span-2 text-sm font-bold text-gray-900">
                 {{ ride.price | number:'1.2-2' }} <span class="text-[10px] text-gray-500">RSD</span>
               </div>
-              <div class="col-span-2">
+              <div id="ride-status-{{ ride.id }}" class="col-span-2">
                 <span [class]="'px-2 py-1 rounded-full text-[10px] font-bold uppercase border whitespace-nowrap ' + getStatusClass(ride.status)">
                   {{ ride.status.replace('_', ' ') }}
                 </span>
               </div>
               <div class="col-span-2 text-right flex justify-end">
                 <button
+                  id="view-details-btn-{{ ride.id }}"
                   (click)="viewRideDetails(ride)"
                   class="text-[#00acc1] hover:text-[#008c9e] text-sm font-bold flex items-center gap-1 group">
                   <ng-icon name="heroEye" class="w-4 h-4 group-hover:scale-110 transition-transform"></ng-icon>
@@ -110,26 +121,33 @@
               </div>
             </div>
           } @empty {
-            <div class="px-6 py-20 text-center text-gray-400 font-sans italic">
+            <div id="no-rides-message" class="px-6 py-20 text-center text-gray-400 font-sans italic">
               No rides found.
             </div>
           }
         </div>
 
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div class="text-sm text-gray-600">
-            Showing <span class="font-bold">{{ rides().length }}</span> of <span class="font-bold">{{ totalElements() }}</span> rides
+        <!-- PAGINATION -->
+        <div id="pagination-container" class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div id="rides-counter" class="text-sm text-gray-600">
+            Showing <span id="rides-count" class="font-bold">{{ rides().length }}</span> of <span id="total-rides-count" class="font-bold">{{ totalElements() }}</span> rides
           </div>
           <div class="flex gap-2">
-            <button [disabled]="page() === 0 || isLoading()" (click)="page.set(page() - 1); loadRideHistory()"
-                    class="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-all">
+            <button
+              id="prev-page-btn"
+              [disabled]="page() === 0 || isLoading()"
+              (click)="page.set(page() - 1); loadRideHistory()"
+              class="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-all">
               Previous
             </button>
-            <div class="flex items-center px-4 text-sm font-semibold text-gray-900 bg-white border border-gray-300 rounded-md">
+            <div id="current-page-indicator" class="flex items-center px-4 text-sm font-semibold text-gray-900 bg-white border border-gray-300 rounded-md">
               Page {{ page() + 1 }}
             </div>
-            <button [disabled]="(page() + 1) * size() >= totalElements() || isLoading()" (click)="page.set(page() + 1); loadRideHistory()"
-                    class="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-all">
+            <button
+              id="next-page-btn"
+              [disabled]="(page() + 1) * size() >= totalElements() || isLoading()"
+              (click)="page.set(page() + 1); loadRideHistory()"
+              class="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-all">
               Next
             </button>
           </div>
@@ -141,6 +159,7 @@
 
 @if (selectedRide()) {
   <app-ride-details-modal
+    id="ride-details-modal"
     [rideId]="selectedRide()!.id"
     (onClose)="selectedRide.set(null)">
   </app-ride-details-modal>

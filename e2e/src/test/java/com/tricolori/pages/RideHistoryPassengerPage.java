@@ -3,10 +3,7 @@ package com.tricolori.pages;
 import java.time.Duration;
 import java.util.List;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
@@ -49,27 +46,38 @@ public class RideHistoryPassengerPage {
     }
 
     public void filterRides(
-        String startDay, String startMonth, String startYear,
-        String endDay, String endMonth, String endYear
+            String startDay, String startMonth, String startYear,
+            String endDay, String endMonth, String endYear
     ) {
         fillDateInput(startDateInput, startDay, startMonth, startYear);
         fillDateInput(endDateInput, endDay, endMonth, endYear);
 
         wait.until(ExpectedConditions.elementToBeClickable(filterButton));
         actions.moveToElement(filterButton).click().perform();
+
+        wait.until(ExpectedConditions.invisibilityOf(loadingSpinner));
     }
 
     public void viewDetailsByRideIndex(int rideIndex) {
         List<WebElement> allRides = getRides();
-        
+
         if (rideIndex >= 0 && rideIndex < allRides.size()) {
             WebElement targetRide = allRides.get(rideIndex);
             WebElement viewButton = targetRide.findElement(By.className("view-btn"));
-            actions.moveToElement(viewButton).click().perform();
+
+            wait.until(ExpectedConditions.elementToBeClickable(viewButton));
+
+            ((JavascriptExecutor) driver)
+                    .executeScript("arguments[0].click();", viewButton);
+
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector("app-ride-details-modal")
+            ));
         } else {
             throw new RuntimeException("Invalid index");
         }
     }
+
 
     private List<WebElement> getRides() {
         wait.until(ExpectedConditions.invisibilityOf(loadingSpinner));
@@ -86,7 +94,6 @@ public class RideHistoryPassengerPage {
             actions.sendKeys(Keys.BACK_SPACE);
         }
 
-        // build().perform() is neccessary at the end of a chain...
         actions.sendKeys(day + month + year).build().perform();
     }
 }

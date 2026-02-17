@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_white_rounded_top"
+    android:orientation="vertical"
+    android:padding="24dp"
+    tools:ignore="TooManyViews">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel_ride"
+            android:textColor="#0F172A"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:ignore="RelativeOverlap" />
+
+        <ImageButton
+            android:id="@+id/btnClose"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/close"
+            android:src="@drawable/ic_close"
+            app:tint="#475569" />
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/please_provide_a_reason_for_cancelling_this_ride_assignment"
+        android:textColor="#475569"
+        android:textSize="14sp" />
+
+    <EditText
+        android:id="@+id/etCancelReason"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:autofillHints="none"
+        android:background="@drawable/bg_slate_50_rounded"
+        android:gravity="top"
+        android:hint="@string/e_g_vehicle_trouble_traffic_etc"
+        android:inputType="textMultiLine"
+        android:padding="16dp"
+        android:textColor="#0F172A"
+        android:textSize="14sp"
+        tools:ignore="WideText,VisualLintTextFieldSize" />
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal"
+        tools:ignore="UselessLeaf">
+
+        <Button
+            android:id="@+id/btnGoBack"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="@string/go_back"
+            android:textColor="#334155"
+            app:cornerRadius="12dp"
+            tools:ignore="WideText,VisualLintButtonSize" />
+
+        <Button
+            android:id="@+id/btnConfirmCancel"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:backgroundTint="#DC2626"
+            android:text="@string/confirm_cancel"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:elevation="4dp"
+            tools:ignore="WideText,VisualLintButtonSize" />
+    </LinearLayout>
+</LinearLayout>
