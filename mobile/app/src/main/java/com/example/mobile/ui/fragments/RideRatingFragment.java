@@ -97,8 +97,8 @@ public class RideRatingFragment extends Fragment {
         tvDriverName.setText(driverName.isEmpty() ? "Your Driver" : driverName);
         tvRideDriver.setText(driverName.isEmpty() ? "-" : driverName);
 
-        btnSubmit.setEnabled(true);
-        btnSubmit.setAlpha(1f);
+        btnSubmit.setEnabled(false);
+        btnSubmit.setAlpha(0.5f);
         btnSubmit.setOnClickListener(v -> submitRating());
 
         view.findViewById(R.id.btnSkipRating).setOnClickListener(v -> navigateBack());
@@ -173,18 +173,26 @@ public class RideRatingFragment extends Fragment {
             vehicleStars[i].setOnClickListener(v -> setVehicleRating(rating));
         }
 
-        renderStars(driverStars, 0);
+        renderStars(driverStars,  0);
         renderStars(vehicleStars, 0);
     }
 
     private void setDriverRating(int rating) {
         driverRating = (driverRating == rating) ? 0 : rating;
         renderStars(driverStars, driverRating);
+        refreshSubmitButton();
     }
 
     private void setVehicleRating(int rating) {
         vehicleRating = (vehicleRating == rating) ? 0 : rating;
         renderStars(vehicleStars, vehicleRating);
+        refreshSubmitButton();
+    }
+
+    private void refreshSubmitButton() {
+        boolean canSubmit = driverRating > 0 && vehicleRating > 0;
+        btnSubmit.setEnabled(canSubmit);
+        btnSubmit.setAlpha(canSubmit ? 1.0f : 0.5f);
     }
 
     private void renderStars(ImageView[] stars, int filled) {
@@ -193,24 +201,23 @@ public class RideRatingFragment extends Fragment {
     }
 
     private void submitRating() {
-        String comment = etComment.getText() != null
-                ? etComment.getText().toString().trim() : "";
-
-        Integer drRating  = driverRating  > 0 ? driverRating  : null;
-        Integer vehRating = vehicleRating > 0 ? vehicleRating : null;
-        String  cmt       = comment.isEmpty() ? null : comment;
-
-        if (drRating == null && vehRating == null && cmt == null) {
+        if (driverRating == 0 || vehicleRating == 0) {
             Toast.makeText(getContext(),
-                    "Please provide at least a star rating or a comment",
+                    "Please rate both the driver and the vehicle",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
+        String comment = etComment.getText() != null
+                ? etComment.getText().toString().trim() : "";
+
+        String cmt = comment.isEmpty() ? null : comment;
+
         btnSubmit.setEnabled(false);
+        btnSubmit.setAlpha(0.5f);
 
         RetrofitClient.getClient(requireContext()).create(RideService.class)
-                .rateRide(rideId, new RideRatingRequest(drRating, vehRating, cmt))
+                .rateRide(rideId, new RideRatingRequest(driverRating, vehicleRating, cmt))
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -221,6 +228,7 @@ public class RideRatingFragment extends Fragment {
                             Log.e(TAG, "Rating error: " + response.code());
                             Toast.makeText(getContext(), "Failed to submit. Please try again.", Toast.LENGTH_SHORT).show();
                             btnSubmit.setEnabled(true);
+                            btnSubmit.setAlpha(1.0f);
                         }
                     }
                     @Override
@@ -228,6 +236,7 @@ public class RideRatingFragment extends Fragment {
                         Log.e(TAG, "Network failure", t);
                         Toast.makeText(getContext(), "Network error. Please try again.", Toast.LENGTH_SHORT).show();
                         btnSubmit.setEnabled(true);
+                        btnSubmit.setAlpha(1.0f);
                     }
                 });
     }

@@ -182,14 +182,31 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Rate Your Driver"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:textColor="@color/base_900"
-                        android:layout_marginBottom="4dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Rate Your Driver"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="@color/base_900" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Required"
+                            android:textSize="11sp"
+                            android:textColor="@color/base_500"
+                            android:fontFamily="sans-serif-medium" />
+
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvRatingDriverName"
@@ -230,14 +247,31 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Rate the Vehicle"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:textColor="@color/base_900"
-                        android:layout_marginBottom="14dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="14dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Rate the Vehicle"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="@color/base_900" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Required"
+                            android:textSize="11sp"
+                            android:textColor="@color/base_500"
+                            android:fontFamily="sans-serif-medium" />
+
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -258,7 +292,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="16dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/white">
@@ -306,6 +340,15 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="★ Driver and vehicle ratings are required to submit."
+                android:textSize="12sp"
+                android:textColor="@color/base_500"
+                android:gravity="center"
+                android:layout_marginBottom="12dp" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSubmitRating"
                 android:layout_width="match_parent"
@@ -315,6 +358,8 @@
                 android:textSize="16sp"
                 android:textColor="@color/white"
                 android:layout_marginBottom="12dp"
+                android:enabled="false"
+                android:alpha="0.5"
                 app:backgroundTint="@color/base_600"
                 app:cornerRadius="8dp"
                 app:icon="@drawable/ic_star_filled"
