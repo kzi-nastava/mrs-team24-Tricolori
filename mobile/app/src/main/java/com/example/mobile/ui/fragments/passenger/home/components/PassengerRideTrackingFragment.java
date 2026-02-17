@@ -1,0 +1,363 @@
+package com.example.mobile.ui.fragments.passenger.home.components;
+
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.example.mobile.R;
+import com.example.mobile.dto.ride.InconsistencyReportRequest;
+import com.example.mobile.dto.ride.PanicRideRequest;
+import com.example.mobile.dto.ride.PassengerRideDetailResponse;
+import com.example.mobile.dto.ride.RideTrackingResponse;
+import com.example.mobile.network.RetrofitClient;
+import com.example.mobile.network.service.RideService;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+
+import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class PassengerRideTrackingFragment extends Fragment {
+
+    private static final String TAG = "PassengerRideTracking";
+    private static final String ARG_RIDE_ID = "ride_id";
+    private static final long TRACKING_INTERVAL_MS = 5000;
+
+    private long rideId;
+    private Handler trackingHandler;
+    private Runnable trackingRunnable;
+
+    private TextView tvEstimatedArrival;
+    private TextView tvRemainingDistance;
+    private TextView tvPickupAddress;
+    private TextView tvDestinationAddress;
+    private TextView tvDriverName;
+    private TextView tvVehicleModel;
+    private TextView tvLicensePlate;
+    private TextView tvProgressPercentage;
+    private TextView tvTotalDistance;
+    private View progressBar;
+
+    private MaterialCardView reportFormCard;
+    private EditText etReportDescription;
+    private TextView tvReportCharCount;
+    private MaterialButton btnShowReportForm;
+    private MaterialButton btnSubmitReport;
+    private MaterialButton btnCancelReport;
+    private MaterialCardView reportSuccessCard;
+
+    private MaterialButton btnPanic;
+    private boolean panicTriggered = false;
+    private boolean reportFormVisible = false;
+    private boolean reportSubmitted = false;
+
+    private double totalDistance = 0;
+    private double remainingDistance = 0;
+    private double lastVehicleLat = 0;
+    private double lastVehicleLng = 0;
+
+    public static PassengerRideTrackingFragment newInstance(long rideId) {
+        PassengerRideTrackingFragment f = new PassengerRideTrackingFragment();
+        Bundle args = new Bundle();
+        args.putLong(ARG_RIDE_ID, rideId);
+        f.setArguments(args);
+        return f;
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_passenger_ride_tracking, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if (getArguments() != null) {
+            rideId = getArguments().getLong(ARG_RIDE_ID);
+        }
+
+        initViews(view);
+        setupListeners();
+        loadInitialData();
+        startTracking();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        stopTracking();
+    }
+
+    private void initViews(View view) {
+        tvEstimatedArrival = view.findViewById(R.id.tvEstimatedArrival);
+        tvRemainingDistance = view.findViewById(R.id.tvRemainingDistance);
+        tvPickupAddress = view.findViewById(R.id.tvPickupAddress);
+        tvDestinationAddress = view.findViewById(R.id.tvDestinationAddress);
+        tvDriverName = view.findViewById(R.id.tvDriverName);
+        tvVehicleModel = view.findViewById(R.id.tvVehicleModel);
+        tvLicensePlate = view.findViewById(R.id.tvLicensePlate);
+        tvProgressPercentage = view.findViewById(R.id.tvProgressPercentage);
+        tvTotalDistance = view.findViewById(R.id.tvTotalDistance);
+        progressBar = view.findViewById(R.id.progressBar);
+
+        reportFormCard = view.findViewById(R.id.reportFormCard);
+        etReportDescription = view.findViewById(R.id.etReportDescription);
+        tvReportCharCount = view.findViewById(R.id.tvReportCharCount);
+        btnShowReportForm = view.findViewById(R.id.btnShowReportForm);
+        btnSubmitReport = view.findViewById(R.id.btnSubmitReport);
+        btnCancelReport = view.findViewById(R.id.btnCancelReport);
+        reportSuccessCard = view.findViewById(R.id.reportSuccessCard);
+
+        btnPanic = view.findViewById(R.id.btnPanic);
+
+        view.findViewById(R.id.btnBack).setOnClickListener(v ->
+                requireActivity().getSupportFragmentManager().popBackStack());
+    }
+
+    private void setupListeners() {
+        btnShowReportForm.setOnClickListener(v -> toggleReportForm());
+        btnCancelReport.setOnClickListener(v -> toggleReportForm());
+        btnSubmitReport.setOnClickListener(v -> submitReport());
+        btnPanic.setOnClickListener(v -> triggerPanic());
+
+        etReportDescription.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                tvReportCharCount.setText(s.length() + "/500");
+                btnSubmitReport.setEnabled(s.length() >= 10 && s.length() <= 500);
+            }
+        });
+    }
+
+    private void loadInitialData() {
+        RetrofitClient.getClient(requireContext()).create(RideService.class)
+                .getPassengerRideDetail(rideId)
+                .enqueue(new Callback<PassengerRideDetailResponse>() {
+                    @Override
+                    public void onResponse(Call<PassengerRideDetailResponse> call,
+                                           Response<PassengerRideDetailResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            updateRideDetails(response.body());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<PassengerRideDetailResponse> call, Throwable t) {
+                        Log.e(TAG, "Failed to load ride details", t);
+                    }
+                });
+    }
+
+    private void updateRideDetails(PassengerRideDetailResponse detail) {
+        tvPickupAddress.setText(detail.getPickupAddress());
+        tvDestinationAddress.setText(detail.getDropoffAddress());
+        tvDriverName.setText(detail.getDriverName());
+        tvVehicleModel.setText(detail.getVehicleModel());
+        tvLicensePlate.setText(detail.getVehiclePlate());
+
+        if (detail.getDistance() != null) {
+            totalDistance = detail.getDistance();
+            remainingDistance = detail.getDistance();
+            tvTotalDistance.setText(String.format(Locale.getDefault(), "%.1f km total", totalDistance));
+        }
+
+        if (detail.getDuration() != null) {
+            tvEstimatedArrival.setText(String.format(Locale.getDefault(), "%d min", detail.getDuration()));
+        }
+    }
+
+    private void startTracking() {
+        trackingHandler = new Handler(Looper.getMainLooper());
+        trackingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                loadTrackingData();
+                trackingHandler.postDelayed(this, TRACKING_INTERVAL_MS);
+            }
+        };
+        trackingHandler.post(trackingRunnable);
+    }
+
+    private void stopTracking() {
+        if (trackingHandler != null && trackingRunnable != null) {
+            trackingHandler.removeCallbacks(trackingRunnable);
+        }
+    }
+
+    private void loadTrackingData() {
+        RetrofitClient.getClient(requireContext()).create(RideService.class)
+                .trackRide(rideId)
+                .enqueue(new Callback<RideTrackingResponse>() {
+                    @Override
+                    public void onResponse(Call<RideTrackingResponse> call,
+                                           Response<RideTrackingResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            updateTrackingData(response.body());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<RideTrackingResponse> call, Throwable t) {
+                        Log.e(TAG, "Tracking update failed", t);
+                    }
+                });
+    }
+
+    private void updateTrackingData(RideTrackingResponse tracking) {
+        if (tracking.getCurrentLocation() != null) {
+            lastVehicleLat = tracking.getCurrentLocation().getLatitude();
+            lastVehicleLng = tracking.getCurrentLocation().getLongitude();
+        }
+
+        if (tracking.getDriver() != null) {
+            String driverName = tracking.getDriver().getFirstName() + " " + tracking.getDriver().getLastName();
+            tvDriverName.setText(driverName);
+        }
+
+        if (tracking.getVehicle() != null) {
+            tvVehicleModel.setText(tracking.getVehicle().getModel());
+            tvLicensePlate.setText(tracking.getVehicle().getPlateNum());
+        }
+
+        if (tracking.getDistance() != null) {
+            remainingDistance = tracking.getDistance();
+            tvRemainingDistance.setText(String.format(Locale.getDefault(), "%.1f km remaining", remainingDistance));
+            updateProgress();
+        }
+
+        if (tracking.getDuration() != null) {
+            int minutes = tracking.getDuration() / 60;
+            tvEstimatedArrival.setText(String.format(Locale.getDefault(), "%d min", minutes));
+        }
+
+        if ("FINISHED".equals(tracking.getStatus())) {
+            stopTracking();
+            handleRideCompletion();
+        }
+
+        if ("PANIC".equals(tracking.getStatus()) && !panicTriggered) {
+            panicTriggered = true;
+            btnPanic.setEnabled(false);
+            btnPanic.setText("PANIC Alert Sent");
+        }
+    }
+
+    private void updateProgress() {
+        if (totalDistance > 0) {
+            double traveled = totalDistance - remainingDistance;
+            int percentage = (int) ((traveled / totalDistance) * 100);
+            tvProgressPercentage.setText(percentage + "% complete");
+            ViewGroup.LayoutParams params = progressBar.getLayoutParams();
+            params.width = (int) ((traveled / totalDistance) * getView().getWidth());
+            progressBar.setLayoutParams(params);
+        }
+    }
+
+    private void toggleReportForm() {
+        reportFormVisible = !reportFormVisible;
+        reportFormCard.setVisibility(reportFormVisible ? View.VISIBLE : View.GONE);
+        btnShowReportForm.setVisibility(reportFormVisible ? View.GONE : View.VISIBLE);
+
+        if (!reportFormVisible) {
+            etReportDescription.setText("");
+        }
+    }
+
+    private void submitReport() {
+        String description = etReportDescription.getText().toString().trim();
+        if (description.length() < 10 || description.length() > 500) {
+            Toast.makeText(getContext(), "Description must be 10-500 characters", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        btnSubmitReport.setEnabled(false);
+        btnSubmitReport.setText("Submitting...");
+
+        RetrofitClient.getClient(requireContext()).create(RideService.class)
+                .reportInconsistency(rideId, new InconsistencyReportRequest(description))
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            reportSubmitted = true;
+                            reportFormVisible = false;
+                            reportFormCard.setVisibility(View.GONE);
+                            reportSuccessCard.setVisibility(View.VISIBLE);
+                            btnShowReportForm.setVisibility(View.GONE);
+
+                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                if (reportSuccessCard != null) {
+                                    reportSuccessCard.setVisibility(View.GONE);
+                                    btnShowReportForm.setVisibility(View.VISIBLE);
+                                }
+                            }, 5000);
+                        } else {
+                            Toast.makeText(getContext(), "Failed to submit report", Toast.LENGTH_SHORT).show();
+                            btnSubmitReport.setEnabled(true);
+                            btnSubmitReport.setText("Submit Report");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(getContext(), "Network error", Toast.LENGTH_SHORT).show();
+                        btnSubmitReport.setEnabled(true);
+                        btnSubmitReport.setText("Submit Report");
+                    }
+                });
+    }
+
+    private void triggerPanic() {
+        if (panicTriggered) return;
+
+        PanicRideRequest.VehicleLocation location =
+                new PanicRideRequest.VehicleLocation(lastVehicleLat, lastVehicleLng);
+        PanicRideRequest request = new PanicRideRequest(location);
+
+        RetrofitClient.getClient(requireContext()).create(RideService.class)
+                .panicRide(request)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            panicTriggered = true;
+                            btnPanic.setEnabled(false);
+                            btnPanic.setText("PANIC Alert Sent");
+                            stopTracking();
+                            Toast.makeText(getContext(), "Emergency services notified", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(getContext(), "Failed to send panic alert", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void handleRideCompletion() {
+        Toast.makeText(getContext(), "Ride completed!", Toast.LENGTH_SHORT).show();
+        requireActivity().getSupportFragmentManager().popBackStack();
+    }
+}
