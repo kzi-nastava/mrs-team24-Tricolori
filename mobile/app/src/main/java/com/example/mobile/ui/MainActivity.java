@@ -121,19 +121,16 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 }
 
-                if (id == R.id.homeFragment) {
+                if (id == R.id.rideHistoryFragment) {
                     SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                    String role = prefs.getString("user_role", "");
+                    String userRole = prefs.getString("user_role", "");
 
-                    // If driver is logged in, navigate him to driver's home instead of unregistered home
-                    if ("ROLE_DRIVER".equals(role)) {
-                        drawerLayout.closeDrawer(GravityCompat.START);
+                    Bundle args = new Bundle();
+                    args.putString("role", "ROLE_PASSENGER".equals(userRole) ? "PASSENGER" : "DRIVER");
 
-                        if (navController.getCurrentDestination().getId() != R.id.driverHomeFragment) {
-                            navController.navigate(R.id.driverHomeFragment);
-                        }
-                        return true;
-                    }
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    navController.navigate(R.id.rideHistoryFragment, args);
+                    return true;
                 }
 
                 boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
