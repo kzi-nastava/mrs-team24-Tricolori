@@ -98,6 +98,16 @@
     </fragment>
 
     <fragment
+        android:id="@+id/passengerRideTrackingFragment"
+        android:name="com.example.mobile.ui.fragments.passenger.home.components.PassengerRideTrackingFragment"
+        android:label="Track Ride"
+        tools:layout="@layout/fragment_passenger_ride_tracking">
+        <argument
+            android:name="ride_id"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
         android:id="@+id/adminDriverRegistrationFragment"
         android:name="com.example.mobile.ui.fragments.AdminDriverRegistrationFragment"
         android:label="@string/admin_driver_fragment_label"
