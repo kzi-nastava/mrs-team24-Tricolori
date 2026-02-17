@@ -45,10 +45,14 @@
             app:destination="@id/homeFragment"
             app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="true" />
-
         <action
             android:id="@+id/action_login_to_driverHome"
             app:destination="@id/driverHomeFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_login_to_passengerHome"
+            app:destination="@id/passengerHomeFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
@@ -58,6 +62,12 @@
         android:name="com.example.mobile.ui.fragments.driver.home.DriverHomeFragment"
         android:label="Driver Home"
         tools:layout="@layout/fragment_driver_home" />
+
+    <fragment
+        android:id="@+id/passengerHomeFragment"
+        android:name="com.example.mobile.ui.fragments.passenger.home.PassengerHomeFragment"
+        android:label="Passenger Home"
+        tools:layout="@layout/fragment_passenger_home" />
 
     <fragment
         android:id="@+id/rideHistoryFragment"
@@ -84,18 +94,13 @@
         android:name="com.example.mobile.ui.fragments.PasswordSetupFragment"
         android:label="Password Setup"
         tools:layout="@layout/fragment_password_setup">
-
-        <deepLink
-            app:uri="http://10.0.2.2:4200/password-setup?token={registrationToken}" />
-        <deepLink
-            app:uri="http://localhost:4200/password-setup?token={registrationToken}" />
-
+        <deepLink app:uri="http://10.0.2.2:4200/password-setup?token={registrationToken}" />
+        <deepLink app:uri="http://localhost:4200/password-setup?token={registrationToken}" />
         <argument
             android:name="registrationToken"
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />
-
         <action
             android:id="@+id/action_passwordSetup_to_login"
             app:destination="@id/loginFragment"
@@ -148,18 +153,13 @@
         android:name="com.example.mobile.ui.fragments.ResetPasswordFragment"
         android:label="Reset Password"
         tools:layout="@layout/fragment_reset_password">
-
-        <deepLink
-            app:uri="http://10.0.2.2:4200/reset-password?token={token}" />
-        <deepLink
-            app:uri="http://localhost:4200/reset-password?token={token}" />
-
+        <deepLink app:uri="http://10.0.2.2:4200/reset-password?token={token}" />
+        <deepLink app:uri="http://localhost:4200/reset-password?token={token}" />
         <argument
             android:name="token"
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />
-
         <action
             android:id="@+id/action_resetPassword_to_login"
             app:destination="@id/loginFragment"

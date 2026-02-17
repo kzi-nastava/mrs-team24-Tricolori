@@ -29,4 +29,13 @@ public class RideAssignmentResponse implements Serializable {
     public String getPassengerFullName() {
         return passengerFirstName + " " + passengerLastName;
     }
+
+    public String getDriverFullName() {
+        return driverFirstName + " " + driverLastName;
+    }
+
+    public String getVehicleInfo() {
+        return vehicleModel + " (" + vehiclePlateNum + ")";
+    }
+
 }

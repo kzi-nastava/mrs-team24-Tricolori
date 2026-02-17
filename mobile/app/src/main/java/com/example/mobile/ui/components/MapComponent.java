@@ -1,4 +1,4 @@
-package com.example.mobile.ui.fragments.driver.home.components;
+package com.example.mobile.ui.components;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -17,14 +17,14 @@ import org.osmdroid.views.overlay.Polyline;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DriverMapComponent {
+public class MapComponent {
     private final MapView mapView;
     private final Context context;
     private Polyline routeOverlay;
     private Marker pickupMarker;
     private Marker destinationMarker;
 
-    public DriverMapComponent(MapView mapView, Context context) {
+    public MapComponent(MapView mapView, Context context) {
         this.mapView = mapView;
         this.context = context;
     }
