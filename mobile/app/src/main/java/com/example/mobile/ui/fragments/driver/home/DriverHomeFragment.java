@@ -2,7 +2,6 @@ package com.example.mobile.ui.fragments.driver.home;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,7 @@ import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
 import com.example.mobile.ui.fragments.driver.home.components.DriverCancelRideFragment;
-import com.example.mobile.ui.fragments.driver.home.components.DriverMapComponent;
+import com.example.mobile.ui.components.MapComponent;
 import com.example.mobile.ui.fragments.driver.home.components.DriverRideAssignmentFragment;
 import com.example.mobile.ui.fragments.driver.home.components.DriverWaitingFragment;
 
@@ -25,7 +24,7 @@ import org.osmdroid.views.MapView;
 
 public class DriverHomeFragment extends Fragment {
 
-    private DriverMapComponent mapComponent;
+    private MapComponent mapComponent;
     private MapView mapView;
 
     private static final double NS_LAT = 45.2671;
@@ -49,7 +48,7 @@ public class DriverHomeFragment extends Fragment {
         mapView = view.findViewById(R.id.map);
         setupMapView();
 
-        mapComponent = new DriverMapComponent(mapView, requireContext());
+        mapComponent = new MapComponent(mapView, requireContext());
 
         DriverViewModel viewModel = new ViewModelProvider(requireActivity()).get(DriverViewModel.class);
 

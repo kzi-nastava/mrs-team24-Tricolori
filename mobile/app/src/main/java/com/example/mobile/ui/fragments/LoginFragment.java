@@ -119,7 +119,7 @@ public class LoginFragment extends Fragment {
         } else if ("ROLE_ADMIN".equals(role)) {
             destination = R.id.action_login_to_profile;
         } else if ("ROLE_PASSENGER".equals(role)) {
-            destination = R.id.action_login_to_profile;
+            destination = R.id.action_login_to_passengerHome;
         } else {
             // fallback
             destination = R.id.action_login_to_home;
