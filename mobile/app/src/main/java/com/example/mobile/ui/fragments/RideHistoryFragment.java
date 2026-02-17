@@ -44,7 +44,6 @@ import retrofit2.Response;
 
 public class RideHistoryFragment extends Fragment {
 
-    // ── Constants ─────────────────────────────────────────────────────────────
 
     public static final String ROLE_DRIVER    = "DRIVER";
     public static final String ROLE_PASSENGER = "PASSENGER";
@@ -52,7 +51,6 @@ public class RideHistoryFragment extends Fragment {
     private static final String ARG_ROLE = "role";
     private static final String TAG      = "RideHistoryFragment";
 
-    // ── Factory methods ───────────────────────────────────────────────────────
 
     public static RideHistoryFragment forDriver() {
         return newInstance(ROLE_DRIVER);
@@ -70,7 +68,6 @@ public class RideHistoryFragment extends Fragment {
         return f;
     }
 
-    // ── Fields ────────────────────────────────────────────────────────────────
 
     private String role;
 
@@ -86,8 +83,6 @@ public class RideHistoryFragment extends Fragment {
             new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     public RideHistoryFragment() {}
-
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -109,7 +104,6 @@ public class RideHistoryFragment extends Fragment {
         fetchRideHistory();
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────────
 
     private void initViews(View view) {
         etStartDate = view.findViewById(R.id.etStartDate);
@@ -135,7 +129,6 @@ public class RideHistoryFragment extends Fragment {
         btnFilter.setOnClickListener(v -> filterRides());
     }
 
-    // ── Fetch (branches on role) ──────────────────────────────────────────────
 
     private void fetchRideHistory() {
         SharedPreferences prefs =
@@ -254,8 +247,6 @@ public class RideHistoryFragment extends Fragment {
                 });
     }
 
-    // ── Map DTOs → Ride model ─────────────────────────────────────────────────
-
     private void mapDriverDtos(List<DriverRideHistoryResponse> dtos) {
         allRides = new ArrayList<>();
 
@@ -303,8 +294,6 @@ public class RideHistoryFragment extends Fragment {
         adapter.updateData(filteredRides);
     }
 
-    // ── Filter ────────────────────────────────────────────────────────────────
-
     private void filterRides() {
         String startStr = etStartDate.getText() != null
                 ? etStartDate.getText().toString() : "";
@@ -348,8 +337,6 @@ public class RideHistoryFragment extends Fragment {
         }
     }
 
-    // ── Date picker ───────────────────────────────────────────────────────────
-
     private void showDatePicker(boolean isStartDate) {
         Calendar cal = Calendar.getInstance();
         new DatePickerDialog(
@@ -366,7 +353,6 @@ public class RideHistoryFragment extends Fragment {
         ).show();
     }
 
-    // ── Tap handler — opens the shared detail dialog with the role ────────────
 
     private void onRideTapped(Ride ride) {
         RideDetailsDialogFragment dialog =
@@ -374,7 +360,6 @@ public class RideHistoryFragment extends Fragment {
         dialog.show(getParentFragmentManager(), "RideDetailsDialog");
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private boolean isDriver() {
         return ROLE_DRIVER.equals(role);

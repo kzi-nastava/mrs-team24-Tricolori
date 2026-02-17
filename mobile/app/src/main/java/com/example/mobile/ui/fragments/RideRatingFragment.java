@@ -50,7 +50,6 @@ public class RideRatingFragment extends Fragment {
     private MaterialButton    btnSkip;
     private TextView          tvDriverName;
 
-    // ── Factory ──────────────────────────────────────────────────────────
 
     public static RideRatingFragment newInstance(long rideId, String driverName) {
         RideRatingFragment f = new RideRatingFragment();
@@ -63,7 +62,6 @@ public class RideRatingFragment extends Fragment {
 
     public RideRatingFragment() {}
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -85,7 +83,6 @@ public class RideRatingFragment extends Fragment {
         setupListeners();
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────────
 
     private void initViews(View view) {
         tvDriverName = view.findViewById(R.id.tvRatingDriverName);
@@ -128,7 +125,6 @@ public class RideRatingFragment extends Fragment {
         btnSkip.setOnClickListener(v -> navigateBack());
     }
 
-    // ── Star logic ────────────────────────────────────────────────────────────
 
     private void setDriverRating(int rating) {
         // Tapping the same star again deselects it
@@ -155,8 +151,6 @@ public class RideRatingFragment extends Fragment {
         btnSubmit.setEnabled(bothSelected);
         btnSubmit.setAlpha(bothSelected ? 1f : 0.5f);
     }
-
-    // ── Submit ────────────────────────────────────────────────────────────────
 
     private void submitRating() {
         if (driverRating == 0 || vehicleRating == 0) {
@@ -213,7 +207,6 @@ public class RideRatingFragment extends Fragment {
                 });
     }
 
-    // ── Navigation ────────────────────────────────────────────────────────────
 
     private void navigateBack() {
         if (getParentFragmentManager().getBackStackEntryCount() > 0) {

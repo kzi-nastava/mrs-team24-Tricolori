@@ -49,7 +49,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
     private static final String ARG_ROLE    = "role";
     private static final String TAG         = "RideDetailsDialog";
 
-    // ── Factory ───────────────────────────────────────────────────────────────
 
     /** Driver variant (backward-compatible, no role arg needed from old call sites) */
     public static RideDetailsDialogFragment newInstance(Long rideId) {
@@ -66,7 +65,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
         return f;
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     @Nullable
     @Override
@@ -110,7 +108,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
         }
     }
 
-    // ── Fetch: Driver ─────────────────────────────────────────────────────────
 
     private void fetchDriverRideDetails(long rideId, View view) {
         RideService rideService =
@@ -136,7 +133,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 });
     }
 
-    // ── Fetch: Passenger ──────────────────────────────────────────────────────
 
     private void fetchPassengerRideDetails(long rideId, View view) {
         RideService rideService =
@@ -162,7 +158,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 });
     }
 
-    // ── Bind: Driver (existing logic, unchanged) ──────────────────────────────
 
     @SuppressLint("SetTextI18n")
     private void bindDriverData(View view, DriverRideDetailResponse dto) {
@@ -203,7 +198,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 safe(dto.getDropoffAddress()));
     }
 
-    // ── Bind: Passenger ───────────────────────────────────────────────────────
 
     @SuppressLint("SetTextI18n")
     private void bindPassengerData(View view, PassengerRideDetailResponse dto) {
@@ -268,7 +262,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 safe(dto.getDropoffAddress()));
     }
 
-    // ── Shared bind helpers ───────────────────────────────────────────────────
 
     private void setRoute(View view, String pickup, String dropoff) {
         ((TextView) view.findViewById(R.id.tvDetailRoute))
@@ -344,7 +337,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
         }
     }
 
-    // ── Navigate to rating screen ─────────────────────────────────────────────
 
     private void openRatingScreen(Long rideId, String driverName) {
         dismiss();
@@ -359,7 +351,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
         navController.navigate(R.id.action_to_rideRatingFragment, args);
     }
 
-    // ── Map ───────────────────────────────────────────────────────────────────
 
     @SuppressLint("UseCompatLoadingForDrawables")
     private void setupMap(View view,
@@ -479,8 +470,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
         });
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
-
     @Override
     public void onResume() {
         super.onResume();
@@ -495,7 +484,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
         if (map != null) map.onPause();
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private String safe(String s) { return s == null ? "-" : s; }
 
