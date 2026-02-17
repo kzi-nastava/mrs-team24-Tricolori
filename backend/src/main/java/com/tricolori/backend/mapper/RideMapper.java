@@ -107,6 +107,26 @@ public interface RideMapper {
     @Mapping(target = "route", ignore = true)  // Set manually in service
     RideTrackingResponse toTrackingResponse(Ride ride);
 
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "passengerFirstName", source = "mainPassenger.firstName")
+    @Mapping(target = "passengerLastName", source = "mainPassenger.lastName")
+    @Mapping(target = "passengerEmail", source = "mainPassenger.email")
+    @Mapping(target = "passengerPhoneNum", source = "mainPassenger.phoneNum")
+    @Mapping(target = "driverFirstName", source = "driver.firstName")
+    @Mapping(target = "driverLastName", source = "driver.lastName")
+    @Mapping(target = "driverEmail", source = "driver.email")
+    @Mapping(target = "driverPhoneNum", source = "driver.phoneNum")
+    @Mapping(target = "vehiclePlateNum", source = "driver.vehicle.plateNum")
+    @Mapping(target = "vehicleModel", source = "driver.vehicle.model")
+    @Mapping(target = "routeGeometry", source = "route.routeGeometry")
+    @Mapping(target = "distanceKm", source = "route.distanceKm")
+    @Mapping(target = "estimatedTimeSeconds", source = "route.estimatedTimeSeconds")
+    @Mapping(target = "pickupAddress", source = "route.pickupStop.address")
+    @Mapping(target = "destinationAddress", source = "route.destinationStop.address")
+    RideAssignmentResponse toAssignmentResponse(Ride ride);
+
     // ================= helpers =================
 
     default String getDestinationAddress(Ride ride) {
