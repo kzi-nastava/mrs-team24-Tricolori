@@ -40,6 +40,11 @@
             android:icon="@drawable/ic_vehicle"
             app:showAsAction="never" />
 
+        <item
+            android:id="@+id/userReportsFragment"
+            android:title="Reports"
+            android:icon="@drawable/ic_chart" />
+
     <item
         android:id="@+id/userProfileFragment"
         android:icon="@drawable/ic_person"

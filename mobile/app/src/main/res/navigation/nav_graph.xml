@@ -58,6 +58,16 @@
     </fragment>
 
     <fragment
+        android:id="@+id/userReportsFragment"
+        android:name="com.example.mobile.ui.fragments.UserReportsFragment"
+        android:label="Reports"
+        tools:layout="@layout/fragment_user_reports">
+        <action
+            android:id="@+id/action_reports_to_profile"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
+
+    <fragment
         android:id="@+id/driverHomeFragment"
         android:name="com.example.mobile.ui.fragments.driver.home.DriverHomeFragment"
         android:label="Driver Home"
@@ -141,6 +151,9 @@
             android:id="@+id/action_profile_to_login"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/homeFragment" />
+        <action
+            android:id="@+id/action_profile_to_reports"
+            app:destination="@+id/userReportsFragment" />
     </fragment>
 
     <fragment
