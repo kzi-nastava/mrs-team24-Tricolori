@@ -8,6 +8,7 @@ import { BehaviorSubject, filter, first } from 'rxjs';
 export class WebSocketService {
   private stompClient: Client | null = null;
   private connectionStatus$ = new BehaviorSubject<boolean>(false);
+  private subscriptions = new Map<string, StompSubscription>();
 
   constructor() {}
 
@@ -41,11 +42,9 @@ export class WebSocketService {
     this.stompClient.activate();
   }
 
-  subscribe(topic: string, callback: (payload: any) => void): StompSubscription | undefined {
-    let subscription: StompSubscription | undefined;
-
+  subscribe(topic: string, callback: (payload: any) => void): void {
     if (this.connectionStatus$.value) {
-      subscription = this.doSubscribe(topic, callback);
+      this.doSubscribe(topic, callback);
     } else {
       this.connectionStatus$.pipe(
         filter(status => status),
@@ -54,18 +53,21 @@ export class WebSocketService {
         this.doSubscribe(topic, callback);
       });
     }
-
-    return subscription;
   }
 
-  private doSubscribe(topic: string, callback: (payload: any) => void): StompSubscription | undefined {
+  unsubscribe(topic: string): void {
+    this.subscriptions.get(topic)?.unsubscribe();
+    this.subscriptions.delete(topic);
+  }
+
+  private doSubscribe(topic: string, callback: (payload: any) => void): void {
     console.log(`Subscribing to: ${topic}`);
-    return this.stompClient?.subscribe(topic, (message: IMessage) => {
+    const sub = this.stompClient?.subscribe(topic, (message: IMessage) => {
       callback(JSON.parse(message.body));
     });
+    if (sub) this.subscriptions.set(topic, sub);
   }
 
-  /** Method for sending data to backend */
   publish(destination: string, body: any): void {
     if (this.stompClient?.connected) {
       this.stompClient.publish({
@@ -85,5 +87,4 @@ export class WebSocketService {
       });
     }
   }
-
 }

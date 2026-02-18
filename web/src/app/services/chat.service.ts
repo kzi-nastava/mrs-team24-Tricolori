@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { StompSubscription } from '@stomp/stompjs';
 import { WebSocketService } from './websocket.service';
-import {environment} from '../../environments/environment';
+import { environment } from '../../environments/environment';
 
 export interface ChatMessageDTO {
   id: number;
@@ -30,7 +29,7 @@ export interface ChatUserDTO {
 export class ChatService {
 
   private readonly API_URL = `${environment.apiUrl}/chats`;
-  private subscription: StompSubscription | undefined;
+  private currentTopic: string | undefined;
 
   private messagesSubject = new BehaviorSubject<ChatMessageDTO | null>(null);
   public messages$ = this.messagesSubject.asObservable();
@@ -65,12 +64,12 @@ export class ChatService {
   // ==================== WEBSOCKET ====================
 
   subscribeToChat(userId: number): void {
-    this.subscription = this.webSocketService.subscribe(
-      `/topic/chat/${userId}`,
-      (message: ChatMessageDTO) => {
-        this.messagesSubject.next(message);
-      }
-    );
+    const topic = `/topic/chat/${userId}`;
+    this.currentTopic = topic;
+
+    this.webSocketService.subscribe(topic, (message: ChatMessageDTO) => {
+      this.messagesSubject.next(message);
+    });
   }
 
   sendMessage(senderId: number, receiverId: number, content: string): void {
@@ -82,9 +81,9 @@ export class ChatService {
   }
 
   unsubscribe(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      this.subscription = undefined;
+    if (this.currentTopic) {
+      this.webSocketService.unsubscribe(this.currentTopic);
+      this.currentTopic = undefined;
     }
   }
 

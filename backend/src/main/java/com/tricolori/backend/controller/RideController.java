@@ -34,14 +34,14 @@ public class RideController {
     private final InconsistencyReportService inconsistencyReportService;
     private final AuthService authenticationService;
 
-    @PutMapping("/cancel")
+    @PutMapping("/{id}/cancel")
     @PreAuthorize("hasAnyRole('DRIVER', 'PASSENGER')")
     public ResponseEntity<Void> cancelRide(
+            @PathVariable Long id,
             @RequestBody CancelRideRequest request,
             @AuthenticationPrincipal Person person
     ) {
-
-        rideService.cancelRide(person, request);
+        rideService.cancelRide(id, person, request);
         return ResponseEntity.ok().build();
     }
 
@@ -241,7 +241,7 @@ public class RideController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('PASSENGER', 'DRIVER', 'ADMIN')")
-    public ResponseEntity<RideAssignmentResponse> getRideDetails(
+    public ResponseEntity<RideAssignmentResponse> getRideAssignment(
         @AuthenticationPrincipal Person passenger,
         @PathVariable Long id
     ) {

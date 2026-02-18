@@ -395,84 +395,75 @@ public class RideService {
 
     // ================= ride actions =================
 
-    @Transactional
-    public void cancelRide(Person person, CancelRideRequest request) {
+    private void notifyPassengersForCancelledRide(Ride ride, String message, RideStatus status) {
+        for (Passenger p : ride.getPassengers()) {
+            // Send email notification
+            notificationService.sendRideCancelledNotification(
+                    p.getEmail(), ride.getId(), message
+            );
 
-        if (person == null) {
-            throw new IllegalArgumentException("Person cannot be null");
+            // Send WebSocket notification
+            sendRideUpdateToPassenger(
+                    p.getEmail(),
+                    new RideUpdateMessage(status, ride.getId(), message)
+            );
+        }
+    }
+
+    private void handleDriverCancelRide(Ride ride, CancelRideRequest request) {
+
+        if (request.reason().isBlank()) {
+            throw new IllegalArgumentException("Cancellation reason must be provided.");
+        }
+
+        if (ride.getPassengers() != null) {
+            String message = "Driver cancelled: " + request.reason();
+            notifyPassengersForCancelledRide(ride, message, RideStatus.CANCELLED_BY_DRIVER);
+        }
+
+        ride.setStatus(RideStatus.CANCELLED_BY_DRIVER);
+    }
+
+    private void handlePassengerCancelRide(Ride ride, CancelRideRequest request) {
+
+        LocalDateTime timeNow = LocalDateTime.now();
+        if (timeNow.isAfter(ride.getStartTime().minusMinutes(10))) {
+            throw new CancelRideExpiredException("Ride cancel option expired. Ride starts within 10 minutes.");
+        }
+
+        // Notify driver via email only (no WebSocket)
+        notificationService.sendRideCancelledNotification(
+                ride.getDriver().getEmail(), ride.getId(), "Passenger cancelled the ride"
+        );
+
+        // Notify all passengers
+        String message = "Ride has been cancelled by a passenger";
+        notifyPassengersForCancelledRide(ride, message, RideStatus.CANCELLED_BY_PASSENGER);
+
+        ride.setStatus(RideStatus.CANCELLED_BY_PASSENGER);
+    }
+
+    @Transactional
+    public void cancelRide(Long rideId, Person person, CancelRideRequest request) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride not found."));
+
+        if (ride.getDriver().getId().equals(person.getId())) {
+            handleDriverCancelRide(ride, request);
+        } else if (ride.containsPassengerWithId(person.getId())) {
+            handlePassengerCancelRide(ride, request);
+        } else {
+            throw new AccessDeniedException("You are not authorized to cancel this ride.");
         }
 
         String reason = (request != null && request.reason() != null && !request.reason().isBlank())
                 ? request.reason()
                 : "No reason provided";
 
-        Ride ride;
-
-        if (person.getRole() == PersonRole.ROLE_DRIVER) {
-            ride = rideRepository.findOngoingRideByDriver(person.getId())
-                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
-        } else if (person.getRole() == PersonRole.ROLE_PASSENGER) {
-            ride = rideRepository.findOngoingRideByPassenger(person.getId())
-                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this passenger."));
-        } else {
-            throw new IllegalStateException("Unsupported role: " + person.getRole());
-        }
-
-        String pickup = "Unknown pickup";
-        String destination = "Unknown destination";
-
-        if (ride.getRoute() != null) {
-            if (ride.getRoute().getPickupStop() != null && ride.getRoute().getPickupStop().getAddress() != null) {
-                pickup = ride.getRoute().getPickupStop().getAddress();
-            }
-
-            if (ride.getRoute().getDestinationStop() != null && ride.getRoute().getDestinationStop().getAddress() != null) {
-                destination = ride.getRoute().getDestinationStop().getAddress();
-            }
-        }
-
-        String scheduled = ride.getScheduledFor() != null
-                ? ride.getScheduledFor().toString()
-                : "N/A";
-
-        if (person.getRole() == PersonRole.ROLE_DRIVER) { // DRIVER
-
-            if (request == null || request.reason() == null || request.reason().isBlank()) {
-                throw new IllegalArgumentException("Driver must provide cancellation reason");
-            }
-
-            cancelByDriver(ride, request);
-
-            if (ride.getPassengers() != null) {
-                for (Passenger p : ride.getPassengers()) {
-                    if (p == null) continue;
-
-                    notificationService.sendRideCancelledNotification(
-                            p.getEmail(), ride.getId(), scheduled, pickup, destination, "Driver cancelled: " + reason
-                    );
-                }
-            }
-
-        } else { // PASSENGER
-
-            if (ride.getStartTime() != null &&
-                    LocalDateTime.now().isAfter(ride.getStartTime().minusMinutes(10))) {
-                throw new CancelRideExpiredException("Cancel failed. Ride starts within 10 minutes");
-            }
-
-            cancelByPassenger(ride);
-
-            if (ride.getDriver() != null) {
-                notificationService.sendRideCancelledNotification(
-                        ride.getDriver().getEmail(), ride.getId(), scheduled, pickup, destination, "Passenger cancelled the ride"
-                );
-            }
-        }
-
         ride.setCancellationReason(reason);
         rideRepository.save(ride);
 
-        log.info("Ride with id {} got cancelled by {}", ride.getId(), person.getEmail());
+        log.info("Ride with id {} cancelled by {}", ride.getId(), person.getEmail());
     }
 
 
@@ -538,6 +529,14 @@ public class RideService {
         rideRepository.save(ride);
     }
 
+    private void sendRideUpdateToPassenger(String passengerEmail, RideUpdateMessage message) {
+        messagingTemplate.convertAndSendToUser(
+                passengerEmail,
+                "/queue/ride-updates",
+                message
+        );
+    }
+
     @Transactional
     public void startRide(Person driver, Long rideId) {
         Ride ride = rideRepository.findById(rideId).orElseThrow(
@@ -561,6 +560,11 @@ public class RideService {
                     p.getEmail(), ride.getId(), ride.getDriver().getFirstName()+" "+ride.getDriver().getLastName(),
                     ride.getDriver().getVehicle().getModel(), ride.getRoute().getPickupStop().getAddress()
             );
+            // WebSocket notification for each passenger
+            sendRideUpdateToPassenger(
+                    p.getEmail(),
+                    new RideUpdateMessage(RideStatus.ONGOING, ride.getId(), "Your ride has started!")
+            );
         }
         notificationService.sendRideStartedNotification(ride.getDriver().getEmail(), ride.getId());
         
@@ -575,7 +579,6 @@ public class RideService {
                 "/queue/ride-assigned",
                 ride.getId()
         );
-
         log.info("WebSocket: Driver {{}} notified with Ride ID: {{}}",
                 ride.getDriver().getEmail(), ride.getId());
     }
@@ -709,20 +712,6 @@ public class RideService {
         if (!isPassenger) {
             throw new AccessDeniedException("unauthorized");
         }
-    }
-
-    private void cancelByDriver(Ride ride, CancelRideRequest request) {
-        if (request.reason().isBlank()) {
-            throw new IllegalArgumentException("reason required");
-        }
-        ride.setStatus(RideStatus.CANCELLED_BY_DRIVER);
-    }
-
-    private void cancelByPassenger(Ride ride) {
-        if (LocalDateTime.now().isAfter(ride.getStartTime().minusMinutes(10))) {
-            throw new CancelRideExpiredException("Cancel failed. Ride starts within 10 minutes");
-        }
-        ride.setStatus(RideStatus.CANCELLED_BY_PASSENGER);
     }
 
     private Double calculatePrice(Ride ride) {

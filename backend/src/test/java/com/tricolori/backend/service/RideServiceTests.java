@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
@@ -59,6 +60,8 @@ class RideServiceTests {
     private NotificationService notificationService;
     @Mock
     private TrackingTokenRepository trackingTokenRepository;
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
 
     @Mock
     private RouteService routeService;

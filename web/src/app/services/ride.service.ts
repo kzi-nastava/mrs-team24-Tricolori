@@ -130,8 +130,8 @@ export class RideService {
   }
 
   // Cancel a ride with a reason
-  cancelRide(reason: string): Observable<void> {
-    return this.http.put<void>(`${this.API_URL}/cancel`, { reason: reason });
+  cancelRide(rideId: number, reason: string): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${rideId}/cancel`, { reason });
   }
 
   bookRide(orderData: any): Observable<any> {
@@ -154,7 +154,7 @@ export class RideService {
       pad(date.getMinutes()) + ':' +
       pad(date.getSeconds());
   }
-  
+
   stopRide(stopRideRequest: StopRideRequest) : Observable<StopRideResponse> {
     return this.http.put<StopRideResponse>(`${this.API_URL}/stop`, stopRideRequest);
   }
@@ -175,7 +175,7 @@ export class RideService {
     return this.http.get<RideTrackingResponse[]>(`${this.API_URL}/ongoing`);
   }
 
-  getRideDetails(id: number): Observable<RideAssignmentResponse> {
+  getRideAssignment(id: number): Observable<RideAssignmentResponse> {
     return this.http.get<RideAssignmentResponse>(`${this.API_URL}/${id}`);
   }
 }

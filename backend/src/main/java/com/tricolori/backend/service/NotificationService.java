@@ -116,10 +116,9 @@ public class NotificationService {
     }
 
     // RIDE_CANCELLED
-    public void sendRideCancelledNotification(String passengerEmail, Long rideId,
-                                              String scheduledTime, String from, String to, String reason) {
+    public void sendRideCancelledNotification(String passengerEmail, Long rideId, String reason) {
         String content = String.format("Your ride scheduled for %s from %s to %s has been cancelled%s. Your payment has been refunded.",
-                scheduledTime, from, to, reason != null && !reason.isEmpty() ? " due to " + reason : "");
+                reason != null && !reason.isEmpty() ? " due to " + reason : "");
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_CANCELLED, rideId);
         notification.setActionUrl("/passenger/history?openRide=" + rideId);
