@@ -78,4 +78,14 @@ public interface RideService {
             @Path("rideId") Long rideId,
             @Body InconsistencyReportRequest request
     );
+
+    @PUT("api/v1/rides/{rideId}/complete")
+    Call<Void> completeRide(
+            @Path("rideId") Long rideId
+    );
+
+    @PUT("api/v1/rides/stop")
+    Call<StopRideResponse> stopRide(
+            @Body StopRideRequest request
+    );
 }
