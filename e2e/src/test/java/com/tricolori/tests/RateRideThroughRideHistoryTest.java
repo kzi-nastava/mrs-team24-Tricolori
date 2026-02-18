@@ -75,7 +75,7 @@ public class RateRideThroughRideHistoryTest {
                 {
                         "passenger.test@gmail.com",
                         "Password123",
-                        0,
+                        1,
                         1,
                         1,
                         null
