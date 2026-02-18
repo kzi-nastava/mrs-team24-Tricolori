@@ -21,6 +21,7 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final RideRepository rideRepository;
+    private final NotificationService notificationService;
 
     // ================= rate ride =================
 
@@ -56,6 +57,12 @@ public class ReviewService {
         review.setComment(request.getComment());
 
         reviewRepository.save(review);
+
+        // Notify driver about new review
+        if (ride.getDriver() != null) {
+            notificationService.sendRatingReceivedNotification(ride.getDriver().getEmail(), ride.getId(), request.getDriverRating(),
+                    request.getVehicleRating(), passenger.getFirstName() +" "+ passenger.getLastName(), request.getComment());
+        }
     }
 
     // ================= rating status =================

@@ -64,7 +64,6 @@
       </div>
     </div>
 
-    <!-- Spacer to push buttons to bottom -->
     <div class="flex-1"></div>
 
     @if (!showReportForm()) {
@@ -159,26 +158,14 @@
       }
     </button>
 
-    @if (panicTriggered()) {
-      <!-- Panic Confirmation -->
-      <div class="bg-red-50 border-2 border-red-500 rounded-lg p-4 mt-3 animate-pulse">
-        <div class="flex items-start gap-3">
-          <ng-icon name="heroExclamationCircle" class="w-6 h-6 text-red-600 mt-0.5"></ng-icon>
-          <div>
-            <h3 class="text-sm font-bold text-red-900 m-0 mb-1">Emergency Alert Active</h3>
-            <p class="text-xs text-red-700 m-0">Central dispatch has been notified. Help is on the way.</p>
-          </div>
-        </div>
-      </div>
-    }
-
   </div>
 
   <!-- Map Container -->
   <div class="w-full lg:w-3/4 h-[50vh] lg:h-full relative">
-    <div id="trackingMap" class="w-full h-full"></div>
 
-    <!-- Live Updates Indicator -->
+    <app-map class="w-full h-full"></app-map>
+
+    <!-- Live indicator -->
     <div class="absolute top-6 left-6 bg-white rounded-lg shadow-lg px-4 py-3 z-[1000] flex items-center gap-3">
       <div class="relative">
         <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
@@ -190,7 +177,7 @@
       </div>
     </div>
 
-    <!-- Trip Progress -->
+    <!-- Progress -->
     <div class="absolute top-6 right-6 bg-white rounded-lg shadow-lg p-4 z-[1000]">
       <h3 class="text-sm font-semibold text-base-900 mb-2 m-0">Trip Progress</h3>
       <div class="space-y-2">

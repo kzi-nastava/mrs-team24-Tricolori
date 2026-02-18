@@ -16,6 +16,8 @@ import {
 } from '@ng-icons/heroicons/outline';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
+import { RideService } from '../../services/ride.service';
+import { RideTrackingResponse } from '../../model/ride-tracking';
 
 interface CurrentRide {
   id: number;
@@ -71,92 +73,7 @@ export class AdminRideSupervisionComponent implements OnInit, OnDestroy {
   private routeControl: any = null;
   private updateInterval: any = null;
 
-  drivers = signal<Driver[]>([
-    {
-      id: 1,
-      name: 'Marko Petrović',
-      phone: '+381 64 123 4567',
-      vehicleType: 'Economy - Toyota Corolla',
-      licensePlate: 'NS-123-AB',
-      status: 'active',
-      currentPosition: [45.2650, 19.8370],
-      currentRide: {
-        id: 12345,
-        passengerName: 'Ana Jovanović',
-        pickup: 'Trg Slobode 1',
-        destination: 'Kisačka 71',
-        pickupCoords: [45.2671, 19.8335],
-        destinationCoords: [45.2550, 19.8450],
-        departureTime: '14:30',
-        estimatedArrival: '14:38',
-        distance: 2.3,
-        price: 232.70,
-        progress: 45
-      }
-    },
-    {
-      id: 2,
-      name: 'Stefan Nikolić',
-      phone: '+381 65 555 1234',
-      vehicleType: 'Premium - Mercedes E-Class',
-      licensePlate: 'NS-789-EF',
-      status: 'active',
-      currentPosition: [45.2580, 19.8420],
-      currentRide: {
-        id: 12346,
-        passengerName: 'Milica Stojanović',
-        pickup: 'Bulevar Oslobođenja 45',
-        destination: 'Novi Sad Fair',
-        pickupCoords: [45.2600, 19.8400],
-        destinationCoords: [45.2450, 19.8500],
-        departureTime: '14:25',
-        estimatedArrival: '14:40',
-        distance: 3.5,
-        price: 350.00,
-        progress: 60
-      }
-    },
-    {
-      id: 3,
-      name: 'Ana Jovanović',
-      phone: '+381 63 987 6543',
-      vehicleType: 'Comfort - Honda Accord',
-      licensePlate: 'BG-456-CD',
-      status: 'active',
-      currentPosition: [45.2620, 19.8300],
-      currentRide: {
-        id: 12347,
-        passengerName: 'Petar Jović',
-        pickup: 'Železnička stanica',
-        destination: 'Limanski park',
-        pickupCoords: [45.2640, 19.8280],
-        destinationCoords: [45.2500, 19.8350],
-        departureTime: '14:20',
-        estimatedArrival: '14:35',
-        distance: 2.8,
-        price: 280.00,
-        progress: 75
-      }
-    },
-    {
-      id: 4,
-      name: 'Jelena Đorđević',
-      phone: '+381 64 222 3333',
-      vehicleType: 'XL - Toyota Sienna',
-      licensePlate: 'BG-321-GH',
-      status: 'idle',
-      currentPosition: [45.2700, 19.8400]
-    },
-    {
-      id: 5,
-      name: 'Milan Stojanović',
-      phone: '+381 66 777 8888',
-      vehicleType: 'Economy - Volkswagen Golf',
-      licensePlate: 'NS-654-IJ',
-      status: 'idle',
-      currentPosition: [45.2550, 19.8300]
-    }
-  ]);
+  drivers = signal<Driver[]>([]);
 
   filteredDrivers = computed(() => {
     if (!this.searchQuery.trim()) {
@@ -168,8 +85,11 @@ export class AdminRideSupervisionComponent implements OnInit, OnDestroy {
     );
   });
 
+  constructor(private rideService: RideService) {}
+
   ngOnInit(): void {
     setTimeout(() => this.initMap(), 100);
+    this.loadOngoingRides();
     this.startLiveUpdates();
   }
 
@@ -183,29 +103,109 @@ export class AdminRideSupervisionComponent implements OnInit, OnDestroy {
     }
   }
 
+  private loadOngoingRides(): void {
+    this.rideService.getAllOngoingRides().subscribe({
+      next: (rides: RideTrackingResponse[]) => {
+        const mappedDrivers = rides.map(ride => this.mapRideToDriver(ride));
+        this.drivers.set(mappedDrivers);
+        this.updateDriverMarkers();
+      },
+      error: (error) => {
+        console.error('Error loading ongoing rides:', error);
+      }
+    });
+  }
+
+  private mapRideToDriver(ride: RideTrackingResponse): Driver {
+    // Extract driver information
+    const driverName = ride.driver 
+      ? `${ride.driver.firstName} ${ride.driver.lastName}`
+      : 'Unknown Driver';
+    
+    const vehicleType = ride.currentLocation
+      ? `${ride.currentLocation.model}`
+      : 'Unknown Vehicle';
+    
+    const licensePlate = ride.currentLocation?.plateNum || 'N/A';
+    
+    // Use vehicle current location if available, otherwise pickup location
+    const currentPosition: [number, number] = ride.currentLocation
+      ? [ride.currentLocation.latitude, ride.currentLocation.longitude]
+      : ride.route 
+        ? [ride.route.pickupLatitude, ride.route.pickupLongitude]
+        : [45.2671, 19.8335]; // Default to Novi Sad center
+
+    // Get main passenger name
+    const mainPassenger = ride.passengers && ride.passengers.length > 0 
+      ? ride.passengers[0]
+      : null;
+    const passengerName = mainPassenger 
+      ? `${mainPassenger.firstName} ${mainPassenger.lastName}`
+      : 'Unknown Passenger';
+
+    // Calculate progress based on time
+    let progress = 0;
+    if (ride.startTime && ride.estimatedTimeMinutes) {
+      const startTime = new Date(ride.startTime).getTime();
+      const now = Date.now();
+      const totalSeconds = ride.estimatedTimeMinutes * 60;
+      const elapsedSeconds = (now - startTime) / 1000;
+      progress = Math.min(100, Math.max(0, Math.round((elapsedSeconds / totalSeconds) * 100)));
+    }
+
+    return {
+      id: ride.driver?.id || 0,
+      name: driverName,
+      phone: ride.driver?.phoneNumber || 'N/A',
+      vehicleType: vehicleType,
+      licensePlate: licensePlate,
+      status: 'active',
+      currentPosition: currentPosition,
+      currentRide: {
+        id: ride.rideId,
+        passengerName: passengerName,
+        pickup: ride.route?.pickupAddress || 'Unknown',
+        destination: ride.route?.destinationAddress || 'Unknown',
+        pickupCoords: ride.route 
+          ? [ride.route.pickupLatitude, ride.route.pickupLongitude]
+          : [45.2671, 19.8335],
+        destinationCoords: ride.route
+          ? [ride.route.destinationLatitude, ride.route.destinationLongitude]
+          : [45.2671, 19.8335],
+        departureTime: this.formatTime(ride.startTime),
+        estimatedArrival: this.formatTime(ride.estimatedArrival),
+        distance: ride.route?.distanceKm ? Math.round(ride.route.distanceKm * 10) / 10 : 0,
+        price: ride.price || 0,
+        progress: progress
+      }
+    };
+  }
+
+  private formatTime(dateTimeString: string | null): string {
+    if (!dateTimeString) return 'N/A';
+    const date = new Date(dateTimeString);
+    return date.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' });
+  }
+
   private initMap(): void {
     const mapElement = document.getElementById('supervisionMap');
     if (!mapElement) return;
 
-    // Center on Novi Sad
     this.map = L.map('supervisionMap').setView([45.2671, 19.8335], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
-    // Add all active drivers to map
     this.updateDriverMarkers();
   }
 
   private updateDriverMarkers(): void {
     if (!this.map) return;
 
-    // Clear existing markers
     this.driverMarkers.forEach(marker => marker.remove());
     this.driverMarkers.clear();
 
-    // Add markers for all drivers
     this.drivers().forEach(driver => {
       const icon = L.divIcon({
         className: 'driver-marker',
@@ -227,25 +227,7 @@ export class AdminRideSupervisionComponent implements OnInit, OnDestroy {
 
   private startLiveUpdates(): void {
     this.updateInterval = setInterval(() => {
-      // Simulate position updates
-      this.drivers.update(drivers =>
-        drivers.map(driver => {
-          if (driver.status === 'active' && driver.currentRide) {
-            // Move driver slightly towards destination
-            const progress = Math.min(driver.currentRide.progress + 2, 100);
-            return {
-              ...driver,
-              currentRide: {
-                ...driver.currentRide,
-                progress
-              }
-            };
-          }
-          return driver;
-        })
-      );
-
-      this.updateDriverMarkers();
+      this.loadOngoingRides();
     }, 5000);
   }
 
@@ -256,7 +238,6 @@ export class AdminRideSupervisionComponent implements OnInit, OnDestroy {
   }
 
   onSearchChange(): void {
-    // Trigger filtering
     this.filteredDrivers();
   }
 
@@ -264,10 +245,7 @@ export class AdminRideSupervisionComponent implements OnInit, OnDestroy {
     this.selectedDriver.set(driver);
 
     if (this.map && driver.currentRide) {
-      // Center map on driver
       this.map.setView(driver.currentPosition, 14);
-
-      // Draw route
       this.drawRoute(driver.currentRide);
     }
   }
@@ -283,12 +261,10 @@ export class AdminRideSupervisionComponent implements OnInit, OnDestroy {
   private drawRoute(ride: CurrentRide): void {
     if (!this.map) return;
 
-    // Remove existing route
     if (this.routeControl) {
       this.map.removeControl(this.routeControl);
     }
 
-    // Create icons
     const pickupIcon = L.divIcon({
       className: 'custom-marker-icon',
       html: `<div style="background: #14b8a6; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
@@ -303,7 +279,6 @@ export class AdminRideSupervisionComponent implements OnInit, OnDestroy {
       iconAnchor: [11, 11]
     });
 
-    // Create route
     this.routeControl = L.Routing.control({
       waypoints: [
         L.latLng(ride.pickupCoords[0], ride.pickupCoords[1]),

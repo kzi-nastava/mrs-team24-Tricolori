@@ -1,5 +1,6 @@
 export interface PassengerRideHistoryResponse {
   id: number;
+  routeId: number;
   driverName?: string;
   pickupAddress: string;
   destinationAddress: string;
@@ -30,6 +31,7 @@ export interface RideHistoryResponse {
 
 export interface RideDetailResponse {
   id: number;
+  routeId: number;
   passengerName: string;
   passengerPhone: string;
   driverName: string;

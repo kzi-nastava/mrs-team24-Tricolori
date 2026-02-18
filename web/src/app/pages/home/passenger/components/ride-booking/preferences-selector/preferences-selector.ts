@@ -1,9 +1,7 @@
 import { AfterViewInit, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
-import { MatDialog } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
-import { SchedulePicker } from '../schedule-picker/schedule-picker';
 import { environment } from '../../../../../../../environments/environment';
 import { RideService } from '../../../../../../services/ride.service';
 

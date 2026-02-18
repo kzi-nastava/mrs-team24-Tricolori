@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { NotificationService } from '../../../services/notification.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navigation-passenger',
@@ -9,12 +11,26 @@ import { RouterLink, RouterLinkActive, Router } from '@angular/router';
   templateUrl: './navigation-passenger.html',
   styleUrl: './navigation-passenger.css'
 })
-export class NavigationPassenger {
-  constructor(private router: Router) {}
+export class NavigationPassenger implements OnInit, OnDestroy {
+  unreadCount = 0;
+  private unreadSubscription?: Subscription;
 
-  onLogout() {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('authToken');
-    this.router.navigate(['/login']);
+  constructor(
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.unreadSubscription = this.notificationService.unreadCount$.subscribe(
+      count => {
+        this.unreadCount = count;
+      }
+    );
   }
+
+  ngOnDestroy(): void {
+    this.unreadSubscription?.unsubscribe();
+    this.cdr.detectChanges();
+  }
+
 }

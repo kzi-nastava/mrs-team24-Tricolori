@@ -1,32 +1,31 @@
 package com.tricolori.backend.service;
 
+import com.tricolori.backend.dto.history.AdminRideHistoryResponse;
 import com.tricolori.backend.dto.osrm.OSRMRouteResponse;
 import com.tricolori.backend.dto.profile.DriverDto;
 import com.tricolori.backend.dto.profile.PassengerDto;
 import com.tricolori.backend.enums.PersonRole;
+import com.tricolori.backend.event.RideAssignedEvent;
+import com.tricolori.backend.event.RideStatusUpdateEvent;
+import com.tricolori.backend.exception.*;
 import com.tricolori.backend.mapper.PersonMapper;
 import com.tricolori.backend.mapper.RouteMapper;
+import com.tricolori.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 
 import com.tricolori.backend.dto.ride.*;
-import com.tricolori.backend.repository.PanicRepository;
-import com.tricolori.backend.repository.PassengerRepository;
-import com.tricolori.backend.repository.PersonRepository;
-import com.tricolori.backend.repository.RideRepository;
-import com.tricolori.backend.repository.VehicleSpecificationRepository;
 import com.tricolori.backend.entity.*;
-import com.tricolori.backend.exception.CancelRideExpiredException;
-import com.tricolori.backend.exception.ForeignRideException;
-import com.tricolori.backend.exception.PersonNotFoundException;
-import com.tricolori.backend.exception.RideAlreadyStartedException;
-import com.tricolori.backend.exception.RideNotFoundException;
 import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import com.tricolori.backend.mapper.RideMapper;
 import com.tricolori.backend.enums.RideStatus;
@@ -36,6 +35,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -44,16 +44,18 @@ import java.time.LocalDateTime;
 public class RideService {
 
     private final RideRepository rideRepository;
-    private final PersonRepository personRepository;
-    private final PassengerRepository passengerRepository;
+    private final VehicleRepository vehicleRepository;
     private final PanicRepository panicRepository;
     private final OSRMService osrmService;
     private final GeocodingService geocodingService;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final PassengerService passengerService;
     private final DriverService driverService;
-    
-    private PriceList priceList;
+    private final NotificationService notificationService;
+    private final TrackingTokenRepository trackingTokenRepository;
+    private final TrackingTokenService trackingTokenService;
 
     private final VehicleSpecificationRepository vehicleSpecificationRepository;
     private final RideMapper rideMapper;
@@ -91,6 +93,7 @@ public class RideService {
         response.setVehicleRating(
                 round(reviewService.getAverageVehicleRating(rideId))
         );
+        response.setRouteId(ride.getRoute().getId());
 
         return response;
     }
@@ -98,35 +101,61 @@ public class RideService {
     @Transactional
     public void completeRide(Long rideId, Long driverId) {
         Ride ride = getRideOrThrow(rideId);
-
-        // security check
         if (ride.getDriver() == null || !ride.getDriver().getId().equals(driverId)) {
             throw new AccessDeniedException("not authorized to complete this ride");
         }
-
-        // state validation (optional but recommended)
         if (ride.getStatus() != RideStatus.ONGOING) {
             throw new IllegalStateException("Ride is not in progress");
         }
 
-        // complete ride
         ride.setStatus(RideStatus.FINISHED);
         ride.setEndTime(LocalDateTime.now());
-
         // calculate final price
         ride.setPrice(calculatePrice(ride));
-
         rideRepository.save(ride);
+        if (ride.getDriver() != null && ride.getDriver().getVehicle() != null) {
+            ride.getDriver().getVehicle().setAvailable(true);
+            vehicleRepository.save(ride.getDriver().getVehicle());
+        }
+
+        // notify registered passengers
+        for (Passenger p : ride.getPassengers()) {
+            notificationService.sendRideCompletedNotification(
+                    p.getEmail(), p.getFirstName(), ride.getId(), ride.getRoute().getPickupStop().getAddress(),
+                    ride.getRoute().getDestinationStop().getAddress(), ride.getPrice()
+            );
+        }
+
+        // notify unregistered passengers who have tracking tokens
+        List<TrackingToken> linkedPassengers = trackingTokenRepository.findByRideId(rideId);
+        if (!linkedPassengers.isEmpty()) {
+            log.info("Found {} linked passengers for completed ride {}", linkedPassengers.size(), rideId);
+
+            for (TrackingToken token : linkedPassengers) {
+                // Use "there" if firstName is null
+                String firstName = token.getFirstName() != null && !token.getFirstName().isEmpty()
+                        ? token.getFirstName()
+                        : "there";
+
+                notificationService.sendRideCompletedNotification(
+                        token.getEmail(), firstName, ride.getId(), ride.getRoute().getPickupStop().getAddress(),
+                        ride.getRoute().getDestinationStop().getAddress(), ride.getPrice()
+                );
+                log.info("Sent completion notification to linked passenger: {}", token.getEmail());
+            }
+        }
     }
 
     // ================= passenger =================
 
     public Page<PassengerRideHistoryResponse> getPassengerHistory(
-            Long passengerId,
-            Pageable pageable
+            Person person, LocalDate startDate, LocalDate endDate, Pageable pageable
     ) {
+        LocalDateTime start = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime end = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
+
         return rideRepository
-                .findAllPassengerRides(passengerId, pageable)
+                .findAllPassengerRides(person.getId(), start, end, pageable)
                 .map(rideMapper::toPassengerHistoryResponse);
     }
 
@@ -146,6 +175,7 @@ public class RideService {
         response.setVehicleRating(
                 round(reviewService.getAverageVehicleRating(rideId))
         );
+        response.setRouteId(ride.getRoute().getId());
 
         return response;
     }
@@ -222,66 +252,109 @@ public class RideService {
         );
     }
 
-    @Transactional
-    public Ride createRide(CreateRideRequest request, Long passengerId) {
-        Person passenger = personRepository.findById(passengerId)
-                .orElseThrow(() -> new PersonNotFoundException("Passenger not found"));
-
-        List<Stop> stops = new ArrayList<>();
-
-        stops.add(new Stop(
-                request.getPickupAddress(),
-                new Location(request.getPickupLongitude(), request.getPickupLatitude())
-        ));
-
-        if (request.getStops() != null && !request.getStops().isEmpty()) {
-            for (StopDto stopReq : request.getStops()) {
-                stops.add(new Stop(
-                        stopReq.getAddress(),
-                        new Location(stopReq.getLongitude(), stopReq.getLatitude())
-                ));
-            }
-        }
-
-        stops.add(new Stop(
-                request.getDestinationAddress(),
-                new Location(request.getDestinationLongitude(), request.getDestinationLatitude())
-        ));
-
-        Route route = routeService.findOrCreateRoute(stops);
-
-        // hard coded id 13
-        VehicleSpecification vehicleSpec = vehicleSpecificationRepository.findById(13L)
-                .orElseThrow(() -> new RuntimeException("VehicleSpecification not found"));
-
-        Ride ride = new Ride();
-        ride.setRoute(route);
-        ride.setPassengers(List.of((Passenger) passenger));
-        ride.setStatus(RideStatus.SCHEDULED);
-        ride.setScheduledFor(request.getScheduledFor() != null
-                ? request.getScheduledFor()
-                : LocalDateTime.now());
-
-        ride.setVehicleSpecification(vehicleSpec);
-
-        ride.setPrice(calculatePrice(ride));
-
-        return rideRepository.save(ride);
-    }
 
     // ================= admin ========================
-    public RideStatusResponse getRideStatus(Long rideId) {
-        Ride ride = getRideOrThrow(rideId);
-        return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
-    }
 
     public RideStatusResponse getCurrentRideByDriver(Long driverId) {
-        Ride ride = rideRepository.findCurrentRideByDriver(driverId)
+        Ride ride = rideRepository.findOngoingRideByDriver(driverId)
                 .orElseThrow(() ->
                         new RideNotFoundException("no active ride for this driver")
                 );
 
         return new RideStatusResponse(ride.getId(), ride.getStatus().name(), ride.getScheduledFor(), ride.getStartTime(), ride.getEndTime(), null, null, null, null, ride.getPrice());
+    }
+
+    @Transactional(readOnly = true)
+    public List<RideTrackingResponse> getAllOngoingRides() {
+        List<Ride> ongoingRides = rideRepository.findByStatus(RideStatus.ONGOING);
+        return ongoingRides.stream()
+                .map(this::toTrackingResponse)
+                .toList();
+    }
+
+    // Single method to map Ride to RideTrackingResponse
+    private RideTrackingResponse toTrackingResponse(Ride ride) {
+        // Use mapper for basic fields
+        RideTrackingResponse response = rideMapper.toTrackingResponse(ride);
+
+        if (ride.getRoute() != null) {
+            response = new RideTrackingResponse(
+                    response.rideId(), response.status(), response.currentLocation(),
+                    routeMapper.toDetailedRoute(ride.getRoute()), response.estimatedTimeMinutes(),
+                    response.estimatedArrival(), response.scheduledFor(), response.startTime(),
+                    response.price(), response.driver(), response.passengers()
+            );
+        }
+
+        if (ride.getDriver() != null) {
+            Double rating = null;
+            try {
+                rating = reviewService.getAverageDriverRating(ride.getDriver().getId());
+            } catch (Exception ignored) {}
+
+            DriverDto driverDto = personMapper.toDriverDto(ride.getDriver(), rating);
+
+            response = new RideTrackingResponse(
+                    response.rideId(), response.status(), response.currentLocation(), response.route(),
+                    response.estimatedTimeMinutes(), response.estimatedArrival(), response.scheduledFor(),
+                    response.startTime(), response.price(), driverDto, response.passengers()
+            );
+        }
+
+        // TODO: add passenegers from ride tracking tokens table
+        if (ride.getPassengers() != null && !ride.getPassengers().isEmpty()) {
+            Long mainId = ride.getPassengers().getFirst().getId();
+
+            List<PassengerDto> passengerDtos = ride.getPassengers().stream()
+                    .map(p -> {
+                        PassengerDto dto = personMapper.toPassengerDto(p);
+                        dto.setMainPassenger(p.getId().equals(mainId));
+                        return dto;
+                    })
+                    .toList();
+
+            response = new RideTrackingResponse(
+                    response.rideId(), response.status(), response.currentLocation(), response.route(),
+                    response.estimatedTimeMinutes(), response.estimatedArrival(), response.scheduledFor(),
+                    response.startTime(), response.price(), response.driver(), passengerDtos
+            );
+        }
+
+        return response;
+    }
+
+    public Page<AdminRideHistoryResponse> getAdminRideHistory(
+            String personEmail, LocalDate startDate, LocalDate endDate, Pageable pageable
+    ) {
+
+        LocalDateTime start = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime end = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
+
+        return rideRepository
+                .findAdminRideHistory(personEmail, start, end, pageable)
+                .map(rideMapper::toAdminHistoryResponse);
+    }
+
+    public RideDetailResponse getAdminRideDetail(Long rideId) {
+        Ride ride = getRideOrThrow(rideId);
+
+        RideDetailResponse response = rideMapper.toDriverDetailResponse(ride);
+
+        response.setDriverRating(
+                round(reviewService.getAverageDriverRating(rideId))
+        );
+        response.setVehicleRating(
+                round(reviewService.getAverageVehicleRating(rideId))
+        );
+
+        if (ride.getRoute() != null) {
+            response.setRouteId(ride.getRoute().getId());
+            response.setDistance(ride.getRoute().getDistanceKm());
+        }
+
+        response.setTotalPrice(ride.getPrice());
+
+        return response;
     }
 
     // ================= location updates =================
@@ -326,32 +399,74 @@ public class RideService {
 
     // ================= ride actions =================
 
-    @Transactional
-    public void cancelRide(Person person, CancelRideRequest request) {
+    private void notifyPassengersForCancelledRide(Ride ride, String message, RideStatus status) {
+        for (Passenger p : ride.getPassengers()) {
+            // Send email notification
+            notificationService.sendRideCancelledNotification(
+                    p.getEmail(), ride.getId(), message
+            );
 
-        Ride ride;
+            // Send WebSocket notification
+            applicationEventPublisher.publishEvent(new RideStatusUpdateEvent(ride, status, message));
+        }
+    }
 
-        if (person.getRole().equals(PersonRole.ROLE_DRIVER)) {
-            ride = rideRepository.findRideByDriverAndStatuses(person.getId(), List.of(RideStatus.SCHEDULED))
-                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this driver."));
+    private void handleDriverCancelRide(Ride ride, CancelRideRequest request) {
 
-            cancelByDriver(ride, request);
-
-        } else if (person.getRole().equals(PersonRole.ROLE_PASSENGER)) {
-            ride = rideRepository.findRideByPassengerAndStatuses(person.getId(), List.of(RideStatus.SCHEDULED))
-                    .orElseThrow(() -> new RideNotFoundException("Ride not found for this passenger."));
-
-            cancelByPassenger(ride);
-
-        } else {
-            throw new AccessDeniedException("Only drivers and passengers can cancel rides.");
+        if (request.reason().isBlank()) {
+            throw new IllegalArgumentException("Cancellation reason must be provided.");
         }
 
-        ride.setCancellationReason(request.reason());
+        if (ride.getPassengers() != null) {
+            String message = "Driver cancelled: " + request.reason();
+            notifyPassengersForCancelledRide(ride, message, RideStatus.CANCELLED_BY_DRIVER);
+        }
+
+        ride.setStatus(RideStatus.CANCELLED_BY_DRIVER);
+    }
+
+    private void handlePassengerCancelRide(Ride ride, CancelRideRequest request) {
+
+        LocalDateTime timeNow = LocalDateTime.now();
+        if (timeNow.isAfter(ride.getCreatedAt().minusMinutes(10))) {
+            throw new CancelRideExpiredException("Ride cancel option expired. Ride starts within 10 minutes.");
+        }
+
+        // Notify driver via email only (no WebSocket)
+        notificationService.sendRideCancelledNotification(
+                ride.getDriver().getEmail(), ride.getId(), "Passenger cancelled the ride"
+        );
+
+        // Notify all passengers
+        String message = "Ride has been cancelled by a passenger";
+        notifyPassengersForCancelledRide(ride, message, RideStatus.CANCELLED_BY_PASSENGER);
+
+        ride.setStatus(RideStatus.CANCELLED_BY_PASSENGER);
+    }
+
+    @Transactional
+    public void cancelRide(Long rideId, Person person, CancelRideRequest request) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride not found."));
+
+        if (ride.getDriver().getId().equals(person.getId())) {
+            handleDriverCancelRide(ride, request);
+        } else if (ride.containsPassengerWithId(person.getId())) {
+            handlePassengerCancelRide(ride, request);
+        } else {
+            throw new AccessDeniedException("You are not authorized to cancel this ride.");
+        }
+
+        String reason = (request != null && request.reason() != null && !request.reason().isBlank())
+                ? request.reason()
+                : "No reason provided";
+
+        ride.setCancellationReason(reason);
         rideRepository.save(ride);
 
-        log.info("Ride with id {{}} got cancelled by {{}}", ride.getId(), person.getEmail());
+        log.info("Ride with id {{}} cancelled by {{}}", ride.getId(), person.getEmail());
     }
+
 
     private void terminateRideAtLocation(Ride ride, Location stopLocation, RideStatus status) {
 
@@ -395,6 +510,7 @@ public class RideService {
 
     @Transactional
     public void panicRide(Person person, PanicRideRequest request) {
+
         Ride ride = person.getRole().equals(PersonRole.ROLE_PASSENGER) ?
                 rideRepository.findOngoingRideByPassenger(person.getId())
                         .orElseThrow(() -> new RideNotFoundException("Ongoing ride not found for this passenger.")) :
@@ -402,6 +518,8 @@ public class RideService {
                         .orElseThrow(() -> new RideNotFoundException("Ongoing ride not found for this driver."));
 
         terminateRideAtLocation(ride, request.vehicleLocation(), RideStatus.PANIC);
+
+        notificationService.sendPanicNotification(ride.getId(), person.getEmail());
 
         Panic panic = new Panic();
         panic.setRide(ride);
@@ -412,13 +530,21 @@ public class RideService {
         rideRepository.save(ride);
     }
 
+    private void sendRideUpdateToPassenger(String passengerEmail, RideUpdateMessage message) {
+        messagingTemplate.convertAndSendToUser(
+                passengerEmail,
+                "/queue/ride-updates",
+                message
+        );
+    }
+
     @Transactional
     public void startRide(Person driver, Long rideId) {
         Ride ride = rideRepository.findById(rideId).orElseThrow(
             () -> {throw new RideNotFoundException("Can't find a ride to start.");}
         );
 
-        if (ride.getDriver().getId() != driver.getId()) {
+        if (!Objects.equals(ride.getDriver().getId(), driver.getId())) {
             throw new ForeignRideException("Only a driver of this ride can start it.");
         }
 
@@ -429,12 +555,37 @@ public class RideService {
         LocalDateTime now = LocalDateTime.now();
         ride.setStartTime(now);
         ride.setEndTime(now.plusSeconds(ride.getRoute().getEstimatedTimeSeconds()));
+
+        for (Passenger p : ride.getPassengers()) {
+            notificationService.sendRideStartingNotification(
+                    p.getEmail(), ride.getId(), ride.getDriver().getFirstName()+" "+ride.getDriver().getLastName(),
+                    ride.getDriver().getVehicle().getModel(), ride.getRoute().getPickupStop().getAddress()
+            );
+            // WebSocket notification for each passenger
+            sendRideUpdateToPassenger(
+                    p.getEmail(),
+                    new RideUpdateMessage(RideStatus.ONGOING, ride.getId(), "Your ride has started!")
+            );
+        }
+        notificationService.sendRideStartedNotification(ride.getDriver().getEmail(), ride.getId());
         
         rideRepository.save(ride);
+        ride.getDriver().getVehicle().setAvailable(false); // mark vehicle as unavailable
+        vehicleRepository.save(ride.getDriver().getVehicle());
+    }
+
+    private void notifyDriverAboutAssignment(Ride ride) {
+        messagingTemplate.convertAndSendToUser(
+                ride.getDriver().getEmail(),
+                "/queue/ride-assigned",
+                ride.getId()
+        );
+        log.info("WebSocket: Driver {{}} notified with Ride ID: {{}}",
+                ride.getDriver().getEmail(), ride.getId());
     }
 
     @Transactional
-    public void rideOrder(OrderRequest request) {
+    public Long rideOrder(Person passenger, OrderRequest request) {
         RidePreferences preferences = request.getPreferences();
 
         // Extracting and creating route:
@@ -446,26 +597,100 @@ public class RideService {
         ride.setScheduledFor(preferences.scheduledFor());
         ride.setRoute(route);
         ride.setPrice(calculatePrice(
-            preferences.vehicleType(), route.getDistanceKm()
+                preferences.vehicleType(), route.getDistanceKm()
         ));
 
         // Find passengers by email:
+        // Add owner passenger as first email:
+        List<String> allPassengerEmails = new ArrayList<>();
+        allPassengerEmails.add(passenger.getEmail());
+        if (request.getTrackers() != null) {
+            allPassengerEmails.addAll(Arrays.asList(request.getTrackers()));
+        }
+
+        // Get only registered passengers for the ride's passenger list
         List<Passenger> trackingPassengers = passengerService.getTrackingPassengers(
-            request.getTrackers()
+                allPassengerEmails.toArray(new String[0])
         );
         ride.setPassengers(trackingPassengers);
 
-        // Finding the driver:
-        Driver driver = driverService.findDriverForRide(
-            route.getPickupStop().getLocation(), 
-            preferences,
-            trackingPassengers.size()
-        );
-        ride.setDriver(driver);
-        ride.setStatus(RideStatus.SCHEDULED);
-        ride.setVehicleSpecification(driver.getVehicle().getSpecification());
+        try {
+            Driver driver = driverService.findDriverForRide(
+                    route.getPickupStop().getLocation(),
+                    preferences,
+                    allPassengerEmails.size()
+            );
+            ride.setDriver(driver);
+            ride.setStatus(RideStatus.SCHEDULED);
+            ride.setVehicleSpecification(driver.getVehicle().getSpecification());
 
-        rideRepository.save(ride);
+            ride = rideRepository.save(ride);
+
+            applicationEventPublisher.publishEvent(new RideAssignedEvent(ride));
+
+            String organizerName = passenger.getFirstName() + " " + passenger.getLastName();
+            // separate registered and unregistered passengers
+            List<String> registeredEmails = trackingPassengers.stream()
+                    .map(Passenger::getEmail)
+                    .toList();
+
+            // Send notifications to registered passengers (skip organizer)
+            String scheduledTime;
+            if(ride.getScheduledFor() == null) {
+                scheduledTime = LocalDateTime.now().toString();
+            } else {
+                scheduledTime = ride.getScheduledFor().toString();
+            }
+
+            for (Passenger p : trackingPassengers) {
+                if (p.getEmail().equals(passenger.getEmail()))
+                    continue; // skip main passenger (organizer)
+
+                notificationService.sendAddedToRideNotification(
+                        p.getEmail(), ride.getId(), organizerName, p.getFirstName(), ride.getRoute().getPickupStop().getAddress(),
+                        ride.getRoute().getDestinationStop().getAddress(), scheduledTime
+                );
+            }
+
+            // handle unregistered passengers (those in allPassengerEmails but not in trackingPassengers)
+            for (String email : allPassengerEmails) {
+                if (email.equals(passenger.getEmail())) {
+                    continue; // skip organizer
+                }
+
+                if (!registeredEmails.contains(email)) {
+                    // an unregistered passenger - create tracking token and send notification
+                    log.info("Creating tracking token for unregistered passenger: {}", email);
+                    String firstName = "there"; // so the email says hi there
+                    String token = trackingTokenService.createTrackingToken(email, firstName, ride);
+                    // Send notification
+                    notificationService.sendAddedToRideNotification(
+                            email, ride.getId(), organizerName, firstName, ride.getRoute().getPickupStop().getAddress(),
+                            ride.getRoute().getDestinationStop().getAddress(), scheduledTime
+                    );
+                }
+            }
+
+        } catch (NoSuitableDriversException | NoFreeDriverCloseException e) {
+            // Notify ALL passengers (registered and unregistered) about rejection
+            for (String email : allPassengerEmails) {
+                notificationService.sendRideRejectedNotification(email, null);
+                log.info("Sent ride rejection notification to {}", email);
+                log.info("Reason: {}", e.getMessage());
+            }
+
+            // Rethrow so global exception handler catches...
+            throw e;
+        }
+
+        return ride.getId();
+    }
+
+    public RideAssignmentResponse getAssignmentResponse(Long rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride with ID " + rideId + " not found"));
+
+        return rideMapper.toAssignmentResponse(ride);
     }
 
     // ================= helpers =================
@@ -488,20 +713,6 @@ public class RideService {
         if (!isPassenger) {
             throw new AccessDeniedException("unauthorized");
         }
-    }
-
-    private void cancelByDriver(Ride ride, CancelRideRequest request) {
-        if (request.reason().isBlank()) {
-            throw new IllegalArgumentException("reason required");
-        }
-        ride.setStatus(RideStatus.CANCELLED_BY_DRIVER);
-    }
-
-    private void cancelByPassenger(Ride ride) {
-        if (LocalDateTime.now().isAfter(ride.getStartTime().minusMinutes(10))) {
-            throw new CancelRideExpiredException("Cancel failed. Ride starts within 10 minutes");
-        }
-        ride.setStatus(RideStatus.CANCELLED_BY_PASSENGER);
     }
 
     private Double calculatePrice(Ride ride) {

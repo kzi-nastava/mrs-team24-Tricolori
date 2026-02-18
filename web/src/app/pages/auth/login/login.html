@@ -3,7 +3,7 @@
   <div class="w-full max-w-md text-center px-4">
 
     <!-- Title -->
-    <h1 class="text-4xl font-sans text-base-900 mb-2">Welcome back!</h1>
+    <h1 id="login-page-welcome" class="text-4xl font-sans text-base-900 mb-2">Welcome back!</h1>
 
     <!-- Subtitle -->
     <p class="text-gray-700 mb-8">
@@ -21,6 +21,7 @@
       <div class="relative w-full mb-1">
         <ng-icon name="heroEnvelope" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></ng-icon>
         <input
+          id="email-input"
           type="email"
           formControlName="email"
           placeholder="john@example.com"
@@ -37,6 +38,7 @@
           class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">
         </ng-icon>
         <input
+          id="password-input"
           [type]="hidePassword ? 'password' : 'text'"
           formControlName="password"
           placeholder="Your password"
@@ -59,6 +61,7 @@
 
       <!-- Submit Button -->
       <button
+        id="login-submit"
         type="submit"
         class="w-full bg-base-600 h-12 hover:bg-base-700 text-white py-4 rounded-lg text-lg font-medium transition flex items-center justify-center gap-2">
         Submit

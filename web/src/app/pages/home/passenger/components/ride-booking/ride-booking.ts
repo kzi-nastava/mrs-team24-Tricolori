@@ -18,6 +18,9 @@ import { GeocodingService } from '../../../../../services/geocoding.service';
 import * as L from 'leaflet';
 import { RideService } from '../../../../../services/ride.service';
 
+import { ToastService } from '../../../../../services/toast.service';
+import { Router } from '@angular/router';
+
 @Component({
   selector: 'app-home-passenger',
   standalone: true,
@@ -32,10 +35,13 @@ import { RideService } from '../../../../../services/ride.service';
   templateUrl: './ride-booking.html',
   styleUrl: './ride-booking.css'
 })
-export class RideBooking implements OnInit, AfterViewInit {
+export class RideBooking implements OnInit {
   // Services:
   private mapService = inject(MapService);
   private rideService = inject(RideService);
+  private estimationService = inject(EstimationService);
+  private toastService = inject(ToastService);
+  private router = inject(Router);
 
   routeSelector = viewChild.required(RouteSelector);
   preferencesSelector = viewChild.required(PreferencesSelector);
@@ -61,10 +67,6 @@ export class RideBooking implements OnInit, AfterViewInit {
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
     });
-  }
-
-  ngAfterViewInit(): void {
-    this.mapService.initMap('map');
   }
 
   openFavoriteRoutes() {
@@ -102,7 +104,7 @@ export class RideBooking implements OnInit, AfterViewInit {
     });
   }
 
-  
+
 
   async rideSubmit(event: Event) {
     event.preventDefault();
@@ -120,7 +122,7 @@ export class RideBooking implements OnInit, AfterViewInit {
 
     const route = routeComp.getRoute();
     const preferences = prefComp.getPreferences();
-    const trackers = trackComp.trackersForm.getRawValue().trackers;
+    const trackers = trackComp.getTrackers();
 
     // 4. Pakovanje za OrderRequest (Java Record struktura)
     const orderRequest = {
@@ -130,16 +132,48 @@ export class RideBooking implements OnInit, AfterViewInit {
       trackers: trackers
     };
 
-    console.log("A:",orderRequest);
-
     // 5. Slanje
     this.rideService.bookRide(orderRequest).subscribe({
-      next: (res) => {
-        console.log(res);
+      next: (rideId: number) => {
+        console.log('Vožnja uspešno krierana sa ID:', rideId);
+        this.router.navigate(['/passenger/ride-wait', rideId]);
       },
       error: (err) => {
-        console.error('Greška:', err);
-        alert('Došlo je do greške pri naručivanju.');
+        const errorMessage = err.error?.message || 'Došlo je do greške pri naručivanju.';
+        this.toastService.show(errorMessage, 'error');
+      }
+    });
+  }
+
+  async showRoute() {
+    const routeComp = this.routeSelector();
+
+    if (!routeComp.routeForm.valid) {
+      routeComp.routeForm.markAllAsTouched();
+      return;
+    }
+
+    const route = routeComp.getRoute();
+
+    // Kreiramo niz adresa: pickup + sve adrese iz stops + destination
+    const allAddresses = [
+      route.pickup.address,
+      ...route.stops.map((s:any) => s.address),
+      route.destination.address
+    ];
+
+    this.estimationService.calculateRouteFromAddresses(allAddresses).subscribe({
+      next: (result) => {
+        if (result) {
+          this.mapService.drawRoute(result.routeGeometry);
+        } else {
+          console.log('Could not find route or addresses. Please be more specific.');
+          // TODO: show Toast
+        }
+      },
+      error: (err) => {
+        console.log('A server error occurred');
+        // TODO: show Toast and remove error message
       }
     });
   }

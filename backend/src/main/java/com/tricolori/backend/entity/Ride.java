@@ -3,9 +3,7 @@ package com.tricolori.backend.entity;
 import com.tricolori.backend.enums.RideStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -15,6 +13,7 @@ import java.util.List;
 @Entity(name = "Ride")
 @Table(name = "rides")
 @Getter @Setter @NoArgsConstructor
+@AllArgsConstructor @Builder
 public class Ride {
 
     @Id
@@ -134,4 +133,4 @@ public class Ride {
     public boolean isOngoing() {
         return this.status == RideStatus.ONGOING;
     }
-    }
+}

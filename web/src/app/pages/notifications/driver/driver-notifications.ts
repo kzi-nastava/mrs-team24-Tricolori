@@ -1,10 +1,10 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { 
-  heroBell, 
-  heroXMark, 
+import {
+  heroBell,
+  heroXMark,
   heroClock,
   heroXCircle,
   heroUserPlus,
@@ -14,19 +14,26 @@ import {
   heroTicket,
   heroArrowRight,
   heroFunnel,
-  heroCurrencyDollar,
-  heroStar
+  heroStar,
+  heroChatBubbleLeftRight,
+  heroDocumentText,
+  heroUserCircle,
+  heroFlag
 } from '@ng-icons/heroicons/outline';
+import { NotificationService, NotificationDto } from '../../../services/notification.service';
+import { Subscription } from 'rxjs';
 
-interface Notification {
+interface DisplayNotification {
   id: number;
-  type: 'new_ride_request' | 'ride_cancelled_by_passenger' | 'passenger_added' | 'ride_completed' | 'payment_received' | 'rating_received' | 'ride_reminder' | 'earnings_summary';
+  type: string;
   title: string;
   body: string;
   timestamp: Date;
   isRead: boolean;
   rideId?: number;
   actionUrl?: string;
+  driverName?: string;
+  passengerName?: string;
 }
 
 @Component({
@@ -34,11 +41,11 @@ interface Notification {
   standalone: true,
   imports: [CommonModule, NgIconComponent],
   providers: [
-    provideIcons({ 
-      heroBell, 
-      heroXMark, 
-      heroClock, 
-      heroXCircle, 
+    provideIcons({
+      heroBell,
+      heroXMark,
+      heroClock,
+      heroXCircle,
       heroUserPlus,
       heroCheckCircle,
       heroExclamationTriangle,
@@ -46,105 +53,23 @@ interface Notification {
       heroTicket,
       heroArrowRight,
       heroFunnel,
-      heroCurrencyDollar,
-      heroStar
+      heroStar,
+      heroChatBubbleLeftRight,
+      heroDocumentText,
+      heroUserCircle,
+      heroFlag
     })
   ],
-  templateUrl: './driver-notifications.html',
+  templateUrl: './driver-notifications.html'
 })
-export class DriverNotifications {
-  selectedNotification: Notification | null = null;
+export class DriverNotifications implements OnInit, OnDestroy {
+  selectedNotification: DisplayNotification | null = null;
   showUnreadOnly = signal<boolean>(false);
-  
-  notifications = signal<Notification[]>([
-    {
-      id: 1,
-      type: 'new_ride_request',
-      title: 'New ride request',
-      body: 'Ana Marković has requested a ride from Bulevar Oslobođenja 46 to Novi Sad Airport. Pickup time: 3:30 PM. Distance: 8.5 km. Estimated fare: 450.00 RSD.',
-      timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
-      isRead: false,
-      rideId: 15678,
-      actionUrl: '/driver/ride-requests/15678'
-    },
-    {
-      id: 2,
-      type: 'ride_reminder',
-      title: 'Upcoming ride reminder',
-      body: 'You have a ride scheduled in 30 minutes. Pickup location: Trg Slobode 1. Passenger: Petar Jovanović. Make sure to arrive on time!',
-      timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
-      isRead: false,
-      rideId: 15677,
-      actionUrl: '/driver/ride-tracking/15677'
-    },
-    {
-      id: 3,
-      type: 'passenger_added',
-      title: 'Passenger added to your ride',
-      body: 'Stefan Nikolić has joined your shared ride from Grbavica to Spens. Total passengers: 3. Updated fare: 675.00 RSD.',
-      timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
-      isRead: false,
-      rideId: 15676,
-      actionUrl: '/driver/ride-details/15676'
-    },
-    {
-      id: 4,
-      type: 'rating_received',
-      title: 'You received a 5-star rating!',
-      body: 'Marija Popović rated you 5 stars with the comment: "Excellent driver! Very professional and friendly. The car was clean and the ride was smooth." Keep up the great work!',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      isRead: false,
-      rideId: 15675,
-      actionUrl: '/driver/ratings'
-    },
-    {
-      id: 5,
-      type: 'ride_cancelled_by_passenger',
-      title: 'Ride cancelled by passenger',
-      body: 'Nikola Đorđević cancelled the ride scheduled for December 14, 2024 at 5:00 PM from Petrovaradinska tvrđava to Novi Sad Train Station. Cancellation fee of 50.00 RSD has been credited to your account.',
-      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-      isRead: true,
-      rideId: 15674
-    },
-    {
-      id: 6,
-      type: 'ride_completed',
-      title: 'Ride completed',
-      body: 'Your ride from Spens to Futog has been completed successfully. Total distance: 12.3 km. Duration: 18 minutes. Fare earned: 520.00 RSD.',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      isRead: true,
-      rideId: 15673,
-      actionUrl: '/driver/history'
-    },
-    {
-      id: 7,
-      type: 'payment_received',
-      title: 'Payment received',
-      body: 'Payment of 385.50 RSD for ride #15672 has been successfully transferred to your account. Current balance: 2,450.75 RSD.',
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      isRead: true,
-      rideId: 15672
-    },
-    {
-      id: 8,
-      type: 'earnings_summary',
-      title: 'Weekly earnings summary',
-      body: 'Congratulations! You completed 24 rides this week and earned 8,450.00 RSD. Your average rating is 4.8 stars. You\'re in the top 15% of drivers in Novi Sad!',
-      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      isRead: true,
-      actionUrl: '/driver/earnings'
-    },
-    {
-      id: 9,
-      type: 'ride_completed',
-      title: 'Ride completed',
-      body: 'Your shared ride from Liman to Centar has been completed. You transported 3 passengers over 6.8 km. Total fare earned: 780.00 RSD.',
-      timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-      isRead: true,
-      rideId: 15671,
-      actionUrl: '/driver/history'
-    }
-  ]);
+  notifications = signal<DisplayNotification[]>([]);
+  showClearAllDialog = signal<boolean>(false);
+
+  private notificationsSubscription?: Subscription;
+  private unreadCountSubscription?: Subscription;
 
   filteredNotifications = computed(() => {
     if (this.showUnreadOnly()) {
@@ -153,7 +78,119 @@ export class DriverNotifications {
     return this.notifications();
   });
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    const userEmail = this.getUserEmail();
+
+    this.loadNotifications();
+
+    this.notificationService.subscribeToNotifications(userEmail);
+
+    // Subscribe to notification updates
+    this.notificationsSubscription = this.notificationService.notifications$.subscribe(
+      (notifications) => {
+        this.notifications.set(this.mapNotifications(notifications));
+      }
+    );
+
+    // Check if we need to open a specific ride detail from query params
+    this.route.queryParams.subscribe(params => {
+      const rideId = params['rideId'];
+      if (rideId) {
+        // Navigate to history page with the ride detail modal
+        this.navigateToRideDetail(parseInt(rideId));
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscriptions and disconnect WebSocket
+    this.notificationsSubscription?.unsubscribe();
+    this.unreadCountSubscription?.unsubscribe();
+    this.notificationService.unsubscribe();
+  }
+
+  private getUserEmail(): string {
+    const personData = localStorage.getItem('person_data');
+    if (personData) {
+      const person = JSON.parse(personData);
+      return person.email || '';
+    }
+    return '';
+  }
+
+  private loadNotifications(): void {
+    this.notificationService.getAllNotifications().subscribe({
+      next: (notifications) => {
+        this.notificationService.setNotifications(notifications);
+      },
+      error: (error) => {
+        console.error('Error loading notifications:', error);
+      }
+    });
+  }
+
+  private mapNotifications(dtos: NotificationDto[]): DisplayNotification[] {
+    return dtos.map(dto => ({
+      id: dto.id,
+      type: this.mapNotificationType(dto.type),
+      title: this.getNotificationTitle(dto.type),
+      body: dto.content,
+      timestamp: new Date(dto.time),
+      isRead: dto.opened,
+      rideId: dto.rideId,
+      actionUrl: dto.actionUrl,
+      driverName: dto.driverName,
+      passengerName: dto.passengerName
+    }));
+  }
+
+  private mapNotificationType(backendType: string): string {
+    const typeMap: { [key: string]: string } = {
+      'RIDE_STARTING': 'ride_starting',
+      'RIDE_CANCELLED': 'ride_cancelled',
+      'RIDE_REJECTED': 'ride_rejected',
+      'ADDED_TO_RIDE': 'added_to_ride',
+      'RIDE_COMPLETED': 'ride_completed',
+      'RATING_REMINDER': 'rating_reminder',
+      'RIDE_REMINDER': 'ride_reminder',
+      'UPCOMING_RIDE_REMINDER': 'upcoming_ride_reminder',
+      'RATING_RECEIVED': 'rating_received',
+      'RIDE_STARTED': 'ride_started',
+      'RIDE_REPORT': 'ride_report',
+      'NEW_REGISTRATION': 'new_registration',
+      'PROFILE_CHANGE_REQUEST': 'profile_change_request',
+      'NEW_CHAT_MESSAGE': 'chat_message',
+      'GENERAL': 'general'
+    };
+    return typeMap[backendType] || 'general';
+  }
+
+  private getNotificationTitle(backendType: string): string {
+    const titleMap: { [key: string]: string } = {
+      'RIDE_STARTING': 'Ride is starting',
+      'RIDE_CANCELLED': 'Ride cancelled',
+      'RIDE_REJECTED': 'Ride request rejected',
+      'ADDED_TO_RIDE': 'Passenger added to ride',
+      'RIDE_COMPLETED': 'Ride completed',
+      'RATING_REMINDER': 'Rating reminder',
+      'RIDE_REMINDER': 'Ride reminder',
+      'UPCOMING_RIDE_REMINDER': 'Upcoming ride reminder',
+      'RATING_RECEIVED': 'You received a rating',
+      'RIDE_STARTED': 'Ride has started',
+      'RIDE_REPORT': 'Ride reported',
+      'NEW_REGISTRATION': 'New driver registered',
+      'PROFILE_CHANGE_REQUEST': 'Profile change request',
+      'NEW_CHAT_MESSAGE': 'New support message',
+      'GENERAL': 'Notification'
+    };
+    return titleMap[backendType] || 'Notification';
+  }
 
   unreadCount(): number {
     return this.notifications().filter(n => !n.isRead).length;
@@ -163,11 +200,16 @@ export class DriverNotifications {
     return this.notifications().filter(n => n.isRead).length;
   }
 
-  openNotification(notification: Notification): void {
+  openNotification(notification: DisplayNotification): void {
     if (!notification.isRead) {
-      this.notifications.update(notifications => 
-        notifications.map(n => n.id === notification.id ? { ...n, isRead: true } : n)
-      );
+      this.notificationService.markAsRead(notification.id).subscribe({
+        next: () => {
+          this.notificationService.updateNotificationAsRead(notification.id);
+        },
+        error: (error) => {
+          console.error('Error marking notification as read:', error);
+        }
+      });
     }
     this.selectedNotification = notification;
   }
@@ -177,46 +219,154 @@ export class DriverNotifications {
   }
 
   markAllAsRead(): void {
-    this.notifications.update(notifications =>
-      notifications.map(n => ({ ...n, isRead: true }))
-    );
+    this.notificationService.markAllAsRead().subscribe({
+      next: () => {
+        this.notificationService.updateAllNotificationsAsRead();
+      },
+      error: (error) => {
+        console.error('Error marking all as read:', error);
+      }
+    });
   }
 
   clearAllNotifications(): void {
-    if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
-      this.notifications.set([]);
-    }
+    this.showClearAllDialog.set(true);
+  }
+
+  confirmClearAll(): void {
+    this.notificationService.deleteAllNotifications().subscribe({
+      next: () => {
+        this.notificationService.clearAllNotifications();
+        this.showClearAllDialog.set(false);
+      },
+      error: (error) => {
+        console.error('Error clearing notifications:', error);
+        this.showClearAllDialog.set(false);
+      }
+    });
+  }
+
+  cancelClearAll(): void {
+    this.showClearAllDialog.set(false);
   }
 
   toggleFilter(): void {
     this.showUnreadOnly.update(value => !value);
   }
 
-  handleAction(notification: Notification): void {
-    if (notification.actionUrl) {
-      this.router.navigate([notification.actionUrl]);
-    }
+  handleAction(notification: DisplayNotification): void {
     this.closeModal();
+
+    if (!notification.actionUrl) {
+      return;
+    }
+
+    // Handle different action types based on notification type
+    switch (notification.type) {
+      case 'chat_message':
+        // Navigate directly to support chat
+        this.router.navigate([notification.actionUrl]);
+        break;
+
+      case 'rating_reminder':
+        // Navigate to rating page (if applicable for drivers)
+        this.router.navigate([notification.actionUrl]);
+        break;
+
+      case 'ride_starting':
+      case 'ride_reminder':
+      case 'ride_started':
+      case 'upcoming_ride_reminder':
+        // Navigate to ride tracking
+        this.router.navigate([notification.actionUrl]);
+        break;
+
+      case 'ride_completed':
+      case 'ride_cancelled':
+      case 'rating_received':
+        // Navigate to history with query param to open ride detail modal
+        if (notification.actionUrl.includes('openRide=')) {
+          // URL already contains query param
+          const url = notification.actionUrl.split('?')[0];
+          const params = new URLSearchParams(notification.actionUrl.split('?')[1]);
+          this.router.navigate([url], {
+            queryParams: Object.fromEntries(params)
+          });
+        } else if (notification.rideId) {
+          // Fallback: construct URL with rideId
+          this.router.navigate(['/driver/history'], {
+            queryParams: { openRide: notification.rideId }
+          });
+        }
+        break;
+
+      default:
+        // For all other notifications, try to parse the actionUrl
+        if (notification.actionUrl.includes('?')) {
+          const [path, queryString] = notification.actionUrl.split('?');
+          const params = new URLSearchParams(queryString);
+          this.router.navigate([path], {
+            queryParams: Object.fromEntries(params)
+          });
+        } else {
+          this.router.navigate([notification.actionUrl]);
+        }
+    }
+  }
+
+  getActionButtonText(type: string): string {
+    const buttonTextMap: { [key: string]: string } = {
+      'chat_message': 'Open Chat',
+      'rating_reminder': 'Rate Now',
+      'ride_starting': 'Track Ride',
+      'ride_reminder': 'Track Ride',
+      'ride_started': 'Track Ride',
+      'upcoming_ride_reminder': 'Track Ride',
+      'ride_completed': 'View Details',
+      'ride_cancelled': 'View Details',
+      'rating_received': 'View Details',
+      'ride_rejected': 'View History',
+      'ride_report': 'View Report',
+      'new_registration': 'View Users',
+      'profile_change_request': 'Review Request'
+    };
+    return buttonTextMap[type] || 'View';
+  }
+
+  private navigateToRideDetail(rideId: number): void {
+    // Navigate to history page with query parameter to open specific ride
+    this.router.navigate(['/driver/history'], {
+      queryParams: { openRide: rideId }
+    });
   }
 
   getNotificationIcon(type: string): string {
     switch (type) {
-      case 'new_ride_request':
-        return 'heroBell';
-      case 'ride_cancelled_by_passenger':
+      case 'ride_starting':
+      case 'ride_reminder':
+      case 'upcoming_ride_reminder':
+      case 'ride_started':
+        return 'heroClock';
+      case 'ride_cancelled':
+      case 'ride_rejected':
         return 'heroXCircle';
-      case 'passenger_added':
+      case 'added_to_ride':
         return 'heroUserPlus';
       case 'ride_completed':
         return 'heroCheckCircle';
-      case 'payment_received':
-        return 'heroCurrencyDollar';
+      case 'rating_reminder':
+        return 'heroBell';
       case 'rating_received':
         return 'heroStar';
-      case 'ride_reminder':
-        return 'heroClock';
-      case 'earnings_summary':
-        return 'heroCurrencyDollar';
+      case 'ride_report':
+        return 'heroFlag';
+      case 'new_registration':
+        return 'heroUserCircle';
+      case 'profile_change_request':
+        return 'heroDocumentText';
+      case 'chat_message':
+        return 'heroChatBubbleLeftRight';
+      case 'general':
       default:
         return 'heroInformationCircle';
     }
@@ -224,22 +374,31 @@ export class DriverNotifications {
 
   getNotificationIconBg(type: string): string {
     switch (type) {
-      case 'new_ride_request':
+      case 'ride_starting':
+      case 'ride_reminder':
+      case 'upcoming_ride_reminder':
+      case 'ride_started':
         return 'bg-blue-100';
-      case 'ride_cancelled_by_passenger':
+      case 'ride_cancelled':
+      case 'ride_rejected':
         return 'bg-red-100';
-      case 'passenger_added':
+      case 'added_to_ride':
         return 'bg-purple-100';
       case 'ride_completed':
         return 'bg-green-100';
-      case 'payment_received':
-        return 'bg-emerald-100';
-      case 'rating_received':
+      case 'rating_reminder':
         return 'bg-yellow-100';
-      case 'ride_reminder':
+      case 'rating_received':
+        return 'bg-amber-100';
+      case 'ride_report':
         return 'bg-orange-100';
-      case 'earnings_summary':
-        return 'bg-teal-100';
+      case 'new_registration':
+        return 'bg-emerald-100';
+      case 'profile_change_request':
+        return 'bg-sky-100';
+      case 'chat_message':
+        return 'bg-indigo-100';
+      case 'general':
       default:
         return 'bg-gray-100';
     }
@@ -247,22 +406,31 @@ export class DriverNotifications {
 
   getNotificationIconColor(type: string): string {
     switch (type) {
-      case 'new_ride_request':
+      case 'ride_starting':
+      case 'ride_reminder':
+      case 'upcoming_ride_reminder':
+      case 'ride_started':
         return 'text-blue-600';
-      case 'ride_cancelled_by_passenger':
+      case 'ride_cancelled':
+      case 'ride_rejected':
         return 'text-red-600';
-      case 'passenger_added':
+      case 'added_to_ride':
         return 'text-purple-600';
       case 'ride_completed':
         return 'text-green-600';
-      case 'payment_received':
-        return 'text-emerald-600';
-      case 'rating_received':
+      case 'rating_reminder':
         return 'text-yellow-600';
-      case 'ride_reminder':
+      case 'rating_received':
+        return 'text-amber-600';
+      case 'ride_report':
         return 'text-orange-600';
-      case 'earnings_summary':
-        return 'text-teal-600';
+      case 'new_registration':
+        return 'text-emerald-600';
+      case 'profile_change_request':
+        return 'text-sky-600';
+      case 'chat_message':
+        return 'text-indigo-600';
+      case 'general':
       default:
         return 'text-gray-600';
     }
@@ -279,7 +447,7 @@ export class DriverNotifications {
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    
+
     return timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 

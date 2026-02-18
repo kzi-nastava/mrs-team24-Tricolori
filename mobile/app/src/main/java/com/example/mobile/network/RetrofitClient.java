@@ -2,6 +2,7 @@ package com.example.mobile.network;
 
 import android.content.Context;
 
+import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.service.ChangeDataRequestService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -14,10 +15,11 @@ import com.example.mobile.network.service.ProfileService;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitClient {
 
-    private static final String BASE_URL = "http://10.0.2.2:8080";
+    private static final String BASE_URL = "http://192.168.1.7:8080";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient(Context context) {
@@ -37,6 +39,7 @@ public class RetrofitClient {
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .client(okHttpClient)
+                    .addConverterFactory(ScalarsConverterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
         }
@@ -49,5 +52,9 @@ public class RetrofitClient {
   
     public static ProfileService getProfileService(Context context) {
         return getClient(context).create(ProfileService.class);
+    }
+
+    public static AuthService getAuthService(Context context) {
+        return getClient(context).create(AuthService.class);
     }
 }

@@ -4,7 +4,7 @@
       <button (click)="handleBack()" class="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg text-gray-700 font-medium text-sm">
         <ng-icon name="heroArrowLeft" class="w-4 h-4"></ng-icon> Back
       </button>
-      <h2 class="text-xl font-semibold text-base-900 m-0">Rate Your Ride</h2>
+      <h2 id="rating-page-title" class="text-xl font-semibold text-base-900 m-0">Rate Your Ride</h2>
     </div>
 
     @if (isLoading()) {
@@ -14,7 +14,7 @@
       </div>
     } @else {
       @if (errorMessage()) {
-        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div id="rating-error-message" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div class="flex items-start gap-3">
             <ng-icon name="heroExclamationCircle" class="w-5 h-5 text-red-600 mt-0.5"></ng-icon>
             <div>
@@ -26,7 +26,7 @@
       }
 
       @if (isExpired()) {
-        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div id="rating-expired-message" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div class="flex items-start gap-3">
             <ng-icon name="heroExclamationCircle" class="w-5 h-5 text-red-600 mt-0.5"></ng-icon>
             <div>
@@ -36,7 +36,7 @@
           </div>
         </div>
       } @else if (isSubmitted()) {
-        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <div id="rating-success-message" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
           <div class="flex items-start gap-3">
             <ng-icon name="heroCheckCircle" class="w-5 h-5 text-green-600 mt-0.5"></ng-icon>
             <div>
@@ -92,7 +92,7 @@
           <form [formGroup]="ratingForm" (ngSubmit)="submitRating()">
             <div class="mb-6">
               <label class="block text-sm font-semibold text-base-900 mb-3">Rate Your Driver</label>
-              <div class="flex gap-2 justify-center mb-2">
+              <div id="driver-rating-stars" class="flex gap-2 justify-center mb-2">
                 @for (star of [1, 2, 3, 4, 5]; track star) {
                   <button
                     type="button"
@@ -115,7 +115,7 @@
 
             <div class="mb-6">
               <label class="block text-sm font-semibold text-base-900 mb-3">Rate the Vehicle</label>
-              <div class="flex gap-2 justify-center mb-2">
+              <div id="vehicle-rating-stars" class="flex gap-2 justify-center mb-2">
                 @for (star of [1, 2, 3, 4, 5]; track star) {
                   <button
                     type="button"
@@ -141,6 +141,7 @@
                 Comment <span class="text-gray-500 font-normal">(Optional)</span>
               </label>
               <textarea
+                id="rating-comment"
                 formControlName="comment"
                 placeholder="Share your experience..."
                 rows="4"
@@ -156,6 +157,7 @@
             </div>
 
             <button
+              id="submit-rating-btn"
               type="submit"
               [disabled]="!ratingForm.valid || isSubmitting()"
               class="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors">
@@ -179,7 +181,7 @@
   </div>
 
   <div class="w-full lg:w-3/4 h-[50vh] lg:h-full relative">
-    <app-map [vehicles]="[]"></app-map>
+    <div id="ride-map" class="w-full h-full"></div>
 
     @if (rideDetails(); as ride) {
       <div class="absolute top-6 left-6 bg-white rounded-lg shadow-lg p-4 z-20">

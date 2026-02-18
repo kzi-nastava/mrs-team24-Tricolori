@@ -107,6 +107,7 @@ public class LoginFragment extends Fragment {
         editor.putString("jwt_token", response.accessToken);
         editor.putString("user_email", response.personDto.email);
         editor.putString("user_role", response.personDto.role.name());
+        editor.putLong("user_id", response.personDto.id);
         editor.apply();
     }
 
@@ -115,11 +116,11 @@ public class LoginFragment extends Fragment {
 
         int destination;
         if ("ROLE_DRIVER".equals(role)) {
-            destination = R.id.action_login_to_rideHistory;
+            destination = R.id.action_login_to_driverHome;
         } else if ("ROLE_ADMIN".equals(role)) {
             destination = R.id.action_login_to_profile;
         } else if ("ROLE_PASSENGER".equals(role)) {
-            destination = R.id.action_login_to_profile;
+            destination = R.id.action_login_to_passengerHome;
         } else {
             // fallback
             destination = R.id.action_login_to_home;

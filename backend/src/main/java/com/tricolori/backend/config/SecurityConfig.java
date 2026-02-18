@@ -41,10 +41,14 @@ public class SecurityConfig {
             .sessionManagement(s ->
                     s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(a -> a
+                    .requestMatchers(
+                            "/v3/api-docs/**",
+                            "/v3/api-docs.yaml",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html"
+                    ).permitAll()
                 .requestMatchers("/api/v1/auth/**", "/error").permitAll()
-                // To access any favorite-route endpoint, we must be Passenger
-                // This can also be done by adding @PreAuthorize("hasRole('ROLE_PASSENGER')")
-                // in FavoriteRoute controller... 
+                .requestMatchers("/api/v1/tracking/**").permitAll()
                 .requestMatchers("/api/v1/favorite-routes/**").hasRole("PASSENGER")
                 .requestMatchers("/api/v1/profiles/**").authenticated()
                     .requestMatchers("/api/v1/rides/*/rate").hasRole("PASSENGER")
@@ -52,6 +56,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/vehicles/active").permitAll()
                 .requestMatchers("/api/v1/rides/history/driver/**").hasRole("DRIVER")
                 .requestMatchers("/api/v1/rides/*/details/driver").hasRole("DRIVER")
+                .requestMatchers("/api/v1/reports/**").authenticated()
+                .requestMatchers("/api/v1/persons/**").authenticated()
                 .anyRequest().permitAll() // replace this last permitAll with authenticated()
             );
             

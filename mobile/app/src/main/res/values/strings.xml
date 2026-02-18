@@ -209,4 +209,88 @@
     <string name="change_request_last_name">Last name</string>
     <string name="change_request_phone">Phone number</string>
     <string name="change_request_address">Home address</string>
+
+    <!-- Admin's Driver Registration -->
+    <string name="admin_driver_fragment_label">Driver Registration</string>
+    <string name="admin_driver_title">Register a driver on Cuber</string>
+    <string name="admin_driver_desc">Add a new driver to the system</string>
+    <string name="admin_driver_step_one_circle_number">1</string>
+    <string name="admin_driver_step_two_circle_number">2</string>
+    <string name="admin_driver_step_one_circle">Driver Info</string>
+    <string name="admin_driver_step_two_circle">Car &amp; Account</string>
+    <string name="admin_driver_step_one_pfp_title">Driver\'s Profile Picture</string>
+    <string name="admin_driver_step_one_pfp_desc">Others will be able to see driver\'s profile picture</string>
+    <string name="admin_driver_step_one_info_title">Driver\'s Information</string>
+    <string name="admin_driver_step_one_info_desc">Driver personal information</string>
+    <string name="admin_driver_step_one_first_name">Driver\'s first name:</string>
+    <string name="admin_driver_step_one_first_name_hint">Joe</string>
+    <string name="admin_driver_step_one_last_name">Driver\'s last name:</string>
+    <string name="admin_driver_step_one_last_name_hint">Doe</string>
+    <string name="admin_driver_step_one_phone">Driver\'s phone number:</string>
+    <string name="admin_driver_step_one_phone_hint">+38766555333</string>
+    <string name="admin_driver_step_one_address">Driver\'s home address:</string>
+    <string name="admin_driver_step_one_address_hint">Skutndavno 56</string>
+    <string name="admin_driver_step_one_next">Next step</string>
+    <string name="admin_driver_step_two_title">Car &amp; Account Information</string>
+    <string name="admin_driver_step_two_desc">Vehicle data and Email</string>
+    <string name="admin_driver_step_two_email">Driver\'s email address:</string>
+    <string name="admin_driver_step_two_email_hint">joedoe@example.com</string>
+    <string name="admin_driver_step_two_email_info">Driver will receive an email to set their password</string>
+    <string name="admin_driver_step_two_model">Vehicle model:</string>
+    <string name="admin_driver_step_two_model_hint">Toyota Corolla</string>
+    <string name="admin_driver_step_two_type">Vehicle type:</string>
+    <string name="admin_driver_step_two_plate">Registration plate:</string>
+    <string name="admin_driver_step_two_plate_hint">ABC-1234</string>
+    <string name="admin_driver_step_two_seats">Number of seats:</string>
+    <string name="admin_driver_step_two_seats_hint">4</string>
+    <string name="admin_driver_step_two_additional">Additional information</string>
+    <string name="admin_driver_step_two_baby">Baby friendly</string>
+    <string name="admin_driver_step_two_pet">Pet friendly</string>
+    <string name="admin_driver_step_two_prev">Previous step</string>
+    <string name="admin_driver_step_two_submit">Register Driver</string>
+
+    <!-- Driver Password Setup -->
+    <string name="password_setup_title">Enter your password</string>
+    <string name="password_setup_subtitle">Choose a strong password to secure your account</string>
+    <string name="password_setup_new">Enter your password:</string>
+    <string name="password_setup_new_hint">Your new password</string>
+    <string name="password_setup_confirm">Re-enter your password:</string>
+    <string name="password_setup_confirm_hint">Confirm your new password</string>
+    <string name="password_setup_submit">Submit</string>
+    <string name="password_setup_requirement">Password Requirements:</string>
+    <string name="password_setup_req_1">• At least 8 characters</string>
+    <string name="password_setup_req_2">• Upper and lowercase letters</string>
+    <string name="password_setup_req_3">• At least one number</string>
+
+    <!-- Driver Ride Wait -->
+    <string name="waiting_for_rides">Waiting for rides</string>
+    <string name="stay_active_to_receive_requests">Stay active to receive requests</string>
+
+    <!-- Driver Cancel Ride Modal -->
+    <string name="cancel_ride">Cancel Ride</string>
+    <string name="please_provide_a_reason_for_cancelling_this_ride_assignment">Please provide a reason for cancelling this ride assignment.</string>
+    <string name="e_g_vehicle_trouble_traffic_etc">E.g., Vehicle trouble, traffic, etc…</string>
+    <string name="go_back">GO BACK</string>
+    <string name="confirm_cancel">CONFIRM CANCEL</string>
+    <string name="close">Close</string>
+
+    <!-- Driver Ride Assign -->
+    <string name="new_ride_assigned">New Ride Assigned!</string>
+    <string name="passenger">PASSENGER</string>
+    <string name="route_details">ROUTE DETAILS</string>
+    <string name="pickup">PICKUP</string>
+    <string name="destination">DESTINATION</string>
+    <string name="cancel">CANCEL RIDE</string>
+    <string name="start_ride">START RIDE</string>
+    <string name="p">P</string>
+    <string name="pickup_location_desc">Pickup Location Icon</string>
+    <string name="destination_location_desc">Destination Location Icon</string>
+    <string name="price">Price</string>
+
+    <!-- Passenger Home -->
+    <string name="order_ride">Order Ride</string>
+
+    <!-- Passenger Ride Waiting -->
+    <string name="waiting_for_driver_to_arrive">Waiting for driver to arrive…</string>
+    <string name="driver">DRIVER</string>
 </resources>

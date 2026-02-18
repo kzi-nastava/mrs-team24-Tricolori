@@ -34,6 +34,12 @@
             android:icon="@drawable/ic_pricelist"
             android:title="Pricelist" />
 
+        <item
+            android:id="@+id/adminDriverRegistrationFragment"
+            android:title="Driver registration"
+            android:icon="@drawable/ic_vehicle"
+            app:showAsAction="never" />
+
     <item
         android:id="@+id/userProfileFragment"
         android:icon="@drawable/ic_person"
@@ -43,11 +49,18 @@
         android:id="@+id/changeRequestsReviewFragment"
         android:title="Change Requests"
         android:icon="@drawable/ic_change_requests" />
-<!--        &lt;!&ndash; Support - shown to all logged in users &ndash;&gt;-->
-<!--        <item-->
-<!--            android:id="@+id/supportFragment"-->
-<!--            android:icon="@drawable/ic_support"-->
-<!--            android:title="Support" />-->
+
+        <!-- Support - passengers and drivers -->
+        <item
+            android:id="@+id/supportChatEntry"
+            android:icon="@drawable/ic_support"
+            android:title="Support" />
+
+        <!-- Admin: all conversations -->
+        <item
+            android:id="@+id/adminConversationListFragment"
+            android:icon="@drawable/ic_support"
+            android:title="Support Chats" />
 </group>
 
 

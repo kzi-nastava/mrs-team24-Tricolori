@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
+import * as polyline from '@mapbox/polyline';
 import { Vehicle } from '../model/vehicle.model';
 
 /**
@@ -33,6 +34,12 @@ export class MapService {
    * Initializes the Leaflet map instance
    */
   initMap(elementId: string, center: [number, number] = [45.2671, 19.8335], zoom: number = 13): L.Map {
+
+    if (this.map) {
+      console.warn('Map already initialized');
+      return this.map;
+    }
+
     this.map = L.map(elementId, { center, zoom });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -78,24 +85,48 @@ export class MapService {
     });
   }
 
-  /**
-   * Draws a route line and places pickup/destination pins
-   */
-  drawRoute(geometry: L.LatLng[]): void {
+  private decodePolyline(encodedPolyline: string): L.LatLng[] {
+    const decoded = polyline.decode(encodedPolyline);
+
+    console.log('Decoded coordinates:', decoded);
+    return decoded.map(coord => L.latLng(coord[0], coord[1]));
+  }
+
+  drawRoute(geometry: string | L.LatLng[]): void {
+    if (!this.map) {
+      console.error('Map not initialized');
+      return;
+    }
+
     this.clearRouteAndMarkers();
 
-    if (!geometry || geometry.length < 2) {
+    let coordinates: L.LatLng[];
+
+    if (typeof geometry === 'string') {
+      console.log("decoding...")
+      try {
+        coordinates = this.decodePolyline(geometry);
+        console.log(`Decoded ${coordinates.length} coordinates from polyline`);
+      } catch (error) {
+        console.error('Failed to decode polyline:', error);
+        return;
+      }
+    } else {
+      coordinates = geometry;
+    }
+
+    if (!coordinates || coordinates.length < 2) {
       console.error('Invalid geometry provided to drawRoute');
       return;
     }
 
-    const pickup = geometry[0];
-    const destination = geometry[geometry.length - 1];
+    const pickup = coordinates[0];
+    const destination = coordinates[coordinates.length - 1];
 
     this.pickupMarker = L.marker(pickup, { icon: pickupIcon }).addTo(this.map);
     this.destinationMarker = L.marker(destination, { icon: destinationIcon }).addTo(this.map);
 
-    this.routeLayer = L.polyline(geometry, {
+    this.routeLayer = L.polyline(coordinates, {
       color: '#00acc1',
       weight: 5,
       opacity: 0.8,
@@ -163,6 +194,7 @@ export class MapService {
     if (this.map) {
       this.vehicleLayer.clearLayers();
       this.map.remove();
+      this.map = undefined as any;
     }
   }
 

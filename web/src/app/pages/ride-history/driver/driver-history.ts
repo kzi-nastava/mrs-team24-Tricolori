@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroEye, heroXMark } from '@ng-icons/heroicons/outline';
 import { finalize } from 'rxjs/operators';
@@ -17,7 +18,7 @@ interface Ride {
   startDate: string;
   endDate: string;
   price: number;
-  status: 'Completed' | 'Cancelled' | 'Scheduled' | 'In Progress';
+  status: 'Completed' | 'Cancelled' | 'Scheduled' | 'Ongoing';
   startTime: string;
   endTime: string;
   duration: string;
@@ -51,23 +52,35 @@ export class DriverHistory implements OnInit {
   isLoading = false;
   errorMessage = '';
 
-  // Filter options
   statusFilter: string = 'all';
   searchQuery: string = '';
 
-  // Map
   private map: L.Map | null = null;
 
   constructor(
     private rideService: RideService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
-    this.loadRideHistory();
-  }
-
-  // ================= load history =================
+  this.loadRideHistory();
+  
+  this.route.queryParams.subscribe(params => {
+    const openRideId = params['openRide'];
+    if (openRideId) {
+      setTimeout(() => {
+        this.viewRideDetails(parseInt(openRideId));
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          queryParamsHandling: 'merge'
+        });
+      }, 500);
+    }
+  });
+}
 
   loadRideHistory(): void {
   this.isLoading = true;
@@ -85,7 +98,7 @@ export class DriverHistory implements OnInit {
     .subscribe({
       next: (rides) => {
         this.allRides = this.mapBackendRidesToUI(rides);
-        this.applyFilters(); // ⬅️ KLJUČNO
+        this.applyFilters();
       },
       error: () => {
         this.errorMessage = 'Failed to load ride history.';
@@ -95,12 +108,9 @@ export class DriverHistory implements OnInit {
     });
 }
 
-  // ================= filtering =================
-
   applyFilters(): void {
   let result = [...this.allRides];
 
-  // ===== DATE FILTER =====
   if (this.startDate) {
     const start = new Date(this.startDate);
     result = result.filter(ride => {
@@ -111,21 +121,19 @@ export class DriverHistory implements OnInit {
 
   if (this.endDate) {
     const end = new Date(this.endDate);
-    end.setHours(23, 59, 59, 999); // uključi ceo dan
+    end.setHours(23, 59, 59, 999);
     result = result.filter(ride => {
       const rideDate = new Date(ride.startDate);
       return rideDate <= end;
     });
   }
 
-  // ===== STATUS FILTER =====
   if (this.statusFilter !== 'all') {
     result = result.filter(ride =>
       ride.status.toLowerCase() === this.statusFilter.toLowerCase()
     );
   }
 
-  // ===== SEARCH FILTER =====
   if (this.searchQuery.trim()) {
     const query = this.searchQuery.toLowerCase();
     result = result.filter(ride =>
@@ -153,8 +161,6 @@ export class DriverHistory implements OnInit {
     this.endDate = '';
     this.applyFilters();
   }
-
-  // ================= mapping =================
 
   private mapBackendRidesToUI(backendRides: RideHistoryResponse[]): Ride[] {
     return backendRides.map((ride) => {
@@ -187,8 +193,6 @@ export class DriverHistory implements OnInit {
     });
   }
 
-  // ================= details =================
-
   viewRideDetails(rideId: number): void {
     this.isLoading = true;
     this.cdr.detectChanges();
@@ -206,7 +210,6 @@ export class DriverHistory implements OnInit {
           this.selectedRide = this.mapDetailToUI(detail);
           this.cdr.detectChanges();
 
-          // Initialize map after modal opens
           setTimeout(() => this.initMap(), 100);
         },
         error: () => {
@@ -251,14 +254,11 @@ export class DriverHistory implements OnInit {
     };
   }
 
-  // ================= map =================
-
   private initMap(): void {
     if (!this.selectedRide || !this.selectedRide.pickupLat || !this.selectedRide.pickupLng) {
       return;
     }
 
-    // Destroy existing map
     if (this.map) {
       this.map.remove();
     }
@@ -273,16 +273,13 @@ export class DriverHistory implements OnInit {
       this.selectedRide.dropoffLng || this.selectedRide.pickupLng
     ];
 
-    // Initialize map
     this.map = L.map('ride-map').setView(pickupLatLng, 13);
 
-    // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(this.map);
 
-    // Custom icons
     const pickupIcon = L.icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -301,29 +298,34 @@ export class DriverHistory implements OnInit {
       shadowSize: [41, 41]
     });
 
-    // Add markers
     L.marker(pickupLatLng, { icon: pickupIcon })
-      .addTo(this.map)
+      .addTo(this.map!)
       .bindPopup('<b>Pickup</b><br>' + this.selectedRide.route.split(' → ')[0]);
 
     L.marker(dropoffLatLng, { icon: dropoffIcon })
-      .addTo(this.map)
+      .addTo(this.map!)
       .bindPopup('<b>Dropoff</b><br>' + this.selectedRide.route.split(' → ')[1]);
 
-    // Draw line between markers
-    L.polyline([pickupLatLng, dropoffLatLng], {
-      color: '#00acc1',
-      weight: 3,
-      opacity: 0.7,
-      dashArray: '10, 10'
-    }).addTo(this.map);
-
-    // Fit bounds to show both markers
     const bounds = L.latLngBounds([pickupLatLng, dropoffLatLng]);
     this.map.fitBounds(bounds, { padding: [50, 50] });
-  }
 
-  // ================= helpers =================
+    const ride = this.selectedRide;
+    const url = `https://router.project-osrm.org/route/v1/driving/${ride.pickupLng},${ride.pickupLat};${ride.dropoffLng},${ride.dropoffLat}?overview=full&geometries=geojson`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.routes?.[0]) {
+          const coords = data.routes[0].geometry.coordinates.map((c: any) => L.latLng(c[1], c[0]));
+          L.polyline(coords, {
+            color: '#00acc1',
+            weight: 4,
+            opacity: 0.8
+          }).addTo(this.map!);
+        }
+      })
+      .catch(err => console.error('Error fetching route:', err));
+  }
 
   filterByDate(): void {
     this.applyFilters();
@@ -349,17 +351,15 @@ export class DriverHistory implements OnInit {
     return `${pickup || 'Unknown'} → ${destination || 'Unknown'}`;
   }
 
-  private mapRideStatus(status: string): 'Completed' | 'Cancelled' | 'Scheduled' | 'In Progress' {
+  private mapRideStatus(status: string): 'Completed' | 'Cancelled' | 'Scheduled' | 'Ongoing' {
     switch (status) {
       case 'COMPLETED':
       case 'FINISHED':
         return 'Completed';
       case 'CANCELLED':
         return 'Cancelled';
-      case 'IN_PROGRESS':
-        return 'In Progress';
       case 'ONGOING':
-        return 'In Progress';
+        return 'Ongoing';
       default:
         return 'Scheduled';
     }
@@ -373,7 +373,7 @@ export class DriverHistory implements OnInit {
         return 'bg-red-100 text-red-800';
       case 'scheduled':
         return 'bg-yellow-100 text-yellow-800';
-      case 'in progress':
+      case 'ongoing':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';

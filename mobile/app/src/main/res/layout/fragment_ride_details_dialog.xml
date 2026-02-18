@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -12,7 +13,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- TITLE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -22,7 +22,6 @@
             android:textColor="@color/base_900"
             android:layout_marginBottom="12dp" />
 
-        <!-- ROUTE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -38,7 +37,6 @@
             android:layout_marginBottom="12dp"
             tools:text="Bulevar Oslobođenja 12 → Trg Slobode 3" />
 
-        <!-- MAP CONTAINER with rounded corners and shadow -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -49,27 +47,27 @@
             <org.osmdroid.views.MapView
                 android:id="@+id/rideMap"
                 android:layout_width="match_parent"
-                android:layout_height="240dp"/>
+                android:layout_height="240dp" />
 
         </androidx.cardview.widget.CardView>
 
-        <!-- DATE -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Date"
-            android:textStyle="bold"
-            android:textColor="@color/base_600" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTrackRide"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Track Ride"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            tools:visibility="gone"
+            app:backgroundTint="#00ACC1"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_location"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="@color/white" />
 
-        <TextView
-            android:id="@+id/tvDetailDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/base_900"
-            android:layout_marginBottom="10dp"
-            tools:text="2026-01-27" />
-
-        <!-- TIME ROW -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -120,7 +118,6 @@
 
         </LinearLayout>
 
-        <!-- DURATION/DISTANCE ROW -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -171,7 +168,6 @@
 
         </LinearLayout>
 
-        <!-- PRICE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -188,7 +184,6 @@
             android:layout_marginBottom="10dp"
             tools:text="570.20 RSD" />
 
-        <!-- STATUS -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -205,7 +200,6 @@
             android:layout_marginBottom="10dp"
             tools:text="FINISHED" />
 
-        <!-- PASSENGER -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -219,18 +213,19 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tvDetailPersonLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Passenger"
                     android:textStyle="bold"
-                    android:textColor="@color/base_600" />
+                    android:textColor="@color/base_600"
+                    tools:text="Passenger" />
 
                 <TextView
-                    android:id="@+id/tvDetailPassengerName"
+                    android:id="@+id/tvDetailPersonName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/base_900"
-                    tools:text="Putnica Putnic" />
+                    tools:text="John Doe" />
             </LinearLayout>
 
             <LinearLayout
@@ -247,7 +242,7 @@
                     android:textColor="@color/base_600" />
 
                 <TextView
-                    android:id="@+id/tvDetailPassengerPhone"
+                    android:id="@+id/tvDetailPersonPhone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/base_900"
@@ -255,7 +250,68 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- RATING CARD -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/vehicleContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:elevation="2dp"
+            android:radius="8dp"
+            android:visibility="gone"
+            tools:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:background="#F5F5F5">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Vehicle"
+                        android:textStyle="bold"
+                        android:textColor="@color/base_600" />
+
+                    <TextView
+                        android:id="@+id/tvDetailVehicleModel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/base_900"
+                        tools:text="Toyota Corolla" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plate"
+                        android:textStyle="bold"
+                        android:textColor="@color/base_600" />
+
+                    <TextView
+                        android:id="@+id/tvDetailVehiclePlate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/base_900"
+                        tools:text="NS-123-AB" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
         <androidx.cardview.widget.CardView
             android:id="@+id/ratingContainer"
             android:layout_width="match_parent"
@@ -275,12 +331,13 @@
                 android:background="#FFF8E1">
 
                 <TextView
+                    android:id="@+id/tvRatingSectionLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Passenger Rating"
                     android:textStyle="bold"
                     android:textColor="#E67E22"
-                    android:layout_marginBottom="6dp" />
+                    android:layout_marginBottom="6dp"
+                    tools:text="Passenger Rating" />
 
                 <TextView
                     android:id="@+id/tvDriverRating"
@@ -300,7 +357,6 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- COMMENT -->
         <androidx.cardview.widget.CardView
             android:id="@+id/notesContainer"
             android:layout_width="match_parent"
@@ -337,7 +393,23 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- CLOSE -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRateRide"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Rate this Ride"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            tools:visibility="gone"
+            app:backgroundTint="@color/deep_700"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_star_filled"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="@color/white" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClose"
             android:layout_width="match_parent"
@@ -345,8 +417,9 @@
             android:text="Close"
             android:textAllCaps="false"
             android:textColor="@color/white"
-            android:layout_marginTop="14dp"
-            android:backgroundTint="@color/base_600" />
+            android:layout_marginTop="8dp"
+            app:backgroundTint="@color/base_600"
+            app:cornerRadius="8dp" />
 
     </LinearLayout>
 

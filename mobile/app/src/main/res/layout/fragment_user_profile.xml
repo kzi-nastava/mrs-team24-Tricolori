@@ -363,7 +363,7 @@
                     android:paddingVertical="8dp"
                     android:text="@string/profile_update_profile"
                     android:textColor="@android:color/white"
-                    android:background="@drawable/profile_submit_button_selector"
+                    android:background="@drawable/submit_button_selector"
                     android:enabled="false"
                     app:backgroundTint="@null"/>
         </LinearLayout>
@@ -379,7 +379,7 @@
             android:layout_marginRight="@dimen/spacing_1"
             android:layout_marginTop="@dimen/spacing_1"
             android:layout_marginBottom="@dimen/spacing_6"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <!-- Header: Icon + Title + Description -->
             <LinearLayout

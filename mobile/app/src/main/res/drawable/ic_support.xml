@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Chat bubble -->
+    <path
+        android:fillColor="#00ACC1"
+        android:pathData="M12,2C6.48,2 2,6.02 2,11c0,2.87 1.37,5.42 3.5,7.1L5,21l3.2,-1.7C9.35,19.75 10.64,20 12,20c5.52,0 10,-4.02 10,-9S17.52,2 12,2Z" />
+
+    <!-- Headset arc -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,6.5C9.5,6.5 7.5,8.5 7.5,11v0.5H9V11c0,-1.66 1.34,-3 3,-3s3,1.34 3,3v0.5h1.5V11C16.5,8.5 14.5,6.5 12,6.5Z" />
+
+    <!-- Left earpiece -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8.5,11.5H7.5C7,11.5 6.5,12 6.5,12.5v1.5C6.5,14.5 7,15 7.5,15H8.5C9,15 9.5,14.5 9.5,14v-1.5C9.5,12 9,11.5 8.5,11.5Z" />
+
+    <!-- Right earpiece -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16.5,11.5H15.5C15,11.5 14.5,12 14.5,12.5V14C14.5,14.5 15,15 15.5,15H16.5C17,15 17.5,14.5 17.5,14v-1.5C17.5,12 17,11.5 16.5,11.5Z" />
+
+</vector>

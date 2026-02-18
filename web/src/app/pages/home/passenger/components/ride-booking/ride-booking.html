@@ -1,11 +1,11 @@
-<div class="overflow-y-auto">
+<div class="overflow-y-auto p-1">
     <form class="flex flex-col gap-12" (submit)="rideSubmit($event)">
         <div>
             <div class="flex items-center gap-3 text-base-700 mb-5">
                 <ng-icon name="ionLocationOutline" size="2rem"></ng-icon>
-                <h2 class="text-2xl">Book your Ride</h2>
+                <h2 id="ride-book-welcome" class="text-2xl">Book your Ride</h2>
             </div>
-            <button type="button" (click)="openFavoriteRoutes()" class="w-full py-3 mb-3 border border-gray-500 border-dashed rounded-2xl text-light-600 font-medium hover:bg-gray-200 transition-colors duration-300 hover:text-light-700 bg-gray-100 cursor-pointer text-center">
+            <button id="select-from-favorite-routes-btn" type="button" (click)="openFavoriteRoutes()" class="w-full py-3 mb-3 border border-gray-500 border-dashed rounded-2xl text-light-600 font-medium hover:bg-gray-200 transition-colors duration-300 hover:text-light-700 bg-gray-100 cursor-pointer text-center">
                 Select from Favorite Routes
             </button>
             <app-route-selector [selectedRoute]="currentRoute()"/>
@@ -35,8 +35,15 @@
             <app-ride-trackers-selector />
         </div>
 
-        <button type="submit" class="bg-light-700 mx-auto px-10 py-3 rounded-xl text-white cursor-pointer">
-            Book a Ride
-        </button>
+                <div class="flex flex-col items-center gap-3">
+            <button
+                (click)="showRoute()"
+                id="preview-a-ride-btn" type="button" class="w-full bg-dark-300 hover:bg-dark-600 transition-all py-3 rounded-xl text-white cursor-pointer">
+                Preview a Ride
+            </button>
+            <button id="book-a-ride-btn" type="submit" class="w-full bg-deep-300 hover:bg-deep-600 transition-all py-3 rounded-xl text-white cursor-pointer">
+                Book a Ride
+            </button>
+        </div>
     </form>
 </div>

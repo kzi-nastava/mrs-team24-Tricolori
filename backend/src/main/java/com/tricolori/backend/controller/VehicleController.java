@@ -4,6 +4,7 @@ import com.tricolori.backend.service.VehicleService;
 import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,4 +29,20 @@ public class VehicleController {
 
         return ResponseEntity.ok().build();
     }
+
+    // update vehicle location (for driver simulation/testing)
+    @PutMapping("/{id}/location")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<VehicleLocationResponse> updateVehicleLocation(
+            @PathVariable Long id,
+            @RequestBody UpdateLocationRequest request) {
+        VehicleLocationResponse updated = vehicleService.updateVehicleLocation(
+                id,
+                request.latitude(),
+                request.longitude()
+        );
+        return ResponseEntity.ok(updated);
+    }
+
+    record UpdateLocationRequest(double latitude, double longitude) {}
 }

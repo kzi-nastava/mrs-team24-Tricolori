@@ -1,427 +1,166 @@
 <div class="flex justify-center pt-8 bg-white min-h-[calc(100vh-80px)] relative">
-  
-  <div class="w-full max-w-7xl px-6">
-    
-    <!-- Title -->
-    <h1 class="text-3xl font-sans text-base-900 mb-2">Ride History Management</h1>
-    
-    <!-- Subtitle -->
-    <p class="text-gray-600 mb-6">View and manage all rides for drivers and passengers</p>
-    
-    <!-- Filter Section -->
-    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-      <h3 class="text-base-800 font-medium mb-4 text-lg">Filters:</h3>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <!-- User Type Filter -->
-        <div>
-          <label class="block text-base-800 mb-2 text-sm">User Type</label>
-          <select 
-            [(ngModel)]="selectedUserType"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent">
-            <option value="all">All Users</option>
-            <option value="driver">Drivers Only</option>
-            <option value="passenger">Passengers Only</option>
-          </select>
-        </div>
-        
-        <!-- User Search -->
-        <div>
-          <label class="block text-base-800 mb-2 text-sm">Search User</label>
-          <input 
-            type="text"
-            [(ngModel)]="searchUser"
-            placeholder="Enter name or email..."
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent">
-        </div>
-        
-        <!-- Status Filter -->
-        <div>
-          <label class="block text-base-800 mb-2 text-sm">Status</label>
-          <select 
-            [(ngModel)]="selectedStatus"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent">
-            <option value="all">All Statuses</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="Active">Active</option>
-          </select>
+  <div class="w-full max-w-5xl px-6">
+
+    <h1 id="page-title" class="text-3xl font-sans text-gray-900 mb-2 font-bold">My Ride History</h1>
+    <p id="page-subtitle" class="text-gray-600 mb-6">View all your rides and leave ratings for completed trips</p>
+
+    <!-- FILTERS SECTION -->
+    <div id="filters-container" class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+      <h3 id="filters-title" class="text-gray-800 font-medium mb-4 text-lg">Filters</h3>
+
+      <div>
+        <label for="email-filter" class="block text-gray-700 mb-2 text-sm font-medium">User Email (Driver or Passenger)</label>
+        <div class="relative">
+          <input
+            id="email-filter"
+            type="email"
+            placeholder="search@example.com"
+            [ngModel]="personEmail()"
+            (ngModelChange)="personEmail.set($event)"
+            [disabled]="isLoading()"
+            class="w-full px-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00acc1] outline-none disabled:bg-gray-100 transition-all">
+          <ng-icon name="heroUser" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"></ng-icon>
         </div>
       </div>
-      
-      <div class="flex items-end gap-4">
-        <div class="flex-1">
-          <label class="block text-base-800 mb-2 text-sm">Start Date</label>
-          <input 
-            type="date" 
-            [(ngModel)]="startDate"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent">
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label for="start-date-filter" class="block text-gray-700 mb-2 text-sm font-medium">Start Date</label>
+          <input
+            id="start-date-filter"
+            type="date"
+            [ngModel]="startDate()"
+            (ngModelChange)="startDate.set($event)"
+            [disabled]="isLoading()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00acc1] outline-none disabled:bg-gray-100 transition-all">
         </div>
-        
-        <div class="flex-1">
-          <label class="block text-base-800 mb-2 text-sm">End Date</label>
-          <input 
-            type="date" 
-            [(ngModel)]="endDate"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent">
+
+        <div>
+          <label for="end-date-filter" class="block text-gray-700 mb-2 text-sm font-medium">End Date</label>
+          <input
+            id="end-date-filter"
+            type="date"
+            [ngModel]="endDate()"
+            (ngModelChange)="endDate.set($event)"
+            [disabled]="isLoading()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00acc1] outline-none disabled:bg-gray-100 transition-all">
         </div>
-        
-        <button 
-          (click)="applyFilters()"
-          class="bg-[#14b8a6] hover:bg-[#0d9488] text-white px-8 py-3 rounded-lg font-medium transition">
+      </div>
+
+      <div class="flex gap-3 mt-6 pt-4 border-t border-gray-100">
+        <button
+          id="apply-filters-btn"
+          (click)="onFilterChange()"
+          [disabled]="isLoading()"
+          class="bg-[#00acc1] hover:bg-[#008c9e] text-white px-8 py-2.5 rounded-lg font-bold transition active:scale-95 shadow-md disabled:opacity-50">
           Apply Filters
         </button>
-        
-        <button 
-          (click)="resetFilters()"
-          class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-medium transition">
-          Reset
+        <button
+          id="clear-filters-btn"
+          (click)="clearFilters()"
+          [disabled]="isLoading()"
+          class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-medium transition active:scale-95">
+          Clear All
         </button>
       </div>
     </div>
-    
-    <!-- Rides Table -->
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-      
-      <!-- Table Header -->
-      <div class="grid grid-cols-14 gap-3 bg-gray-50 px-6 py-4 border-b border-gray-200 font-medium text-sm text-gray-700">
-        <div class="col-span-2 cursor-pointer hover:text-[#14b8a6] transition" (click)="sortBy('route')">
-          <div class="flex items-center gap-1">
-            Route
-            @if (sortField === 'route') {
-              <ng-icon [name]="sortDirection === 'asc' ? 'heroChevronUp' : 'heroChevronDown'" class="w-3 h-3"></ng-icon>
-            }
-          </div>
+
+    <!-- RIDES TABLE SECTION -->
+    <div id="rides-table-container" class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+
+      <!-- TABLE HEADER -->
+      <div class="grid grid-cols-12 gap-4 bg-gray-50 px-6 py-4 border-b border-gray-200 font-bold text-sm text-gray-700 tracking-wider">
+        <div id="sort-route" class="col-span-4 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('route')">
+          Route @if(sortBy() === 'route') { <ng-icon [name]="sortDirection() === 'asc' ? 'heroArrowUp' : 'heroArrowDown'" class="text-[#00acc1]"></ng-icon> }
         </div>
-        <div class="col-span-2 cursor-pointer hover:text-[#14b8a6] transition" (click)="sortBy('startDate')">
-          <div class="flex items-center gap-1">
-            Date
-            @if (sortField === 'startDate') {
-              <ng-icon [name]="sortDirection === 'asc' ? 'heroChevronUp' : 'heroChevronDown'" class="w-3 h-3"></ng-icon>
-            }
-          </div>
+        <div id="sort-date" class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('createdAt')">
+          Date @if(sortBy() === 'createdAt') { <ng-icon [name]="sortDirection() === 'asc' ? 'heroArrowUp' : 'heroArrowDown'" class="text-[#00acc1]"></ng-icon> }
         </div>
-        <div class="col-span-2">Driver / Passenger</div>
-        <div class="col-span-1 cursor-pointer hover:text-[#14b8a6] transition" (click)="sortBy('price')">
-          <div class="flex items-center gap-1">
-            Price
-            @if (sortField === 'price') {
-              <ng-icon [name]="sortDirection === 'asc' ? 'heroChevronUp' : 'heroChevronDown'" class="w-3 h-3"></ng-icon>
-            }
-          </div>
+        <div id="sort-price" class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('price')">
+          Price @if(sortBy() === 'price') { <ng-icon [name]="sortDirection() === 'asc' ? 'heroArrowUp' : 'heroArrowDown'" class="text-[#00acc1]"></ng-icon> }
         </div>
-        <div class="col-span-2 cursor-pointer hover:text-[#14b8a6] transition" (click)="sortBy('status')">
-          <div class="flex items-center gap-1">
-            Status
-            @if (sortField === 'status') {
-              <ng-icon [name]="sortDirection === 'asc' ? 'heroChevronUp' : 'heroChevronDown'" class="w-3 h-3"></ng-icon>
-            }
-          </div>
+        <div id="sort-status" class="col-span-2 cursor-pointer hover:text-[#00acc1] transition flex items-center gap-1" (click)="toggleSort('status')">
+          Status @if(sortBy() === 'status') { <ng-icon [name]="sortDirection() === 'asc' ? 'heroArrowUp' : 'heroArrowDown'" class="text-[#00acc1]"></ng-icon> }
         </div>
-        <div class="col-span-1">Panic</div>
-        <div class="col-span-1">Reports</div>
-        <div class="col-span-1">Rating</div>
-        <div class="col-span-2">Actions</div>
+        <div class="col-span-2 text-right">Actions</div>
       </div>
-      
-      <!-- Table Rows -->
-      <div class="divide-y divide-gray-200">
-        
-        @for (ride of filteredRides; track ride.id) {
-          <div class="grid grid-cols-14 gap-3 px-6 py-4 hover:bg-gray-50 transition items-center">
-            <!-- Route -->
-            <div class="col-span-2 text-sm text-gray-900">
-              {{ ride.route }}
-            </div>
-            
-            <!-- Date -->
-            <div class="col-span-2 text-sm text-gray-600">
-              {{ ride.startDate }}
-              <br>
-              <span class="text-xs text-gray-500">{{ ride.startTime }}</span>
-            </div>
-            
-            <!-- Driver / Passenger -->
-            <div class="col-span-2 text-sm">
-              <div class="font-medium text-gray-900">{{ ride.driverName }}</div>
-              <div class="text-xs text-gray-600">Driver</div>
-              @if (ride.passengerCount > 0) {
-                <div class="text-xs text-gray-500 mt-1">{{ ride.passengerCount }} passenger(s)</div>
-              }
-            </div>
-            
-            <!-- Price -->
-            <div class="col-span-1 text-sm text-gray-900 font-medium">
-              {{ ride.price.toFixed(2) }} RSD
-            </div>
-            
-            <!-- Status -->
-            <div class="col-span-2">
-              <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ' + getStatusClass(ride.status)">
-                {{ ride.status }}
-              </span>
-              @if (ride.cancelledBy) {
-                <div class="text-xs text-gray-500 mt-1">by {{ ride.cancelledBy }}</div>
-              }
-            </div>
-            
-            <!-- Panic -->
-            <div class="col-span-1">
-              @if (ride.hasPanic) {
-                <div class="flex items-center justify-center">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100">
-                    <ng-icon name="heroExclamationTriangle" class="w-4 h-4 text-red-600"></ng-icon>
-                  </span>
-                </div>
-              } @else {
-                <span class="text-xs text-gray-400">—</span>
-              }
-            </div>
-            
-            <!-- Reports -->
-            <div class="col-span-1 text-center">
-              @if (ride.reportCount > 0) {
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                  {{ ride.reportCount }}
+
+      <!-- LOADING STATE -->
+      @if (isLoading()) {
+        <div id="loading-spinner" class="px-6 py-12 text-center">
+          <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#00acc1]"></div>
+          <p id="loading-text" class="mt-4 text-gray-500 font-sans font-medium">Fetching your rides...</p>
+        </div>
+      } @else {
+        <!-- RIDES LIST -->
+        <div id="rides-list" class="divide-y divide-gray-100">
+          @for (ride of rides(); track ride.id) {
+            <div id="ride-row-{{ ride.id }}" class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition items-center">
+              <div class="col-span-4 text-sm font-semibold text-gray-900 truncate">
+                {{ ride.pickupAddress }} - {{ ride.destinationAddress }}
+              </div>
+              <div id="ride-date-{{ ride.id }}" class="col-span-2 text-sm text-gray-600">
+                {{ ride.createdAt | date:'dd.MM.yyyy' }}
+              </div>
+              <div id="ride-price-{{ ride.id }}" class="col-span-2 text-sm font-bold text-gray-900">
+                {{ ride.price | number:'1.2-2' }} <span class="text-[10px] text-gray-500">RSD</span>
+              </div>
+              <div id="ride-status-{{ ride.id }}" class="col-span-2">
+                <span [class]="'px-2 py-1 rounded-full text-[10px] font-bold uppercase border whitespace-nowrap ' + getStatusClass(ride.status)">
+                  {{ ride.status.replace('_', ' ') }}
                 </span>
-              } @else {
-                <span class="text-xs text-gray-400">—</span>
-              }
+              </div>
+              <div class="col-span-2 text-right flex justify-end">
+                <button
+                  id="view-details-btn-{{ ride.id }}"
+                  (click)="viewRideDetails(ride)"
+                  class="text-[#00acc1] hover:text-[#008c9e] text-sm font-bold flex items-center gap-1 group">
+                  <ng-icon name="heroEye" class="w-4 h-4 group-hover:scale-110 transition-transform"></ng-icon>
+                  View
+                </button>
+              </div>
             </div>
-            
-            <!-- Rating -->
-            <div class="col-span-1 text-center">
-              @if (ride.averageRating) {
-                <div class="flex items-center justify-center gap-1">
-                  <ng-icon name="heroStarSolid" class="w-4 h-4 text-yellow-400"></ng-icon>
-                  <span class="text-sm font-medium text-gray-900">{{ ride.averageRating.toFixed(1) }}</span>
-                </div>
-              } @else {
-                <span class="text-xs text-gray-400">—</span>
-              }
+          } @empty {
+            <div id="no-rides-message" class="px-6 py-20 text-center text-gray-400 font-sans italic">
+              No rides found.
             </div>
-            
-            <!-- Actions -->
-            <div class="col-span-2">
-              <button 
-                (click)="viewRideDetails(ride.id)"
-                class="inline-flex items-center gap-2 text-[#14b8a6] hover:text-[#0d9488] text-sm font-medium transition">
-                <ng-icon name="heroEye" class="w-4 h-4"></ng-icon>
-                View Details
-              </button>
-            </div>
-          </div>
-        }
-        
-        @if (filteredRides.length === 0) {
-          <div class="px-6 py-12 text-center text-gray-500">
-            No rides found matching your criteria.
-          </div>
-        }
-        
-      </div>
-      
-      <!-- Pagination Info -->
-      <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
-        <p class="text-sm text-gray-600">
-          Showing {{ filteredRides.length }} of {{ allRides.length }} rides
-        </p>
-      </div>
-      
-    </div>
-    
-  </div>
-  
-  <!-- Modal Popup -->
-  @if (selectedRide) {
-    <div class="fixed inset-0 bg-zinc-900/35 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between p-6 border-b border-gray-200">
-          <div>
-            <h2 class="text-2xl font-semibold text-gray-900">Ride Details #{{ selectedRide.id }}</h2>
-            <p class="text-sm text-gray-500 mt-1">Complete ride information and history</p>
-          </div>
-          <button 
-            (click)="closeModal()"
-            class="text-gray-400 hover:text-gray-600 transition">
-            <ng-icon name="heroXMark" class="w-6 h-6"></ng-icon>
-          </button>
+          }
         </div>
-        
-        <!-- Modal Content -->
-        <div class="p-6 space-y-6">
-          
-          <!-- Alert Indicators -->
-          <div class="flex gap-3">
-            @if (selectedRide.hasPanic) {
-              <div class="flex-1 bg-red-50 border-2 border-red-200 rounded-lg p-3">
-                <div class="flex items-center gap-2">
-                  <ng-icon name="heroExclamationTriangle" class="w-5 h-5 text-red-600"></ng-icon>
-                  <span class="text-sm font-semibold text-red-900">PANIC BUTTON ACTIVATED</span>
-                </div>
-              </div>
-            }
-            @if (selectedRide.reportCount > 0) {
-              <div class="flex-1 bg-orange-50 border border-orange-200 rounded-lg p-3">
-                <div class="flex items-center gap-2">
-                  <ng-icon name="heroFlag" class="w-5 h-5 text-orange-600"></ng-icon>
-                  <span class="text-sm font-semibold text-orange-900">{{ selectedRide.reportCount }} Route Report(s)</span>
-                </div>
-              </div>
-            }
+
+        <!-- PAGINATION -->
+        <div id="pagination-container" class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div id="rides-counter" class="text-sm text-gray-600">
+            Showing <span id="rides-count" class="font-bold">{{ rides().length }}</span> of <span id="total-rides-count" class="font-bold">{{ totalElements() }}</span> rides
           </div>
-          
-          <!-- Route Information -->
-          <div>
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Route</h3>
-            <p class="text-lg text-gray-900">{{ selectedRide.route }}</p>
-            <div class="mt-2 flex gap-4 text-sm text-gray-600">
-              <div class="flex items-center gap-1">
-                <ng-icon name="heroMapPin" class="w-4 h-4 text-teal-600"></ng-icon>
-                <span>{{ selectedRide.pickupLocation }}</span>
-              </div>
-              <div class="flex items-center gap-1">
-                <ng-icon name="heroMapPin" class="w-4 h-4 text-red-600"></ng-icon>
-                <span>{{ selectedRide.destinationLocation }}</span>
-              </div>
+          <div class="flex gap-2">
+            <button
+              id="prev-page-btn"
+              [disabled]="page() === 0 || isLoading()"
+              (click)="page.set(page() - 1); loadRideHistory()"
+              class="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-all">
+              Previous
+            </button>
+            <div id="current-page-indicator" class="flex items-center px-4 text-sm font-semibold text-gray-900 bg-white border border-gray-300 rounded-md">
+              Page {{ page() + 1 }}
             </div>
-          </div>
-          
-          <!-- Date & Time -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Start</h3>
-              <p class="text-gray-900">{{ selectedRide.startDate }}</p>
-              <p class="text-sm text-gray-600 mt-1">{{ selectedRide.startTime }}</p>
-            </div>
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">End</h3>
-              <p class="text-gray-900">{{ selectedRide.endDate }}</p>
-              <p class="text-sm text-gray-600 mt-1">{{ selectedRide.endTime }}</p>
-            </div>
-          </div>
-          
-          <!-- Price, Duration & Distance -->
-          <div class="grid grid-cols-3 gap-4">
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Total Price</h3>
-              <p class="text-2xl font-semibold text-gray-900">{{ selectedRide.price.toFixed(2) }} RSD</p>
-            </div>
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Duration</h3>
-              <p class="text-lg text-gray-900">{{ selectedRide.duration }}</p>
-            </div>
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Distance</h3>
-              <p class="text-lg text-gray-900">{{ selectedRide.distance }} km</p>
-            </div>
-          </div>
-          
-          <!-- Status -->
-          <div>
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Status</h3>
-            <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ' + getStatusClass(selectedRide.status)">
-              {{ selectedRide.status }}
-            </span>
-            @if (selectedRide.cancelledBy) {
-              <p class="text-sm text-gray-600 mt-2">Cancelled by: {{ selectedRide.cancelledBy }}</p>
-            }
-          </div>
-          
-          <!-- Driver Information -->
-          <div>
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Driver</h3>
-            <div class="bg-gray-50 rounded-lg p-4">
-              <p class="font-medium text-gray-900">{{ selectedRide.driverName }}</p>
-              <p class="text-sm text-gray-600">{{ selectedRide.driverPhone }}</p>
-              <div class="mt-2 text-sm text-gray-600">
-                <span class="font-medium">Vehicle:</span> {{ selectedRide.vehicleType }} ({{ selectedRide.licensePlate }})
-              </div>
-            </div>
-          </div>
-          
-          <!-- Passengers -->
-          @if (selectedRide.passengers && selectedRide.passengers.length > 0) {
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Passengers ({{ selectedRide.passengers.length }})</h3>
-              <div class="space-y-2">
-                @for (passenger of selectedRide.passengers; track passenger.id) {
-                  <div class="bg-gray-50 rounded-lg p-3 flex items-center justify-between">
-                    <div>
-                      <p class="font-medium text-gray-900">{{ passenger.name }}</p>
-                      <p class="text-sm text-gray-600">{{ passenger.email }}</p>
-                    </div>
-                    <span class="text-sm text-gray-500">{{ passenger.phone }}</span>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-          
-          <!-- Route Reports -->
-          @if (selectedRide.reports && selectedRide.reports.length > 0) {
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Route Inconsistency Reports</h3>
-              <div class="space-y-3">
-                @for (report of selectedRide.reports; track report.id) {
-                  <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                    <div class="flex items-start justify-between mb-2">
-                      <p class="text-sm font-medium text-orange-900">Reported by: {{ report.reportedBy }}</p>
-                      <span class="text-xs text-orange-700">{{ report.timestamp }}</span>
-                    </div>
-                    <p class="text-sm text-orange-800">{{ report.description }}</p>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-          
-          <!-- Ratings -->
-          @if (selectedRide.ratings && selectedRide.ratings.length > 0) {
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Ratings & Reviews</h3>
-              <div class="space-y-3">
-                @for (rating of selectedRide.ratings; track rating.id) {
-                  <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex items-start justify-between mb-2">
-                      <p class="text-sm font-medium text-gray-900">{{ rating.passengerName }}</p>
-                      <div class="flex items-center gap-1">
-                        <ng-icon name="heroStarSolid" class="w-4 h-4 text-yellow-400"></ng-icon>
-                        <span class="text-sm font-medium">{{ rating.rating }}/5</span>
-                      </div>
-                    </div>
-                    @if (rating.comment) {
-                      <p class="text-sm text-gray-700">{{ rating.comment }}</p>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
-          }
-          
-        </div>
-        
-        <!-- Modal Footer -->
-        <div class="flex justify-between items-center gap-3 p-6 border-t border-gray-200">
-          <button 
-            (click)="viewOnMap(selectedRide)"
-            class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition flex items-center gap-2">
-            <ng-icon name="heroMapPin" class="w-4 h-4"></ng-icon>
-            View on Map
-          </button>
-          <div class="flex gap-3">
-            <button 
-              (click)="closeModal()"
-              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
-              Close
+            <button
+              id="next-page-btn"
+              [disabled]="(page() + 1) * size() >= totalElements() || isLoading()"
+              (click)="page.set(page() + 1); loadRideHistory()"
+              class="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-all">
+              Next
             </button>
           </div>
         </div>
-        
-      </div>
+      }
     </div>
-  }
-  
+  </div>
 </div>
+
+@if (selectedRide()) {
+  <app-ride-details-modal
+    id="ride-details-modal"
+    [rideId]="selectedRide()!.id"
+    (onClose)="selectedRide.set(null)">
+  </app-ride-details-modal>
+}

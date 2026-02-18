@@ -1,12 +1,14 @@
-<form [formGroup]="routeForm" class="flex flex-col gap-2 w-full max-w-lg">
+<form [formGroup]="routeForm" class="flex flex-col gap-2 w-full">
     
     <div [formGroupName]="'pickup'" class="flex flex-col relative">
-        <p class="text-gray-400 pl-2">Pickup Location</p>
+        <p id="route-selector-welcome" class="text-gray-400 pl-2">Pickup Location</p>
         <div class="relative">
             <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <div class="size-3 rounded-full bg-dark"></div>
             </div>
-            <input formControlName="address" 
+            <input
+                id="pickup-input"
+                formControlName="address" 
                 placeholder="Bulevar kralja Petra 3"
                 autocomplete="off"
                 class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">
@@ -19,7 +21,7 @@
         </div>
     </div>
 
-    <div formArrayName="stops" class="flex flex-col gap-3.5 overflow-y-auto max-h-72 py-1">
+    <div formArrayName="stops" class="flex flex-col gap-3.5 overflow-y-auto max-h-72 p-1">
         @for (stopGroup of stops.controls; track stopGroup; let i = $index) {
             <div [formGroupName]="i" class="w-full relative">
                 <p class="text-gray-400 pl-2">Stop {{ i + 1 }}</p>
@@ -56,7 +58,9 @@
             <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <div class="size-3 rounded-full bg-light-600"></div>
             </div>
-            <input formControlName="address" 
+            <input
+                id="destination-input" 
+                formControlName="address" 
                 placeholder="Laze Teleckog 13"
                 autocomplete="off"
                 class="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:ring-1 focus:ring-base-600">

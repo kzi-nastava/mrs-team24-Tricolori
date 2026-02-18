@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { NotificationService } from '../../../services/notification.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navigation-driver',
@@ -9,12 +11,26 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './navigation-driver.html',
   styleUrl: './navigation-driver.css'
 })
-export class NavigationDriver {
-  isActive = false;
+export class NavigationDriver implements OnInit, OnDestroy {
+  unreadCount = 0;
+  private unreadSubscription?: Subscription;
 
-  toggleActive() {
-    this.isActive = !this.isActive;
-    // TODO: Update backend with driver's active status
-    console.log('Driver active status:', this.isActive);
+  constructor(
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.unreadSubscription = this.notificationService.unreadCount$.subscribe(
+      count => {
+        this.unreadCount = count;
+      }
+    );
   }
+
+  ngOnDestroy(): void {
+    this.unreadSubscription?.unsubscribe();
+    this.cdr.detectChanges();
+  }
+
 }

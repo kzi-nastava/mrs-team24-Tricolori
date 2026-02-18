@@ -4,13 +4,12 @@ import com.tricolori.backend.enums.VehicleType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity(name = "VehicleSpecification")
 @Table(name = "vehicle_specifications")
 @Getter @Setter @NoArgsConstructor
+@AllArgsConstructor @Builder
 public class VehicleSpecification {
 
     @Id

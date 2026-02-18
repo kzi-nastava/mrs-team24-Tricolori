@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroPaperAirplane, heroUser } from '@ng-icons/heroicons/outline';
-import { WebSocketService, ChatMessage } from '../../../services/websocket.service';
 import { ChatService, ChatMessageDTO, ChatUserDTO } from '../../../services/chat.service';
-import { Subscription } from 'rxjs';
 import { NgZone } from '@angular/core';
+import {Subscription} from 'rxjs';
 
 interface Message {
   id: number;
@@ -41,30 +40,29 @@ export class AdminSupport implements OnInit, OnDestroy {
   selectedUser: ChatUser | null = null;
   messages: Message[] = [];
   newMessage: string = '';
-  
-  private adminUserId: number = 0;
-  private messageSubscription?: Subscription;
 
-  // Color schemes for different roles
+  private messagesSubscription?: Subscription;
+
+  private adminUserId: number = 0;
+
   private driverColors = [
-    '#00acc1', // Cyan
-    '#0088a3', // Darker cyan
-    '#00bcd4', // Light cyan
-    '#0097a7'  // Teal
+    '#00acc1',
+    '#0088a3',
+    '#00bcd4',
+    '#0097a7'
   ];
 
   private passengerColors = [
-    '#9333ea', // Purple
-    '#a855f7', // Light purple
-    '#7c3aed', // Violet
-    '#8b5cf6'  // Medium purple
+    '#9333ea',
+    '#a855f7',
+    '#7c3aed',
+    '#8b5cf6'
   ];
 
   constructor(
-    private webSocketService: WebSocketService,
     private chatService: ChatService,
-    private ngZone: NgZone,          
-    private cdr: ChangeDetectorRef    
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -76,12 +74,12 @@ export class AdminSupport implements OnInit, OnDestroy {
     }
 
     this.loadChatUsers();
-    this.connectWebSocket();
+    this.subscribeToChat();
   }
 
   ngOnDestroy(): void {
-    this.messageSubscription?.unsubscribe();
-    this.webSocketService.disconnect();
+    this.messagesSubscription?.unsubscribe();
+    this.chatService.unsubscribe();
   }
 
   loadChatUsers(): void {
@@ -93,7 +91,7 @@ export class AdminSupport implements OnInit, OnDestroy {
 
         this.chatUsers = users.map(user => {
           let color: string;
-          
+
           if (user.role === 'ROLE_DRIVER') {
             color = this.driverColors[driverIndex % this.driverColors.length];
             driverIndex++;
@@ -131,7 +129,7 @@ export class AdminSupport implements OnInit, OnDestroy {
   selectUser(user: ChatUser): void {
     this.selectedUser = user;
     this.loadMessages(user.id);
-    
+
     // Mark as read
     user.hasUnread = false;
   }
@@ -145,9 +143,9 @@ export class AdminSupport implements OnInit, OnDestroy {
           timestamp: this.formatTimestamp(new Date(msg.timestamp)),
           isFromAdmin: msg.senderId === this.adminUserId
         }));
-        
+
         this.cdr.detectChanges();
-        
+
         setTimeout(() => this.scrollToBottom(), 100);
       },
       error: (error) => {
@@ -156,17 +154,17 @@ export class AdminSupport implements OnInit, OnDestroy {
     });
   }
 
-  connectWebSocket(): void {
-    this.webSocketService.connect(this.adminUserId);
-    
-    this.messageSubscription = this.webSocketService.messages$.subscribe({
-      next: (chatMessage: ChatMessage | null) => {
+  subscribeToChat(): void {
+    this.chatService.subscribeToChat(this.adminUserId);
+
+    this.messagesSubscription = this.chatService.messages$.subscribe({
+      next: (chatMessage: ChatMessageDTO | null) => {
         if (!chatMessage) return;
-        
+
         this.ngZone.run(() => {
           if (this.selectedUser) {
             // Only add message if it's for the currently selected user
-            if (chatMessage.senderId === this.selectedUser.id || 
+            if (chatMessage.senderId === this.selectedUser.id ||
                 chatMessage.receiverId === this.selectedUser.id) {
               const message: Message = {
                 id: chatMessage.id || this.messages.length + 1,
@@ -174,25 +172,25 @@ export class AdminSupport implements OnInit, OnDestroy {
                 timestamp: this.formatTimestamp(new Date(chatMessage.timestamp)),
                 isFromAdmin: chatMessage.senderId === this.adminUserId
               };
-              
+
               this.messages.push(message);
-              
+
               this.cdr.detectChanges();
-              
+
               setTimeout(() => this.scrollToBottom(), 100);
             }
 
             // Update chat user's last message
-            const chatUser = this.chatUsers.find(u => 
+            const chatUser = this.chatUsers.find(u =>
               u.id === chatMessage.senderId || u.id === chatMessage.receiverId
             );
             if (chatUser) {
               chatUser.lastMessage = chatMessage.content;
-              if (chatMessage.senderId !== this.adminUserId && 
+              if (chatMessage.senderId !== this.adminUserId &&
                   chatUser.id !== this.selectedUser?.id) {
                 chatUser.hasUnread = true;
               }
-              
+
               this.cdr.detectChanges();
             }
           }
@@ -204,15 +202,13 @@ export class AdminSupport implements OnInit, OnDestroy {
   sendMessage(): void {
     if (this.newMessage.trim() && this.selectedUser) {
       const messageText = this.newMessage;
-      this.newMessage = ''; // Clear input immediately
-      
-      this.webSocketService.sendMessage(
+      this.newMessage = '';
+
+      this.chatService.sendMessage(
         this.adminUserId,
         this.selectedUser.id,
         messageText
       );
-      
-      // message will be added when it comes back through WebSocket
     }
   }
 
@@ -233,7 +229,7 @@ export class AdminSupport implements OnInit, OnDestroy {
     const isToday = date.toDateString() === now.toDateString();
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    
+
     if (isToday) {
       return `Today, ${hours}:${minutes}`;
     } else {

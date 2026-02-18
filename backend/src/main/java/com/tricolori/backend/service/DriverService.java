@@ -2,6 +2,7 @@ package com.tricolori.backend.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -93,7 +94,14 @@ public class DriverService {
     }
 
     private List<Driver> getTrulyFreeDrivers(List<Driver> candidates) {
-        Set<Long> busyDriverIds = rideRepository.findAllByStatusIn(List.of(RideStatus.ONGOING, RideStatus.SCHEDULED))
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay(); // 2026-02-17T00:00:00
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX); // 2026-02-17T23:59:59.999...
+
+        Set<Long> busyDriverIds = rideRepository.findAllByStatusInAndCreatedAtBetween(
+                List.of(RideStatus.ONGOING, RideStatus.SCHEDULED),
+                startOfDay,
+                endOfDay
+            )
             .stream()
             .filter(r -> r.getDriver() != null)
             .map(r -> r.getDriver().getId())
@@ -127,10 +135,14 @@ public class DriverService {
     }
 
     private Driver findBestBusyDriver(List<Driver> candidates, Location pickup) {
+
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay(); // 2026-02-17T00:00:00
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX); // 2026-02-17T23:59:59.999...
+
         return candidates.stream()
             .filter(d -> {
-                List<Ride> driverRides = rideRepository.findAllByDriverAndStatusIn(d, 
-                        List.of(RideStatus.ONGOING, RideStatus.SCHEDULED));
+                List<Ride> driverRides = rideRepository.findAllByStatusInAndCreatedAtBetween(
+                        List.of(RideStatus.ONGOING, RideStatus.SCHEDULED), startOfDay, endOfDay);
                 
                 boolean hasScheduled = driverRides.stream().anyMatch(r -> r.getStatus() == RideStatus.SCHEDULED);
                 if (hasScheduled) return false;

@@ -1,196 +1,390 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { of, throwError } from 'rxjs';
 import { RideRatingComponent } from './ride-rating';
-import 'jasmine';
+import { RatingService } from '../../services/rating.service';
+import { RideService } from '../../services/ride.service';
+import { provideIcons } from '@ng-icons/core';
+import {
+  heroArrowLeft, heroExclamationCircle, heroCheckCircle, heroMapPin,
+  heroCalendar, heroStar, heroClock, heroArrowsRightLeft, heroCurrencyDollar
+} from '@ng-icons/heroicons/outline';
+import { heroStarSolid as heroStarSolidFill } from '@ng-icons/heroicons/solid';
 
 describe('RideRatingComponent', () => {
   let component: RideRatingComponent;
   let fixture: ComponentFixture<RideRatingComponent>;
   let mockRouter: jasmine.SpyObj<Router>;
+  let mockActivatedRoute: any;
+  let mockRatingService: jasmine.SpyObj<RatingService>;
+  let mockRideService: jasmine.SpyObj<RideService>;
+  let fetchSpy: jasmine.Spy;
+
+  const mockRideDetails = {
+    id: 1,
+    pickupAddress: '123 Main St',
+    dropoffAddress: '456 Oak Ave',
+    pickupLatitude: 45.25,
+    pickupLongitude: 19.85,
+    dropoffLatitude: 45.26,
+    dropoffLongitude: 19.86,
+    startedAt: '2025-02-10T10:00:00',
+    createdAt: '2025-02-10T09:30:00',
+    driverName: 'John Doe',
+    vehicleModel: 'Toyota Camry',
+    distance: 15,
+    duration: 25,
+    totalPrice: 1500
+  };
+
+  const mockRatingStatus = {
+    canRate: true,
+    alreadyRated: false,
+    deadlinePassed: false,
+    deadline: '2025-02-13T10:00:00'
+  };
 
   beforeEach(async () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockActivatedRoute = {
+      snapshot: {
+        paramMap: {
+          get: jasmine.createSpy('get').and.returnValue('1')
+        }
+      }
+    };
+    mockRatingService = jasmine.createSpyObj('RatingService', ['submitRating', 'getRatingStatus']);
+    mockRideService = jasmine.createSpyObj('RideService', ['getPassengerRideDetail']);
+
+    fetchSpy = spyOn(window, 'fetch').and.returnValue(
+      Promise.resolve(new Response(JSON.stringify({ routes: [] })))
+    );
 
     await TestBed.configureTestingModule({
       imports: [RideRatingComponent, ReactiveFormsModule],
       providers: [
-        { provide: Router, useValue: mockRouter }
+        { provide: Router, useValue: mockRouter },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        { provide: RatingService, useValue: mockRatingService },
+        { provide: RideService, useValue: mockRideService },
+        provideIcons({
+          heroArrowLeft, heroExclamationCircle, heroCheckCircle, heroMapPin,
+          heroCalendar, heroStar, heroStarSolid: heroStarSolidFill,
+          heroClock, heroArrowsRightLeft, heroCurrencyDollar
+        })
       ]
     }).compileComponents();
 
+    mockRatingService.getRatingStatus.and.returnValue(of(mockRatingStatus));
+    mockRideService.getPassengerRideDetail.and.returnValue(of(mockRideDetails as any));
+
     fixture = TestBed.createComponent(RideRatingComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize with rating form', () => {
-    expect(component.ratingForm).toBeDefined();
-    expect(component.ratingForm.get('driverRating')).toBeDefined();
-    expect(component.ratingForm.get('vehicleRating')).toBeDefined();
-    expect(component.ratingForm.get('comment')).toBeDefined();
-  });
-
-  it('should have initial ratings set to 0', () => {
-    expect(component.driverRating()).toBe(0);
-    expect(component.vehicleRating()).toBe(0);
-  });
-
-  it('should calculate hours remaining correctly', () => {
-    component.ngOnInit();
-    expect(component.hoursRemaining()).toBeGreaterThanOrEqual(0);
-    expect(component.hoursRemaining()).toBeLessThanOrEqual(72);
-  });
-
-  it('should mark as expired if more than 72 hours passed', () => {
-    const oldDate = new Date(Date.now() - 80 * 60 * 60 * 1000); // 80 hours ago
-    component.rideDetails.set({
-      ...component.rideDetails(),
-      completedAt: oldDate
+  describe('ngOnInit', () => {
+    it('should navigate to history if no ride ID in route params', () => {
+      mockActivatedRoute.snapshot.paramMap.get.and.returnValue(null);
+      component.ngOnInit();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
     });
-    
-    component.ngOnInit();
-    expect(component.isExpired()).toBeTruthy();
+
+    it('should load ride data with valid ride ID', fakeAsync(() => {
+      component.ngOnInit();
+      tick();
+      expect(mockRatingService.getRatingStatus).toHaveBeenCalledWith(1);
+      expect(mockRideService.getPassengerRideDetail).toHaveBeenCalledWith(1);
+      expect(component.isLoading()).toBe(false);
+      expect(component.rideDetails()).toEqual(mockRideDetails);
+    }));
+
+    it('should set isSubmitted when already rated', fakeAsync(() => {
+      const ratedStatus = { ...mockRatingStatus, alreadyRated: true };
+      mockRatingService.getRatingStatus.and.returnValue(of(ratedStatus));
+      component.ngOnInit();
+      tick();
+      expect(component.isSubmitted()).toBe(true);
+    }));
+
+    it('should set isExpired when deadline passed', fakeAsync(() => {
+      const expiredStatus = { ...mockRatingStatus, deadlinePassed: true };
+      mockRatingService.getRatingStatus.and.returnValue(of(expiredStatus));
+      component.ngOnInit();
+      tick();
+      expect(component.isExpired()).toBe(true);
+    }));
+
+    it('should handle rating status error gracefully', fakeAsync(() => {
+      mockRatingService.getRatingStatus.and.returnValue(throwError(() => new Error('API Error')));
+      component.ngOnInit();
+      tick();
+      expect(component.isLoading()).toBe(false);
+    }));
+
+    it('should handle ride details error gracefully', fakeAsync(() => {
+      mockRideService.getPassengerRideDetail.and.returnValue(throwError(() => new Error('API Error')));
+      component.ngOnInit();
+      tick();
+      expect(component.isLoading()).toBe(false);
+    }));
+
+    it('should call fetch with OSRM route URL when ride details loaded', fakeAsync(() => {
+      component.ngOnInit();
+      tick(100);
+      const expectedUrl = `https://router.project-osrm.org/route/v1/driving/${mockRideDetails.pickupLongitude},${mockRideDetails.pickupLatitude};${mockRideDetails.dropoffLongitude},${mockRideDetails.dropoffLatitude}?overview=full&geometries=geojson`;
+      expect(fetchSpy).toHaveBeenCalledWith(expectedUrl);
+    }));
   });
 
-  it('should not mark as expired if within 72 hours', () => {
-    const recentDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
-    component.rideDetails.set({
-      ...component.rideDetails(),
-      completedAt: recentDate
+  describe('Form Initialization', () => {
+    it('should initialize form with correct default values', () => {
+      expect(component.ratingForm.value).toEqual({
+        driverRating: 0,
+        vehicleRating: 0,
+        comment: ''
+      });
     });
-    
-    component.ngOnInit();
-    expect(component.isExpired()).toBeFalsy();
-  });
 
-  it('should update driver rating when setDriverRating is called', () => {
-    component.setDriverRating(4);
-    expect(component.driverRating()).toBe(4);
-    expect(component.ratingForm.get('driverRating')?.value).toBe(4);
-  });
-
-  it('should update vehicle rating when setVehicleRating is called', () => {
-    component.setVehicleRating(5);
-    expect(component.vehicleRating()).toBe(5);
-    expect(component.ratingForm.get('vehicleRating')?.value).toBe(5);
-  });
-
-  it('should not allow rating changes when expired', () => {
-    component.isExpired.set(true);
-    component.setDriverRating(4);
-    expect(component.driverRating()).toBe(0);
-  });
-
-  it('should not allow rating changes when already submitted', () => {
-    component.isSubmitted.set(true);
-    component.setVehicleRating(3);
-    expect(component.vehicleRating()).toBe(0);
-  });
-
-  it('should return correct rating text', () => {
-    expect(component.getRatingText(1)).toBe('Poor');
-    expect(component.getRatingText(2)).toBe('Fair');
-    expect(component.getRatingText(3)).toBe('Good');
-    expect(component.getRatingText(4)).toBe('Very Good');
-    expect(component.getRatingText(5)).toBe('Excellent');
-  });
-
-  it('should validate form correctly', () => {
-    expect(component.ratingForm.valid).toBeFalsy();
-    
-    component.setDriverRating(4);
-    component.setVehicleRating(5);
-    expect(component.ratingForm.valid).toBeTruthy();
-  });
-
-  it('should require minimum rating of 1', () => {
-    component.ratingForm.patchValue({
-      driverRating: 0,
-      vehicleRating: 3
+    it('should have required and range validators on driverRating', () => {
+      const control = component.ratingForm.get('driverRating');
+      control?.setValue(null);
+      expect(control?.hasError('required')).toBe(true);
+      control?.setValue(0);
+      expect(control?.hasError('min')).toBe(true);
+      control?.setValue(6);
+      expect(control?.hasError('max')).toBe(true);
+      control?.setValue(3);
+      expect(control?.valid).toBe(true);
     });
-    expect(component.ratingForm.get('driverRating')?.hasError('min')).toBeTruthy();
-  });
 
-  it('should enforce maximum rating of 5', () => {
-    component.ratingForm.patchValue({
-      driverRating: 6,
-      vehicleRating: 3
+    it('should have required and range validators on vehicleRating', () => {
+      const control = component.ratingForm.get('vehicleRating');
+      control?.setValue(null);
+      expect(control?.hasError('required')).toBe(true);
+      control?.setValue(0);
+      expect(control?.hasError('min')).toBe(true);
+      control?.setValue(6);
+      expect(control?.hasError('max')).toBe(true);
+      control?.setValue(4);
+      expect(control?.valid).toBe(true);
     });
-    expect(component.ratingForm.get('driverRating')?.hasError('max')).toBeTruthy();
-  });
 
-  it('should enforce comment max length of 500 characters', () => {
-    const longComment = 'a'.repeat(501);
-    component.ratingForm.patchValue({ comment: longComment });
-    expect(component.ratingForm.get('comment')?.hasError('maxlength')).toBeTruthy();
-  });
-
-  it('should allow valid comment', () => {
-    const validComment = 'Great ride! Very professional driver.';
-    component.ratingForm.patchValue({
-      driverRating: 5,
-      vehicleRating: 5,
-      comment: validComment
+    it('should have maxLength validator on comment', () => {
+      const control = component.ratingForm.get('comment');
+      control?.setValue('a'.repeat(501));
+      expect(control?.hasError('maxlength')).toBe(true);
+      control?.setValue('a'.repeat(500));
+      expect(control?.valid).toBe(true);
     });
-    expect(component.ratingForm.valid).toBeTruthy();
   });
 
-  it('should not submit if form is invalid', () => {
-    spyOn(console, 'log');
-    component.submitRating();
-    expect(component.isSubmitting()).toBeFalsy();
+  describe('setDriverRating', () => {
+    it('should update driver rating signal and form control', () => {
+      component.setDriverRating(4);
+      expect(component.driverRating()).toBe(4);
+      expect(component.ratingForm.get('driverRating')?.value).toBe(4);
+    });
+
+    it('should accept all valid ratings from 1 to 5', () => {
+      for (let i = 1; i <= 5; i++) {
+        component.setDriverRating(i);
+        expect(component.driverRating()).toBe(i);
+      }
+    });
   });
 
-  it('should not submit if expired', () => {
-    component.setDriverRating(5);
-    component.setVehicleRating(5);
-    component.isExpired.set(true);
-    
-    component.submitRating();
-    expect(component.isSubmitting()).toBeFalsy();
+  describe('setVehicleRating', () => {
+    it('should update vehicle rating signal and form control', () => {
+      component.setVehicleRating(3);
+      expect(component.vehicleRating()).toBe(3);
+      expect(component.ratingForm.get('vehicleRating')?.value).toBe(3);
+    });
+
+    it('should accept all valid ratings from 1 to 5', () => {
+      for (let i = 1; i <= 5; i++) {
+        component.setVehicleRating(i);
+        expect(component.vehicleRating()).toBe(i);
+      }
+    });
   });
 
-  it('should navigate back to ride history when skip is clicked', () => {
-    component.skipRating();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/ride-history']);
+  describe('getRatingText', () => {
+    it('should return correct text for all rating values', () => {
+      expect(component.getRatingText(0)).toBe('');
+      expect(component.getRatingText(1)).toBe('Poor');
+      expect(component.getRatingText(2)).toBe('Fair');
+      expect(component.getRatingText(3)).toBe('Good');
+      expect(component.getRatingText(4)).toBe('Very Good');
+      expect(component.getRatingText(5)).toBe('Excellent');
+      expect(component.getRatingText(6)).toBe('');
+      expect(component.getRatingText(-1)).toBe('');
+    });
   });
 
-  it('should navigate back when handleBack is called', () => {
-    component.handleBack();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/ride-history']);
+  describe('submitRating', () => {
+    beforeEach(() => {
+      component.setDriverRating(4);
+      component.setVehicleRating(5);
+      mockRatingService.submitRating.and.returnValue(of(void 0));
+    });
+
+    it('should not submit if form is invalid', () => {
+      component.ratingForm.patchValue({ driverRating: 0 });
+      component.submitRating();
+      expect(mockRatingService.submitRating).not.toHaveBeenCalled();
+    });
+
+    it('should not submit if already submitting', () => {
+      component.isSubmitting.set(true);
+      component.submitRating();
+      expect(mockRatingService.submitRating).not.toHaveBeenCalled();
+    });
+
+    it('should call rating service with correct data including comment', fakeAsync(() => {
+      component.ngOnInit();
+      tick();
+      component.ratingForm.patchValue({ comment: 'Great ride!' });
+      component.submitRating();
+      tick();
+      expect(mockRatingService.submitRating).toHaveBeenCalledWith(1, {
+        driverRating: 4,
+        vehicleRating: 5,
+        comment: 'Great ride!'
+      });
+    }));
+
+    it('should call rating service without comment', fakeAsync(() => {
+      component.ngOnInit();
+      tick();
+      component.submitRating();
+      tick();
+      expect(mockRatingService.submitRating).toHaveBeenCalledWith(1, {
+        driverRating: 4,
+        vehicleRating: 5,
+        comment: ''
+      });
+    }));
+
+    it('should set isSubmitting to true during submission', () => {
+      component.submitRating();
+      expect(component.isSubmitting()).toBe(true);
+    });
+
+    it('should set isSubmitted to true on success and navigate after 2 seconds', fakeAsync(() => {
+      component.ngOnInit();
+      tick();
+      component.submitRating();
+      tick();
+      expect(component.isSubmitted()).toBe(true);
+      expect(component.isSubmitting()).toBe(true);
+      tick(2000);
+      expect(component.isSubmitting()).toBe(false);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
+    }));
+
+    it('should handle submission error', fakeAsync(() => {
+      component.ngOnInit();
+      tick();
+      mockRatingService.submitRating.and.returnValue(throwError(() => new Error('Submit failed')));
+      component.submitRating();
+      tick();
+      expect(component.errorMessage()).toBe('Failed to submit rating.');
+      expect(component.isSubmitting()).toBe(false);
+      expect(component.isSubmitted()).toBe(false);
+    }));
   });
 
-  it('should set submitting state during submission', (done) => {
-    component.setDriverRating(4);
-    component.setVehicleRating(5);
-    
-    component.submitRating();
-    
-    expect(component.isSubmitting()).toBeTruthy();
-    
-    setTimeout(() => {
-      expect(component.isSubmitting()).toBeFalsy();
-      expect(component.isSubmitted()).toBeTruthy();
-      done();
-    }, 2000);
+  describe('Navigation', () => {
+    it('should navigate to passenger history on handleBack', () => {
+      component.handleBack();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
+    });
+
+    it('should navigate to passenger history on skipRating', () => {
+      component.skipRating();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/passenger/history']);
+    });
   });
 
-  it('should have correct ride details structure', () => {
-    const details = component.rideDetails();
-    expect(details.id).toBeDefined();
-    expect(details.pickup).toBeDefined();
-    expect(details.destination).toBeDefined();
-    expect(details.pickupCoords).toBeDefined();
-    expect(details.destinationCoords).toBeDefined();
-    expect(details.driverName).toBeDefined();
-    expect(details.vehicleType).toBeDefined();
-    expect(details.distance).toBeGreaterThan(0);
-    expect(details.duration).toBeGreaterThan(0);
-    expect(details.price).toBeGreaterThan(0);
+  describe('Signal States', () => {
+    it('should initialize all signals with correct default values', () => {
+      expect(component.driverRating()).toBe(0);
+      expect(component.vehicleRating()).toBe(0);
+      expect(component.isSubmitting()).toBe(false);
+      expect(component.isSubmitted()).toBe(false);
+      expect(component.isExpired()).toBe(false);
+      expect(component.isLoading()).toBe(true);
+      expect(component.errorMessage()).toBe('');
+      expect(component.rideDetails()).toBeNull();
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should handle ride ID as string from route params', fakeAsync(() => {
+      mockActivatedRoute.snapshot.paramMap.get.and.returnValue('123');
+      component.ngOnInit();
+      tick();
+      expect(mockRatingService.getRatingStatus).toHaveBeenCalledWith(123);
+    }));
+
+    it('should handle both alreadyRated and deadlinePassed true', fakeAsync(() => {
+      const status = { ...mockRatingStatus, alreadyRated: true, deadlinePassed: true };
+      mockRatingService.getRatingStatus.and.returnValue(of(status));
+      component.ngOnInit();
+      tick();
+      expect(component.isSubmitted()).toBe(true);
+      expect(component.isExpired()).toBe(true);
+    }));
+
+    it('should handle missing startedAt in ride details', fakeAsync(() => {
+      const detailsWithoutStarted = { ...mockRideDetails, startedAt: null };
+      mockRideService.getPassengerRideDetail.and.returnValue(of(detailsWithoutStarted as any));
+      component.ngOnInit();
+      tick();
+      expect(component.rideDetails()).toEqual(detailsWithoutStarted);
+    }));
+
+    it('should handle multiple rapid rating changes', () => {
+      component.setDriverRating(1);
+      component.setDriverRating(3);
+      component.setDriverRating(5);
+      expect(component.driverRating()).toBe(5);
+      expect(component.ratingForm.get('driverRating')?.value).toBe(5);
+    });
+  });
+
+  describe('Form Validation States', () => {
+    it('should be invalid when both ratings are 0', () => {
+      expect(component.ratingForm.valid).toBe(false);
+    });
+
+    it('should be valid when both ratings are set', () => {
+      component.setDriverRating(3);
+      component.setVehicleRating(4);
+      expect(component.ratingForm.valid).toBe(true);
+    });
+
+    it('should be invalid when only one rating is set', () => {
+      component.setDriverRating(3);
+      expect(component.ratingForm.valid).toBe(false);
+
+      component.ratingForm.patchValue({ driverRating: 0 });
+      component.setVehicleRating(4);
+      expect(component.ratingForm.valid).toBe(false);
+    });
+
+    it('should be valid with ratings and optional comment', () => {
+      component.setDriverRating(5);
+      component.setVehicleRating(5);
+      expect(component.ratingForm.valid).toBe(true);
+
+      component.ratingForm.patchValue({ comment: 'Excellent service!' });
+      expect(component.ratingForm.valid).toBe(true);
+    });
   });
 });

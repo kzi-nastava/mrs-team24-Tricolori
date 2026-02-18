@@ -1,13 +1,14 @@
 package com.tricolori.backend.mapper;
+import com.tricolori.backend.dto.history.AdminRideHistoryResponse;
+import com.tricolori.backend.dto.ride.*;
+import com.tricolori.backend.dto.vehicle.VehicleLocationResponse;
 import com.tricolori.backend.entity.Driver;
 import com.tricolori.backend.entity.Passenger;
 import com.tricolori.backend.entity.Review;
 import com.tricolori.backend.entity.Ride;
-import com.tricolori.backend.dto.ride.RideHistoryResponse;
-import com.tricolori.backend.dto.ride.RideDetailResponse;
-import com.tricolori.backend.dto.ride.PassengerRideHistoryResponse;
-import com.tricolori.backend.dto.ride.PassengerRideDetailResponse;
 import org.mapstruct.*;
+
+import java.time.LocalDateTime;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RideMapper {
@@ -58,12 +59,15 @@ public interface RideMapper {
      * Map Ride to Passenger History Response (List view)
      */
     @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
-    @Mapping(target = "destinationAddress", expression = "java(getDropoffAddress(ride))")
-    @Mapping(source = "price", target = "totalPrice")
-    @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
-    @Mapping(target = "driverRating", expression = "java(getAverageDriverRating(ride))")
-    @Mapping(target = "vehicleRating", expression = "java(getAverageVehicleRating(ride))")
+    @Mapping(target = "destinationAddress", expression = "java(getDestinationAddress(ride))")
     PassengerRideHistoryResponse toPassengerHistoryResponse(Ride ride);
+
+    /**
+     * Map Ride to Admin History Response (List view)
+     */
+    @Mapping(target = "pickupAddress", expression = "java(getPickupAddress(ride))")
+    @Mapping(target = "destinationAddress", expression = "java(getDestinationAddress(ride))")
+    AdminRideHistoryResponse toAdminHistoryResponse(Ride ride);
 
     /**
      * Map Ride to Passenger Detail Response (Detail view)
@@ -90,13 +94,53 @@ public interface RideMapper {
     @Mapping(target = "ratingComment", expression = "java(getFirstRatingComment(ride))")
     PassengerRideDetailResponse toPassengerDetailResponse(Ride ride);
 
+    /**
+     * Map Ride to RideTrackingResponse for real-time tracking
+     */
+    @Mapping(source = "id", target = "rideId")
+    @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
+    @Mapping(target = "currentLocation", expression = "java(getVehicleLocation(ride))")
+    @Mapping(target = "estimatedTimeMinutes", expression = "java(getEstimatedMinutes(ride))")
+    @Mapping(target = "estimatedArrival", expression = "java(getEstimatedArrival(ride))")
+    @Mapping(target = "driver", ignore = true)  // Set manually in service
+    @Mapping(target = "passengers", ignore = true)  // Set manually in service
+    @Mapping(target = "route", ignore = true)  // Set manually in service
+    RideTrackingResponse toTrackingResponse(Ride ride);
+
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "passengerFirstName", source = "mainPassenger.firstName")
+    @Mapping(target = "passengerLastName", source = "mainPassenger.lastName")
+    @Mapping(target = "passengerEmail", source = "mainPassenger.email")
+    @Mapping(target = "passengerPhoneNum", source = "mainPassenger.phoneNum")
+    @Mapping(target = "driverFirstName", source = "driver.firstName")
+    @Mapping(target = "driverLastName", source = "driver.lastName")
+    @Mapping(target = "driverEmail", source = "driver.email")
+    @Mapping(target = "driverPhoneNum", source = "driver.phoneNum")
+    @Mapping(target = "vehiclePlateNum", source = "driver.vehicle.plateNum")
+    @Mapping(target = "vehicleModel", source = "driver.vehicle.model")
+    @Mapping(target = "routeGeometry", source = "route.routeGeometry")
+    @Mapping(target = "distanceKm", source = "route.distanceKm")
+    @Mapping(target = "estimatedTimeSeconds", source = "route.estimatedTimeSeconds")
+    @Mapping(target = "pickupAddress", source = "route.pickupStop.address")
+    @Mapping(target = "destinationAddress", source = "route.destinationStop.address")
+    RideAssignmentResponse toAssignmentResponse(Ride ride);
+
     // ================= helpers =================
+
+    default String getDestinationAddress(Ride ride) {
+        if (ride.getRoute() == null || ride.getRoute().getStops().isEmpty()) {
+            return null;
+        }
+        return ride.getRoute().getDestinationStop().getAddress();
+    }
 
     default String getPickupAddress(Ride ride) {
         if (ride.getRoute() == null || ride.getRoute().getStops().isEmpty()) {
             return null;
         }
-        return ride.getRoute().getStops().getFirst().getAddress();
+        return ride.getRoute().getPickupStop().getAddress();
     }
 
     default String getDropoffAddress(Ride ride) {
@@ -201,6 +245,38 @@ public interface RideMapper {
                 .filter(c -> c != null && !c.isBlank())
                 .findFirst()
                 .orElse(null);
+    }
+
+    default VehicleLocationResponse getVehicleLocation(Ride ride) {
+        if (ride.getDriver() == null ||
+                ride.getDriver().getVehicle() == null ||
+                ride.getDriver().getVehicle().getLocation() == null) {
+            return null;
+        }
+
+        var vehicle = ride.getDriver().getVehicle();
+        var location = vehicle.getLocation();
+
+        return new VehicleLocationResponse(
+                vehicle.getId(), vehicle.getModel(), vehicle.getPlateNum(), location.getLatitude(),
+                location.getLongitude(), vehicle.isAvailable()
+        );
+    }
+
+    default Integer getEstimatedMinutes(Ride ride) {
+        if (ride.getRoute() == null || ride.getRoute().getEstimatedTimeSeconds() == null) {
+            return null;
+        }
+        return (int) Math.round(ride.getRoute().getEstimatedTimeSeconds() / 60.0);
+    }
+
+    default LocalDateTime getEstimatedArrival(Ride ride) {
+        if (ride.getStartTime() == null) {
+            return null;
+        }
+
+        Integer minutes = getEstimatedMinutes(ride);
+        return minutes != null ? ride.getStartTime().plusMinutes(minutes) : null;
     }
 
     @Named("statusToString")
