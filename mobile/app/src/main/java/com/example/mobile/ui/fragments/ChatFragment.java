@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,21 +17,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.chat.AdminAvailableResponse;
-import com.example.mobile.dto.chat.AdminIdResponse;
 import com.example.mobile.dto.chat.ChatMessageDto;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.ChatApiService;
 import com.example.mobile.network.service.StompChatService;
+import com.example.mobile.ui.adapters.ChatAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import org.json.JSONObject;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,12 +41,8 @@ public class ChatFragment extends Fragment {
     private long otherUserId;
     private String otherUserName;
 
-    private RecyclerView recyclerView;
     private ChatAdapter adapter;
     private EditText etMessage;
-    private ImageButton btnSend;
-    private TextView tvOtherName;
-
     private StompChatService stompChatService;
     private ChatApiService chatApiService;
 
@@ -86,14 +74,10 @@ public class ChatFragment extends Fragment {
             otherUserName = getArguments().getString(ARG_OTHER_USER_NAME, "Support");
         }
 
-        recyclerView = view.findViewById(R.id.rvMessages);
-        etMessage    = view.findViewById(R.id.etMessage);
-        btnSend      = view.findViewById(R.id.btnSend);
-        tvOtherName  = view.findViewById(R.id.tvOtherName);
-        view.findViewById(R.id.btnBack).setOnClickListener(v ->
-                requireActivity().getSupportFragmentManager().popBackStack());
-
-        tvOtherName.setText(otherUserName);
+        RecyclerView recyclerView = view.findViewById(R.id.rvMessages);
+        etMessage = view.findViewById(R.id.etMessage);
+        ImageButton btnSend = view.findViewById(R.id.btnSend);
+        ((TextView) view.findViewById(R.id.tvOtherName)).setText(otherUserName);
 
         adapter = new ChatAdapter(currentUserId);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -115,17 +99,17 @@ public class ChatFragment extends Fragment {
 
     private void loadHistory() {
         chatApiService.getChatHistory(currentUserId, otherUserId)
-                .enqueue(new Callback<List<ChatMessageDTO>>() {
+                .enqueue(new Callback<List<ChatMessageDto>>() {
                     @Override
-                    public void onResponse(Call<List<ChatMessageDTO>> call,
-                                           Response<List<ChatMessageDTO>> response) {
+                    public void onResponse(Call<List<ChatMessageDto>> call,
+                                           Response<List<ChatMessageDto>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             adapter.setMessages(response.body());
                             scrollToBottom();
                         }
                     }
                     @Override
-                    public void onFailure(Call<List<ChatMessageDTO>> call, Throwable t) {
+                    public void onFailure(Call<List<ChatMessageDto>> call, Throwable t) {
                         Log.e(TAG, "loadHistory failed", t);
                     }
                 });
@@ -136,11 +120,11 @@ public class ChatFragment extends Fragment {
         stompChatService.connect(currentUserId, message -> {
             if (!isAdded()) return;
             if ((message.getSenderId() == currentUserId && message.getReceiverId() == otherUserId) ||
-                    (message.getSenderId() == otherUserId   && message.getReceiverId() == currentUserId)) {
+                    (message.getSenderId() == otherUserId && message.getReceiverId() == currentUserId)) {
                 adapter.addMessage(message);
                 scrollToBottom();
             }
-        });
+        }, requireContext());
     }
 
     private void sendMessage() {
@@ -148,8 +132,6 @@ public class ChatFragment extends Fragment {
         if (text.isEmpty()) return;
         etMessage.setText("");
 
-        // For user→admin flow: check admin available first
-        // If otherUserId is already known (admin flow from list), skip the check
         if (otherUserId == 0) {
             chatApiService.checkAdminAvailable().enqueue(new Callback<AdminAvailableResponse>() {
                 @Override
@@ -182,8 +164,10 @@ public class ChatFragment extends Fragment {
     }
 
     private void scrollToBottom() {
-        if (adapter.getItemCount() > 0) {
-            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+        if (getView() == null) return;
+        RecyclerView rv = getView().findViewById(R.id.rvMessages);
+        if (rv != null && adapter.getItemCount() > 0) {
+            rv.smoothScrollToPosition(adapter.getItemCount() - 1);
         }
     }
 }

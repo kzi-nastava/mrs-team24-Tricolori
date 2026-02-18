@@ -23,7 +23,6 @@ import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.ChatApiService;
 import com.example.mobile.ui.adapters.ConversationAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -66,12 +65,12 @@ public class AdminConversationListFragment extends Fragment {
 
         adapter = new ConversationAdapter(user -> {
             String name = user.getFirstName() + " " + user.getLastName();
-            ChatFragment chat = ChatFragment.newInstance(adminId, user.getId(), name);
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.nav_host_fragment, chat)
-                    .addToBackStack(null)
-                    .commit();
+            Bundle args = new Bundle();
+            args.putLong("current_user_id", adminId);
+            args.putLong("other_user_id", user.getId());
+            args.putString("other_user_name", name);
+            androidx.navigation.Navigation.findNavController(requireView())
+                    .navigate(R.id.chatFragment, args);
         });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
