@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { NotificationService } from '../../../services/notification.service';
@@ -16,7 +16,8 @@ export class NavigationDriver implements OnInit, OnDestroy {
   private unreadSubscription?: Subscription;
 
   constructor(
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -29,8 +30,7 @@ export class NavigationDriver implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unreadSubscription?.unsubscribe();
+    this.cdr.detectChanges();
   }
 
-  onLogout() {
-  }
 }
