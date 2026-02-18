@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:layout_marginHorizontal="16dp">
 
     <!-- Header -->
     <LinearLayout
@@ -13,7 +14,7 @@
         android:layout_height="wrap_content"
         android:background="#00ACC1"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -26,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Ride Completed!"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white" />
 
@@ -47,7 +48,7 @@
             android:text="Great job, driver!"
             android:textSize="13sp"
             android:textColor="#E0F7FA"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="2dp" />
 
     </LinearLayout>
 
@@ -56,23 +57,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp"
+        android:padding="16dp"
         android:background="@android:color/white">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Trip Summary"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
-            android:textColor="@color/base_900"
-            android:layout_marginBottom="12dp" />
+            android:textColor="#212121"
+            android:layout_marginBottom="10dp" />
 
         <!-- Stats card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="10dp"
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="#F5F5F5">
@@ -81,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="14dp">
 
                 <!-- Distance row -->
                 <LinearLayout
@@ -89,11 +90,11 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="10dp">
 
                     <androidx.cardview.widget.CardView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:cardBackgroundColor="#E0F2F1">
@@ -101,7 +102,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:text="📍"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:gravity="center" />
                     </androidx.cardview.widget.CardView>
 
@@ -109,19 +110,19 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="10dp"
                         android:text="Distance"
                         android:textSize="14sp"
-                        android:textColor="@color/base_500" />
+                        android:textColor="#757575" />
 
                     <TextView
                         android:id="@+id/tvDistance"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="16sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="@color/base_900"
-                        tools:text="8.5 km" />
+                        android:textColor="#212121"
+                        tools:text="5.6 km" />
 
                 </LinearLayout>
 
@@ -131,11 +132,11 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="10dp">
 
                     <androidx.cardview.widget.CardView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:cardBackgroundColor="#EDE7F6">
@@ -143,7 +144,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:text="⏱"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:gravity="center" />
                     </androidx.cardview.widget.CardView>
 
@@ -151,19 +152,19 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="10dp"
                         android:text="Duration"
                         android:textSize="14sp"
-                        android:textColor="@color/base_500" />
+                        android:textColor="#757575" />
 
                     <TextView
                         android:id="@+id/tvDuration"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="16sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="@color/base_900"
-                        tools:text="22 min" />
+                        android:textColor="#212121"
+                        tools:text="616 min" />
 
                 </LinearLayout>
 
@@ -171,8 +172,8 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/base_200"
-                    android:layout_marginBottom="12dp" />
+                    android:background="#E0E0E0"
+                    android:layout_marginBottom="10dp" />
 
                 <!-- Earnings row -->
                 <LinearLayout
@@ -182,8 +183,8 @@
                     android:gravity="center_vertical">
 
                     <androidx.cardview.widget.CardView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:cardBackgroundColor="#E0F2F1">
@@ -191,7 +192,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:text="💰"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:gravity="center" />
                     </androidx.cardview.widget.CardView>
 
@@ -199,17 +200,17 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="10dp"
                         android:text="Total Earnings"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="@color/base_700" />
+                        android:textColor="#424242" />
 
                     <TextView
                         android:id="@+id/tvPrice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="22sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
                         android:textColor="#00ACC1"
                         tools:text="830 RSD" />
@@ -224,7 +225,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="16dp"
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="#E3F2FD">
@@ -233,7 +234,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="14dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -259,7 +260,7 @@
                             android:layout_height="wrap_content"
                             android:text="From"
                             android:textSize="11sp"
-                            android:textColor="@color/base_500" />
+                            android:textColor="#757575" />
 
                         <TextView
                             android:id="@+id/tvPickupAddress"
@@ -267,7 +268,7 @@
                             android:layout_height="wrap_content"
                             android:textSize="13sp"
                             android:textStyle="bold"
-                            android:textColor="@color/base_900"
+                            android:textColor="#212121"
                             tools:text="Big Fashion, Bulevar Oslobođenja" />
 
                     </LinearLayout>
@@ -297,7 +298,7 @@
                             android:layout_height="wrap_content"
                             android:text="To"
                             android:textSize="11sp"
-                            android:textColor="@color/base_500" />
+                            android:textColor="#757575" />
 
                         <TextView
                             android:id="@+id/tvDestinationAddress"
@@ -305,7 +306,7 @@
                             android:layout_height="wrap_content"
                             android:textSize="13sp"
                             android:textStyle="bold"
-                            android:textColor="@color/base_900"
+                            android:textColor="#212121"
                             tools:text="Antuna Urbana, Satelit" />
 
                     </LinearLayout>
@@ -316,14 +317,13 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Back to Home button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBackToHome"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="52dp"
             android:text="Back to Home"
             android:textAllCaps="false"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             app:backgroundTint="#00ACC1"
             app:cornerRadius="12dp" />

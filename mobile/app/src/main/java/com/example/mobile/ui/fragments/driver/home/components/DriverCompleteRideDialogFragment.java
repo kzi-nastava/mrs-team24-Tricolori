@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
@@ -28,28 +29,23 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
 
     private static final String TAG = "RideCompleteDialog";
 
-    private static final String ARG_RIDE_ID       = "ride_id";
-    private static final String ARG_DISTANCE      = "distance";
-    private static final String ARG_DURATION      = "duration";
-    private static final String ARG_PRICE         = "price";
-    private static final String ARG_PICKUP        = "pickup";
-    private static final String ARG_DESTINATION   = "destination";
+    private static final String ARG_RIDE_ID     = "ride_id";
+    private static final String ARG_DISTANCE    = "distance";
+    private static final String ARG_DURATION    = "duration";
+    private static final String ARG_PRICE       = "price";
+    private static final String ARG_PICKUP      = "pickup";
+    private static final String ARG_DESTINATION = "destination";
 
     public static DriverCompleteRideDialogFragment newInstance(
-            long rideId,
-            double distance,
-            int durationMinutes,
-            int priceRsd,
-            String pickup,
-            String destination
-    ) {
+            long rideId, double distance, int durationMinutes,
+            int priceRsd, String pickup, String destination) {
         DriverCompleteRideDialogFragment f = new DriverCompleteRideDialogFragment();
         Bundle args = new Bundle();
-        args.putLong(ARG_RIDE_ID,     rideId);
-        args.putDouble(ARG_DISTANCE,  distance);
-        args.putInt(ARG_DURATION,     durationMinutes);
-        args.putInt(ARG_PRICE,        priceRsd);
-        args.putString(ARG_PICKUP,    pickup);
+        args.putLong(ARG_RIDE_ID, rideId);
+        args.putDouble(ARG_DISTANCE, distance);
+        args.putInt(ARG_DURATION, durationMinutes);
+        args.putInt(ARG_PRICE, priceRsd);
+        args.putString(ARG_PICKUP, pickup);
         args.putString(ARG_DESTINATION, destination);
         f.setArguments(args);
         return f;
@@ -67,34 +63,59 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Bundle args = requireArguments();
-        long   rideId      = args.getLong(ARG_RIDE_ID);
-        double distance    = args.getDouble(ARG_DISTANCE);
-        int    duration    = args.getInt(ARG_DURATION);
-        int    price       = args.getInt(ARG_PRICE);
-        String pickup      = args.getString(ARG_PICKUP, "");
+        Bundle args    = requireArguments();
+        long   rideId  = args.getLong(ARG_RIDE_ID);
+        double distance = args.getDouble(ARG_DISTANCE);
+        int    duration = args.getInt(ARG_DURATION);
+        int    price    = args.getInt(ARG_PRICE);
+        String pickup   = args.getString(ARG_PICKUP, "");
         String destination = args.getString(ARG_DESTINATION, "");
 
-        TextView tvDistance    = view.findViewById(R.id.tvDistance);
-        TextView tvDuration    = view.findViewById(R.id.tvDuration);
-        TextView tvPrice       = view.findViewById(R.id.tvPrice);
-        TextView tvPickup      = view.findViewById(R.id.tvPickupAddress);
-        TextView tvDestination = view.findViewById(R.id.tvDestinationAddress);
-        TextView tvDismiss     = view.findViewById(R.id.tvDismiss);
-        MaterialButton btnHome = view.findViewById(R.id.btnBackToHome);
-
-        tvDistance.setText(String.format(Locale.getDefault(), "%.1f km", distance));
-        tvDuration.setText(String.format(Locale.getDefault(), "%d min", duration));
-        tvPrice.setText(String.format(Locale.getDefault(), "%d RSD", price));
-        tvPickup.setText(pickup);
-        tvDestination.setText(destination);
+        ((TextView) view.findViewById(R.id.tvDistance))
+                .setText(String.format(Locale.getDefault(), "%.1f km", distance));
+        ((TextView) view.findViewById(R.id.tvDuration))
+                .setText(String.format(Locale.getDefault(), "%d min", duration));
+        ((TextView) view.findViewById(R.id.tvPrice))
+                .setText(String.format(Locale.getDefault(), "%d RSD", price));
+        ((TextView) view.findViewById(R.id.tvPickupAddress)).setText(pickup);
+        ((TextView) view.findViewById(R.id.tvDestinationAddress)).setText(destination);
 
         setCancelable(false);
 
-        tvDismiss.setOnClickListener(v -> navigateHome());
-        btnHome.setOnClickListener(v -> navigateHome());
+        view.findViewById(R.id.tvDismiss).setOnClickListener(v -> navigateHome());
+        ((MaterialButton) view.findViewById(R.id.btnBackToHome))
+                .setOnClickListener(v -> navigateHome());
 
         completeRideOnBackend(rideId);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+    }
+
+    private void navigateHome() {
+        dismiss();
+        try {
+            NavController nav = Navigation.findNavController(
+                    requireActivity(), R.id.nav_host_fragment);
+            nav.navigate(R.id.driverHomeFragment);
+        } catch (Exception e) {
+            Log.w(TAG, "NavController navigate failed, falling back to popBackStack", e);
+            try {
+                requireActivity().getSupportFragmentManager().popBackStack(null,
+                        androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            } catch (Exception ex) {
+                Log.e(TAG, "popBackStack also failed", ex);
+            }
+        }
     }
 
     private void completeRideOnBackend(long rideId) {
@@ -111,7 +132,6 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
                             showBackendError();
                         }
                     }
-
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
                         Log.e(TAG, "completeRide network failure", t);
@@ -126,11 +146,5 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
                     "Could not sync completion with server — please check connection",
                     Toast.LENGTH_LONG).show();
         }
-    }
-
-    private void navigateHome() {
-        dismiss();
-        Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
-                .navigate(R.id.driverHomeFragment);
     }
 }
