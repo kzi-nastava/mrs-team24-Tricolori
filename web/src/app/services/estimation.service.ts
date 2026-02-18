@@ -17,7 +17,7 @@ export class EstimationService {
 
   private geocoding = inject(GeocodingService);
 
-  /*calculateRouteFromAddress(pickup: string, destination: string): Observable<RouteEstimation | null> {
+  calculateRouteFromAddress(pickup: string, destination: string): Observable<RouteEstimation | null> {
     return forkJoin({
       pickupLatLng: this.geocoding.geocodeAddress(pickup),
       destLatLng: this.geocoding.geocodeAddress(destination)
@@ -62,7 +62,7 @@ export class EstimationService {
     });
 
     return from(promise);
-  }*/
+  }
 
   // Prima niz stringova: [pickup, stop1, stop2, ..., destination]
   calculateRouteFromAddresses(addresses: string[]): Observable<RouteEstimation | null> {
@@ -77,13 +77,13 @@ export class EstimationService {
         if (latLngs.some(latLng => !latLng)) {
           return of(null);
         }
-        return this.calculateRouteFromCoords(latLngs as L.LatLng[]);
+        return this.calculateRouteFromCoordsArray(latLngs as L.LatLng[]);
       })
     );
   }
 
   // Prima niz L.LatLng koordinata
-  calculateRouteFromCoords(coords: L.LatLng[]): Observable<RouteEstimation | null> {
+  calculateRouteFromCoordsArray(coords: L.LatLng[]): Observable<RouteEstimation | null> {
     const promise = new Promise<RouteEstimation | null>((resolve) => {
       const router = L.Routing.osrmv1({
         serviceUrl: 'https://router.project-osrm.org/route/v1'
