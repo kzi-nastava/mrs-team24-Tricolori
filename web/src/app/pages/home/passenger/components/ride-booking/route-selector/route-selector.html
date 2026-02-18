@@ -1,4 +1,4 @@
-<form [formGroup]="routeForm" class="flex flex-col gap-2 w-full max-w-lg">
+<form [formGroup]="routeForm" class="flex flex-col gap-2 w-full">
     
     <div [formGroupName]="'pickup'" class="flex flex-col relative">
         <p id="route-selector-welcome" class="text-gray-400 pl-2">Pickup Location</p>
@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <div formArrayName="stops" class="flex flex-col gap-3.5 overflow-y-auto max-h-72 py-1">
+    <div formArrayName="stops" class="flex flex-col gap-3.5 overflow-y-auto max-h-72 p-1">
         @for (stopGroup of stops.controls; track stopGroup; let i = $index) {
             <div [formGroupName]="i" class="w-full relative">
                 <p class="text-gray-400 pl-2">Stop {{ i + 1 }}</p>

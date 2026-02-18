@@ -1,19 +1,25 @@
 package com.tricolori.backend.service;
 
 import com.tricolori.backend.dto.osrm.OSRMRouteResponse;
+import com.tricolori.backend.dto.ride.OrderRequest;
+import com.tricolori.backend.dto.ride.RidePreferences;
+import com.tricolori.backend.dto.ride.RideRoute;
 import com.tricolori.backend.dto.ride.StopRideRequest;
 import com.tricolori.backend.dto.ride.StopRideResponse;
 import com.tricolori.backend.entity.*;
 import com.tricolori.backend.enums.RideStatus;
 import com.tricolori.backend.enums.VehicleType;
+import com.tricolori.backend.exception.NoFreeDriverCloseException;
+import com.tricolori.backend.exception.NoSuitableDriversException;
 import com.tricolori.backend.exception.RideNotFoundException;
 import com.tricolori.backend.repository.RideRepository;
 import com.tricolori.backend.repository.TrackingTokenRepository;
 import com.tricolori.backend.repository.VehicleRepository;
 import com.tricolori.backend.util.TestObjectFactory;
+
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,10 +27,19 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +59,15 @@ class RideServiceTests {
     private NotificationService notificationService;
     @Mock
     private TrackingTokenRepository trackingTokenRepository;
+
+    @Mock
+    private RouteService routeService;
+    @Mock
+    private PassengerService passengerService;
+    @Mock
+    private DriverService driverService;
+    @Mock
+    private TrackingTokenService trackingTokenService;
 
     @InjectMocks
     private RideService rideService;
@@ -141,6 +165,7 @@ class RideServiceTests {
         verify(rideRepository, times(1)).save(ride);
     }
 
+
     // ============ STUDENT 2 - RIDE COMPLETION ===============
 
     @Test
@@ -161,6 +186,38 @@ class RideServiceTests {
     }
 
     @Test
+    @DisplayName("Should create tracking token for unregistered passengers")
+    void rideOrder_ShouldCreateToken_ForUnregisteredPassenger() {
+        // Arrange
+        Person organizer = TestObjectFactory.createTestPassenger();
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"unregistered@test.com"});
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        
+        // Samo organizator je u bazi, unregistered@test.com NIJE
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of((Passenger)organizer));
+        
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        Vehicle mockVehicle = TestObjectFactory.createTestVehicle();
+        mockDriver.setVehicle(mockVehicle);
+
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        // Proveravamo da li je pozvan servis za token za neregistrovanog putnika
+        verify(trackingTokenService, times(1)).createTrackingToken(eq("unregistered@test.com"), anyString(), any());
+        // Proveravamo da li je poslata notifikacija neregistrovanom putniku
+        verify(notificationService, times(1)).sendAddedToRideNotification(
+            eq("unregistered@test.com"), any(), any(), any(), any(), any(), any()
+        );
+    }
+
     void completeRide_ShouldThrowException_WhenDriverNotAuthorized() {
         // Arrange
         Long rideId = 1L;
@@ -523,5 +580,691 @@ class RideServiceTests {
                 anyString(),
                 anyDouble()
         );
+    }
+
+
+    /*--- Student 1 - Ride Order */
+    @Test
+    @DisplayName("Should successfully order ride and return ride ID")
+    void rideOrder_ShouldReturnRideId_WhenEverythingIsValid() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(42L);
+            return r;
+        });
+
+        // Act
+        Long result = rideService.rideOrder(organizer, request);
+
+        // Assert
+        assertEquals(42L, result);
+        verify(rideRepository, times(1)).save(any(Ride.class));
+    }
+
+    @Test
+    @DisplayName("Should set ride status to SCHEDULED when driver is found")
+    void rideOrder_ShouldSetStatusScheduled_WhenDriverFound() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(rideRepository).save(argThat(ride ->
+            ride.getStatus() == RideStatus.SCHEDULED
+        ));
+    }
+
+    @Test
+    @DisplayName("Should assign driver and vehicle specification to ride")
+    void rideOrder_ShouldAssignDriverAndVehicleSpec() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        Vehicle mockVehicle = TestObjectFactory.createTestVehicle();
+        mockDriver.setVehicle(mockVehicle);
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(rideRepository).save(argThat(ride ->
+            ride.getDriver().equals(mockDriver) &&
+            ride.getVehicleSpecification().equals(mockVehicle.getSpecification())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should calculate price based on vehicle type and route distance")
+    void rideOrder_ShouldCalculatePrice_BasedOnVehicleTypeAndDistance() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        Route mockRoute = TestObjectFactory.createTestRoute(); // distanceKm = 5.5
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle()); // VehicleType.STANDARD
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(VehicleType.STANDARD)).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert: 100 + (5.5 * 50) = 375.0
+        verify(rideRepository).save(argThat(ride ->
+            ride.getPrice() == 375.0
+        ));
+    }
+
+    @Test
+    @DisplayName("Should set route, createdAt and scheduledFor on ride")
+    void rideOrder_ShouldSetRouteAndTimestamps() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        LocalDateTime createdAt = LocalDateTime.of(2026, 2, 18, 10, 0);
+        LocalDateTime scheduledFor = LocalDateTime.of(2026, 2, 18, 10, 15);
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+        request.setCreatedAt(createdAt);
+        // scheduledFor dolazi iz preferences
+        RidePreferences prefs = new RidePreferences(VehicleType.STANDARD, true, true, scheduledFor);
+        request.setPreferences(prefs);
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(rideRepository).save(argThat(ride ->
+            ride.getRoute().equals(mockRoute) &&
+            ride.getCreatedAt().equals(createdAt) &&
+            ride.getScheduledFor().equals(scheduledFor)
+        ));
+    }
+
+    @Test
+    @DisplayName("Should include organizer email when calling passengerService")
+    void rideOrder_ShouldIncludeOrganizerEmail_WhenCallingPassengerService() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(passengerService).getTrackingPassengers(argThat(emails ->
+            Arrays.asList(emails).contains("organizer@test.com")
+        ));
+    }
+
+    @Test
+    @DisplayName("Should pass combined email list (organizer + trackers) to passengerService")
+    void rideOrder_ShouldPassCombinedEmailList_ToPassengerService() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"a@test.com", "b@test.com"});
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(passengerService).getTrackingPassengers(argThat(emails -> {
+            List<String> list = Arrays.asList(emails);
+            return list.contains("organizer@test.com") &&
+                list.contains("a@test.com") &&
+                list.contains("b@test.com") &&
+                list.size() == 3;
+        }));
+    }
+
+    @Test
+    @DisplayName("Should call driverService with pickup location from route")
+    void rideOrder_ShouldCallDriverService_WithPickupLocation() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Location expectedPickup = mockRoute.getPickupStop().getLocation();
+
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(driverService).findDriverForRide(eq(expectedPickup), any(), anyInt());
+    }
+
+    @Test
+    @DisplayName("Should call driverService with total passenger count including organizer")
+    void rideOrder_ShouldPassTotalPassengerCount_ToDriverService() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"a@test.com", "b@test.com"}); // organizer + 2 = 3
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(driverService).findDriverForRide(any(), any(), eq(3));
+    }
+
+    @Test
+    @DisplayName("Should notify registered tracker, skip organizer")
+    void rideOrder_ShouldNotifyRegisteredTracker_SkipOrganizer() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        Passenger tracker = TestObjectFactory.createTestPassenger();
+        tracker.setEmail("tracker@test.com");
+        tracker.setFirstName("Tracker");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"tracker@test.com"});
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer, tracker));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(notificationService, never()).sendAddedToRideNotification(
+            eq("organizer@test.com"), any(), any(), any(), any(), any(), any()
+        );
+        verify(notificationService, times(1)).sendAddedToRideNotification(
+            eq("tracker@test.com"), any(), any(), any(), any(), any(), any()
+        );
+    }
+
+    @Test
+    @DisplayName("Should not send tracker notifications when trackers list is null")
+    void rideOrder_ShouldNotSendTrackerNotifications_WhenNoTrackers() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(notificationService, never()).sendAddedToRideNotification(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Should create tracking token for unregistered tracker, not for registered ones")
+    void rideOrder_ShouldCreateToken_OnlyForUnregisteredTrackers() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        Passenger registeredTracker = TestObjectFactory.createTestPassenger();
+        registeredTracker.setEmail("registered@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"registered@test.com", "unregistered@test.com"});
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        // Samo organizer i registered su u bazi, unregistered NIJE
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer, registeredTracker));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(trackingTokenService, times(1)).createTrackingToken(eq("unregistered@test.com"), anyString(), any());
+        verify(trackingTokenService, never()).createTrackingToken(eq("registered@test.com"), anyString(), any());
+        verify(trackingTokenService, never()).createTrackingToken(eq("organizer@test.com"), anyString(), any());
+    }
+
+    @Test
+    @DisplayName("Should send notification to unregistered tracker")
+    void rideOrder_ShouldSendNotification_ToUnregisteredTracker() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"unregistered@test.com"});
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        // Samo organizer je registrovan
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(notificationService, times(1)).sendAddedToRideNotification(
+            eq("unregistered@test.com"), any(), any(), any(), any(), any(), any()
+        );
+    }
+
+    @Test
+    @DisplayName("Should not save ride when NoSuitableDriversException is thrown")
+    void rideOrder_ShouldNotSaveRide_WhenNoSuitableDrivers() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt()))
+            .thenThrow(new NoSuitableDriversException("Nema vozaca."));
+
+        // Act
+        assertThrows(NoSuitableDriversException.class, () ->
+            rideService.rideOrder(organizer, request)
+        );
+
+        // Assert
+        verify(rideRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should send rejection notifications to all emails when NoSuitableDriversException is thrown")
+    void rideOrder_ShouldNotifyAll_WhenNoSuitableDrivers() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"tracker@test.com"});
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt()))
+            .thenThrow(new NoSuitableDriversException("Nema vozaca."));
+
+        // Act
+        assertThrows(NoSuitableDriversException.class, () ->
+            rideService.rideOrder(organizer, request)
+        );
+
+        // Assert - i organizer i tracker dobijaju rejection
+        verify(notificationService).sendRideRejectedNotification(eq("organizer@test.com"), any());
+        verify(notificationService).sendRideRejectedNotification(eq("tracker@test.com"), any());
+        verify(notificationService, times(2)).sendRideRejectedNotification(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should send rejection notifications to all emails when NoFreeDriverCloseException is thrown")
+    void rideOrder_ShouldNotifyAll_WhenNoFreeDriverClose() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"tracker@test.com"});
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt()))
+            .thenThrow(new NoFreeDriverCloseException("Nema slobodnog vozaca u blizini."));
+
+        // Act
+        assertThrows(NoFreeDriverCloseException.class, () ->
+            rideService.rideOrder(organizer, request)
+        );
+
+        // Assert
+        verify(notificationService).sendRideRejectedNotification(eq("organizer@test.com"), any());
+        verify(notificationService).sendRideRejectedNotification(eq("tracker@test.com"), any());
+    }
+
+    @Test
+    @DisplayName("Should rethrow NoSuitableDriversException so global handler can catch it")
+    void rideOrder_ShouldRethrow_NoSuitableDriversException() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(TestObjectFactory.createTestRoute());
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt()))
+            .thenThrow(new NoSuitableDriversException("Nema vozaca."));
+
+        // Act & Assert
+        NoSuitableDriversException ex = assertThrows(NoSuitableDriversException.class, () ->
+            rideService.rideOrder(organizer, request)
+        );
+        assertEquals("Nema vozaca.", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should rethrow NoFreeDriverCloseException so global handler can catch it")
+    void rideOrder_ShouldRethrow_NoFreeDriverCloseException() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(TestObjectFactory.createTestRoute());
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt()))
+            .thenThrow(new NoFreeDriverCloseException("Nema slobodnog vozaca u blizini."));
+
+        // Act & Assert
+        NoFreeDriverCloseException ex = assertThrows(NoFreeDriverCloseException.class, () ->
+            rideService.rideOrder(organizer, request)
+        );
+        assertEquals("Nema slobodnog vozaca u blizini.", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should send rejection only to organizer when no trackers and driver not found")
+    void rideOrder_ShouldSendRejectionOnlyToOrganizer_WhenNoTrackers() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(TestObjectFactory.createTestRoute());
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt()))
+            .thenThrow(new NoSuitableDriversException("Nema vozaca."));
+
+        // Act
+        assertThrows(NoSuitableDriversException.class, () ->
+            rideService.rideOrder(organizer, request)
+        );
+
+        // Assert
+        verify(notificationService, times(1)).sendRideRejectedNotification(any(), any());
+        verify(notificationService).sendRideRejectedNotification(eq("organizer@test.com"), any());
+    }
+
+    @Test
+    @DisplayName("Should call routeService with pickup, destination and stops from request")
+    void rideOrder_ShouldCallRouteService_WithCorrectRouteData() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(null);
+
+        RideRoute rideRoute = request.getRoute();
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(List.of(organizer));
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(routeService).createRoute(
+            eq(rideRoute.pickup()),
+            eq(rideRoute.destination()),
+            eq(rideRoute.stops())
+        );
+    }
+
+    @Test
+    @DisplayName("Should set passengers list returned from passengerService on ride")
+    void rideOrder_ShouldSetPassengerList_FromPassengerService() {
+        // Arrange
+        Passenger organizer = TestObjectFactory.createTestPassenger();
+        organizer.setEmail("organizer@test.com");
+
+        Passenger tracker = TestObjectFactory.createTestPassenger();
+        tracker.setEmail("tracker@test.com");
+
+        OrderRequest request = TestObjectFactory.createOrderRequest();
+        request.setTrackers(new String[]{"tracker@test.com"});
+
+        Route mockRoute = TestObjectFactory.createTestRoute();
+        Driver mockDriver = TestObjectFactory.createTestDriver();
+        mockDriver.setVehicle(TestObjectFactory.createTestVehicle());
+
+        List<Passenger> expectedPassengers = List.of(organizer, tracker);
+
+        when(routeService.createRoute(any(), any(), any())).thenReturn(mockRoute);
+        when(passengerService.getTrackingPassengers(any())).thenReturn(expectedPassengers);
+        when(driverService.findDriverForRide(any(), any(), anyInt())).thenReturn(mockDriver);
+        when(priceListService.calculateBasePrice(any())).thenReturn(100.0);
+        when(priceListService.getKmPrice()).thenReturn(50.0);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> {
+            Ride r = inv.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        // Act
+        rideService.rideOrder(organizer, request);
+
+        // Assert
+        verify(rideRepository).save(argThat(ride ->
+            ride.getPassengers().equals(expectedPassengers)
+        ));
     }
 }

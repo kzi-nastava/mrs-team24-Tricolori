@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {PanicRequest, RideDetails, RideHistory, RideRequest, StopRideRequest, StopRideResponse} from '../model/ride';
+import {PanicRequest, RideAssignmentResponse, RideDetails, RideHistory, RideRequest, StopRideRequest, StopRideResponse} from '../model/ride';
 import { RideHistoryResponse, RideDetailResponse, RideRatingRequest, PassengerRideHistoryResponse } from '../model/ride-history';
 import { environment } from '../../environments/environment';
 import {
@@ -172,6 +172,10 @@ export class RideService {
   }
 
   getAllOngoingRides(): Observable<RideTrackingResponse[]> {
-  return this.http.get<RideTrackingResponse[]>(`${this.API_URL}/ongoing`);
-}
+    return this.http.get<RideTrackingResponse[]>(`${this.API_URL}/ongoing`);
+  }
+
+  getRideDetails(id: number): Observable<RideAssignmentResponse> {
+    return this.http.get<RideAssignmentResponse>(`${this.API_URL}/${id}`);
+  }
 }

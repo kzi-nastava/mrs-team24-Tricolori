@@ -1,6 +1,8 @@
 package com.tricolori.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,7 +19,10 @@ import java.time.LocalDateTime;
                 @UniqueConstraint(name = "uk_driver_date", columnNames = { "driver_id", "date" })
         }
 )
-@Getter @Setter @NoArgsConstructor
+@Getter @Setter 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class DriverDailyLog {
 
     @Id
@@ -35,7 +40,6 @@ public class DriverDailyLog {
             nullable = false,
             updatable = false
     )
-    @CreationTimestamp
     private LocalDate date;
 
     @Column(name = "active_time_seconds", nullable = false)

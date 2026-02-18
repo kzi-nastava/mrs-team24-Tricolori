@@ -40,4 +40,8 @@ export class RideTrackersSelector {
     this.trackers.removeAt(index);
     this.newTrackerEmail.updateValueAndValidity();
   }
+
+  getTrackers(): string[] {
+    return this.trackers.controls.map(control => control.value as string);
+  }
 }

@@ -568,7 +568,7 @@ public class RideService {
     }
 
     @Transactional
-    public void rideOrder(Person passenger, OrderRequest request) {
+    public Long rideOrder(Person passenger, OrderRequest request) {
         RidePreferences preferences = request.getPreferences();
 
         // Extracting and creating route:
@@ -616,13 +616,20 @@ public class RideService {
                     .toList();
 
             // Send notifications to registered passengers (skip organizer)
+            String scheduledTime;
+            if(ride.getScheduledFor() == null) {
+                scheduledTime = LocalDateTime.now().toString();
+            } else {
+                scheduledTime = ride.getScheduledFor().toString();
+            }
+
             for (Passenger p : trackingPassengers) {
                 if (p.getEmail().equals(passenger.getEmail()))
                     continue; // skip main passenger (organizer)
 
                 notificationService.sendAddedToRideNotification(
                         p.getEmail(), ride.getId(), organizerName, p.getFirstName(), ride.getRoute().getPickupStop().getAddress(),
-                        ride.getRoute().getDestinationStop().getAddress(), ride.getScheduledFor().toString()
+                        ride.getRoute().getDestinationStop().getAddress(), scheduledTime
                 );
             }
 
@@ -640,7 +647,7 @@ public class RideService {
                     // Send notification
                     notificationService.sendAddedToRideNotification(
                             email, ride.getId(), organizerName, firstName, ride.getRoute().getPickupStop().getAddress(),
-                            ride.getRoute().getDestinationStop().getAddress(), ride.getScheduledFor().toString()
+                            ride.getRoute().getDestinationStop().getAddress(), scheduledTime
                     );
                 }
             }
@@ -652,7 +659,19 @@ public class RideService {
                 log.info("Sent ride rejection notification to {}", email);
                 log.info("Reason: {}", e.getMessage());
             }
+
+            // Rethrow so global exception handler catches...
+            throw e;
         }
+
+        return ride.getId();
+    }
+
+    public RideAssignmentResponse getAssignmentResponse(Long rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride with ID " + rideId + " not found"));
+
+        return rideMapper.toAssignmentResponse(ride);
     }
 
     // ================= helpers =================

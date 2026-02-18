@@ -35,7 +35,7 @@ export class RideEstimationForm {
     this.errorMessage.set(null);
     const { pickup, destination } = this.estimateForm.getRawValue();
 
-    this.estimationService.calculateRouteFromAddress(pickup, destination).subscribe({
+    this.estimationService.calculateRouteFromAddresses([pickup, destination]).subscribe({
       next: (result) => {
         if (result) {
           this.planningService.setResults({

@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -239,17 +240,24 @@ public class RideController {
 
     @PostMapping("/order")
     @PreAuthorize("hasRole('PASSENGER')")
-    public ResponseEntity<String> order(
+    public ResponseEntity<Long> order(
         @AuthenticationPrincipal Person passenger,
         @RequestBody OrderRequest request
     ) {
-        try {
-            rideService.rideOrder(passenger, request);
-        } catch (Exception e) {
-            String errorResponse = "ODGOVOR: " + e.getClass().getSimpleName() + ": " + e.getMessage();
-            return ResponseEntity.ok(errorResponse);
-        }
-        return ResponseEntity.ok("Created a ride.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            rideService.rideOrder(passenger, request)
+        );
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PASSENGER', 'DRIVER', 'ADMIN')")
+    public ResponseEntity<RideAssignmentResponse> getRideDetails(
+        @AuthenticationPrincipal Person passenger,
+        @PathVariable Long id
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+            rideService.getAssignmentResponse(id)
+        );
     }
 
     @PutMapping("/{rideId}/start")

@@ -85,9 +85,9 @@ export class RideRatingComponent implements OnInit {
       if (rideDetails) {
         this.rideDetails.set(rideDetails);
 
-        this.estimationService.calculateRouteFromAddress(
-          rideDetails.pickupAddress,
-          rideDetails.dropoffAddress
+        this.estimationService.calculateRouteFromAddresses(
+          [rideDetails.pickupAddress,
+          rideDetails.dropoffAddress]
         ).subscribe({
           next: (estimation) => {
             if (!estimation || !estimation.routeGeometry) return;
