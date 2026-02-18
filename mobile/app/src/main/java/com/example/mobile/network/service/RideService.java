@@ -3,11 +3,16 @@ package com.example.mobile.network.service;
 import com.example.mobile.dto.ride.CancellationRequest;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
 import com.example.mobile.dto.ride.DriverRideHistoryResponse;
+import com.example.mobile.dto.ride.InconsistencyReportRequest;
+import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.PassengerRideHistoryResponse;
 import com.example.mobile.dto.ride.RideRatingRequest;
 import com.example.mobile.dto.ride.RideRatingStatusResponse;
 import com.example.mobile.dto.ride.RideTrackingResponse;
+import com.example.mobile.dto.ride.StopRideRequest;
+import com.example.mobile.dto.ride.StopRideResponse;
+import com.example.mobile.dto.vehicle.UpdateVehicleLocationRequest;
 
 import java.util.List;
 
@@ -65,4 +70,34 @@ public interface RideService {
 
     @GET("api/v1/rides/ongoing")
     Call<List<RideTrackingResponse>> getAllOngoingRides();
+  
+    @GET("api/v1/rides/{rideId}/track")
+    Call<RideTrackingResponse> trackRide(
+            @Path("rideId") Long rideId
+    );
+
+    @PUT("api/v1/rides/panic")
+    Call<Void> panicRide(@Body PanicRideRequest request);
+
+    @POST("api/v1/rides/{rideId}/report-inconsistency")
+    Call<Void> reportInconsistency(
+            @Path("rideId") Long rideId,
+            @Body InconsistencyReportRequest request
+    );
+
+    @PUT("api/v1/rides/{rideId}/complete")
+    Call<Void> completeRide(
+            @Path("rideId") Long rideId
+    );
+
+    @PUT("api/v1/rides/stop")
+    Call<StopRideResponse> stopRide(
+            @Body StopRideRequest request
+    );
+
+    @PUT("api/v1/rides/{rideId}/vehicle-location")
+    Call<Void> updateRideVehicleLocation(
+            @Path("rideId") Long rideId,
+            @Body UpdateVehicleLocationRequest request
+    );
 }

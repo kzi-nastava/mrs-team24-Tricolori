@@ -3,11 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroPaperAirplane, heroUser } from '@ng-icons/heroicons/outline';
-import { WebSocketService, ChatMessage } from '../../../services/websocket.service';
 import { ChatService, ChatMessageDTO } from '../../../services/chat.service';
 import { Subscription } from 'rxjs';
 import { NgZone } from '@angular/core';
-
 
 interface Message {
   id: number;
@@ -32,32 +30,29 @@ export class UserSupport implements OnInit, OnDestroy {
   messages: Message[] = [];
   newMessage: string = '';
   showAdminUnavailableDialog: boolean = false;
-  
+
   private currentUserId: number = 0;
   private adminUserId: number = 0;
-  private messageSubscription?: Subscription;
+  private messagesSubscription?: Subscription;
 
   constructor(
-    private webSocketService: WebSocketService,
     private chatService: ChatService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    // Get current user ID from localStorage
     const personData = localStorage.getItem('person_data');
     if (personData) {
       const person = JSON.parse(personData);
       this.currentUserId = person.id;
     }
 
-    // Fetch admin ID and then load messages
     this.chatService.getAdminId().subscribe({
       next: (response) => {
         this.adminUserId = response.adminId;
         this.loadMessages();
-        this.connectWebSocket();
+        this.subscribeToChat();
       },
       error: (error) => {
         console.error('Error fetching admin ID:', error);
@@ -66,39 +61,34 @@ export class UserSupport implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.messageSubscription?.unsubscribe();
-    this.webSocketService.disconnect();
+    this.messagesSubscription?.unsubscribe();
+    this.chatService.unsubscribe();
   }
 
   loadMessages(): void {
-    
     this.chatService.getChatHistory(this.currentUserId, this.adminUserId).subscribe({
       next: (chatMessages: ChatMessageDTO[]) => {
-        
         this.messages = chatMessages.map(msg => ({
           id: msg.id,
           text: msg.content,
           timestamp: this.formatTimestamp(new Date(msg.timestamp)),
           isFromUser: msg.senderId === this.currentUserId
         }));
-        
-       this.cdr.detectChanges();
-        
+
+        this.cdr.detectChanges();
         setTimeout(() => this.scrollToBottom(), 300);
       },
       error: (error) => {
-        console.error('❌ Error loading messages:', error);
+        console.error('Error loading messages:', error);
       }
     });
   }
 
+  subscribeToChat(): void {
+    this.chatService.subscribeToChat(this.currentUserId);
 
-  connectWebSocket(): void {
-  this.webSocketService.connect(this.currentUserId);
-
-  this.messageSubscription =
-    this.webSocketService.messages$.subscribe({
-      next: (chatMessage: ChatMessage | null) => {
+    this.messagesSubscription = this.chatService.messages$.subscribe({
+      next: (chatMessage: ChatMessageDTO | null) => {
         if (!chatMessage) return;
 
         this.ngZone.run(() => {
@@ -109,54 +99,42 @@ export class UserSupport implements OnInit, OnDestroy {
             const message: Message = {
               id: chatMessage.id || Date.now(),
               text: chatMessage.content,
-              timestamp: this.formatTimestamp(
-                new Date(chatMessage.timestamp)
-              ),
-              isFromUser:
-                chatMessage.senderId === this.currentUserId
+              timestamp: this.formatTimestamp(new Date(chatMessage.timestamp)),
+              isFromUser: chatMessage.senderId === this.currentUserId
             };
 
             this.messages = [...this.messages, message];
-            
             this.cdr.detectChanges();
-
             setTimeout(() => this.scrollToBottom(), 100);
           }
         });
       }
     });
-}
-
+  }
 
   sendMessage(): void {
-  if (this.newMessage.trim()) {
-    const messageText = this.newMessage;
-    this.newMessage = ''; // clear input immediately
-    
-    // check if admin is available before sending
-    this.chatService.checkAdminAvailable().subscribe({
-      next: (response) => {
-        if (response.available) {
-          // send the message via WebSocket
-          this.webSocketService.sendMessage(
-            this.currentUserId,
-            this.adminUserId,
-            messageText
-          );
-          
-          // wait for WebSocket response
-          // the message will be added when it comes back through the WebSocket subscription
-        } else {
-          // no admin available, show dialog
-          this.showAdminUnavailableDialog = true;
+    if (this.newMessage.trim()) {
+      const messageText = this.newMessage;
+      this.newMessage = '';
+
+      this.chatService.checkAdminAvailable().subscribe({
+        next: (response) => {
+          if (response.available) {
+            this.chatService.sendMessage(
+              this.currentUserId,
+              this.adminUserId,
+              messageText
+            );
+          } else {
+            this.showAdminUnavailableDialog = true;
+          }
+        },
+        error: (error) => {
+          console.error('Error checking admin availability:', error);
         }
-      },
-      error: (error) => {
-        console.error('Error checking admin availability:', error);
-      }
-    });
+      });
+    }
   }
-}
 
   closeDialog(): void {
     this.showAdminUnavailableDialog = false;
@@ -167,7 +145,7 @@ export class UserSupport implements OnInit, OnDestroy {
     const isToday = date.toDateString() === now.toDateString();
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    
+
     if (isToday) {
       return `Today, ${hours}:${minutes}`;
     } else {
