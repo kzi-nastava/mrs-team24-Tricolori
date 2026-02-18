@@ -1,6 +1,9 @@
 package com.example.mobile.ui.fragments.passenger.home.components;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.ride.CancellationRequest;
+import com.example.mobile.dto.ride.RideTrackingResponse;
 import com.example.mobile.model.RideAssignmentResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.RideService;
@@ -30,8 +34,12 @@ import retrofit2.Response;
 
 public class PassengerWaitingFragment extends Fragment {
 
+    private static final String TAG = "PassengerWaitingFragment";
+    private static final long POLL_INTERVAL_MS = 3000;
     private PassengerViewModel viewModel;
     private RideService rideService;
+    private Handler pollHandler;
+    private Runnable pollRunnable;
 
     @Nullable
     @Override
@@ -55,10 +63,72 @@ public class PassengerWaitingFragment extends Fragment {
         viewModel.getActiveRide().observe(getViewLifecycleOwner(), ride -> {
             if (ride != null) {
                 displayRideData(view, ride);
+                startPolling(ride.id);
             }
         });
 
         view.findViewById(R.id.btnCancelRidePassenger).setOnClickListener(v -> cancelRide());
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        stopPolling();
+    }
+
+    private void startPolling(Long rideId) {
+        if (rideId == null) return;
+
+        stopPolling();
+
+        pollHandler = new Handler(Looper.getMainLooper());
+        pollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                checkRideStatus(rideId);
+                if (pollHandler != null) {
+                    pollHandler.postDelayed(this, POLL_INTERVAL_MS);
+                }
+            }
+        };
+        pollHandler.post(pollRunnable);
+    }
+
+    private void stopPolling() {
+        if (pollHandler != null && pollRunnable != null) {
+            pollHandler.removeCallbacks(pollRunnable);
+            pollHandler = null;
+            pollRunnable = null;
+        }
+    }
+
+    private void checkRideStatus(Long rideId) {
+        rideService.trackRide(rideId).enqueue(new Callback<RideTrackingResponse>() {
+            @Override
+            public void onResponse(Call<RideTrackingResponse> call, Response<RideTrackingResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    handleRideStatusUpdate(response.body().getStatus());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RideTrackingResponse> call, Throwable t) {
+                Log.e(TAG, "Failed to check ride status", t);
+            }
+        });
+    }
+
+    private void handleRideStatusUpdate(String status) {
+        if ("ONGOING".equalsIgnoreCase(status)) {
+            stopPolling();
+            viewModel.setRideStatus(PassengerViewModel.STATE_TRACKING);
+        } else if ("CANCELLED".equalsIgnoreCase(status)) {
+            stopPolling();
+            viewModel.clearActiveRide();
+            if (isAdded() && getContext() != null) {
+                Toast.makeText(getContext(), "Ride was cancelled", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void displayRideData(View view, RideAssignmentResponse ride) {
@@ -99,6 +169,7 @@ public class PassengerWaitingFragment extends Fragment {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
                 if (response.isSuccessful()) {
+                    stopPolling();
                     viewModel.clearActiveRide();
                     if (isAdded() && getContext() != null) {
                         Toast.makeText(getContext(), "Ride cancelled", Toast.LENGTH_SHORT).show();

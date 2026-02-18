@@ -72,6 +72,9 @@ class RideServiceTests {
     @Mock
     private TrackingTokenService trackingTokenService;
 
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
+
     @InjectMocks
     private RideService rideService;
 
