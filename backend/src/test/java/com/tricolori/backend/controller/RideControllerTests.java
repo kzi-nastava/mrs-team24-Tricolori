@@ -5,8 +5,10 @@ import com.tricolori.backend.dto.ride.OrderRequest;
 import com.tricolori.backend.dto.ride.StopRideRequest;
 import com.tricolori.backend.dto.ride.StopRideResponse;
 import com.tricolori.backend.entity.Location;
-import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.exception.GlobalExceptionHandler;
+import com.tricolori.backend.exception.NoFreeDriverCloseException;
+import com.tricolori.backend.exception.NoRouteGeometryException;
+import com.tricolori.backend.exception.NoSuitableDriversException;
 import com.tricolori.backend.exception.RideNotFoundException;
 import com.tricolori.backend.security.AuthTokenFilter;
 import com.tricolori.backend.security.JwtUtil;
@@ -30,14 +32,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.hamcrest.Matchers.containsString;
 
 @WebMvcTest(
         controllers = {
@@ -132,54 +131,210 @@ class RideControllerTests {
     }
 
     /*--- Ride ordering: Student 1 ---*/
+    
     @Test
-    @DisplayName("Should successfully order a ride")
+    @DisplayName("Should successfully order a ride and return 201 with ride ID")
     void shouldOrderRideSuccessfully() throws Exception {
         // Arrange
-        OrderRequest request = TestObjectFactory.createOrderRequest();
-        
-        doNothing().when(rideService).rideOrder(any(Person.class), any(OrderRequest.class));
+        OrderRequest request = new OrderRequest();
+        Long expectedRideId = 42L;
 
-        // Act & Assert
-        mockMvc.perform(post("/api/v1/rides/order")
-                        .header("Authorization", "Bearer passenger-token")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Created a ride."));
-
-        verify(rideService, times(1)).rideOrder(any(), any());
-    }
-
-    @Test
-    @DisplayName("Should return error message when service throws exception")
-    void shouldReturnErrorMessageOnServiceException() throws Exception {
-        // Arrange
-        OrderRequest request = TestObjectFactory.createOrderRequest();
-        String errorMsg = "No drivers available";
-        
-        doThrow(new RuntimeException(errorMsg))
-                .when(rideService).rideOrder(nullable(Person.class), any(OrderRequest.class));
+        when(rideService.rideOrder(any(), any())).thenReturn(expectedRideId);
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/rides/order")
                         .header("Authorization", driverToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("ODGOVOR: RuntimeException: " + errorMsg)));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$").value(42L));
 
-        verify(rideService, times(1)).rideOrder(nullable(Person.class), any(OrderRequest.class));
+        verify(rideService, times(1)).rideOrder(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when no route geometry is available")
+    void shouldReturn400WhenNoRouteGeometry() throws Exception {
+        // Arrange
+        OrderRequest request = new OrderRequest();
+
+        when(rideService.rideOrder(any(), any()))
+                .thenThrow(new NoRouteGeometryException("No route geometry found for given locations."));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("No route geometry found for given locations."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(rideService, times(1)).rideOrder(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when no suitable drivers exist")
+    void shouldReturn400WhenNoSuitableDrivers() throws Exception {
+        // Arrange
+        OrderRequest request = new OrderRequest();
+
+        when(rideService.rideOrder(any(), any()))
+                .thenThrow(new NoSuitableDriversException("No suitable drivers available."));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("No suitable drivers available."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(rideService, times(1)).rideOrder(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when no free driver is close enough")
+    void shouldReturn400WhenNoFreeDriverClose() throws Exception {
+        // Arrange
+        OrderRequest request = new OrderRequest();
+
+        when(rideService.rideOrder(any(), any()))
+                .thenThrow(new NoFreeDriverCloseException("No free driver close to pickup location."));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("No free driver close to pickup location."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(rideService, times(1)).rideOrder(any(), any());
     }
 
     @Test
     @DisplayName("Should return 400 when request body is missing")
-    void shouldReturn400WhenOrderRequestIsMissing() throws Exception {
+    void shouldReturn400WhenRequestBodyMissing() throws Exception {
         mockMvc.perform(post("/api/v1/rides/order")
-                        .header("Authorization", "Bearer passenger-token")
+                        .header("Authorization", driverToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+
+        verify(rideService, never()).rideOrder(any(), any());
     }
+
+    @Test
+    @DisplayName("Should return 400 when request body contains malformed JSON")
+    void shouldReturn400WhenMalformedJson() throws Exception {
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ this is not valid json }"))
+                .andExpect(status().isBadRequest());
+
+        verify(rideService, never()).rideOrder(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return 500 when unexpected exception is thrown")
+    void shouldReturn500WhenUnexpectedExceptionThrown() throws Exception {
+        // Arrange
+        OrderRequest request = new OrderRequest();
+
+        when(rideService.rideOrder(any(), any()))
+                .thenThrow(new RuntimeException("Something went very wrong."));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Unexpected server error."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(rideService, times(1)).rideOrder(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should include timestamp in error response for NoRouteGeometryException")
+    void shouldIncludeTimestampInErrorResponseForNoRouteGeometry() throws Exception {
+        // Arrange
+        OrderRequest request = new OrderRequest();
+
+        when(rideService.rideOrder(any(), any()))
+                .thenThrow(new NoRouteGeometryException("Route not found."));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.message").value("Route not found."));
+    }
+
+    @Test
+    @DisplayName("Should include timestamp in error response for NoSuitableDriversException")
+    void shouldIncludeTimestampInErrorResponseForNoSuitableDrivers() throws Exception {
+        // Arrange
+        OrderRequest request = new OrderRequest();
+
+        when(rideService.rideOrder(any(), any()))
+                .thenThrow(new NoSuitableDriversException("No drivers match criteria."));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.message").value("No drivers match criteria."));
+    }
+
+    @Test
+    @DisplayName("Should include timestamp in error response for NoFreeDriverCloseException")
+    void shouldIncludeTimestampInErrorResponseForNoFreeDriverClose() throws Exception {
+        // Arrange
+        OrderRequest request = new OrderRequest();
+
+        when(rideService.rideOrder(any(), any()))
+                .thenThrow(new NoFreeDriverCloseException("All nearby drivers are busy."));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.message").value("All nearby drivers are busy."));
+    }
+
+    @Test
+    @DisplayName("Should not expose internal details in 500 response body")
+    void shouldNotExposeInternalDetailsIn500Response() throws Exception {
+        // Arrange
+        OrderRequest request = new OrderRequest();
+
+        when(rideService.rideOrder(any(), any()))
+                .thenThrow(new RuntimeException("DB connection failed at 192.168.1.1"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/rides/order")
+                        .header("Authorization", driverToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Unexpected server error."));
+    }
+
+
     // ============ STUDENT 2 - RIDE COMPLETION ===============
 
     @Test
