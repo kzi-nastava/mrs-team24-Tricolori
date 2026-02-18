@@ -162,7 +162,9 @@ public class PassengerWaitingFragment extends Fragment {
     }
 
     private void cancelRide() {
-        rideService.cancelRide(new CancellationRequest("")).enqueue(new Callback<>() {
+        Long rideId = viewModel.getActiveRide().getValue().id;
+
+        rideService.cancelRide(rideId, new CancellationRequest("")).enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 

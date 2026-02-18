@@ -135,10 +135,14 @@ public class DriverService {
     }
 
     private Driver findBestBusyDriver(List<Driver> candidates, Location pickup) {
+
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay(); // 2026-02-17T00:00:00
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX); // 2026-02-17T23:59:59.999...
+
         return candidates.stream()
             .filter(d -> {
-                List<Ride> driverRides = rideRepository.findAllByDriverAndStatusIn(d, 
-                        List.of(RideStatus.ONGOING, RideStatus.SCHEDULED));
+                List<Ride> driverRides = rideRepository.findAllByStatusInAndCreatedAtBetween(
+                        List.of(RideStatus.ONGOING, RideStatus.SCHEDULED), startOfDay, endOfDay);
                 
                 boolean hasScheduled = driverRides.stream().anyMatch(r -> r.getStatus() == RideStatus.SCHEDULED);
                 if (hasScheduled) return false;

@@ -60,6 +60,8 @@ class RideServiceTests {
     private NotificationService notificationService;
     @Mock
     private TrackingTokenRepository trackingTokenRepository;
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
 
     @Mock
     private RouteService routeService;

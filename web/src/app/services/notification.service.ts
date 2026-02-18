@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { StompSubscription } from '@stomp/stompjs';
 import { WebSocketService } from './websocket.service';
-import {environment} from '../../environments/environment';
+import { environment } from '../../environments/environment';
 
 export interface NotificationDto {
   id: number;
@@ -24,7 +23,7 @@ export interface NotificationDto {
 export class NotificationService {
 
   private readonly API_URL = `${environment.apiUrl}/notifications`;
-  private subscription: StompSubscription | undefined;
+  private currentTopic: string | undefined;
 
   private notificationsSubject = new BehaviorSubject<NotificationDto[]>([]);
   public notifications$ = this.notificationsSubject.asObservable();
@@ -71,8 +70,9 @@ export class NotificationService {
 
   subscribeToNotifications(userEmail: string): void {
     const topic = `/topic/notifications/${userEmail}`;
+    this.currentTopic = topic;
 
-    this.subscription = this.webSocketService.subscribe(topic, (notification: NotificationDto) => {
+    this.webSocketService.subscribe(topic, (notification: NotificationDto) => {
       console.log('New notification received:', notification);
 
       if (notification.type === 'RIDE_PANIC') {
@@ -89,9 +89,9 @@ export class NotificationService {
   }
 
   unsubscribe(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      this.subscription = undefined;
+    if (this.currentTopic) {
+      this.webSocketService.unsubscribe(this.currentTopic);
+      this.currentTopic = undefined;
     }
   }
 
