@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
+import com.example.mobile.model.RideAssignmentResponse;
 import com.example.mobile.ui.components.MapComponent;
 import com.example.mobile.ui.fragments.passenger.home.components.PassengerOrderFragment;
 import com.example.mobile.ui.fragments.passenger.home.components.PassengerWaitingFragment;
@@ -116,6 +117,12 @@ public class PassengerHomeFragment extends Fragment {
                 fragment = new PassengerOrderFragment();
             } else if (status.equals(PassengerViewModel.STATE_WAITING)) {
                 fragment = new PassengerWaitingFragment();
+            } else if (status.equals(PassengerViewModel.STATE_TRACKING)) {
+                RideAssignmentResponse activeRide = viewModel.getActiveRide().getValue();
+                if (activeRide != null && activeRide.id != null) {
+                    navigateToTracking(activeRide.id);
+                }
+                return;
             }
 
             if (fragment != null) {
@@ -144,4 +151,13 @@ public class PassengerHomeFragment extends Fragment {
 
     @Override public void onResume() { super.onResume(); if (mapView != null) mapView.onResume(); }
     @Override public void onPause() { super.onPause(); if (mapView != null) mapView.onPause(); }
+
+    private void navigateToTracking(Long rideId) {
+        Bundle args = new Bundle();
+        args.putLong("ride_id", rideId);
+
+        androidx.navigation.NavController navController =
+                androidx.navigation.Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+        navController.navigate(R.id.passengerRideTrackingFragment, args);
+    }
 }

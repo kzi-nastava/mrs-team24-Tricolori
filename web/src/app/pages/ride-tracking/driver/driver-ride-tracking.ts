@@ -14,18 +14,24 @@ import {
   heroXMark,
   heroUser
 } from '@ng-icons/heroicons/outline';
+
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
+
 import { RideDetails, StopRideRequest, StopRideResponse } from '../../../model/ride';
 import { Location } from '../../../model/location';
 import { RideService } from '../../../services/ride.service';
 import { VehicleService } from '../../../services/vehicle.service';
 import { PanicRideRequest } from '../../../model/ride-tracking';
+import { PriceConfigResponse, PricelistService } from '../../../services/pricelist.service';
+import { Map } from '../../../components/map/map';
+import { MapService } from '../../../services/map.service';
+import { Vehicle } from '../../../model/vehicle.model';
 
 @Component({
   selector: 'app-driver-ride-tracking',
   standalone: true,
-  imports: [CommonModule, NgIconComponent],
+  imports: [CommonModule, NgIconComponent, Map],
   providers: [
     provideIcons({
       heroArrowLeft,
@@ -43,20 +49,22 @@ import { PanicRideRequest } from '../../../model/ride-tracking';
   templateUrl: './driver-ride-tracking.html'
 })
 export class DriverRideTrackingComponent implements OnInit, OnDestroy {
-  panicTriggered = signal<boolean>(false);
 
-  estimatedArrival = signal<number>(8);
-  remainingDistance = signal<number>(2.3);
+  panicTriggered = signal(false);
+  stopTriggered = signal(false);
 
-  // Modal state
-  showCompletionModal = signal<boolean>(false);
+  estimatedArrival = signal(8);
+  remainingDistance = signal(2.3);
+
+  pricing = signal<PriceConfigResponse | null>(null);
+
+  showCompletionModal = signal(false);
   completedRideInfo = signal<{
     distance: number;
     duration: number;
     price: number;
   } | null>(null);
 
-  // Ride details - will be loaded from backend
   rideDetails = signal<RideDetails>({
     id: 1,
     pickup: 'Loading...',
@@ -71,302 +79,147 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
     passengers: []
   });
 
-  // Current vehicle position (simulated)
   vehicleLocation = signal<Location>({
     lat: 45.2671,
-    lng: 19.8335,
+    lng: 19.8335
   });
 
+  vehiclesForMap = signal<Vehicle[]>([]);
+
   progressPercentage = computed(() => {
-    const total = this.rideDetails().totalDistance;
+    const total = this.rideDetails().totalDistance || 1;
     const remaining = this.remainingDistance();
     return Math.round(((total - remaining) / total) * 100);
   });
 
-  private map: L.Map | null = null;
-  private routeControl: any = null;
-  private vehicleMarker: L.Marker | null = null;
   private updateInterval: any = null;
   private routePoints: L.LatLng[] = [];
   private currentPointIndex = 0;
   private rideId: number | null = null;
-  private vehicleId: number | null = null; // Store vehicle ID for location updates
+  private vehicleId: number | null = null;
+  private routingControl: any = null;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private rideService: RideService,
-    private vehicleService: VehicleService
+    private vehicleService: VehicleService,
+    private pricelistService: PricelistService,
+    private mapService: MapService
   ) {}
 
   ngOnInit(): void {
-    // Get ride ID from route params, default to 6 if not provided
+    this.pricelistService.getCurrentPricing().subscribe(p => {
+      this.pricing.set(p);
+    });
+
     this.route.params.subscribe(params => {
       this.rideId = +params['id'] || 6;
       this.loadRideData(this.rideId);
     });
   }
 
-  /**
-   * Load ride data from backend
-   */
-  private loadRideData(rideId: number): void {
-    this.rideService.trackRide(rideId).subscribe({
-      next: (response) => {
-        // Extract pickup and destination from route DTO
-        const route = response.route;
-
-        // If route is null (finished ride), load full details instead
-        if (!route && (response.status === 'FINISHED' || response.status === 'CANCELLED_BY_DRIVER' || response.status === 'CANCELLED_BY_PASSENGER')) {
-          console.log('⚠️ Route is null, loading full ride details instead...');
-          this.loadFinishedRideDetails(rideId, response);
-          return;
-        }
-
-        // Store vehicle ID for location updates
-        if (response.currentLocation?.vehicleId) {
-          this.vehicleId = response.currentLocation.vehicleId;
-          console.log('🚗 Vehicle ID set:', this.vehicleId);
-        }
-
-        // Update ride details with real data from RideTrackingResponse
-        const rideDetails = {
-          id: response.rideId,
-          pickup: route?.pickupAddress || 'Pickup location',
-          destination: route?.destinationAddress || 'Destination',
-          pickupCoords: route
-            ? [route.pickupLatitude, route.pickupLongitude]
-            : [45.2671, 19.8335],
-          destinationCoords: route
-            ? [route.destinationLatitude, route.destinationLongitude]
-            : [45.2550, 19.8450],
-          driverName: response.driver
-            ? `${response.driver.firstName} ${response.driver.lastName}`
-            : '',
-          vehicleType: response.currentLocation?.model || '',
-          licensePlate: response.currentLocation?.plateNum || '',
-          totalDistance: route?.distanceKm || 0,
-          estimatedDuration: route ? Math.round(route.estimatedTimeSeconds / 60) : 0,
-          passengers: response.passengers?.map(p => ({
-            id: p.id,
-            name: `${p.firstName} ${p.lastName}`,
-            phone: p.phoneNumber,
-            email: p.email || ''
-          })) || []
-        };
-
-        this.rideDetails.set(rideDetails);
-
-        // Set initial values
-        const remainingDist = route?.distanceKm || 0;
-        const estimatedArr = response.estimatedTimeMinutes || 0;
-
-        this.remainingDistance.set(remainingDist);
-        this.estimatedArrival.set(estimatedArr);
-
-        // Update current vehicle location if available
-        if (response.currentLocation) {
-          const vehicleLoc = {
-            lat: response.currentLocation.latitude,
-            lng: response.currentLocation.longitude
-          };
-          console.log('📍 Setting vehicle location:', vehicleLoc);
-          this.vehicleLocation.set(vehicleLoc);
-        } else {
-          console.warn('⚠️ No current location in response');
-        }
-
-        // Initialize map after data is loaded
-        setTimeout(() => this.initMap(), 100);
-      },
-      error: (err) => {
-        console.error('❌ Failed to load ride data:', err);
-        // Initialize map with default/mock data as fallback
-        setTimeout(() => this.initMap(), 100);
-      }
-    });
-  }
-
-  /**
-   * Load full ride details for finished rides
-   */
-  private loadFinishedRideDetails(rideId: number, trackingResponse: any): void {
-    this.rideService.getDriverRideDetail(rideId).subscribe({
-      next: (detail) => {
-        const rideDetails = {
-          id: detail.id,
-          pickup: detail.pickupAddress,
-          destination: detail.dropoffAddress,
-          pickupCoords: [detail.pickupLatitude, detail.pickupLongitude],
-          destinationCoords: [detail.dropoffLatitude, detail.dropoffLongitude],
-          driverName: detail.driverName,
-          vehicleType: detail.vehicleModel,
-          licensePlate: detail.vehicleLicensePlate,
-          totalDistance: detail.distance,
-          estimatedDuration: detail.duration,
-          passengers: [{
-            id: 0,
-            name: detail.passengerName,
-            phone: detail.passengerPhone,
-            email: ''
-          }]
-        };
-
-        this.rideDetails.set(rideDetails);
-
-        // For finished rides, set remaining values to 0
-        this.remainingDistance.set(0);
-        this.estimatedArrival.set(0);
-
-        // Use current location from tracking response if available
-        if (trackingResponse.currentLocation) {
-          this.vehicleLocation.set({
-            lat: trackingResponse.currentLocation.latitude,
-            lng: trackingResponse.currentLocation.longitude
-          });
-        }
-
-        // Initialize map
-        setTimeout(() => this.initMap(), 100);
-      },
-      error: (err) => {
-        console.error('❌ Failed to load finished ride details:', err);
-        setTimeout(() => this.initMap(), 100);
-      }
-    });
-  }
-
   ngOnDestroy(): void {
     this.stopTracking();
-
-    if (this.routeControl && this.map) {
-      this.map.removeControl(this.routeControl);
-      this.routeControl = null;
-    }
-    if (this.map) {
-      this.map.remove();
-      this.map = null;
+    const map = this.mapService.getMap();
+    if (map && this.routingControl) {
+      map.removeControl(this.routingControl);
     }
   }
 
-  private initMap(): void {
-    const mapElement = document.getElementById('trackingMap');
-    if (!mapElement) return;
+  private loadRideData(id: number): void {
+    this.rideService.trackRide(id).subscribe(res => {
+
+      const route = res.route;
+
+      if (res.currentLocation?.vehicleId) {
+        this.vehicleId = res.currentLocation.vehicleId;
+      }
+
+      this.rideDetails.set({
+        id: res.rideId,
+        pickup: route?.pickupAddress || '',
+        destination: route?.destinationAddress || '',
+        pickupCoords: route
+          ? [route.pickupLatitude, route.pickupLongitude]
+          : [45.26,19.83],
+        destinationCoords: route
+          ? [route.destinationLatitude, route.destinationLongitude]
+          : [45.25,19.84],
+        driverName: res.driver
+          ? `${res.driver.firstName} ${res.driver.lastName}`
+          : '',
+        vehicleType: res.currentLocation?.model || '',
+        licensePlate: res.currentLocation?.plateNum || '',
+        totalDistance: route?.distanceKm || 0,
+        estimatedDuration: route
+          ? Math.round(route.estimatedTimeSeconds / 60)
+          : 0,
+        passengers: []
+      });
+
+      this.remainingDistance.set(Number(route?.distanceKm?.toFixed(2) ?? 0));
+      this.estimatedArrival.set(res.estimatedTimeMinutes || 0);
+
+      if (res.currentLocation) {
+        this.vehicleLocation.set({
+          lat: res.currentLocation.latitude,
+          lng: res.currentLocation.longitude
+        });
+      }
+
+      setTimeout(() => this.drawOsrmRoute(), 100);
+    });
+  }
+
+  private drawOsrmRoute(): void {
+    const map = this.mapService.getMap();
+    if (!map) return;
 
     const ride = this.rideDetails();
+    const pickup = L.latLng(ride.pickupCoords[0], ride.pickupCoords[1]);
+    const dest = L.latLng(ride.destinationCoords[0], ride.destinationCoords[1]);
 
-    // Calculate center point
-    const centerLat = (ride.pickupCoords[0] + ride.destinationCoords[0]) / 2;
-    const centerLng = (ride.pickupCoords[1] + ride.destinationCoords[1]) / 2;
+    if (this.routingControl) {
+      map.removeControl(this.routingControl);
+    }
 
-    this.map = L.map('trackingMap').setView([centerLat, centerLng], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(this.map);
-
-    // Create custom icons
-    const pickupIcon = L.divIcon({
-      className: 'custom-marker-icon',
-      html: `<div style="background: #00acc1; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
-      iconSize: [22, 22],
-      iconAnchor: [11, 11]
-    });
-
-    const destinationIcon = L.divIcon({
-      className: 'custom-marker-icon',
-      html: `<div style="background: #ec407a; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
-      iconSize: [22, 22],
-      iconAnchor: [11, 11]
-    });
-
-    // Create vehicle icon
-    const vehicleIcon = this.createVehicleIcon(false);
-
-    // Create routing control
-    this.routeControl = L.Routing.control({
-      waypoints: [
-        L.latLng(ride.pickupCoords[0], ride.pickupCoords[1]),
-        L.latLng(ride.destinationCoords[0], ride.destinationCoords[1])
-      ],
+    this.routingControl = L.Routing.control({
+      waypoints: [pickup, dest],
       router: L.Routing.osrmv1({
         serviceUrl: 'https://router.project-osrm.org/route/v1'
       }),
-      lineOptions: {
-        styles: [{ color: '#00acc1', opacity: 0.7, weight: 4 }],
-        extendToWaypoints: false,
-        missingRouteTolerance: 0
-      },
       show: false,
       addWaypoints: false,
       fitSelectedRoutes: true,
-      createMarker: (i: number, waypoint: any, n: number) => {
-        const icon = i === 0 ? pickupIcon : destinationIcon;
-        return L.marker(waypoint.latLng, { icon });
+      createMarker: () => null,
+      lineOptions: {
+        styles: [{ color: '#00acc1', weight: 5 }]
       }
-    } as any).addTo(this.map);
+    } as any).addTo(map);
 
-    // Extract route points once routing is complete
-    this.routeControl.on('routesfound', (e: any) => {
-      const routes = e.routes;
-      if (routes && routes.length > 0) {
-        const route = routes[0];
-        this.routePoints = route.coordinates || [];
+    this.routingControl.on('routesfound', (e: any) => {
+      const coords = e.routes[0].coordinates;
+      this.routePoints = coords.map((c: any) => L.latLng(c.lat, c.lng));
+      this.currentPointIndex = 0;
 
-        // Start vehicle at the first point
-        if (this.routePoints.length > 0) {
-          const startPoint = this.routePoints[0];
-          this.vehicleLocation.set({
-            lat: startPoint.lat,
-            lng: startPoint.lng,
-          });
+      this.mapService.drawRoute(this.routePoints);
 
-          // Update backend with initial position
-          this.updateBackendVehicleLocation(startPoint.lat, startPoint.lng);
-
-          // Add vehicle marker at starting position
-          this.vehicleMarker = L.marker([startPoint.lat, startPoint.lng], {
-            icon: vehicleIcon,
-            zIndexOffset: 1000
-          }).addTo(this.map!);
-
-          this.vehicleMarker.bindPopup(`<b>Driver Location</b><br>${ride.driverName}`);
-
-          // Start tracking after route is loaded
-          this.startTracking();
-        }
+      if (this.routePoints.length) {
+        const start = this.routePoints[0];
+        this.vehicleLocation.set({ lat: start.lat, lng: start.lng });
+        this.updateVehicleOnMap(start.lat, start.lng);
+        this.startTracking();
       }
-    });
-  }
-
-  private createVehicleIcon(isPanic: boolean): L.DivIcon {
-    const bgColor = isPanic ? '#dc2626' : '#10b981';
-    const pulseAnimation = isPanic ? 'animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;' : '';
-
-    return L.divIcon({
-      className: 'vehicle-marker',
-      html: `
-        <style>
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-          }
-        </style>
-        <div style="background: ${bgColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; ${pulseAnimation}">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="12" height="12">
-            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-          </svg>
-        </div>`,
-      iconSize: [26, 26],
-      iconAnchor: [13, 13]
     });
   }
 
   private startTracking(): void {
-    // Simulate vehicle movement every 3 seconds
-    this.updateInterval = setInterval(() => {
-      this.updateVehiclePosition();
-    }, 3000);
+    this.stopTracking();
+    this.updateInterval = setInterval(
+      () => this.updateVehiclePosition(),
+      2000
+    );
   }
 
   private stopTracking(): void {
@@ -377,206 +230,129 @@ export class DriverRideTrackingComponent implements OnInit, OnDestroy {
   }
 
   private updateVehiclePosition(): void {
-    if (this.routePoints.length === 0) return;
+    if (!this.routePoints.length) return;
 
-    // Move to next point in the route
-    this.currentPointIndex++;
+    this.currentPointIndex += 5;
 
-    // Skip points for faster movement
-    const pointsToSkip = 15;
-    this.currentPointIndex = Math.min(
-      this.currentPointIndex + pointsToSkip,
-      this.routePoints.length - 1
+    if (this.currentPointIndex >= this.routePoints.length) {
+      this.currentPointIndex = this.routePoints.length - 1;
+    }
+
+    const next = this.routePoints[this.currentPointIndex];
+
+    this.vehicleLocation.set({
+      lat: next.lat,
+      lng: next.lng
+    });
+
+    this.updateVehicleOnMap(next.lat, next.lng);
+
+    const ride = this.rideDetails();
+    const progress = this.currentPointIndex / (this.routePoints.length - 1);
+
+    this.remainingDistance.set(
+      Number((ride.totalDistance * (1 - progress)).toFixed(2))
+    );
+
+    this.estimatedArrival.set(
+      Math.max(0, Math.ceil(ride.estimatedDuration * (1 - progress)))
     );
 
     if (this.currentPointIndex >= this.routePoints.length - 1) {
-      // Reached destination
-      const finalPoint = this.routePoints[this.routePoints.length - 1];
-      
-      // Update backend with final position
-      this.updateBackendVehicleLocation(finalPoint.lat, finalPoint.lng);
-      
       this.stopTracking();
-      this.remainingDistance.set(0);
-      this.estimatedArrival.set(0);
-
-      // Show completion modal
       this.showRideCompletionModal();
-      return;
     }
-
-    const nextPoint = this.routePoints[this.currentPointIndex];
-
-    // Update position
-    this.vehicleLocation.set({
-      lat: nextPoint.lat,
-      lng: nextPoint.lng
-    });
-
-    // Update backend with new position
-    this.updateBackendVehicleLocation(nextPoint.lat, nextPoint.lng);
-
-    // Update marker on map
-    if (this.vehicleMarker) {
-      this.vehicleMarker.setLatLng([nextPoint.lat, nextPoint.lng]);
-    }
-
-    // Calculate remaining distance based on progress
-    const ride = this.rideDetails();
-    const progress = this.currentPointIndex / this.routePoints.length;
-    const remainingDist = ride.totalDistance * (1 - progress);
-    const remainingTime = ride.estimatedDuration * (1 - progress);
-
-    this.remainingDistance.set(Math.max(0, parseFloat(remainingDist.toFixed(2))));
-    this.estimatedArrival.set(Math.max(0, Math.ceil(remainingTime)));
   }
 
-  /**
-   * Updates vehicle location in backend database
-   */
-  private updateBackendVehicleLocation(latitude: number, longitude: number): void {
-    if (!this.vehicleId) {
-      console.warn('⚠️ No vehicle ID available, skipping backend update');
-      return;
-    }
+    private updateVehicleOnMap(lat: number, lng: number): void {
+    const ride = this.rideDetails();
 
-    this.vehicleService.updateVehicleLocation(this.vehicleId, { latitude, longitude }).subscribe({
-      next: (response) => {
-        console.log(`✅ Vehicle ${this.vehicleId} location updated:`, { latitude, longitude });
-      },
-      error: (err) => {
-        console.error('❌ Failed to update vehicle location:', err);
-        // Don't stop tracking if backend update fails
+    const vehicle: Vehicle = {
+      vehicleId: this.vehicleId ?? 0,
+      model: ride.vehicleType || 'STANDARD',
+      plateNum: ride.licensePlate || '',
+      latitude: lat,
+      longitude: lng,
+      available: false,
+      specification: {
+        type: 'STANDARD',
+        seats: 4,
+        babyTransport: false,
+        petTransport: false
       }
-    });
+    };
+
+    this.vehiclesForMap.set([vehicle]);
+
+    this.mapService.updateVehicleMarkers([vehicle]);
+
+    if (this.vehicleId) {
+      this.vehicleService.updateVehicleLocation(this.vehicleId, {
+        latitude: lat,
+        longitude: lng
+      }).subscribe();
+    }
   }
 
-  /**
-   * Shows the ride completion modal with ride details and sends completion to backend
-   */
   private showRideCompletionModal(): void {
-    if (!this.rideId) {
-      console.error('No ride ID available');
-      return;
-    }
+    if (!this.rideId) return;
 
     const ride = this.rideDetails();
+    const pricing = this.pricing();
 
-    // Calculate final price (you can adjust this logic based on your pricing model)
-    const basePrice = 150; // Base price in RSD
-    const pricePerKm = 80;
-    const finalPrice = basePrice + (ride.totalDistance * pricePerKm);
+    let base = 150;
+    let perKm = 80;
 
-    // Set modal data
+    if (pricing) {
+      base = pricing.standardPrice;
+      perKm = pricing.kmPrice;
+    }
+
+    const final = base + ride.totalDistance * perKm;
+
     this.completedRideInfo.set({
       distance: ride.totalDistance,
       duration: ride.estimatedDuration,
-      price: Math.round(finalPrice)
+      price: Math.round(final)
     });
 
-    // Call backend to complete the ride
-    this.rideService.completeRide(this.rideId).subscribe({
-      next: () => {
-        console.log('✅ Ride completed successfully on backend');
-        this.showCompletionModal.set(true);
-      },
-      error: (err) => {
-        console.error('❌ Failed to complete ride on backend:', err);
-        // Still show the modal even if backend call fails
-        this.showCompletionModal.set(true);
-      }
-    });
+    this.rideService.completeRide(this.rideId)
+      .subscribe(() => this.showCompletionModal.set(true));
   }
 
-  /**
-   * Closes the completion modal
-   */
-  closeCompletionModal(): void {
-    this.showCompletionModal.set(false);
-  }
-
-  /**
-   * Closes modal and navigates to home
-   */
-  closeAndNavigateHome(): void {
-    this.closeCompletionModal();
-    this.handleBack();
-  }
-
-  /**
-   * Triggers panic alert - sends emergency notification to central dispatch
-   * and updates vehicle marker to red with pulsing animation
-   */
   triggerPanic(): void {
-    if (this.panicTriggered()) {
-      return; // Already triggered
-    }
+    if (this.panicTriggered()) return;
 
-    const panicRequest: PanicRideRequest = {
-      vehicleLocation: {
-        lat: this.vehicleLocation().lat,
-        lng: this.vehicleLocation().lng
-      }
-    };
-
-    this.rideService.ridePanic(panicRequest).subscribe({
-      next: () => {
-        this.panicTriggered.set(true);
-        this.stopTracking();
-        this.updateVehicleMarker();
-        console.log('🚨 Panic request triggered!');
-      },
-      error: (err) => {
-        console.error(err);
-      }
+    this.rideService.ridePanic({
+      vehicleLocation: this.vehicleLocation()
+    }).subscribe(() => {
+      this.panicTriggered.set(true);
+      this.stopTracking();
     });
   }
-
-  // Update vehicle marker to emergency state (red with pulse)
-  private updateVehicleMarker() {
-    if (this.vehicleMarker && this.map) {
-      const panicIcon = this.createVehicleIcon(true);
-      this.vehicleMarker.setIcon(panicIcon);
-
-      // Update popup to show emergency state
-      this.vehicleMarker.setPopupContent(
-        `<b style="color: #dc2626;">⚠️ EMERGENCY ALERT</b><br>${this.rideDetails().driverName}`
-      );
-      this.vehicleMarker.openPopup();
-    }
-  }
-
-  stopTriggered = signal<boolean>(false);
 
   triggerStop(): void {
-    if (this.stopTriggered()) {
-      return; // stop already triggered
-    }
+    if (this.stopTriggered()) return;
 
-    const stopRideRequest: StopRideRequest = {
+    this.rideService.stopRide({
       location: this.vehicleLocation()
-    };
-
-    this.rideService.stopRide(stopRideRequest).subscribe({
-      next: (response) => {
-        this.handleStop(response);
-        this.handleBack();
-      },
-      error: (err) => {
-        console.error("Failed stopping the ride: ", err);
-      }
+    }).subscribe((res: StopRideResponse) => {
+      this.stopTriggered.set(true);
+      this.stopTracking();
+      console.log(res.updatedPrice);
     });
-  }
-
-  private handleStop(response: StopRideResponse): void {
-    this.stopTriggered.set(true);
-    this.stopTracking();
-    this.estimatedArrival.set(0);
-    this.remainingDistance.set(0);
-    console.log('Successfully stopped the ride. Updated price: ', response.updatedPrice);
   }
 
   handleBack(): void {
     this.router.navigate(['/driver/home']);
+  }
+
+  closeCompletionModal(): void {
+    this.showCompletionModal.set(false);
+  }
+
+  closeAndNavigateHome(): void {
+    this.closeCompletionModal();
+    this.handleBack();
   }
 }

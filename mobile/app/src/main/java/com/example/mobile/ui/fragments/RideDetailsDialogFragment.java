@@ -191,6 +191,8 @@ public class RideDetailsDialogFragment extends DialogFragment {
         view.findViewById(R.id.btnRateRide).setVisibility(View.GONE);
         view.findViewById(R.id.vehicleContainer).setVisibility(View.GONE);
 
+        setupDriverTrackRideButton(view, dto);
+
         setupMap(view,
                 dto.getPickupLatitude(),  dto.getPickupLongitude(),
                 dto.getDropoffLatitude(), dto.getDropoffLongitude(),
@@ -223,14 +225,36 @@ public class RideDetailsDialogFragment extends DialogFragment {
         }
 
         bindRatings(view, "Your Rating", dto.getDriverRating(), dto.getVehicleRating(), dto.getRatingComment());
-
         view.findViewById(R.id.btnRateRide).setVisibility(View.GONE);
+
+        setupTrackRideButton(view, dto);
 
         setupMap(view,
                 dto.getPickupLatitude(),  dto.getPickupLongitude(),
                 dto.getDropoffLatitude(), dto.getDropoffLongitude(),
                 safe(dto.getPickupAddress()),
                 safe(dto.getDropoffAddress()));
+    }
+
+    private void setupDriverTrackRideButton(View view, DriverRideDetailResponse dto) {
+        MaterialButton btnTrack = view.findViewById(R.id.btnTrackRide);
+
+        if ("ONGOING".equalsIgnoreCase(dto.getStatus())) {
+            btnTrack.setVisibility(View.VISIBLE);
+            btnTrack.setOnClickListener(v -> {
+                dismiss();
+                Bundle args = new Bundle();
+                args.putLong("ride_id", dto.getId());
+
+                NavController navController =
+                        androidx.navigation.Navigation.findNavController(
+                                requireActivity(), R.id.nav_host_fragment);
+
+                navController.navigate(R.id.driverRideTrackingFragment, args);
+            });
+        } else {
+            btnTrack.setVisibility(View.GONE);
+        }
     }
 
     private void setRoute(View view, String pickup, String dropoff) {
@@ -308,6 +332,25 @@ public class RideDetailsDialogFragment extends DialogFragment {
         args.putString("driver_name", driverName);
 
         navController.navigate(R.id.action_to_rideRatingFragment, args);
+    }
+
+    private void setupTrackRideButton(View view, PassengerRideDetailResponse dto) {
+        MaterialButton btnTrack = view.findViewById(R.id.btnTrackRide);
+
+        if ("ONGOING".equalsIgnoreCase(dto.getStatus())) {
+            btnTrack.setVisibility(View.VISIBLE);
+            btnTrack.setOnClickListener(v -> {
+                dismiss();
+                Bundle args = new Bundle();
+                args.putLong("ride_id", dto.getId());
+
+                NavController navController = androidx.navigation.Navigation.findNavController(
+                        requireActivity(), R.id.nav_host_fragment);
+                navController.navigate(R.id.passengerRideTrackingFragment, args);
+            });
+        } else {
+            btnTrack.setVisibility(View.GONE);
+        }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
