@@ -2,9 +2,9 @@ import { Component, computed, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { 
-  heroBell, 
-  heroXMark, 
+import {
+  heroBell,
+  heroXMark,
   heroClock,
   heroXCircle,
   heroUserPlus,
@@ -41,11 +41,11 @@ interface DisplayNotification {
   standalone: true,
   imports: [CommonModule, NgIconComponent],
   providers: [
-    provideIcons({ 
-      heroBell, 
-      heroXMark, 
-      heroClock, 
-      heroXCircle, 
+    provideIcons({
+      heroBell,
+      heroXMark,
+      heroClock,
+      heroXCircle,
       heroUserPlus,
       heroCheckCircle,
       heroExclamationTriangle,
@@ -67,7 +67,7 @@ export class DriverNotifications implements OnInit, OnDestroy {
   showUnreadOnly = signal<boolean>(false);
   notifications = signal<DisplayNotification[]>([]);
   showClearAllDialog = signal<boolean>(false);
-  
+
   private notificationsSubscription?: Subscription;
   private unreadCountSubscription?: Subscription;
 
@@ -86,11 +86,11 @@ export class DriverNotifications implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const userEmail = this.getUserEmail();
-    
+
     this.loadNotifications();
-    
-    this.notificationService.connectWebSocket(userEmail);
-    
+
+    this.notificationService.subscribeToNotifications(userEmail);
+
     // Subscribe to notification updates
     this.notificationsSubscription = this.notificationService.notifications$.subscribe(
       (notifications) => {
@@ -112,7 +112,7 @@ export class DriverNotifications implements OnInit, OnDestroy {
     // Clean up subscriptions and disconnect WebSocket
     this.notificationsSubscription?.unsubscribe();
     this.unreadCountSubscription?.unsubscribe();
-    this.notificationService.disconnectWebSocket();
+    this.notificationService.unsubscribe();
   }
 
   private getUserEmail(): string {
@@ -256,7 +256,7 @@ export class DriverNotifications implements OnInit, OnDestroy {
 
   handleAction(notification: DisplayNotification): void {
     this.closeModal();
-    
+
     if (!notification.actionUrl) {
       return;
     }
@@ -267,12 +267,12 @@ export class DriverNotifications implements OnInit, OnDestroy {
         // Navigate directly to support chat
         this.router.navigate([notification.actionUrl]);
         break;
-        
+
       case 'rating_reminder':
         // Navigate to rating page (if applicable for drivers)
         this.router.navigate([notification.actionUrl]);
         break;
-        
+
       case 'ride_starting':
       case 'ride_reminder':
       case 'ride_started':
@@ -280,7 +280,7 @@ export class DriverNotifications implements OnInit, OnDestroy {
         // Navigate to ride tracking
         this.router.navigate([notification.actionUrl]);
         break;
-        
+
       case 'ride_completed':
       case 'ride_cancelled':
       case 'rating_received':
@@ -299,7 +299,7 @@ export class DriverNotifications implements OnInit, OnDestroy {
           });
         }
         break;
-        
+
       default:
         // For all other notifications, try to parse the actionUrl
         if (notification.actionUrl.includes('?')) {
@@ -447,7 +447,7 @@ export class DriverNotifications implements OnInit, OnDestroy {
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    
+
     return timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
