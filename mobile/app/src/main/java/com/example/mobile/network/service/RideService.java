@@ -7,6 +7,7 @@ import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.PassengerRideHistoryResponse;
 import com.example.mobile.dto.ride.RideRatingRequest;
 import com.example.mobile.dto.ride.RideRatingStatusResponse;
+import com.example.mobile.dto.ride.RideTrackingResponse;
 
 import java.util.List;
 
@@ -61,4 +62,7 @@ public interface RideService {
 
     @PUT("api/v1/rides/cancel")
     Call<ResponseBody> cancelRide(@Body CancellationRequest request);
+
+    @GET("api/v1/rides/ongoing")
+    Call<List<RideTrackingResponse>> getAllOngoingRides();
 }
