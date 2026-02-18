@@ -1,4 +1,4 @@
-<div class="overflow-y-auto">
+<div class="overflow-y-auto p-1">
     <form class="flex flex-col gap-12" (submit)="rideSubmit($event)">
         <div>
             <div class="flex items-center gap-3 text-base-700 mb-5">
@@ -35,8 +35,15 @@
             <app-ride-trackers-selector />
         </div>
 
-        <button id="book-a-ride-btn" type="submit" class="bg-light-700 mx-auto px-10 py-3 rounded-xl text-white cursor-pointer">
-            Book a Ride
-        </button>
+                <div class="flex flex-col items-center gap-3">
+            <button
+                (click)="showRoute()"
+                id="preview-a-ride-btn" type="button" class="w-full bg-dark-300 hover:bg-dark-600 transition-all py-3 rounded-xl text-white cursor-pointer">
+                Preview a Ride
+            </button>
+            <button id="book-a-ride-btn" type="submit" class="w-full bg-deep-300 hover:bg-deep-600 transition-all py-3 rounded-xl text-white cursor-pointer">
+                Book a Ride
+            </button>
+        </div>
     </form>
 </div>

@@ -131,3 +131,29 @@ interface PassengerRideDetails {
   dropoffLat?: number;
   dropoffLng?: number;
 }
+
+
+export interface RideAssignmentResponse {
+  id: number;
+  price: number;
+  status: RideStatus;
+
+  passengerFirstName: string;
+  passengerLastName: string;
+  passengerEmail: string;
+  passengerPhoneNum: string;
+
+  driverFirstName: string | null;
+  driverLastName: string | null;
+  driverEmail: string | null;
+  driverPhoneNum: string | null;
+
+  vehiclePlateNum: string | null;
+  vehicleModel: string | null;
+
+  routeGeometry: string;
+  distanceKm: number;
+  estimatedTimeSeconds: number;
+  pickupAddress: string;
+  destinationAddress: string;
+}

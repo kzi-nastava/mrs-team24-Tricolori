@@ -15,7 +15,7 @@
         </div>
         <div class="flex flex-col">
           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Pickup Point</span>
-          <span class="text-sm font-bold text-slate-800 leading-tight">{{ activeRide().pickup }}</span>
+          <span class="text-sm font-bold text-slate-800 leading-tight">{{ activeRide()?.pickupAddress }}</span>
         </div>
       </div>
 
@@ -27,7 +27,7 @@
         </div>
         <div class="flex flex-col">
           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Destination</span>
-          <span class="text-sm font-bold text-slate-800 leading-tight">{{ activeRide().destination }}</span>
+          <span class="text-sm font-bold text-slate-800 leading-tight">{{ activeRide()?.destinationAddress }}</span>
         </div>
       </div>
     </div>
@@ -39,26 +39,13 @@
         <ng-icon name="heroUser" class="w-6 h-6"></ng-icon>
       </div>
       <div class="flex flex-col">
-        <span class="text-sm font-bold text-slate-800">{{ activeRide().driverName }}</span>
-        <span class="text-[10px] text-slate-500 font-medium">{{ activeRide().carModel }} • {{ activeRide().plateNum }}</span>
+        <span class="text-sm font-bold text-slate-800">{{ activeRide()?.driverFirstName }} {{ activeRide()?.driverLastName }}</span>
+        <span class="text-[10px] text-slate-500 font-medium">{{ activeRide()?.vehicleModel }} • {{ activeRide()?.vehiclePlateNum }}</span>
       </div>
     </div>
     <div class="text-right">
       <span class="block text-[10px] font-bold text-slate-400 uppercase">Estimated Price</span>
-      <span class="text-sm font-black text-emerald-600">{{ activeRide().price }} RSD</span>
-    </div>
-  </div>
-
-  <div class="bg-cyan-50 border border-cyan-100 rounded-lg p-5 flex items-center gap-4 mb-auto">
-    <div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-cyan-600 shadow-sm border border-cyan-100">
-      <ng-icon name="heroClock" class="w-6 h-6"></ng-icon>
-    </div>
-    <div class="flex flex-col">
-      <span class="text-[10px] text-cyan-700 font-bold uppercase tracking-widest">Arriving in</span>
-      <div class="flex items-baseline gap-1">
-        <span class="text-2xl font-black text-cyan-900 leading-none">{{ activeRide().eta }}</span>
-        <span class="text-xs font-bold text-cyan-700 uppercase">min</span>
-      </div>
+      <span class="text-sm font-black text-emerald-600">{{ activeRide()?.price | number:'1.2-2' }} RSD</span>
     </div>
   </div>
 

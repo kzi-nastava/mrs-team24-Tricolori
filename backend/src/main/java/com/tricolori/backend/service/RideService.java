@@ -525,7 +525,7 @@ public class RideService {
     }
 
     @Transactional
-    public void rideOrder(Person passenger, OrderRequest request) {
+    public Long rideOrder(Person passenger, OrderRequest request) {
         RidePreferences preferences = request.getPreferences();
 
         // Extracting and creating route:
@@ -609,7 +609,19 @@ public class RideService {
                 log.info("Sent ride rejection notification to {}", email);
                 log.info("Reason: {}", e.getMessage());
             }
+
+            // Rethrow so global exception handler catches...
+            throw e;
         }
+
+        return ride.getId();
+    }
+
+    public RideAssignmentResponse getAssignmentResponse(Long rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride with ID " + rideId + " not found"));
+
+        return rideMapper.toAssignmentResponse(ride);
     }
 
     // ================= helpers =================

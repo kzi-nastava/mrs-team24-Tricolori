@@ -20,6 +20,11 @@ import java.util.Optional;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride, Long> {
+    List<Ride> findAllByStatusInAndCreatedAtBetween(
+        List<RideStatus> statuses,
+        LocalDateTime start,
+        LocalDateTime end
+    );
 
     @Query("SELECT r FROM Ride r " +
            "JOIN FETCH r.route " +

@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   heroMapPin,
@@ -11,35 +11,52 @@ import {
 } from '@ng-icons/heroicons/outline';
 import { CancelRideModalComponent } from '../../../driver/components/cancel-ride-modal/cancel-ride-modal';
 import { RideService } from '../../../../../services/ride.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {ToastService} from '../../../../../services/toast.service';
+import { RideAssignmentResponse } from '../../../../../model/ride';
 
 @Component({
   selector: 'app-ride-wait',
   standalone: true,
-  imports: [CommonModule, NgIcon, CancelRideModalComponent],
+  imports: [CommonModule, NgIcon, CancelRideModalComponent, DecimalPipe],
   templateUrl: './ride-wait.html',
   viewProviders: [provideIcons({
     heroMapPin, heroFlag, heroClock, heroXMark, heroUser, heroShieldCheck
   })]
 })
-export class RideWait {
+export class RideWait implements OnInit {
   private rideService = inject(RideService);
   private router = inject(Router);
   private toastService = inject(ToastService);
+  private route = inject(ActivatedRoute);
 
   showCancelModal = signal(false);
 
-  activeRide = signal({
-    id: 123,
-    pickup: 'Kraljev park, Novi Sad',
-    destination: 'Jevrejska 23b, Novi Sad',
-    eta: 4,
-    driverName: 'Marko Marković',
-    carModel: 'Skoda Octavia',
-    plateNum: 'NS-123-TX',
-    price: 450
-  });
+  activeRide = signal<RideAssignmentResponse | undefined>(undefined);
+
+  ngOnInit(): void {
+    const rideId = this.route.snapshot.paramMap.get('id');
+
+    if (rideId) {
+      this.loadRideData(+rideId);
+    } else {
+      this.toastService.show('Invalid ride ID', 'error');
+      this.router.navigate(['/passenger/home']);
+    }
+  }
+
+  private loadRideData(id: number) {
+    this.rideService.getRideDetails(id).subscribe({
+      next: (res: RideAssignmentResponse) => {
+        this.activeRide.set(res);
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'Could not load ride details';
+        this.toastService.show(msg, 'error');
+        this.router.navigate(['/passenger/home']);
+      }
+    });
+  }
 
   handleCancel() {
     this.showCancelModal.set(true);
