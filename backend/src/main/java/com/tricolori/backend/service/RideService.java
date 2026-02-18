@@ -573,13 +573,20 @@ public class RideService {
                     .toList();
 
             // Send notifications to registered passengers (skip organizer)
+            String scheduledTime;
+            if(ride.getScheduledFor() == null) {
+                scheduledTime = LocalDateTime.now().toString();
+            } else {
+                scheduledTime = ride.getScheduledFor().toString();
+            }
+
             for (Passenger p : trackingPassengers) {
                 if (p.getEmail().equals(passenger.getEmail()))
                     continue; // skip main passenger (organizer)
 
                 notificationService.sendAddedToRideNotification(
                         p.getEmail(), ride.getId(), organizerName, p.getFirstName(), ride.getRoute().getPickupStop().getAddress(),
-                        ride.getRoute().getDestinationStop().getAddress(), ride.getScheduledFor().toString()
+                        ride.getRoute().getDestinationStop().getAddress(), scheduledTime
                 );
             }
 
@@ -597,7 +604,7 @@ public class RideService {
                     // Send notification
                     notificationService.sendAddedToRideNotification(
                             email, ride.getId(), organizerName, firstName, ride.getRoute().getPickupStop().getAddress(),
-                            ride.getRoute().getDestinationStop().getAddress(), ride.getScheduledFor().toString()
+                            ride.getRoute().getDestinationStop().getAddress(), scheduledTime
                     );
                 }
             }

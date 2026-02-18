@@ -126,7 +126,7 @@ export class RideBooking implements OnInit, AfterViewInit {
 
     const route = routeComp.getRoute();
     const preferences = prefComp.getPreferences();
-    const trackers = trackComp.trackersForm.getRawValue().trackers;
+    const trackers = trackComp.getTrackers();
 
     // 4. Pakovanje za OrderRequest (Java Record struktura)
     const orderRequest = {
