@@ -57,10 +57,10 @@ public class RateRideThroughRideHistoryTest {
     Object[][] ratingData() {
         return new Object[][] {
                 {
-                        "passenger@test.com",
+                        "passenger.test@gmail.com",
                         "Password123",
-                        "11", "02", "2026",
                         "15", "02", "2026",
+                        "20", "02", "2026",
                         0,
                         5,
                         4,
@@ -73,9 +73,9 @@ public class RateRideThroughRideHistoryTest {
     Object[][] minimumRatingData() {
         return new Object[][] {
                 {
-                        "passenger@test.com",
+                        "passenger.test@gmail.com",
                         "Password123",
-                        0,
+                        1,
                         1,
                         1,
                         null
@@ -87,10 +87,10 @@ public class RateRideThroughRideHistoryTest {
     Object[][] expiredRatingData() {
         return new Object[][] {
                 {
-                        "passenger@test.com",
+                        "passenger.test@gmail.com",
                         "Password123",
-                        "01", "01", "2026",
-                        "10", "01", "2026",
+                        "01", "02", "2026",
+                        "10", "02", "2026",
                         0
                 }
         };
