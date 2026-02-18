@@ -244,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem home = menu.findItem(R.id.homeFragment);
         MenuItem history = menu.findItem(R.id.rideHistoryFragment);
         // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
-//        MenuItem supervise = menu.findItem(R.id.rideSupervisorFragment);
+        MenuItem supervise = menu.findItem(R.id.rideSupervisorFragment);
 //        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
         MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
 //        MenuItem support = menu.findItem(R.id.supportFragment);
@@ -264,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Role-specific items
             if ("ROLE_ADMIN".equals(role)) {
-                // supervise.setVisible(true);
+                 supervise.setVisible(true);
 //                notifications.setVisible(true);
                 pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
                 driverRegistration.setVisible(true);
 
             } else if ("ROLE_DRIVER".equals(role)) {
-//                supervise.setVisible(false);
+                supervise.setVisible(false);
 //                notifications.setVisible(false);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
                 driverRegistration.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
-//                supervise.setVisible(false);
+                supervise.setVisible(false);
 //                notifications.setVisible(true);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
@@ -292,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
             // Not logged in - hide everything
             home.setVisible(false);
             history.setVisible(false);
-//            supervise.setVisible(false);
+            supervise.setVisible(false);
 //            notifications.setVisible(false);
             pricelist.setVisible(false);
 //            support.setVisible(false);

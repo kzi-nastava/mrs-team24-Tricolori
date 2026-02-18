@@ -108,6 +108,12 @@
     </fragment>
 
     <fragment
+        android:id="@+id/adminSuperviseFragment"
+        android:name="com.example.mobile.ui.fragments.AdminSuperviseFragment"
+        android:label="Ride Supervision"
+        tools:layout="@layout/fragment_admin_supervise" />
+
+    <fragment
         android:id="@+id/passwordSetupFragment"
         android:name="com.example.mobile.ui.fragments.PasswordSetupFragment"
         android:label="Password Setup"
