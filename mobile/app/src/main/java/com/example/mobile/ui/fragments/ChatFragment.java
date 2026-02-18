@@ -124,7 +124,7 @@ public class ChatFragment extends Fragment {
                 adapter.addMessage(message);
                 scrollToBottom();
             }
-        }, requireContext());
+        });
     }
 
     private void sendMessage() {

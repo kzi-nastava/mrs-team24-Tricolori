@@ -1,7 +1,5 @@
 package com.example.mobile.network.service;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -22,6 +20,7 @@ public class StompChatService {
 
     private static final String TAG = "StompChatService";
     private static final String WS_URL = "ws://192.168.1.7:8080/ws";
+    private static final int RECONNECT_DELAY_MS = 5000;
 
     private WebSocket webSocket;
     private final Gson gson = new Gson();
@@ -30,7 +29,7 @@ public class StompChatService {
     private long subscribedUserId;
     private MessageListener messageListener;
     private boolean connected = false;
-    private String jwtToken;
+    private boolean intentionalDisconnect = false;
 
     private static final String STOMP_DISCONNECT = "DISCONNECT\n\n\u0000";
 
@@ -38,13 +37,15 @@ public class StompChatService {
         void onMessageReceived(ChatMessageDto message);
     }
 
-    public void connect(long userId, MessageListener listener, Context context) {
+    public void connect(long userId, MessageListener listener) {
         this.subscribedUserId = userId;
-        this.messageListener  = listener;
+        this.messageListener = listener;
+        this.intentionalDisconnect = false;
 
-        SharedPreferences prefs = context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        jwtToken = prefs.getString("jwt_token", null);
+        openWebSocket();
+    }
 
+    private void openWebSocket() {
         OkHttpClient client = new OkHttpClient.Builder()
                 .readTimeout(0, TimeUnit.MILLISECONDS)
                 .build();
@@ -59,21 +60,12 @@ public class StompChatService {
             public void onOpen(WebSocket ws, Response response) {
                 Log.d(TAG, "WebSocket opened, sending STOMP CONNECT");
 
-                String connectFrame;
-                if (jwtToken != null) {
-                    connectFrame =
-                            "CONNECT\n" +
-                                    "accept-version:1.1,1.2\n" +
-                                    "heart-beat:4000,4000\n" +
-                                    "Authorization:Bearer " + jwtToken + "\n" +
-                                    "\n\u0000";
-                } else {
-                    connectFrame =
-                            "CONNECT\n" +
-                                    "accept-version:1.1,1.2\n" +
-                                    "heart-beat:4000,4000\n" +
-                                    "\n\u0000";
-                }
+                // No JWT header — auth is handled at HTTP layer
+                String connectFrame =
+                        "CONNECT\n" +
+                                "accept-version:1.1,1.2\n" +
+                                "heart-beat:4000,4000\n" +
+                                "\n\u0000";
 
                 ws.send(connectFrame);
             }
@@ -88,19 +80,33 @@ public class StompChatService {
             public void onFailure(WebSocket ws, Throwable t, Response response) {
                 Log.e(TAG, "WebSocket failure: " + t.getMessage(), t);
                 connected = false;
+                scheduleReconnect();
             }
 
             @Override
             public void onClosed(WebSocket ws, int code, String reason) {
                 Log.w(TAG, "WebSocket closed: " + reason);
                 connected = false;
+                scheduleReconnect();
             }
         });
     }
 
+    private void scheduleReconnect() {
+        if (intentionalDisconnect) return;
+
+        Log.d(TAG, "Scheduling reconnect in " + RECONNECT_DELAY_MS + "ms");
+        mainHandler.postDelayed(() -> {
+            if (!intentionalDisconnect && !connected) {
+                Log.d(TAG, "Attempting reconnect...");
+                openWebSocket();
+            }
+        }, RECONNECT_DELAY_MS);
+    }
+
     private void handleFrame(WebSocket ws, String frame) {
         if (frame.startsWith("CONNECTED")) {
-            Log.d(TAG, "STOMP handshake complete, subscribing");
+            Log.d(TAG, "STOMP handshake complete, subscribing to /topic/chat/" + subscribedUserId);
             connected = true;
             String subscribeFrame =
                     "SUBSCRIBE\n" +
@@ -127,7 +133,6 @@ public class StompChatService {
             Log.e(TAG, "STOMP ERROR frame: " + frame);
 
         } else if (frame.trim().isEmpty() || frame.equals("\n")) {
-            // heartbeat, ignore
             Log.v(TAG, "Heartbeat received");
         }
     }
@@ -154,6 +159,8 @@ public class StompChatService {
     }
 
     public void disconnect() {
+        intentionalDisconnect = true;
+        mainHandler.removeCallbacksAndMessages(null); // cancel any pending reconnects
         if (webSocket != null) {
             if (connected) webSocket.send(STOMP_DISCONNECT);
             webSocket.close(1000, "User navigated away");
