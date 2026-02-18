@@ -66,7 +66,7 @@ describe('RideRatingComponent', () => {
     mockRatingService = jasmine.createSpyObj('RatingService', ['submitRating', 'getRatingStatus']);
     mockRideService = jasmine.createSpyObj('RideService', ['getPassengerRideDetail']);
     mockMapService = jasmine.createSpyObj('MapService', ['drawRoute', 'destroyMap']);
-    mockEstimationService = jasmine.createSpyObj('EstimationService', ['calculateRouteFromAddress']);
+    mockEstimationService = jasmine.createSpyObj('EstimationService', ['calculateRouteFromAddresses']);
 
     await TestBed.configureTestingModule({
       imports: [RideRatingComponent, ReactiveFormsModule],
@@ -87,7 +87,7 @@ describe('RideRatingComponent', () => {
 
     mockRatingService.getRatingStatus.and.returnValue(of(mockRatingStatus));
     mockRideService.getPassengerRideDetail.and.returnValue(of(mockRideDetails as any));
-    mockEstimationService.calculateRouteFromAddress.and.returnValue(of(mockEstimation as any));
+    mockEstimationService.calculateRouteFromAddresses.and.returnValue(of(mockEstimation as any));
 
     fixture = TestBed.createComponent(RideRatingComponent);
     component = fixture.componentInstance;
@@ -146,15 +146,15 @@ describe('RideRatingComponent', () => {
     it('should call map service to draw route when ride details loaded', fakeAsync(() => {
       component.ngOnInit();
       tick();
-      expect(mockEstimationService.calculateRouteFromAddress).toHaveBeenCalledWith(
-        '123 Main St',
-        '456 Oak Ave'
+      expect(mockEstimationService.calculateRouteFromAddresses).toHaveBeenCalledWith(
+        ['123 Main St',
+        '456 Oak Ave']
       );
       expect(mockMapService.drawRoute).toHaveBeenCalledWith(mockEstimation.routeGeometry as any);
     }));
 
     it('should handle route estimation error gracefully', fakeAsync(() => {
-      mockEstimationService.calculateRouteFromAddress.and.returnValue(throwError(() => new Error('Route Error')));
+      mockEstimationService.calculateRouteFromAddresses.and.returnValue(throwError(() => new Error('Route Error')));
       component.ngOnInit();
       tick();
       expect(component.rideDetails()).toEqual(mockRideDetails);
@@ -162,7 +162,7 @@ describe('RideRatingComponent', () => {
     }));
 
     it('should handle null estimation result', fakeAsync(() => {
-      mockEstimationService.calculateRouteFromAddress.and.returnValue(of(null));
+      mockEstimationService.calculateRouteFromAddresses.and.returnValue(of(null));
       component.ngOnInit();
       tick();
       expect(mockMapService.drawRoute).not.toHaveBeenCalled();
