@@ -1,5 +1,6 @@
 package com.example.mobile.ui.fragments.passenger.home.components;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -7,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.ride.InconsistencyReportRequest;
@@ -23,9 +24,18 @@ import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.RideTrackingResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.RideService;
+import com.example.mobile.ui.components.MapComponent;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -41,6 +51,10 @@ public class PassengerRideTrackingFragment extends Fragment {
     private long rideId;
     private Handler trackingHandler;
     private Runnable trackingRunnable;
+
+    private MapView mapView;
+    private MapComponent mapComponent;
+    private Marker vehicleMarker;
 
     private TextView tvEstimatedArrival;
     private TextView tvRemainingDistance;
@@ -64,12 +78,15 @@ public class PassengerRideTrackingFragment extends Fragment {
     private MaterialButton btnPanic;
     private boolean panicTriggered = false;
     private boolean reportFormVisible = false;
-    private boolean reportSubmitted = false;
 
     private double totalDistance = 0;
     private double remainingDistance = 0;
     private double lastVehicleLat = 0;
     private double lastVehicleLng = 0;
+    private double pickupLat = 0;
+    private double pickupLng = 0;
+    private double dropoffLat = 0;
+    private double dropoffLng = 0;
 
     public static PassengerRideTrackingFragment newInstance(long rideId) {
         PassengerRideTrackingFragment f = new PassengerRideTrackingFragment();
@@ -84,6 +101,7 @@ public class PassengerRideTrackingFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        Configuration.getInstance().load(requireContext(), PreferenceManager.getDefaultSharedPreferences(requireContext()));
         return inflater.inflate(R.layout.fragment_passenger_ride_tracking, container, false);
     }
 
@@ -96,9 +114,28 @@ public class PassengerRideTrackingFragment extends Fragment {
         }
 
         initViews(view);
+        setupMap();
         setupListeners();
         loadInitialData();
         startTracking();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mapView != null) mapView.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mapView != null) mapView.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        stopTracking();
     }
 
     @Override
@@ -108,6 +145,8 @@ public class PassengerRideTrackingFragment extends Fragment {
     }
 
     private void initViews(View view) {
+        mapView = view.findViewById(R.id.mapView);
+
         tvEstimatedArrival = view.findViewById(R.id.tvEstimatedArrival);
         tvRemainingDistance = view.findViewById(R.id.tvRemainingDistance);
         tvPickupAddress = view.findViewById(R.id.tvPickupAddress);
@@ -129,8 +168,15 @@ public class PassengerRideTrackingFragment extends Fragment {
 
         btnPanic = view.findViewById(R.id.btnPanic);
 
-        view.findViewById(R.id.btnBack).setOnClickListener(v ->
-                requireActivity().getSupportFragmentManager().popBackStack());
+    }
+
+    private void setupMap() {
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        mapView.setMultiTouchControls(true);
+        mapView.setBuiltInZoomControls(false);
+        mapView.getController().setZoom(14.0);
+
+        mapComponent = new MapComponent(mapView, requireContext());
     }
 
     private void setupListeners() {
@@ -161,6 +207,7 @@ public class PassengerRideTrackingFragment extends Fragment {
                                            Response<PassengerRideDetailResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             updateRideDetails(response.body());
+                            drawInitialRoute(response.body());
                         }
                     }
                     @Override
@@ -177,6 +224,16 @@ public class PassengerRideTrackingFragment extends Fragment {
         tvVehicleModel.setText(detail.getVehicleModel());
         tvLicensePlate.setText(detail.getVehiclePlate());
 
+        if (detail.getPickupLatitude() != null && detail.getPickupLongitude() != null) {
+            pickupLat = detail.getPickupLatitude();
+            pickupLng = detail.getPickupLongitude();
+        }
+
+        if (detail.getDropoffLatitude() != null && detail.getDropoffLongitude() != null) {
+            dropoffLat = detail.getDropoffLatitude();
+            dropoffLng = detail.getDropoffLongitude();
+        }
+
         if (detail.getDistance() != null) {
             totalDistance = detail.getDistance();
             remainingDistance = detail.getDistance();
@@ -188,13 +245,24 @@ public class PassengerRideTrackingFragment extends Fragment {
         }
     }
 
+    private void drawInitialRoute(PassengerRideDetailResponse detail) {
+        if (pickupLat == 0 || dropoffLat == 0) return;
+
+        GeoPoint start = new GeoPoint(pickupLat, pickupLng);
+        GeoPoint end = new GeoPoint(dropoffLat, dropoffLng);
+
+        mapComponent.drawRouteFromPoints(start, end);
+    }
+
     private void startTracking() {
         trackingHandler = new Handler(Looper.getMainLooper());
         trackingRunnable = new Runnable() {
             @Override
             public void run() {
                 loadTrackingData();
-                trackingHandler.postDelayed(this, TRACKING_INTERVAL_MS);
+                if (trackingHandler != null) {
+                    trackingHandler.postDelayed(this, TRACKING_INTERVAL_MS);
+                }
             }
         };
         trackingHandler.post(trackingRunnable);
@@ -203,6 +271,8 @@ public class PassengerRideTrackingFragment extends Fragment {
     private void stopTracking() {
         if (trackingHandler != null && trackingRunnable != null) {
             trackingHandler.removeCallbacks(trackingRunnable);
+            trackingHandler = null;
+            trackingRunnable = null;
         }
     }
 
@@ -228,6 +298,7 @@ public class PassengerRideTrackingFragment extends Fragment {
         if (tracking.getCurrentLocation() != null) {
             lastVehicleLat = tracking.getCurrentLocation().getLatitude();
             lastVehicleLng = tracking.getCurrentLocation().getLongitude();
+            updateVehicleMarker();
         }
 
         if (tracking.getDriver() != null) {
@@ -260,7 +331,33 @@ public class PassengerRideTrackingFragment extends Fragment {
             panicTriggered = true;
             btnPanic.setEnabled(false);
             btnPanic.setText("PANIC Alert Sent");
+            updateVehicleMarker();
         }
+    }
+
+    private void updateVehicleMarker() {
+        if (lastVehicleLat == 0 && lastVehicleLng == 0) return;
+
+        GeoPoint newPoint = new GeoPoint(lastVehicleLat, lastVehicleLng);
+
+        if (vehicleMarker == null) {
+            vehicleMarker = new Marker(mapView);
+            vehicleMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+            Drawable icon = requireContext().getDrawable(R.drawable.ic_car);
+            if (icon != null) {
+                icon = icon.mutate();
+                int sizeDp = 24;
+                float density = getResources().getDisplayMetrics().density;
+                int sizePx = (int)(sizeDp * density);
+
+                icon.setBounds(0, 0, sizePx, sizePx);
+            }
+            vehicleMarker.setIcon(icon);
+            mapView.getOverlays().add(vehicleMarker);
+        }
+
+        vehicleMarker.setPosition(newPoint);
+        mapView.invalidate();
     }
 
     private void updateProgress() {
@@ -268,9 +365,12 @@ public class PassengerRideTrackingFragment extends Fragment {
             double traveled = totalDistance - remainingDistance;
             int percentage = (int) ((traveled / totalDistance) * 100);
             tvProgressPercentage.setText(percentage + "% complete");
-            ViewGroup.LayoutParams params = progressBar.getLayoutParams();
-            params.width = (int) ((traveled / totalDistance) * getView().getWidth());
-            progressBar.setLayoutParams(params);
+
+            if (getView() != null) {
+                ViewGroup.LayoutParams params = progressBar.getLayoutParams();
+                params.width = (int) ((traveled / totalDistance) * getView().getWidth() * 0.9);
+                progressBar.setLayoutParams(params);
+            }
         }
     }
 
@@ -300,7 +400,6 @@ public class PassengerRideTrackingFragment extends Fragment {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         if (response.isSuccessful()) {
-                            reportSubmitted = true;
                             reportFormVisible = false;
                             reportFormCard.setVisibility(View.GONE);
                             reportSuccessCard.setVisibility(View.VISIBLE);
@@ -345,6 +444,7 @@ public class PassengerRideTrackingFragment extends Fragment {
                             btnPanic.setEnabled(false);
                             btnPanic.setText("PANIC Alert Sent");
                             stopTracking();
+                            updateVehicleMarker();
                             Toast.makeText(getContext(), "Emergency services notified", Toast.LENGTH_LONG).show();
                         }
                     }

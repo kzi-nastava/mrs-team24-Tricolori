@@ -26,7 +26,7 @@ public class PassengerRideDetailResponse {
 
     // Vehicle info
     private String vehicleModel;
-    private String vehiclePlate;
+    private String vehicleLicensePlate;
 
     // Rating info (what this passenger gave)
     private Integer driverRating;
@@ -73,7 +73,6 @@ public class PassengerRideDetailResponse {
     public void setDistance(Double distance) { this.distance = distance; }
 
     public Double getTotalPrice() { return totalPrice; }
-    public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
@@ -87,8 +86,8 @@ public class PassengerRideDetailResponse {
     public String getVehicleModel() { return vehicleModel; }
     public void setVehicleModel(String vehicleModel) { this.vehicleModel = vehicleModel; }
 
-    public String getVehiclePlate() { return vehiclePlate; }
-    public void setVehiclePlate(String vehiclePlate) { this.vehiclePlate = vehiclePlate; }
+    public String getVehiclePlate() { return vehicleLicensePlate; }
+    public void setVehiclePlate(String vehiclePlate) { this.vehicleLicensePlate = vehiclePlate; }
 
     public Integer getDriverRating() { return driverRating; }
     public void setDriverRating(Integer driverRating) { this.driverRating = driverRating; }
