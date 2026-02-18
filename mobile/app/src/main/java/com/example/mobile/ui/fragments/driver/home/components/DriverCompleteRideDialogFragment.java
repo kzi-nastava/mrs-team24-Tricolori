@@ -55,13 +55,6 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
         return f;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // Full-width dialog with rounded feel
-        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.Theme_MaterialComponents_Light_Dialog_MinWidth);
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -82,7 +75,6 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
         String pickup      = args.getString(ARG_PICKUP, "");
         String destination = args.getString(ARG_DESTINATION, "");
 
-        // Bind views
         TextView tvDistance    = view.findViewById(R.id.tvDistance);
         TextView tvDuration    = view.findViewById(R.id.tvDuration);
         TextView tvPrice       = view.findViewById(R.id.tvPrice);
@@ -91,24 +83,20 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
         TextView tvDismiss     = view.findViewById(R.id.tvDismiss);
         MaterialButton btnHome = view.findViewById(R.id.btnBackToHome);
 
-        // Populate
         tvDistance.setText(String.format(Locale.getDefault(), "%.1f km", distance));
         tvDuration.setText(String.format(Locale.getDefault(), "%d min", duration));
         tvPrice.setText(String.format(Locale.getDefault(), "%d RSD", price));
         tvPickup.setText(pickup);
         tvDestination.setText(destination);
 
-        // Non-cancellable — driver must confirm
         setCancelable(false);
 
         tvDismiss.setOnClickListener(v -> navigateHome());
         btnHome.setOnClickListener(v -> navigateHome());
 
-        // Call backend to mark ride as complete
         completeRideOnBackend(rideId);
     }
 
-    /** Calls PUT /api/v1/rides/{id}/complete */
     private void completeRideOnBackend(long rideId) {
         RetrofitClient.getClient(requireContext())
                 .create(RideService.class)
@@ -142,9 +130,7 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
 
     private void navigateHome() {
         dismiss();
-        if (getView() != null) {
-            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
-                    .navigate(R.id.driverHomeFragment);
-        }
+        Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
+                .navigate(R.id.driverHomeFragment);
     }
 }
