@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import {Component, inject, signal, OnInit, OnDestroy, AfterViewInit} from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -15,6 +15,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ToastService } from '../../../../../services/toast.service';
 import { RideAssignmentResponse } from '../../../../../model/ride';
 import { WebSocketService } from '../../../../../services/websocket.service';
+import {MapService} from '../../../../../services/map.service';
 
 @Component({
   selector: 'app-ride-wait',
@@ -31,6 +32,7 @@ export class RideWait implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private route = inject(ActivatedRoute);
   private webSocketService = inject(WebSocketService);
+  private mapService = inject(MapService);
 
   private readonly rideUpdatesTopic = '/user/queue/ride-updates';
 
@@ -71,12 +73,12 @@ export class RideWait implements OnInit, OnDestroy {
         break;
 
       case 'CANCELLED_BY_DRIVER':
-        this.toastService.show(update.message || 'Driver cancelled your ride', 'error');
+        this.toastService.show(update.message || 'Driver cancelled your ride', 'info');
         this.router.navigate(['/passenger/home']);
         break;
 
       case 'CANCELLED_BY_PASSENGER':
-        this.toastService.show(update.message || 'Ride has been cancelled', 'error');
+        this.toastService.show(update.message || 'Ride has been cancelled', 'info');
         this.router.navigate(['/passenger/home']);
         break;
 
@@ -94,6 +96,9 @@ export class RideWait implements OnInit, OnDestroy {
     this.rideService.getRideAssignment(id).subscribe({
       next: (res: RideAssignmentResponse) => {
         this.activeRide.set(res);
+        if (res.routeGeometry) {
+          this.mapService.drawRoute(res.routeGeometry);
+        }
       },
       error: (err) => {
         const msg = err.error?.message || 'Could not load ride details';

@@ -10,7 +10,8 @@ import {
   heroXMark,
   heroArrowLeft,
   heroUser,
-  heroPhone
+  heroPhone,
+  heroCurrencyDollar
 } from '@ng-icons/heroicons/outline';
 import { CancelRideModalComponent } from '../cancel-ride-modal/cancel-ride-modal';
 import { RideService } from '../../../../../services/ride.service';
@@ -32,7 +33,8 @@ import {ToastService} from '../../../../../services/toast.service';
       heroXMark,
       heroArrowLeft,
       heroUser,
-      heroPhone
+      heroPhone,
+      heroCurrencyDollar
     })
   ]
 })
@@ -99,6 +101,7 @@ export class DriverRideAssignment implements OnInit, OnDestroy {
         this.router.navigate(['/driver']);
       },
       error: (err) => {
+        console.error(err);
         this.showCancelModal.set(false);
         const msg = err.error?.message || err.error || 'Something went wrong';
         this.toastService.show(msg, 'error');
