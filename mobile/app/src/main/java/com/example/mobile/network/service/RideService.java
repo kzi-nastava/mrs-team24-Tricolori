@@ -10,6 +10,9 @@ import com.example.mobile.dto.ride.PassengerRideHistoryResponse;
 import com.example.mobile.dto.ride.RideRatingRequest;
 import com.example.mobile.dto.ride.RideRatingStatusResponse;
 import com.example.mobile.dto.ride.RideTrackingResponse;
+import com.example.mobile.dto.ride.StopRideRequest;
+import com.example.mobile.dto.ride.StopRideResponse;
+import com.example.mobile.dto.vehicle.UpdateVehicleLocationRequest;
 
 import java.util.List;
 
@@ -87,5 +90,11 @@ public interface RideService {
     @PUT("api/v1/rides/stop")
     Call<StopRideResponse> stopRide(
             @Body StopRideRequest request
+    );
+
+    @PUT("api/v1/rides/{rideId}/vehicle-location")
+    Call<Void> updateRideVehicleLocation(
+            @Path("rideId") Long rideId,
+            @Body UpdateVehicleLocationRequest request
     );
 }
