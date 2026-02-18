@@ -58,16 +58,28 @@
     </fragment>
 
     <fragment
-        android:id="@+id/driverHomeFragment"
-        android:name="com.example.mobile.ui.fragments.driver.home.DriverHomeFragment"
-        android:label="Driver Home"
-        tools:layout="@layout/fragment_driver_home" />
-
-    <fragment
         android:id="@+id/passengerHomeFragment"
         android:name="com.example.mobile.ui.fragments.passenger.home.PassengerHomeFragment"
         android:label="Passenger Home"
-        tools:layout="@layout/fragment_passenger_home" />
+        tools:layout="@layout/fragment_passenger_home">
+        <action
+            android:id="@+id/action_passengerHome_to_chat"
+            app:destination="@id/chatFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/driverHomeFragment"
+        android:name="com.example.mobile.ui.fragments.driver.home.DriverHomeFragment"
+        android:label="Driver Home"
+        tools:layout="@layout/fragment_driver_home">
+        <action
+            android:id="@+id/action_driverHome_to_chat"
+            app:destination="@id/chatFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
+    </fragment>
 
     <fragment
         android:id="@+id/rideHistoryFragment"
@@ -202,5 +214,29 @@
         android:name="com.example.mobile.ui.fragments.PricelistFragment"
         android:label="Pricelist"
         tools:layout="@layout/fragment_pricelist" />
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.example.mobile.ui.fragments.ChatFragment"
+        android:label="Chat"
+        tools:layout="@layout/fragment_chat">
+        <argument
+            android:name="current_user_id"
+            app:argType="long" />
+        <argument
+            android:name="other_user_id"
+            app:argType="long" />
+        <argument
+            android:name="other_user_name"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminConversationListFragment"
+        android:name="com.example.mobile.ui.fragments.AdminConversationListFragment"
+        android:label="Support Chats"
+        tools:layout="@layout/fragment_admin_conversation_list" />
 
 </navigation>
