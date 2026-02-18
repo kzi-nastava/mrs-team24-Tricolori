@@ -1,26 +1,26 @@
-import { Component, computed, signal, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {Component, computed, OnDestroy, OnInit, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
+import {NgIconComponent, provideIcons} from '@ng-icons/core';
 import {
-  heroBell,
-  heroXMark,
-  heroClock,
-  heroXCircle,
-  heroUserPlus,
-  heroCheckCircle,
-  heroExclamationTriangle,
-  heroInformationCircle,
-  heroTicket,
   heroArrowRight,
-  heroFunnel,
-  heroMapPin,
-  heroTruck,
+  heroBell,
   heroChatBubbleLeftRight,
+  heroCheckCircle,
+  heroClock,
   heroDocumentText,
-  heroFlag
+  heroExclamationTriangle,
+  heroFlag,
+  heroFunnel,
+  heroInformationCircle,
+  heroMapPin,
+  heroTicket,
+  heroTruck,
+  heroUserPlus,
+  heroXCircle,
+  heroXMark
 } from '@ng-icons/heroicons/outline';
-import { NotificationService, NotificationDto } from '../../../services/notification.service';
+import {NotificationDto, NotificationService} from '../../../services/notification.service';
 
 interface EnrichedNotification extends NotificationDto {
   title: string;
@@ -55,7 +55,7 @@ interface EnrichedNotification extends NotificationDto {
   templateUrl: './admin-notifications.html',
   styleUrls: ['./admin-notifications.css']
 })
-export class AdminNotificationsComponent implements OnInit {
+export class AdminNotificationsComponent implements OnInit, OnDestroy {
   selectedNotification: EnrichedNotification | null = null;
   showUnreadOnly = signal<boolean>(false);
   showClearAllDialog = signal<boolean>(false);
@@ -67,18 +67,16 @@ export class AdminNotificationsComponent implements OnInit {
 
   // Computed panic notifications (will be separate - placeholder for now)
   panicNotifications = computed(() => {
-    const filtered = this.showUnreadOnly()
+    return this.showUnreadOnly()
       ? this.notifications().filter(n => n.isPanic && !n.opened)
       : this.notifications().filter(n => n.isPanic);
-    return filtered;
   });
 
   // Computed regular notifications
   regularNotifications = computed(() => {
-    const filtered = this.showUnreadOnly()
+    return this.showUnreadOnly()
       ? this.notifications().filter(n => !n.isPanic && !n.opened)
       : this.notifications().filter(n => !n.isPanic);
-    return filtered;
   });
 
   constructor(
@@ -92,6 +90,10 @@ export class AdminNotificationsComponent implements OnInit {
     this.subscribeToNotificationUpdates();
 
     this.lastPanicCount = this.panicCount();
+  }
+
+  ngOnDestroy(): void {
+    this.notificationService.unsubscribe();
   }
 
   // ==================== DATA LOADING ====================
@@ -124,7 +126,7 @@ export class AdminNotificationsComponent implements OnInit {
   setupWebSocket(): void {
     const userEmail = this.getUserEmail();
     if (userEmail) {
-      this.notificationService.connectWebSocket(userEmail);
+      this.notificationService.subscribeToNotifications(userEmail);
     }
   }
 

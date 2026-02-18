@@ -34,11 +34,6 @@ public class RideController {
     private final InconsistencyReportService inconsistencyReportService;
     private final AuthService authenticationService;
 
-    @PostMapping("/estimate")
-    public ResponseEntity<RideEstimationResponse> estimateRide(@Valid @RequestBody RideEstimationRequest request) {
-        return ResponseEntity.ok().build();
-    }
-
     @PutMapping("/cancel")
     @PreAuthorize("hasAnyRole('DRIVER', 'PASSENGER')")
     public ResponseEntity<Void> cancelRide(
@@ -80,11 +75,6 @@ public class RideController {
     public ResponseEntity<RideDetailResponse> getAdminRideDetail(@PathVariable Long id) {
         RideDetailResponse detail = rideService.getAdminRideDetail(id);
         return ResponseEntity.ok(detail);
-    }
-
-    @GetMapping("/details/{id}")
-    public ResponseEntity<RideDetailResponse> getRideDetails(@PathVariable Long id) {
-        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/stop")

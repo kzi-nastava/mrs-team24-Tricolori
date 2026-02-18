@@ -58,6 +58,22 @@
     </fragment>
 
     <fragment
+        android:id="@+id/driverHomeFragment"
+        android:name="com.example.mobile.ui.fragments.driver.home.DriverHomeFragment"
+        android:label="Driver Home"
+        tools:layout="@layout/fragment_driver_home" />
+
+    <fragment
+        android:id="@+id/driverRideTrackingFragment"
+        android:name="com.example.mobile.ui.fragments.driver.home.components.DriverRideTrackingFragment"
+        android:label="Ride Tracking"
+        tools:layout="@layout/fragment_driver_ride_tracking">
+        <argument
+            android:name="ride_id"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
         android:id="@+id/passengerHomeFragment"
         android:name="com.example.mobile.ui.fragments.passenger.home.PassengerHomeFragment"
         android:label="Passenger Home"
@@ -107,6 +123,16 @@
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/passengerRideTrackingFragment"
+        android:name="com.example.mobile.ui.fragments.passenger.home.components.PassengerRideTrackingFragment"
+        android:label="Track Ride"
+        tools:layout="@layout/fragment_passenger_ride_tracking">
+        <argument
+            android:name="ride_id"
+            app:argType="long" />
     </fragment>
 
     <fragment

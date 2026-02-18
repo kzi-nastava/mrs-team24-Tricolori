@@ -11,6 +11,7 @@ import com.tricolori.backend.mapper.RouteMapper;
 import com.tricolori.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,7 @@ public class RideService {
     private final PanicRepository panicRepository;
     private final OSRMService osrmService;
     private final GeocodingService geocodingService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     private final PassengerService passengerService;
     private final DriverService driverService;
@@ -567,6 +569,17 @@ public class RideService {
         vehicleRepository.save(ride.getDriver().getVehicle());
     }
 
+    private void notifyDriverAboutAssignment(Ride ride) {
+        messagingTemplate.convertAndSendToUser(
+                ride.getDriver().getEmail(),
+                "/queue/ride-assigned",
+                ride.getId()
+        );
+
+        log.info("WebSocket: Driver {{}} notified with Ride ID: {{}}",
+                ride.getDriver().getEmail(), ride.getId());
+    }
+
     @Transactional
     public Long rideOrder(Person passenger, OrderRequest request) {
         RidePreferences preferences = request.getPreferences();
@@ -608,6 +621,8 @@ public class RideService {
             ride.setVehicleSpecification(driver.getVehicle().getSpecification());
 
             ride = rideRepository.save(ride);
+
+            notifyDriverAboutAssignment(ride);
 
             String organizerName = passenger.getFirstName() + " " + passenger.getLastName();
             // separate registered and unregistered passengers

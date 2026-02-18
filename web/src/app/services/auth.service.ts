@@ -14,11 +14,13 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { AdminDriverRegistrationRequest, DriverPasswordSetupRequest } from '../model/driver-registration';
 import { NotificationService } from './notification.service';
+import {WebSocketService} from './websocket.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private webSocketService = inject(WebSocketService);
   private http = inject(HttpClient);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
@@ -111,10 +113,11 @@ export class AuthService {
   }
 
   logout(): void {
-    console.log('🚪 Logging out...');
-    
-    this.notificationService.disconnectWebSocket();
-    
+    console.log('Logging out...');
+
+    this.notificationService.unsubscribe();
+    this.webSocketService.disconnect();
+
     localStorage.removeItem('access_token');
     localStorage.removeItem('person_data');
     this.currentPersonSubject.next(null);
@@ -146,15 +149,12 @@ export class AuthService {
 
   private initializeNotifications(person: PersonDto): void {
     if (person.email) {
-      this.notificationService.connectWebSocket(person.email);
-      
+      this.webSocketService.connect();
+      this.notificationService.subscribeToNotifications(person.email);
+
       this.notificationService.getUnreadCount().subscribe({
-        next: (count) => {
-          console.log('📬 Initial unread count:', count);
-        },
-        error: (error) => {
-          console.error('❌ Error loading unread count:', error);
-        }
+        next: (count) => console.log('Initial unread count:', count),
+        error: (error) => console.error('Error loading unread count:', error)
       });
     }
   }
