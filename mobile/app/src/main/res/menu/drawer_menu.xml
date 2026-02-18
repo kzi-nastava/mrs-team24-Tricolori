@@ -18,7 +18,7 @@
         <!-- TODO: COMMENT OUT AFTER ADDING FRAGMENTS -->
         <!-- Supervise - admin only -->
         <item
-            android:id="@+id/rideSupervisorFragment"
+            android:id="@+id/adminSuperviseFragment"
             android:icon="@drawable/ic_supervise"
             android:title="Supervise" />
 
