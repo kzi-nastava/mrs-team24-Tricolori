@@ -41,6 +41,12 @@ public class SecurityConfig {
             .sessionManagement(s ->
                     s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(a -> a
+                    .requestMatchers(
+                            "/v3/api-docs/**",
+                            "/v3/api-docs.yaml",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html"
+                    ).permitAll()
                 .requestMatchers("/api/v1/auth/**", "/error").permitAll()
                 .requestMatchers("/api/v1/tracking/**").permitAll()
                 .requestMatchers("/api/v1/favorite-routes/**").hasRole("PASSENGER")
