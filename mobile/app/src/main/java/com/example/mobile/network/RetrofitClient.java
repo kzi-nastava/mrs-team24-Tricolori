@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.service.ChangeDataRequestService;
+import com.example.mobile.network.service.ReportService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
@@ -19,7 +20,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitClient {
 
-    private static final String BASE_URL = "http://192.168.229.8:8080";
+    private static final String BASE_URL = "http://192.168.31.196:8080";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient(Context context) {
@@ -56,5 +57,9 @@ public class RetrofitClient {
 
     public static AuthService getAuthService(Context context) {
         return getClient(context).create(AuthService.class);
+    }
+
+    public static ReportService getReportService(Context context) {
+        return getClient(context).create(ReportService.class);
     }
 }

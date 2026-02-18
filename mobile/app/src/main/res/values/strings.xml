@@ -293,4 +293,38 @@
     <!-- Passenger Ride Waiting -->
     <string name="waiting_for_driver_to_arrive">Waiting for driver to arrive…</string>
     <string name="driver">DRIVER</string>
+
+    <!-- Reports -->
+    <string name="reports_title">Ride Reports</string>
+    <string name="reports_desc">Generate detailed statistical reports for the selected period</string>
+    <string name="reports_filter_title">Report Parameters</string>
+    <string name="reports_filter_admin_all_users">All Users</string>
+    <string name="reports_filter_admin_specific">Specific User</string>
+    <string name="reports_filter_admin_search_mail">Search User (Email)</string>
+    <string name="reports_filter_admin_enter_mail">Enter user email…</string>
+    <string name="reports_filer_from_date">Date from</string>
+    <string name="reports_filer_select_date">Select date</string>
+    <string name="reports_filer_to_date">Date to</string>
+    <string name="reports_filter_generate">Generate report</string>
+    <string name="reports_hint">Select dates and click generate to see the results.</string>
+
+    <string name="reports_total_rides_title">TOTAL RIDES</string>
+    <string name="reports_total_rides_default">0</string>
+    <string name="reports_total_rides_average_default">Average: 0 / day</string>
+
+    <string name="reports_total_rides_distance">TOTAL KM</string>
+    <string name="reports_total_rides_distance_default">0</string>
+    <string name="reports_total_rides_distance_unit">km</string>
+    <string name="reports_total_rides_distance_average_default">Average: 0 / day</string>
+
+    <string name="reports_total_rides_price">TOTAL RSD</string>
+    <string name="reports_total_rides_price_default">0</string>
+    <string name="reports_total_rides_price_unit">RSD</string>
+    <string name="reports_total_rides_price_average_default">Average: 0 RSD / day</string>
+
+    <string name="reports_chart_img_desc">Chart icon</string>
+
+    <string name="reports_rides_per_days">Rides per days</string>
+    <string name="reports_kilometers_per_days">Kilometers per days</string>
+    <string name="reports_money_per_days">Money spent/gained per days</string>
 </resources>
