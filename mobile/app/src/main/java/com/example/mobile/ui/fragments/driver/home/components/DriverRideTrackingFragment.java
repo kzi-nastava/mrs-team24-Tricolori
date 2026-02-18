@@ -30,11 +30,15 @@ import com.example.mobile.network.service.RideService;
 import com.example.mobile.ui.components.MapComponent;
 import com.google.android.material.button.MaterialButton;
 
+import org.osmdroid.bonuspack.routing.OSRMRoadManager;
+import org.osmdroid.bonuspack.routing.Road;
+import org.osmdroid.bonuspack.routing.RoadManager;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polyline;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -280,7 +284,33 @@ public class DriverRideTrackingFragment extends Fragment {
         if (pickupLat == 0 || dropoffLat == 0) return;
         GeoPoint start = new GeoPoint(pickupLat, pickupLng);
         GeoPoint end   = new GeoPoint(dropoffLat, dropoffLng);
-        mapComponent.drawRouteFromPoints(start, end);
+
+        new Thread(() -> {
+            try {
+                OSRMRoadManager roadManager = new OSRMRoadManager(requireContext(), "ANDROID");
+                ArrayList<GeoPoint> waypoints = new ArrayList<>();
+                waypoints.add(start);
+                waypoints.add(end);
+                Road road = roadManager.getRoad(waypoints);
+                Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
+                List<GeoPoint> points = roadOverlay.getActualPoints();
+
+                mapView.post(() -> {
+                    mapComponent.drawRoute(points);
+
+                    routePoints  = new ArrayList<>(points);
+                    currentIndex = 0;
+
+                    if (!routePoints.isEmpty()) {
+                        placeOrMoveVehicleMarker(routePoints.get(0));
+                    }
+
+                    startSimulation();
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "drawRouteAndBegin failed", e);
+            }
+        }).start();
     }
 
     private void placeOrMoveVehicleMarker(GeoPoint point) {
