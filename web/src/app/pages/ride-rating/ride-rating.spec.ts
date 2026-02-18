@@ -5,8 +5,6 @@ import { of, throwError } from 'rxjs';
 import { RideRatingComponent } from './ride-rating';
 import { RatingService } from '../../services/rating.service';
 import { RideService } from '../../services/ride.service';
-import { MapService } from '../../services/map.service';
-import { EstimationService } from '../../services/estimation.service';
 import { provideIcons } from '@ng-icons/core';
 import {
   heroArrowLeft, heroExclamationCircle, heroCheckCircle, heroMapPin,
@@ -21,13 +19,16 @@ describe('RideRatingComponent', () => {
   let mockActivatedRoute: any;
   let mockRatingService: jasmine.SpyObj<RatingService>;
   let mockRideService: jasmine.SpyObj<RideService>;
-  let mockMapService: jasmine.SpyObj<MapService>;
-  let mockEstimationService: jasmine.SpyObj<EstimationService>;
+  let fetchSpy: jasmine.Spy;
 
   const mockRideDetails = {
     id: 1,
     pickupAddress: '123 Main St',
     dropoffAddress: '456 Oak Ave',
+    pickupLatitude: 45.25,
+    pickupLongitude: 19.85,
+    dropoffLatitude: 45.26,
+    dropoffLongitude: 19.86,
     startedAt: '2025-02-10T10:00:00',
     createdAt: '2025-02-10T09:30:00',
     driverName: 'John Doe',
@@ -44,16 +45,6 @@ describe('RideRatingComponent', () => {
     deadline: '2025-02-13T10:00:00'
   };
 
-  const mockEstimation = {
-    routeGeometry: [
-      { lat: 45.25, lng: 19.85 },
-      { lat: 45.26, lng: 19.86 }
-    ],
-    distance: 15,
-    duration: 25,
-    price: 1500
-  };
-
   beforeEach(async () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockActivatedRoute = {
@@ -65,8 +56,10 @@ describe('RideRatingComponent', () => {
     };
     mockRatingService = jasmine.createSpyObj('RatingService', ['submitRating', 'getRatingStatus']);
     mockRideService = jasmine.createSpyObj('RideService', ['getPassengerRideDetail']);
-    mockMapService = jasmine.createSpyObj('MapService', ['drawRoute', 'destroyMap']);
-    mockEstimationService = jasmine.createSpyObj('EstimationService', ['calculateRouteFromAddresses']);
+
+    fetchSpy = spyOn(window, 'fetch').and.returnValue(
+      Promise.resolve(new Response(JSON.stringify({ routes: [] })))
+    );
 
     await TestBed.configureTestingModule({
       imports: [RideRatingComponent, ReactiveFormsModule],
@@ -75,8 +68,6 @@ describe('RideRatingComponent', () => {
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: RatingService, useValue: mockRatingService },
         { provide: RideService, useValue: mockRideService },
-        { provide: MapService, useValue: mockMapService },
-        { provide: EstimationService, useValue: mockEstimationService },
         provideIcons({
           heroArrowLeft, heroExclamationCircle, heroCheckCircle, heroMapPin,
           heroCalendar, heroStar, heroStarSolid: heroStarSolidFill,
@@ -87,7 +78,6 @@ describe('RideRatingComponent', () => {
 
     mockRatingService.getRatingStatus.and.returnValue(of(mockRatingStatus));
     mockRideService.getPassengerRideDetail.and.returnValue(of(mockRideDetails as any));
-    mockEstimationService.calculateRouteFromAddresses.and.returnValue(of(mockEstimation as any));
 
     fixture = TestBed.createComponent(RideRatingComponent);
     component = fixture.componentInstance;
@@ -143,29 +133,11 @@ describe('RideRatingComponent', () => {
       expect(component.isLoading()).toBe(false);
     }));
 
-    it('should call map service to draw route when ride details loaded', fakeAsync(() => {
+    it('should call fetch with OSRM route URL when ride details loaded', fakeAsync(() => {
       component.ngOnInit();
-      tick();
-      expect(mockEstimationService.calculateRouteFromAddresses).toHaveBeenCalledWith(
-        ['123 Main St',
-        '456 Oak Ave']
-      );
-      expect(mockMapService.drawRoute).toHaveBeenCalledWith(mockEstimation.routeGeometry as any);
-    }));
-
-    it('should handle route estimation error gracefully', fakeAsync(() => {
-      mockEstimationService.calculateRouteFromAddresses.and.returnValue(throwError(() => new Error('Route Error')));
-      component.ngOnInit();
-      tick();
-      expect(component.rideDetails()).toEqual(mockRideDetails);
-      expect(mockMapService.drawRoute).not.toHaveBeenCalled();
-    }));
-
-    it('should handle null estimation result', fakeAsync(() => {
-      mockEstimationService.calculateRouteFromAddresses.and.returnValue(of(null));
-      component.ngOnInit();
-      tick();
-      expect(mockMapService.drawRoute).not.toHaveBeenCalled();
+      tick(100);
+      const expectedUrl = `https://router.project-osrm.org/route/v1/driving/${mockRideDetails.pickupLongitude},${mockRideDetails.pickupLatitude};${mockRideDetails.dropoffLongitude},${mockRideDetails.dropoffLatitude}?overview=full&geometries=geojson`;
+      expect(fetchSpy).toHaveBeenCalledWith(expectedUrl);
     }));
   });
 
@@ -400,7 +372,7 @@ describe('RideRatingComponent', () => {
     it('should be invalid when only one rating is set', () => {
       component.setDriverRating(3);
       expect(component.ratingForm.valid).toBe(false);
-      
+
       component.ratingForm.patchValue({ driverRating: 0 });
       component.setVehicleRating(4);
       expect(component.ratingForm.valid).toBe(false);
@@ -410,7 +382,7 @@ describe('RideRatingComponent', () => {
       component.setDriverRating(5);
       component.setVehicleRating(5);
       expect(component.ratingForm.valid).toBe(true);
-      
+
       component.ratingForm.patchValue({ comment: 'Excellent service!' });
       expect(component.ratingForm.valid).toBe(true);
     });
