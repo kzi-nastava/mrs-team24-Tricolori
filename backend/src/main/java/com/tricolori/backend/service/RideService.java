@@ -5,12 +5,15 @@ import com.tricolori.backend.dto.osrm.OSRMRouteResponse;
 import com.tricolori.backend.dto.profile.DriverDto;
 import com.tricolori.backend.dto.profile.PassengerDto;
 import com.tricolori.backend.enums.PersonRole;
+import com.tricolori.backend.event.RideAssignedEvent;
+import com.tricolori.backend.event.RideStatusUpdateEvent;
 import com.tricolori.backend.exception.*;
 import com.tricolori.backend.mapper.PersonMapper;
 import com.tricolori.backend.mapper.RouteMapper;
 import com.tricolori.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +49,7 @@ public class RideService {
     private final OSRMService osrmService;
     private final GeocodingService geocodingService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final PassengerService passengerService;
     private final DriverService driverService;
@@ -403,10 +407,7 @@ public class RideService {
             );
 
             // Send WebSocket notification
-            sendRideUpdateToPassenger(
-                    p.getEmail(),
-                    new RideUpdateMessage(status, ride.getId(), message)
-            );
+            applicationEventPublisher.publishEvent(new RideStatusUpdateEvent(ride, status, message));
         }
     }
 
@@ -427,7 +428,7 @@ public class RideService {
     private void handlePassengerCancelRide(Ride ride, CancelRideRequest request) {
 
         LocalDateTime timeNow = LocalDateTime.now();
-        if (timeNow.isAfter(ride.getStartTime().minusMinutes(10))) {
+        if (timeNow.isAfter(ride.getCreatedAt().minusMinutes(10))) {
             throw new CancelRideExpiredException("Ride cancel option expired. Ride starts within 10 minutes.");
         }
 
@@ -463,7 +464,7 @@ public class RideService {
         ride.setCancellationReason(reason);
         rideRepository.save(ride);
 
-        log.info("Ride with id {} cancelled by {}", ride.getId(), person.getEmail());
+        log.info("Ride with id {{}} cancelled by {{}}", ride.getId(), person.getEmail());
     }
 
 
@@ -625,7 +626,7 @@ public class RideService {
 
             ride = rideRepository.save(ride);
 
-            notifyDriverAboutAssignment(ride);
+            applicationEventPublisher.publishEvent(new RideAssignedEvent(ride));
 
             String organizerName = passenger.getFirstName() + " " + passenger.getLastName();
             // separate registered and unregistered passengers

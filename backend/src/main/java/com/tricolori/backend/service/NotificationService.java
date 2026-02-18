@@ -117,7 +117,7 @@ public class NotificationService {
 
     // RIDE_CANCELLED
     public void sendRideCancelledNotification(String passengerEmail, Long rideId, String reason) {
-        String content = String.format("Your ride scheduled for %s from %s to %s has been cancelled%s. Your payment has been refunded.",
+        String content = String.format("Your ride has been cancelled%s. Your payment has been refunded.",
                 reason != null && !reason.isEmpty() ? " due to " + reason : "");
 
         Notification notification = new Notification(passengerEmail, content, NotificationType.RIDE_CANCELLED, rideId);
