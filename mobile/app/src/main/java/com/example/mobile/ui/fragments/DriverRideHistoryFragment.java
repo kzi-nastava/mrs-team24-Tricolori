@@ -42,7 +42,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RideHistoryFragment extends Fragment {
+public class DriverRideHistoryFragment extends Fragment {
 
 
     public static final String ROLE_DRIVER    = "DRIVER";
@@ -52,16 +52,16 @@ public class RideHistoryFragment extends Fragment {
     private static final String TAG      = "RideHistoryFragment";
 
 
-    public static RideHistoryFragment forDriver() {
+    public static DriverRideHistoryFragment forDriver() {
         return newInstance(ROLE_DRIVER);
     }
 
-    public static RideHistoryFragment forPassenger() {
+    public static DriverRideHistoryFragment forPassenger() {
         return newInstance(ROLE_PASSENGER);
     }
 
-    private static RideHistoryFragment newInstance(String role) {
-        RideHistoryFragment f = new RideHistoryFragment();
+    private static DriverRideHistoryFragment newInstance(String role) {
+        DriverRideHistoryFragment f = new DriverRideHistoryFragment();
         Bundle args = new Bundle();
         args.putString(ARG_ROLE, role);
         f.setArguments(args);
@@ -82,12 +82,12 @@ public class RideHistoryFragment extends Fragment {
     private final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
-    public RideHistoryFragment() {}
+    public DriverRideHistoryFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_ride_history, container, false);
+        return inflater.inflate(R.layout.fragment_driver_ride_history, container, false);
     }
 
     @Override

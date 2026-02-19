@@ -51,7 +51,7 @@ public class RideDetailsDialogFragment extends DialogFragment {
     private static final String TAG         = "RideDetailsDialog";
 
     public static RideDetailsDialogFragment newInstance(Long rideId) {
-        return newInstance(rideId, RideHistoryFragment.ROLE_DRIVER);
+        return newInstance(rideId, DriverRideHistoryFragment.ROLE_DRIVER);
     }
 
     public static RideDetailsDialogFragment newInstance(Long rideId, String role) {
@@ -79,10 +79,12 @@ public class RideDetailsDialogFragment extends DialogFragment {
         Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
 
         long   rideId = getArguments().getLong(ARG_RIDE_ID);
-        String role   = getArguments().getString(ARG_ROLE, RideHistoryFragment.ROLE_DRIVER);
+        String role   = getArguments().getString(ARG_ROLE, DriverRideHistoryFragment.ROLE_DRIVER);
 
-        if (RideHistoryFragment.ROLE_PASSENGER.equals(role)) {
+        if (DriverRideHistoryFragment.ROLE_PASSENGER.equals(role)) {
             fetchPassengerRideDetails(rideId, view);
+        } else if ("ADMIN".equals(role)) {
+            fetchAdminRideDetails(rideId, view);
         } else {
             fetchDriverRideDetails(rideId, view);
         }
@@ -101,6 +103,28 @@ public class RideDetailsDialogFragment extends DialogFragment {
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
         }
+    }
+
+    private void fetchAdminRideDetails(long rideId, View view) {
+        RetrofitClient.getClient(requireContext()).create(RideService.class)
+                .getAdminRideDetail(rideId)
+                .enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(Call<DriverRideDetailResponse> call,
+                                           retrofit2.Response<DriverRideDetailResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            bindDriverData(view, response.body());
+                            view.findViewById(R.id.btnTrackRide).setVisibility(View.GONE);
+                        } else {
+                            Log.e(TAG, "Admin detail error: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<DriverRideDetailResponse> call, Throwable t) {
+                        Log.e(TAG, "FAILURE", t);
+                    }
+                });
     }
 
     private void fetchDriverRideDetails(long rideId, View view) {

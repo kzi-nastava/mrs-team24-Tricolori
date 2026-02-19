@@ -4,6 +4,7 @@ import com.example.mobile.dto.ride.CancellationRequest;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
 import com.example.mobile.dto.ride.DriverRideHistoryResponse;
 import com.example.mobile.dto.ride.InconsistencyReportRequest;
+import com.example.mobile.dto.ride.OrderRequest;
 import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.PassengerRideHistoryResponse;
@@ -26,6 +27,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface RideService {
+    @POST("api/v1/rides/order")
+    Call<Long> bookRide(@Body OrderRequest request);
 
     @GET("api/v1/rides/history/driver")
     Call<List<DriverRideHistoryResponse>> getDriverRideHistory(
@@ -40,12 +43,25 @@ public interface RideService {
             @Path("rideId") Long rideId
     );
 
+    @GET("api/v1/rides/{id}/details/admin")
+    Call<DriverRideDetailResponse> getAdminRideDetail(@Path("id") long rideId);
+
     @GET("api/v1/rides/passenger")
     Call<ResponseBody> getPassengerRideHistory(
             @Query("startDate") String startDate,
             @Query("endDate") String endDate,
-            @Query("page") int page,
-            @Query("size") int size,
+            @Query("page") Integer page,
+            @Query("size") Integer size,
+            @Query("sort") String sort
+    );
+
+    @GET("api/v1/rides/admin")
+    Call<ResponseBody> getAdminRideHistory(
+            @Query("personEmail") String personEmail,
+            @Query("startDate") String startDate,
+            @Query("endDate") String endDate,
+            @Query("page") Integer page,
+            @Query("size") Integer size,
             @Query("sort") String sort
     );
 

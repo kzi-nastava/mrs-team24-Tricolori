@@ -6,150 +6,443 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:paddingBottom="@dimen/spacing_3"
-    android:paddingTop="@dimen/spacing_3"
-    android:fillViewport="true"
-    tools:context=".ui.fragments.RideHistoryFragment">
+    tools:context=".ui.fragments.history.RideHistoryFragment">
 
-    <androidx.core.widget.NestedScrollView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="match_parent">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/spacing_4">
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
-            <!-- Filter Card -->
-            <androidx.cardview.widget.CardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/spacing_1"
-                android:layout_marginRight="@dimen/spacing_1"
-                android:layout_marginTop="@dimen/spacing_1"
-                android:layout_marginBottom="@dimen/spacing_6"
-                app:cardCornerRadius="@dimen/spacing_3"
-                app:cardElevation="@dimen/spacing_1"
-                app:cardBackgroundColor="@color/white">
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_4">
 
-                <LinearLayout
+                <!-- Title -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_2"
+                    android:text="@string/my_ride_history"
+                    android:textColor="@color/base_900"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_6"
+                    android:text="@string/view_all_rides"
+                    android:textColor="@color/gray_600"
+                    android:textSize="@dimen/text_base" />
+
+                <!-- Filter Card -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/spacing_4">
+                    android:layout_marginBottom="@dimen/spacing_6"
+                    app:cardCornerRadius="@dimen/spacing_2"
+                    app:cardElevation="@dimen/spacing_1"
+                    app:cardBackgroundColor="@color/white">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/spacing_5"
-                        android:text="@string/filter_ride_history"
-                        android:textColor="@color/base_900"
-                        android:textSize="@dimen/text_lg"
-                        android:textStyle="bold" />
-
-                    <!-- Start Date Label -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/spacing_1"
-                        android:text="@string/label_start_date"
-                        android:textColor="@color/base_800"
-                        android:textSize="@dimen/text_sm" />
-
-                    <!-- Start Date Input -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/spacing_3"
-                        app:boxBackgroundColor="@color/white"
-                        app:boxCornerRadiusBottomEnd="@dimen/spacing_2"
-                        app:boxCornerRadiusBottomStart="@dimen/spacing_2"
-                        app:boxCornerRadiusTopEnd="@dimen/spacing_2"
-                        app:boxCornerRadiusTopStart="@dimen/spacing_2"
-                        app:boxStrokeColor="@color/base_600"
-                        app:boxStrokeWidth="1dp"
-                        app:hintEnabled="false"
-                        app:startIconDrawable="@drawable/ic_calendar"
-                        app:startIconTint="@color/gray_400">
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_6">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etStartDate"
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_4"
+                            android:text="@string/filters"
+                            android:textColor="@color/base_800"
+                            android:textSize="@dimen/text_lg"
+                            android:textStyle="bold" />
+
+                        <!-- Email Filter (Admin only) -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilPersonEmail"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:clickable="true"
-                            android:focusable="false"
-                            android:hint="@string/hint_select_start_date"
-                            android:inputType="none"
-                            android:textColor="@color/gray_900"
-                            android:textSize="@dimen/text_base" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_marginBottom="@dimen/spacing_4"
+                            android:visibility="gone"
+                            app:boxBackgroundColor="@color/white"
+                            app:boxCornerRadiusBottomEnd="@dimen/spacing_2"
+                            app:boxCornerRadiusBottomStart="@dimen/spacing_2"
+                            app:boxCornerRadiusTopEnd="@dimen/spacing_2"
+                            app:boxCornerRadiusTopStart="@dimen/spacing_2"
+                            app:boxStrokeColor="@color/base_600"
+                            app:boxStrokeWidth="1dp"
+                            app:startIconDrawable="@drawable/ic_email"
+                            app:startIconTint="@color/gray_400">
 
-                    <!-- End Date Label -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/spacing_1"
-                        android:text="@string/label_end_date"
-                        android:textColor="@color/base_800"
-                        android:textSize="@dimen/text_sm" />
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etPersonEmail"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="@string/hint_person_email"
+                                android:inputType="textEmailAddress"
+                                android:textColor="@color/gray_900"
+                                android:textSize="@dimen/text_base" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- End Date Input -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/spacing_4"
-                        app:boxBackgroundColor="@color/white"
-                        app:boxCornerRadiusBottomEnd="@dimen/spacing_2"
-                        app:boxCornerRadiusBottomStart="@dimen/spacing_2"
-                        app:boxCornerRadiusTopEnd="@dimen/spacing_2"
-                        app:boxCornerRadiusTopStart="@dimen/spacing_2"
-                        app:boxStrokeColor="@color/base_600"
-                        app:boxStrokeWidth="1dp"
-                        app:hintEnabled="false"
-                        app:startIconDrawable="@drawable/ic_calendar"
-                        app:startIconTint="@color/gray_400">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etEndDate"
+                        <!-- Date Filters Grid -->
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:clickable="true"
-                            android:focusable="false"
-                            android:hint="@string/hint_select_end_date"
-                            android:inputType="none"
-                            android:textColor="@color/gray_900"
-                            android:textSize="@dimen/text_base" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:orientation="horizontal"
+                            android:baselineAligned="false"
+                            android:layout_marginBottom="@dimen/spacing_4">
 
-                    <!-- Filter Button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnFilter"
+                            <!-- Start Date -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginEnd="@dimen/spacing_2">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="@dimen/spacing_2"
+                                    android:text="@string/label_start_date"
+                                    android:textColor="@color/base_700"
+                                    android:textSize="@dimen/text_sm"
+                                    android:textStyle="bold" />
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:boxBackgroundColor="@color/white"
+                                    app:boxCornerRadiusBottomEnd="@dimen/spacing_2"
+                                    app:boxCornerRadiusBottomStart="@dimen/spacing_2"
+                                    app:boxCornerRadiusTopEnd="@dimen/spacing_2"
+                                    app:boxCornerRadiusTopStart="@dimen/spacing_2"
+                                    app:boxStrokeColor="@color/base_300"
+                                    app:boxStrokeWidth="1dp"
+                                    app:hintEnabled="false">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etStartDate"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:clickable="true"
+                                        android:focusable="false"
+                                        android:hint="@string/hint_select_start_date"
+                                        android:inputType="none"
+                                        android:padding="@dimen/spacing_3"
+                                        android:textColor="@color/gray_900"
+                                        android:textSize="@dimen/text_base"
+                                        tools:ignore="TooDeepLayout" />
+                                </com.google.android.material.textfield.TextInputLayout>
+                            </LinearLayout>
+
+                            <!-- End Date -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_2">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="@dimen/spacing_2"
+                                    android:text="@string/label_end_date"
+                                    android:textColor="@color/base_700"
+                                    android:textSize="@dimen/text_sm"
+                                    android:textStyle="bold" />
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:boxBackgroundColor="@color/white"
+                                    app:boxCornerRadiusBottomEnd="@dimen/spacing_2"
+                                    app:boxCornerRadiusBottomStart="@dimen/spacing_2"
+                                    app:boxCornerRadiusTopEnd="@dimen/spacing_2"
+                                    app:boxCornerRadiusTopStart="@dimen/spacing_2"
+                                    app:boxStrokeColor="@color/base_300"
+                                    app:boxStrokeWidth="1dp"
+                                    app:hintEnabled="false">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etEndDate"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:clickable="true"
+                                        android:focusable="false"
+                                        android:hint="@string/hint_select_end_date"
+                                        android:inputType="none"
+                                        android:padding="@dimen/spacing_3"
+                                        android:textColor="@color/gray_900"
+                                        android:textSize="@dimen/text_base" />
+                                </com.google.android.material.textfield.TextInputLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Filter Buttons -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingTop="@dimen/spacing_4"
+                            android:background="@drawable/border_top">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnApplyFilter"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="@dimen/spacing_3"
+                                android:text="@string/btn_apply_filters"
+                                android:textAllCaps="false"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/text_base"
+                                android:textStyle="bold"
+                                app:backgroundTint="@color/base_600"
+                                app:cornerRadius="@dimen/spacing_2" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnClearFilter"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/btn_clear_all"
+                                android:textAllCaps="false"
+                                android:textColor="@color/gray_700"
+                                android:textSize="@dimen/text_base"
+                                android:textStyle="bold"
+                                app:strokeColor="@color/gray_300"
+                                app:cornerRadius="@dimen/spacing_2" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Rides Card with Table -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="@dimen/spacing_2"
+                    app:cardElevation="@dimen/spacing_1"
+                    app:cardBackgroundColor="@color/white">
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/spacing_12"
-                        android:text="@string/btn_apply_filter"
-                        android:textAllCaps="false"
-                        android:textColor="@color/white"
-                        android:textSize="@dimen/text_base"
-                        app:backgroundTint="@color/base_600"
-                        app:cornerRadius="@dimen/spacing_2" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
 
-                </LinearLayout>
+                        <!-- Table Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:background="@color/gray_50"
+                            android:padding="@dimen/spacing_4"
+                            android:gravity="center_vertical">
 
-            </androidx.cardview.widget.CardView>
+                            <TextView
+                                android:id="@+id/sortRouteHeader"
+                                android:layout_width="0dp"
+                                android:layout_weight="4"
+                                android:layout_height="wrap_content"
+                                android:text="@string/header_route"
+                                android:textColor="@color/gray_700"
+                                android:textSize="@dimen/text_sm"
+                                android:textStyle="bold"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:background="?attr/selectableItemBackground" />
 
-            <!-- Rides RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvRides"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:listitem="@layout/item_ride_history" />
+                            <TextView
+                                android:id="@+id/sortDateHeader"
+                                android:layout_width="0dp"
+                                android:layout_weight="2"
+                                android:layout_height="wrap_content"
+                                android:text="@string/header_date"
+                                android:textColor="@color/gray_700"
+                                android:textSize="@dimen/text_sm"
+                                android:textStyle="bold"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:background="?attr/selectableItemBackground" />
 
-        </LinearLayout>
+                            <TextView
+                                android:id="@+id/sortPriceHeader"
+                                android:layout_width="0dp"
+                                android:layout_weight="2"
+                                android:layout_height="wrap_content"
+                                android:text="@string/header_price"
+                                android:textColor="@color/gray_700"
+                                android:textSize="@dimen/text_sm"
+                                android:textStyle="bold"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:background="?attr/selectableItemBackground" />
 
-    </androidx.core.widget.NestedScrollView>
+                            <TextView
+                                android:id="@+id/sortStatusHeader"
+                                android:layout_width="0dp"
+                                android:layout_weight="2"
+                                android:layout_height="wrap_content"
+                                android:text="@string/header_status"
+                                android:textColor="@color/gray_700"
+                                android:textSize="@dimen/text_sm"
+                                android:textStyle="bold"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:background="?attr/selectableItemBackground" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_weight="2"
+                                android:layout_height="wrap_content"
+                                android:text="@string/header_actions"
+                                android:textColor="@color/gray_700"
+                                android:textSize="@dimen/text_sm"
+                                android:textStyle="bold"
+                                android:gravity="end" />
+                        </LinearLayout>
+
+                        <!-- Loading Indicator -->
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <ProgressBar
+                                android:id="@+id/progressBar"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:layout_gravity="center"
+                                android:layout_margin="@dimen/spacing_12"
+                                android:indeterminateTint="@color/base_600"
+                                android:visibility="gone" />
+
+                            <!-- RecyclerView -->
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvRides"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="200dp"
+                                tools:listitem="@layout/item_ride_history" />
+
+                            <!-- Empty State -->
+                            <TextView
+                                android:id="@+id/tvEmptyState"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:padding="@dimen/spacing_20"
+                                android:text="@string/no_rides_found"
+                                android:textColor="@color/gray_400"
+                                android:textSize="@dimen/text_base"
+                                android:textStyle="italic"
+                                android:visibility="gone" />
+                        </FrameLayout>
+
+                        <!-- Pagination Footer -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:background="@color/gray_50"
+                            android:padding="@dimen/spacing_4"
+                            android:gravity="center_vertical">
+
+                            <!-- Ride Count -->
+                            <TextView
+                                android:id="@+id/tvRideCount"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:text="@string/showing_rides"
+                                android:textColor="@color/gray_600"
+                                android:textSize="@dimen/text_sm"
+                                tools:text="Showing 10 of 45 rides" />
+
+                            <!-- Pagination Controls -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <!-- Previous Button -->
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnPrevPage"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="@dimen/spacing_2"
+                                    android:minWidth="0dp"
+                                    android:paddingStart="@dimen/spacing_4"
+                                    android:paddingEnd="@dimen/spacing_4"
+                                    android:text="@string/btn_previous"
+                                    android:textAllCaps="false"
+                                    android:textColor="@color/gray_700"
+                                    android:textSize="@dimen/text_sm"
+                                    app:strokeColor="@color/gray_300"
+                                    app:cornerRadius="@dimen/spacing_1" />
+
+                                <!-- Page Info -->
+                                <TextView
+                                    android:id="@+id/tvPageInfo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/spacing_2"
+                                    android:layout_marginEnd="@dimen/spacing_2"
+                                    android:background="@drawable/bg_page_info"
+                                    android:paddingStart="@dimen/spacing_4"
+                                    android:paddingEnd="@dimen/spacing_4"
+                                    android:paddingTop="@dimen/spacing_2"
+                                    android:paddingBottom="@dimen/spacing_2"
+                                    android:text="@string/page_number"
+                                    android:textColor="@color/gray_900"
+                                    android:textSize="@dimen/text_sm"
+                                    android:textStyle="bold"
+                                    tools:text="Page 1" />
+
+                                <!-- Next Button -->
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnNextPage"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/spacing_2"
+                                    android:minWidth="0dp"
+                                    android:paddingStart="@dimen/spacing_4"
+                                    android:paddingEnd="@dimen/spacing_4"
+                                    android:text="@string/btn_next"
+                                    android:textAllCaps="false"
+                                    android:textColor="@color/gray_700"
+                                    android:textSize="@dimen/text_sm"
+                                    app:strokeColor="@color/gray_300"
+                                    app:cornerRadius="@dimen/spacing_1" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

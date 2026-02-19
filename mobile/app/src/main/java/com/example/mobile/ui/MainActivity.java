@@ -82,14 +82,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Set<Integer> topLevelDestinations = new HashSet<>();
-        topLevelDestinations.add(R.id.rideHistoryFragment);
         topLevelDestinations.add(R.id.userProfileFragment);
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
         topLevelDestinations.add(R.id.driverHomeFragment);
         topLevelDestinations.add(R.id.passengerHomeFragment);
+        topLevelDestinations.add(R.id.userReportsFragment);
         topLevelDestinations.add(R.id.adminSuperviseFragment);
         topLevelDestinations.add(R.id.notificationsFragment);
+        topLevelDestinations.add(R.id.passengerRideHistoryFragment);
+        topLevelDestinations.add(R.id.driverRideHistoryFragment);
+        topLevelDestinations.add(R.id.adminRideHistoryFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -354,7 +357,22 @@ public class MainActivity extends AppCompatActivity {
         MenuItem logout           = menu.findItem(R.id.nav_logout);
         MenuItem statusSwitch     = menu.findItem(R.id.nav_status_switch);
         MenuItem changeRequests   = menu.findItem(R.id.changeRequestsReviewFragment);
+        // Get all menu items
+        MenuItem home = menu.findItem(R.id.homeFragment);
+        MenuItem history = menu.findItem(R.id.rideHistoryFragment);
+        // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
+        MenuItem supervise = menu.findItem(R.id.adminSuperviseFragment);
+//        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
+        MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
+        MenuItem support = menu.findItem(R.id.supportChatEntry);
+        MenuItem adminSupport = menu.findItem(R.id.adminConversationListFragment);
+        MenuItem profile = menu.findItem(R.id.userProfileFragment);
+        MenuItem logout = menu.findItem(R.id.nav_logout);
+        MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
+        MenuItem changeRequests = menu.findItem(R.id.changeRequestsReviewFragment);
+        MenuItem blocks = menu.findItem(R.id.blockFragment);
         MenuItem driverRegistration = menu.findItem(R.id.adminDriverRegistrationFragment);
+        MenuItem userReports = menu.findItem(R.id.userReportsFragment);
 
         if (token != null && role != null) {
             home.setVisible(true);
@@ -362,6 +380,7 @@ public class MainActivity extends AppCompatActivity {
             profile.setVisible(true);
             logout.setVisible(true);
             notifications.setVisible(true);
+            userReports.setVisible(true);
 
             if ("ROLE_ADMIN".equals(role)) {
                 supervise.setVisible(true);
@@ -370,6 +389,7 @@ public class MainActivity extends AppCompatActivity {
                 changeRequests.setVisible(true);
                 driverRegistration.setVisible(true);
                 support.setVisible(false);
+                blocks.setVisible(true);
                 adminSupport.setVisible(true);
             } else if ("ROLE_DRIVER".equals(role)) {
                 supervise.setVisible(false);
@@ -379,6 +399,8 @@ public class MainActivity extends AppCompatActivity {
                 driverRegistration.setVisible(false);
                 support.setVisible(true);
                 adminSupport.setVisible(false);
+                blocks.setVisible(false);
+
             } else if ("ROLE_PASSENGER".equals(role)) {
                 supervise.setVisible(false);
                 pricelist.setVisible(false);
@@ -387,6 +409,7 @@ public class MainActivity extends AppCompatActivity {
                 driverRegistration.setVisible(false);
                 support.setVisible(true);
                 adminSupport.setVisible(false);
+                blocks.setVisible(false);
             }
         } else {
             home.setVisible(false);
@@ -401,6 +424,8 @@ public class MainActivity extends AppCompatActivity {
             statusSwitch.setVisible(false);
             changeRequests.setVisible(false);
             driverRegistration.setVisible(false);
+            userReports.setVisible(false);
+            blocks.setVisible(false);
         }
     }
 

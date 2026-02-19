@@ -43,6 +43,10 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation("commons-io:commons-io:2.21.0")
 
+    // Reports:
+    implementation(libs.mpandroidchart)
+    implementation(libs.cardview)
+
     // Navigation
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
@@ -61,6 +65,7 @@ dependencies {
 
     // Glide
     implementation(libs.glide)
+    implementation(libs.swiperefreshlayout)
     annotationProcessor(libs.glide.compiler)
 
     testImplementation(libs.junit)
