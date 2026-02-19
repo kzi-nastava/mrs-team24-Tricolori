@@ -49,7 +49,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class DriverRideTrackingFragment extends Fragment {
-
+/*
     private static final String TAG = "DriverRideTracking";
     private static final String ARG_RIDE_ID = "ride_id";
     private static final long SIMULATION_INTERVAL_MS = 3_000L;
@@ -456,5 +456,5 @@ public class DriverRideTrackingFragment extends Fragment {
                 rideId, totalDistance, totalDurationMin,
                 calculatePrice(), pickupAddress, dropoffAddress
         ).show(requireActivity().getSupportFragmentManager(), "ride_complete");
-    }
+    }*/
 }

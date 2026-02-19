@@ -4,6 +4,7 @@ import com.example.mobile.dto.ride.CancellationRequest;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
 import com.example.mobile.dto.ride.DriverRideHistoryResponse;
 import com.example.mobile.dto.ride.InconsistencyReportRequest;
+import com.example.mobile.dto.ride.OrderRequest;
 import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.PassengerRideHistoryResponse;
@@ -26,6 +27,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface RideService {
+    @POST("api/v1/rides/order")
+    Call<Long> bookRide(@Body OrderRequest request);
 
     @GET("api/v1/rides/history/driver")
     Call<List<DriverRideHistoryResponse>> getDriverRideHistory(

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/tvTimeSlot"
+    android:layout_width="match_parent"
+    android:layout_height="52dp"
+    android:gravity="center"
+    android:textSize="17sp"
+    android:background="@drawable/bg_time_slot"
+    app:startIconTint="@null"
+    android:textColor="@drawable/time_slot_text_selector" />
