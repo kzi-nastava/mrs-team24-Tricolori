@@ -6,6 +6,7 @@ import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.service.ChangeDataRequestService;
 import com.example.mobile.network.service.FavoriteRoutesService;
 import com.example.mobile.network.service.RideService;
+import com.example.mobile.network.service.PersonService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
@@ -66,6 +67,10 @@ public class RetrofitClient {
   
     public static ProfileService getProfileService(Context context) {
         return getClient(context).create(ProfileService.class);
+    }
+
+    public static PersonService getPersonService(Context context) {
+        return getClient(context).create(PersonService.class);
     }
 
     public static AuthService getAuthService(Context context) {
