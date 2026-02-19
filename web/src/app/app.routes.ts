@@ -188,7 +188,7 @@ export const routes: Routes = [
         path: "blocks",
         loadComponent: () => import('./pages/block/block').then(m => m.Block)
       },
-      { path: '', redirectTo: 'home', pathMatch: 'full' }
+      { path: '', redirectTo: 'history', pathMatch: 'full' }
     ]
   },
 
