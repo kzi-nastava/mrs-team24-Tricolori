@@ -324,7 +324,6 @@ public class PassengerRideTrackingFragment extends Fragment {
             updateProgress();
         }
 
-        // FIX 3: getDuration() doesn't exist → getEstimatedTimeMinutes() (already in minutes)
         if (tracking.getEstimatedTimeMinutes() != null) {
             tvEstimatedArrival.setText(
                     String.format(Locale.getDefault(), "%d min", tracking.getEstimatedTimeMinutes()));
