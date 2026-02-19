@@ -295,31 +295,39 @@ public class PassengerRideTrackingFragment extends Fragment {
     }
 
     private void updateTrackingData(RideTrackingResponse tracking) {
+
         if (tracking.getCurrentLocation() != null) {
-            lastVehicleLat = tracking.getCurrentLocation().getLatitude();
-            lastVehicleLng = tracking.getCurrentLocation().getLongitude();
-            updateVehicleMarker();
+            RideTrackingResponse.VehicleLocationResponse loc = tracking.getCurrentLocation();
+            if (loc.getLatitude() != null && loc.getLongitude() != null) {
+                lastVehicleLat = loc.getLatitude();
+                lastVehicleLng = loc.getLongitude();
+                updateVehicleMarker();
+            }
+            if (loc.getModel() != null) {
+                tvVehicleModel.setText(loc.getModel());
+            }
+            if (loc.getPlateNum() != null) {
+                tvLicensePlate.setText(loc.getPlateNum());
+            }
         }
 
         if (tracking.getDriver() != null) {
-            String driverName = tracking.getDriver().getFirstName() + " " + tracking.getDriver().getLastName();
+            String driverName = tracking.getDriver().getFirstName()
+                    + " " + tracking.getDriver().getLastName();
             tvDriverName.setText(driverName);
         }
 
-        if (tracking.getVehicle() != null) {
-            tvVehicleModel.setText(tracking.getVehicle().getModel());
-            tvLicensePlate.setText(tracking.getVehicle().getPlateNum());
-        }
-
-        if (tracking.getDistance() != null) {
-            remainingDistance = tracking.getDistance();
-            tvRemainingDistance.setText(String.format(Locale.getDefault(), "%.1f km remaining", remainingDistance));
+        if (tracking.getRoute() != null && tracking.getRoute().getDistanceKm() != null) {
+            remainingDistance = tracking.getRoute().getDistanceKm();
+            tvRemainingDistance.setText(
+                    String.format(Locale.getDefault(), "%.1f km remaining", remainingDistance));
             updateProgress();
         }
 
-        if (tracking.getDuration() != null) {
-            int minutes = tracking.getDuration() / 60;
-            tvEstimatedArrival.setText(String.format(Locale.getDefault(), "%d min", minutes));
+        // FIX 3: getDuration() doesn't exist → getEstimatedTimeMinutes() (already in minutes)
+        if (tracking.getEstimatedTimeMinutes() != null) {
+            tvEstimatedArrival.setText(
+                    String.format(Locale.getDefault(), "%d min", tracking.getEstimatedTimeMinutes()));
         }
 
         if ("FINISHED".equals(tracking.getStatus())) {

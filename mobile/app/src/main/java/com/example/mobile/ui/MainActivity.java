@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         topLevelDestinations.add(R.id.driverHomeFragment);
         topLevelDestinations.add(R.id.passengerHomeFragment);
         topLevelDestinations.add(R.id.adminSuperviseFragment);
+        topLevelDestinations.add(R.id.notificationsFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -281,9 +282,8 @@ public class MainActivity extends AppCompatActivity {
         // Get all menu items
         MenuItem home = menu.findItem(R.id.homeFragment);
         MenuItem history = menu.findItem(R.id.rideHistoryFragment);
-        // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
         MenuItem supervise = menu.findItem(R.id.adminSuperviseFragment);
-//        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
+        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
         MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
         MenuItem support = menu.findItem(R.id.supportChatEntry);
         MenuItem adminSupport = menu.findItem(R.id.adminConversationListFragment);
