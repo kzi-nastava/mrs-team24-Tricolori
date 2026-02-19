@@ -293,4 +293,7 @@
     <!-- Passenger Ride Waiting -->
     <string name="waiting_for_driver_to_arrive">Waiting for driver to arrive…</string>
     <string name="driver">DRIVER</string>
+
+    <!-- Notifications -->
+    <string name="ride_id_label">Ride #%d</string>
 </resources>

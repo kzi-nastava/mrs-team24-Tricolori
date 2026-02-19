@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -35,7 +36,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         this.clickListener = clickListener;
     }
 
-
     public void submitList(List<NotificationDto> newList) {
         DiffUtil.DiffResult result = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override public int getOldListSize() { return items.size(); }
@@ -48,20 +48,15 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
             @Override
             public boolean areContentsTheSame(int oldPos, int newPos) {
-                NotificationDto o = items.get(oldPos);
-                NotificationDto n = newList.get(newPos);
-                return o.isOpened() == n.isOpened();
+                return items.get(oldPos).isOpened() == newList.get(newPos).isOpened();
             }
         });
-
         items = new ArrayList<>(newList);
         result.dispatchUpdatesTo(this);
     }
 
-
     @Override
     public int getItemViewType(int position) {
-        // Panic items get a distinct view type so they can be styled differently
         return "RIDE_PANIC".equals(items.get(position).getType()) ? 1 : 0;
     }
 
@@ -85,13 +80,17 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final TextView tvTitle;
-        private final TextView tvContent;
-        private final TextView tvTime;
-        private final TextView tvRideId;
-        private final ImageView ivIcon;
-        private final View     unreadDot;
-        private final View     unreadStripe; // left coloured stripe for unread
+        private final TextView    tvTitle;
+        private final TextView    tvContent;
+        private final TextView    tvTime;
+        private final TextView    tvRideId;
+        private final ImageView   ivIcon;
+        // Tint goes on the FrameLayout circle container, NOT on ivIcon itself.
+        // Tinting ivIcon's background propagates the colour to sibling views
+        // (like tvRideId) when a referenced drawable fails to resolve at runtime.
+        private final FrameLayout flIcon;
+        private final View        unreadDot;
+        private final View        unreadStripe;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -100,6 +99,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             tvTime       = itemView.findViewById(R.id.tv_notif_time);
             tvRideId     = itemView.findViewById(R.id.tv_notif_ride_id);
             ivIcon       = itemView.findViewById(R.id.iv_notif_icon);
+            flIcon       = itemView.findViewById(R.id.fl_icon);
             unreadDot    = itemView.findViewById(R.id.view_unread_dot);
             unreadStripe = itemView.findViewById(R.id.view_unread_stripe);
         }
@@ -111,7 +111,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             tvContent.setText(dto.getContent());
             tvTime.setText(formatTimeAgo(dto.getTime()));
 
-            // Ride ID badge
+            // Ride ID badge — no tint applied here, purely text + gray background
             if (dto.getRideId() != null) {
                 tvRideId.setVisibility(View.VISIBLE);
                 tvRideId.setText(ctx.getString(R.string.ride_id_label, dto.getRideId()));
@@ -119,11 +119,15 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 tvRideId.setVisibility(View.GONE);
             }
 
-            // Icon
+            // Set icon image on the ImageView (no background tint here)
             ivIcon.setImageResource(getIconForType(dto.getType()));
-            ivIcon.setBackgroundTintList(ContextCompat.getColorStateList(ctx, getIconBgColorForType(dto.getType())));
 
-            // Unread state
+            // Set background tint on the circle FrameLayout only
+            if (flIcon != null) {
+                flIcon.setBackgroundTintList(
+                        ContextCompat.getColorStateList(ctx, getIconBgColorForType(dto.getType())));
+            }
+
             boolean unread = !dto.isOpened();
             if (unreadDot    != null) unreadDot.setVisibility(unread ? View.VISIBLE : View.GONE);
             if (unreadStripe != null) unreadStripe.setVisibility(unread ? View.VISIBLE : View.GONE);
@@ -134,7 +138,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             });
         }
     }
-
 
     private String getTitleForType(String type) {
         if (type == null) return "Notification";
@@ -161,16 +164,17 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     private int getIconForType(String type) {
         if (type == null) return R.drawable.ic_notification;
         switch (type) {
-            case "RIDE_PANIC":              return R.drawable.ic_warning;
+            case "RIDE_PANIC":
+            case "RIDE_REPORT":             return R.drawable.ic_warning;
             case "RIDE_STARTING":
             case "RIDE_STARTED":
             case "RIDE_REMINDER":
-            case "UPCOMING_RIDE_REMINDER":  return R.drawable.ic_time;
+            case "UPCOMING_RIDE_REMINDER":  return R.drawable.ic_history;
             case "RIDE_CANCELLED":
             case "RIDE_REJECTED":           return R.drawable.ic_close;
             case "RIDE_COMPLETED":          return R.drawable.ic_check_circle;
             case "RATING_REMINDER":
-            case "RATING_RECEIVED":         return R.drawable.ic_star_empty;
+            case "RATING_RECEIVED":         return R.drawable.ic_notification;
             case "ADDED_TO_RIDE":           return R.drawable.ic_person;
             case "NEW_CHAT_MESSAGE":        return R.drawable.ic_support;
             case "NEW_REGISTRATION":        return R.drawable.ic_vehicle;
@@ -182,13 +186,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     private int getIconBgColorForType(String type) {
         if (type == null) return R.color.notif_bg_gray;
         switch (type) {
-            case "RIDE_PANIC":              return R.color.notif_bg_red;
+            case "RIDE_PANIC":
+            case "RIDE_CANCELLED":
+            case "RIDE_REJECTED":           return R.color.notif_bg_red;
             case "RIDE_STARTING":
             case "RIDE_STARTED":
             case "RIDE_REMINDER":
             case "UPCOMING_RIDE_REMINDER":  return R.color.notif_bg_blue;
-            case "RIDE_CANCELLED":
-            case "RIDE_REJECTED":           return R.color.notif_bg_red;
             case "RIDE_COMPLETED":          return R.color.notif_bg_green;
             case "RATING_REMINDER":
             case "RATING_RECEIVED":         return R.color.notif_bg_amber;
@@ -196,6 +200,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             case "NEW_CHAT_MESSAGE":        return R.color.notif_bg_indigo;
             case "NEW_REGISTRATION":        return R.color.notif_bg_green;
             case "PROFILE_CHANGE_REQUEST":  return R.color.notif_bg_sky;
+            case "RIDE_REPORT":             return R.color.notif_bg_orange;
             default:                        return R.color.notif_bg_gray;
         }
     }
@@ -210,9 +215,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             long days  = diffMs / 86_400_000;
 
             if (mins  < 1)  return "Just now";
-            if (mins  < 60) return mins + "m ago";
+            if (mins  < 60) return mins  + "m ago";
             if (hours < 24) return hours + "h ago";
-            if (days  < 7)  return days  + "d ago";
+            if (days  <  7) return days  + "d ago";
 
             ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault());
             return DateTimeFormatter.ofPattern("MMM d").format(zdt);
