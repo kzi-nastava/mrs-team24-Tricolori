@@ -221,12 +221,12 @@ public class DriverRideTrackingFragment extends Fragment {
     }
 
     private void applyTrackingResponse(RideTrackingResponse tracking) {
-        if (tracking.getDistance() != null) {
-            totalDistance     = tracking.getDistance();
+        if (tracking.getRoute().getDistanceKm() != null) {
+            totalDistance     = tracking.getRoute().getDistanceKm();
             remainingDistance = totalDistance;
         }
-        if (tracking.getDuration() != null) {
-            totalDurationMin = tracking.getDuration();
+        if (tracking.getEstimatedTimeMinutes() != null) {
+            totalDurationMin = tracking.getEstimatedTimeMinutes();
         }
     }
 

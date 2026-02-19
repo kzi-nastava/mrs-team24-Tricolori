@@ -37,10 +37,6 @@
             app:destination="@id/userProfileFragment"
             app:popUpTo="@id/homeFragment" />
         <action
-            android:id="@+id/action_login_to_rideHistory"
-            app:destination="@id/rideHistoryFragment"
-            app:popUpTo="@id/homeFragment" />
-        <action
             android:id="@+id/action_login_to_home"
             app:destination="@id/homeFragment"
             app:popUpTo="@id/homeFragment"
@@ -55,13 +51,28 @@
             app:destination="@id/passengerHomeFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_login_to_adminHome"
+            app:destination="@id/adminSuperviseFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 
+    <!-- DRIVER FRAGMENTS -->
     <fragment
         android:id="@+id/driverHomeFragment"
         android:name="com.example.mobile.ui.fragments.driver.home.DriverHomeFragment"
         android:label="Driver Home"
-        tools:layout="@layout/fragment_driver_home" />
+        tools:layout="@layout/fragment_driver_home">
+        <action
+            android:id="@+id/action_driverHome_to_chat"
+            app:destination="@id/chatFragment"
+            app:enterAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/slide_out_left" />
+        <action
+            android:id="@+id/action_driverHome_to_rideHistory"
+            app:destination="@id/driverRideHistoryFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/driverRideTrackingFragment"
@@ -74,6 +85,20 @@
     </fragment>
 
     <fragment
+        android:id="@+id/driverRideHistoryFragment"
+        android:name="com.example.mobile.ui.fragments.DriverRideHistoryFragment"
+        android:label="Ride History"
+        tools:layout="@layout/fragment_driver_ride_history">
+        <action
+            android:id="@+id/action_driverRideHistory_to_home"
+            app:destination="@id/driverHomeFragment" />
+        <action
+            android:id="@+id/action_to_rideRatingFragment"
+            app:destination="@id/rideRatingFragment" />
+    </fragment>
+
+    <!-- PASSENGER FRAGMENTS -->
+    <fragment
         android:id="@+id/passengerHomeFragment"
         android:name="com.example.mobile.ui.fragments.passenger.home.PassengerHomeFragment"
         android:label="Passenger Home"
@@ -83,33 +108,89 @@
             app:destination="@id/chatFragment"
             app:enterAnim="@anim/slide_out_right"
             app:exitAnim="@anim/slide_out_left" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/driverHomeFragment"
-        android:name="com.example.mobile.ui.fragments.driver.home.DriverHomeFragment"
-        android:label="Driver Home"
-        tools:layout="@layout/fragment_driver_home">
         <action
-            android:id="@+id/action_driverHome_to_chat"
-            app:destination="@id/chatFragment"
-            app:enterAnim="@anim/slide_out_right"
-            app:exitAnim="@anim/slide_out_left" />
+            android:id="@+id/action_passengerHome_to_rideHistory"
+            app:destination="@id/passengerRideHistoryFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/rideHistoryFragment"
-        android:name="com.example.mobile.ui.fragments.RideHistoryFragment"
+        android:id="@+id/passengerRideTrackingFragment"
+        android:name="com.example.mobile.ui.fragments.passenger.home.components.PassengerRideTrackingFragment"
+        android:label="Track Ride"
+        tools:layout="@layout/fragment_passenger_ride_tracking">
+        <argument
+            android:name="ride_id"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/passengerRideHistoryFragment"
+        android:name="com.example.mobile.ui.fragments.history.RideHistoryFragment"
         android:label="Ride History"
         tools:layout="@layout/fragment_ride_history">
+        <argument
+            android:name="role"
+            app:argType="string"
+            android:defaultValue="PASSENGER" />
         <action
-            android:id="@+id/action_rideHistory_to_home"
-            app:destination="@id/homeFragment" />
+            android:id="@+id/action_passengerRideHistory_to_home"
+            app:destination="@id/passengerHomeFragment" />
         <action
-            android:id="@+id/action_to_rideRatingFragment"
+            android:id="@+id/action_passengerRideHistory_to_rating"
             app:destination="@id/rideRatingFragment" />
     </fragment>
 
+    <!-- ADMIN FRAGMENTS -->
+    <fragment
+        android:id="@+id/adminSuperviseFragment"
+        android:name="com.example.mobile.ui.fragments.AdminSuperviseFragment"
+        android:label="Ride Supervision"
+        tools:layout="@layout/fragment_admin_supervise">
+        <action
+            android:id="@+id/action_adminSupervise_to_driverRegistration"
+            app:destination="@id/adminDriverRegistrationFragment" />
+        <action
+            android:id="@+id/action_adminSupervise_to_rideHistory"
+            app:destination="@id/adminRideHistoryFragment" />
+        <action
+            android:id="@+id/action_adminSupervise_to_conversationList"
+            app:destination="@id/adminConversationListFragment" />
+        <action
+            android:id="@+id/action_adminSupervise_to_changeRequests"
+            app:destination="@id/changeRequestsReviewFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminDriverRegistrationFragment"
+        android:name="com.example.mobile.ui.fragments.AdminDriverRegistrationFragment"
+        android:label="@string/admin_driver_fragment_label"
+        tools:layout="@layout/fragment_admin_driver_registration">
+        <action
+            android:id="@+id/action_driverRegister_to_profile"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminRideHistoryFragment"
+        android:name="com.example.mobile.ui.fragments.history.RideHistoryFragment"
+        android:label="Ride History"
+        tools:layout="@layout/fragment_ride_history">
+        <argument
+            android:name="role"
+            app:argType="string"
+            android:defaultValue="ADMIN" />
+        <action
+            android:id="@+id/action_adminRideHistory_to_supervise"
+            app:destination="@id/adminSuperviseFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminConversationListFragment"
+        android:name="com.example.mobile.ui.fragments.AdminConversationListFragment"
+        android:label="Support Chats"
+        tools:layout="@layout/fragment_admin_conversation_list" />
+
+    <!-- SHARED FRAGMENTS -->
     <fragment
         android:id="@+id/rideRatingFragment"
         android:name="com.example.mobile.ui.fragments.RideRatingFragment"
@@ -124,32 +205,6 @@
             app:nullable="true"
             android:defaultValue="@null" />
     </fragment>
-
-    <fragment
-        android:id="@+id/passengerRideTrackingFragment"
-        android:name="com.example.mobile.ui.fragments.passenger.home.components.PassengerRideTrackingFragment"
-        android:label="Track Ride"
-        tools:layout="@layout/fragment_passenger_ride_tracking">
-        <argument
-            android:name="ride_id"
-            app:argType="long" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/adminDriverRegistrationFragment"
-        android:name="com.example.mobile.ui.fragments.AdminDriverRegistrationFragment"
-        android:label="@string/admin_driver_fragment_label"
-        tools:layout="@layout/fragment_admin_driver_registration">
-        <action
-            android:id="@+id/action_driverRegister_to_profile"
-            app:destination="@id/userProfileFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/adminSuperviseFragment"
-        android:name="com.example.mobile.ui.fragments.AdminSuperviseFragment"
-        android:label="Ride Supervision"
-        tools:layout="@layout/fragment_admin_supervise" />
 
     <fragment
         android:id="@+id/passwordSetupFragment"
@@ -264,11 +319,5 @@
             app:nullable="true"
             android:defaultValue="@null" />
     </fragment>
-
-    <fragment
-        android:id="@+id/adminConversationListFragment"
-        android:name="com.example.mobile.ui.fragments.AdminConversationListFragment"
-        android:label="Support Chats"
-        tools:layout="@layout/fragment_admin_conversation_list" />
 
 </navigation>

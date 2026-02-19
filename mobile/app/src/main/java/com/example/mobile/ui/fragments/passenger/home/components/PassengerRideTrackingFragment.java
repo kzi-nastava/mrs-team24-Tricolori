@@ -306,19 +306,19 @@ public class PassengerRideTrackingFragment extends Fragment {
             tvDriverName.setText(driverName);
         }
 
-        if (tracking.getVehicle() != null) {
-            tvVehicleModel.setText(tracking.getVehicle().getModel());
-            tvLicensePlate.setText(tracking.getVehicle().getPlateNum());
-        }
+//        if (tracking.getVehicle() != null) {
+//            tvVehicleModel.setText(tracking.getVehicle().getModel());
+//            tvLicensePlate.setText(tracking.getVehicle().getPlateNum());
+//        }
 
-        if (tracking.getDistance() != null) {
-            remainingDistance = tracking.getDistance();
+        if (tracking.getRoute().getDistanceKm() != null) {
+            remainingDistance = tracking.getRoute().getDistanceKm();
             tvRemainingDistance.setText(String.format(Locale.getDefault(), "%.1f km remaining", remainingDistance));
             updateProgress();
         }
 
-        if (tracking.getDuration() != null) {
-            int minutes = tracking.getDuration() / 60;
+        if (tracking.getEstimatedTimeMinutes() != null) {
+            int minutes = tracking.getEstimatedTimeMinutes() / 60;
             tvEstimatedArrival.setText(String.format(Locale.getDefault(), "%d min", minutes));
         }
 
