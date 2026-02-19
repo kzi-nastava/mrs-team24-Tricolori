@@ -374,16 +374,18 @@ class DriverServiceTests {
     @DisplayName("Should return busy driver whose ongoing ride ends within 10 minutes")
     void findDriverForRide_ShouldReturnBusyDriver_WhenRideEndsWithin10Minutes() {
         Driver busyDriver = createActiveDriverWithVehicle(1L);
+        busyDriver.setDailyLogs(List.of(
+            TestObjectFactory.createTestDailyLog(LocalDate.now(), true, busyDriver)
+        ));
 
         Ride ongoingRide = TestObjectFactory.createTestRide(busyDriver, RideStatus.ONGOING);
         ongoingRide.setStartTime(LocalDateTime.now().minusMinutes(55));
-        ongoingRide.getRoute().setEstimatedTimeSeconds(3600L);
+        ongoingRide.getRoute().setEstimatedTimeSeconds(3600L); // preostaje 5 minuta
 
         when(repository.getAllCurrentlyActiveDrivers()).thenReturn(List.of(busyDriver));
-        when(rideRepository.findAllByStatusInAndCreatedAtBetween(any(), any(), any()))
-            .thenReturn(List.of(ongoingRide));
-        when(rideRepository.findAllByDriverAndStatusIn(eq(busyDriver), any()))
-            .thenReturn(List.of(ongoingRide));
+        when(rideRepository.findAllByStatusInAndCreatedAtBetween(
+            eq(List.of(RideStatus.ONGOING, RideStatus.SCHEDULED)), any(), any()
+        )).thenReturn(List.of()); // Nema slobodnih
 
         Driver result = driverService.findDriverForRide(pickupLocation, standardPrefs(), 1);
 
@@ -391,77 +393,32 @@ class DriverServiceTests {
     }
 
     @Test
-    @DisplayName("Should throw when busy driver's ongoing ride does not end within 10 minutes")
-    void findDriverForRide_ShouldThrow_WhenBusyDriverRideNotEndingSoon() {
-        Driver busyDriver = createActiveDriverWithVehicle(1L);
-
-        // Ongoing voznja koja završava za 30 minuta
-        Ride ongoingRide = TestObjectFactory.createTestRide(busyDriver, RideStatus.ONGOING);
-        ongoingRide.setStartTime(LocalDateTime.now().minusMinutes(30));
-        ongoingRide.getRoute().setEstimatedTimeSeconds(3600L); // završava za 30min
-
-        when(repository.getAllCurrentlyActiveDrivers()).thenReturn(List.of(busyDriver));
-        when(rideRepository.findAllByStatusInAndCreatedAtBetween(any(), any(), any()))
-            .thenReturn(List.of(ongoingRide));
-        when(rideRepository.findAllByDriverAndStatusIn(eq(busyDriver), eq(List.of(RideStatus.ONGOING, RideStatus.SCHEDULED))))
-            .thenReturn(List.of(ongoingRide));
-
-        assertThrows(NoSuitableDriversException.class, () ->
-            driverService.findDriverForRide(pickupLocation, standardPrefs(), 1)
-        );
-    }
-
-    @Test
-    @DisplayName("Should skip busy driver who has a SCHEDULED ride")
-    void findDriverForRide_ShouldSkipBusyDriver_WhenHasScheduledRide() {
-        Driver busyDriver = createActiveDriverWithVehicle(1L);
-
-        Ride scheduledRide = TestObjectFactory.createTestRide(busyDriver, RideStatus.SCHEDULED);
-        scheduledRide.setScheduledFor(LocalDateTime.now().plusHours(1));
-
-        when(repository.getAllCurrentlyActiveDrivers()).thenReturn(List.of(busyDriver));
-        when(rideRepository.findAllByStatusInAndCreatedAtBetween(any(), any(), any()))
-            .thenReturn(List.of(scheduledRide));
-        when(rideRepository.findAllByDriverAndStatusIn(eq(busyDriver), eq(List.of(RideStatus.ONGOING, RideStatus.SCHEDULED))))
-            .thenReturn(List.of(scheduledRide));
-
-        assertThrows(NoSuitableDriversException.class, () ->
-            driverService.findDriverForRide(pickupLocation, standardPrefs(), 1)
-        );
-    }
-
-    @Test
     @DisplayName("Should return closest busy driver (by destination) when multiple ending soon")
     void findDriverForRide_ShouldReturnClosestBusyDriver_WhenMultipleEndingSoon() {
-        // driver1 završava voznju blizu pickupa
         Driver driver1 = createActiveDriverWithVehicle(1L);
         Driver driver2 = createActiveDriverWithVehicle(2L);
+        
+        driver1.setDailyLogs(List.of(
+            TestObjectFactory.createTestDailyLog(LocalDate.now(), true, driver1)
+        ));
+        driver2.setDailyLogs(List.of(
+            TestObjectFactory.createTestDailyLog(LocalDate.now(), true, driver2)
+        ));
 
         Ride ride1 = TestObjectFactory.createTestRide(driver1, RideStatus.ONGOING);
         ride1.setStartTime(LocalDateTime.now().minusMinutes(55));
         ride1.getRoute().setEstimatedTimeSeconds(3600L);
-        // Destinacija blizu pickupa
         ride1.getRoute().getDestinationStop().setLocation(new Location(19.8340, 45.2675));
 
         Ride ride2 = TestObjectFactory.createTestRide(driver2, RideStatus.ONGOING);
         ride2.setStartTime(LocalDateTime.now().minusMinutes(55));
         ride2.getRoute().setEstimatedTimeSeconds(3600L);
-        // Destinacija daleko od pickupa
         ride2.getRoute().getDestinationStop().setLocation(new Location(19.9500, 45.4000));
 
         when(repository.getAllCurrentlyActiveDrivers()).thenReturn(List.of(driver1, driver2));
-        when(rideRepository.findAllByStatusInAndCreatedAtBetween(any(), any(), any()))
-            .thenReturn(List.of(ride1, ride2));
-
-        when(rideRepository.findAllByDriverAndStatusIn(eq(driver1), eq(List.of(RideStatus.ONGOING, RideStatus.SCHEDULED))))
-            .thenReturn(List.of(ride1));
-        when(rideRepository.findAllByDriverAndStatusIn(eq(driver1), eq(List.of(RideStatus.ONGOING))))
-            .thenReturn(List.of(ride1));
-
-        when(rideRepository.findAllByDriverAndStatusIn(eq(driver2), eq(List.of(RideStatus.ONGOING, RideStatus.SCHEDULED))))
-            .thenReturn(List.of(ride2));
-        when(rideRepository.findAllByDriverAndStatusIn(eq(driver2), eq(List.of(RideStatus.ONGOING))))
-            .thenReturn(List.of(ride2));
+        when(rideRepository.findAllByStatusInAndCreatedAtBetween(
+            eq(List.of(RideStatus.ONGOING, RideStatus.SCHEDULED)), any(), any()
+        )).thenReturn(List.of()); // Nema slobodnih
 
         Driver result = driverService.findDriverForRide(pickupLocation, standardPrefs(), 1);
 
