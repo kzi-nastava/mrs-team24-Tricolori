@@ -28,6 +28,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
+import com.example.mobile.dto.pricelist.PriceConfigResponse;
+import com.example.mobile.network.service.PricelistService;
 import com.example.mobile.network.service.VehicleService;
 import com.example.mobile.model.VehicleLocationResponse;
 import com.example.mobile.network.RetrofitClient;
@@ -80,7 +82,9 @@ public class HomeFragment extends Fragment {
     private static final double DEFAULT_LAT = 45.2671;
     private static final double DEFAULT_LON = 19.8335;
     private static final int DEFAULT_ZOOM = 13;
-    private static final double PRICE_PER_KM = 120.0; // RSD per km
+
+    private double pricePerKm    = 120.0; // fallback default
+    private double standardPrice = 0.0;   // fallback default
 
     public HomeFragment() {
         // Required empty constructor
@@ -120,6 +124,7 @@ public class HomeFragment extends Fragment {
         vehicleMarkers = new ArrayList<>();
 
         loadVehicles();
+        loadPricing();
         setupPeriodicUpdates();
     }
 
@@ -341,7 +346,7 @@ public class HomeFragment extends Fragment {
         int seconds = (int) ((durationMinutes - minutes) * 60);
         tvDuration.setText(String.format("%d min %d sec", minutes, seconds));
 
-        double estimatedPrice = distanceKm * PRICE_PER_KM;
+        double estimatedPrice = standardPrice + (distanceKm * pricePerKm);
         tvEstimatedPrice.setText(String.format("%.0f RSD", estimatedPrice));
 
         llEstimationResults.setVisibility(View.VISIBLE);
@@ -389,12 +394,32 @@ public class HomeFragment extends Fragment {
         mapView.invalidate();
     }
 
-    // ─── Network: fetch vehicles via Retrofit ─────────────────────────────────
+    private void loadPricing() {
+        PricelistService pricelistService =
+                RetrofitClient.getClient(requireContext()).create(PricelistService.class);
 
-    /**
-     * Calls GET /api/v1/vehicles/active using the Retrofit service instance
-     * from ClientUtils — the same way ProductService is used elsewhere.
-     */
+        pricelistService.getCurrentPricing().enqueue(new Callback<PriceConfigResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PriceConfigResponse> call,
+                                   @NonNull Response<PriceConfigResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    PriceConfigResponse pricing = response.body();
+                    if (pricing.getKmPrice() != null)       pricePerKm    = pricing.getKmPrice();
+                    if (pricing.getStandardPrice() != null) standardPrice = pricing.getStandardPrice();
+                    Log.d(TAG, "Loaded pricing — start: " + standardPrice + ", per km: " + pricePerKm);
+                } else {
+                    Log.w(TAG, "Pricing fetch failed (HTTP " + response.code() + "), using defaults");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PriceConfigResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "Pricing request failed, using defaults: " + t.getMessage());
+            }
+        });
+    }
+
+
     private void loadVehicles() {
 
         VehicleService vehicleService =
@@ -420,7 +445,6 @@ public class HomeFragment extends Fragment {
 
                         clearVehicleMarkers();
                         placeVehicleMarkers(vehicles);
-                       // updateVehicleCounts();
                     }
 
                     @Override
@@ -434,10 +458,6 @@ public class HomeFragment extends Fragment {
                 });
     }
 
-
-    /**
-     * Removes all existing vehicle markers from the map and clears the list.
-     */
     private void clearVehicleMarkers() {
         for (VehicleMarker vm : vehicleMarkers) {
             mapView.getOverlays().remove(vm.marker);
@@ -445,10 +465,6 @@ public class HomeFragment extends Fragment {
         vehicleMarkers.clear();
     }
 
-    /**
-     * Places a marker for each vehicle from the backend response.
-     * Green icon = available, Red icon = busy.
-     */
     private void placeVehicleMarkers(List<VehicleLocationResponse> vehicles) {
         for (VehicleLocationResponse vehicle : vehicles) {
             if (vehicle.getLatitude() == null || vehicle.getLongitude() == null) {
@@ -515,7 +531,6 @@ public class HomeFragment extends Fragment {
         tvBusyCount.setText(getString(R.string.busy_count, busyCount));
     }
 
-    // ─── Periodic refresh ─────────────────────────────────────────────────────
 
     private void setupPeriodicUpdates() {
         updateHandler = new Handler(Looper.getMainLooper());
@@ -529,7 +544,6 @@ public class HomeFragment extends Fragment {
         updateHandler.postDelayed(updateRunnable, 30000);
     }
 
-    // ─── Lifecycle ────────────────────────────────────────────────────────────
 
     @Override
     public void onResume() {
@@ -567,7 +581,6 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // ─── Internal model ───────────────────────────────────────────────────────
 
     private static class VehicleMarker {
         String name;
