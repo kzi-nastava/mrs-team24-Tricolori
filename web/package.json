@@ -45,6 +45,7 @@
     "chart.js": "^4.5.1",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
+    "lodash-es": "^4.17.23",
     "ng2-charts": "^8.0.0",
     "polyline-encoded": "^0.0.9",
     "rxjs": "~7.8.0",
