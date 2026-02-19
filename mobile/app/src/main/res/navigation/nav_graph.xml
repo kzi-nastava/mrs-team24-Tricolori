@@ -351,4 +351,16 @@
             android:defaultValue="@null" />
     </fragment>
 
+    <fragment
+        android:id="@+id/adminConversationListFragment"
+        android:name="com.example.mobile.ui.fragments.AdminConversationListFragment"
+        android:label="Support Chats"
+        tools:layout="@layout/fragment_admin_conversation_list" />
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.mobile.ui.fragments.NotificationFragment"
+        android:label="Notifications"
+        tools:layout="@layout/fragment_notification" />
+
 </navigation>

@@ -23,10 +23,10 @@
             android:title="Supervise" />
 
 <!--        &lt;!&ndash; Notifications - passenger and admin &ndash;&gt;-->
-<!--        <item-->
-<!--            android:id="@+id/notificationsFragment"-->
-<!--            android:icon="@drawable/ic_notifications"-->
-<!--            android:title="Notifications" />-->
+        <item
+            android:id="@+id/notificationsFragment"
+            android:icon="@drawable/ic_notification"
+            android:title="Notifications" />
 
         <!-- Pricelist - admin only -->
         <item

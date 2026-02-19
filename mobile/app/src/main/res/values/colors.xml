@@ -73,4 +73,15 @@
     <!-- Red Colors -->
     <color name="dark_red">#8B0000</color>
 
+    <!-- Notification icon background tints -->
+    <color name="notif_bg_red">#FEE2E2</color>
+    <color name="notif_bg_blue">#DBEAFE</color>
+    <color name="notif_bg_green">#DCFCE7</color>
+    <color name="notif_bg_amber">#FEF3C7</color>
+    <color name="notif_bg_purple">#F3E8FF</color>
+    <color name="notif_bg_indigo">#E0E7FF</color>
+    <color name="notif_bg_sky">#E0F2FE</color>
+    <color name="notif_bg_gray">#F3F4F6</color>
+    <color name="notif_bg_orange">#FFEDD5</color>
+
 </resources>
