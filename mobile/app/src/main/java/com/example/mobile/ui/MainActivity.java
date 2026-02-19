@@ -78,13 +78,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Set<Integer> topLevelDestinations = new HashSet<>();
-        topLevelDestinations.add(R.id.rideHistoryFragment);
         topLevelDestinations.add(R.id.userProfileFragment);
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
         topLevelDestinations.add(R.id.driverHomeFragment);
         topLevelDestinations.add(R.id.passengerHomeFragment);
         topLevelDestinations.add(R.id.userReportsFragment);
+        topLevelDestinations.add(R.id.adminSuperviseFragment);
+        topLevelDestinations.add(R.id.passengerRideHistoryFragment);
+        topLevelDestinations.add(R.id.driverRideHistoryFragment);
+        topLevelDestinations.add(R.id.adminRideHistoryFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -125,17 +128,21 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-            if (id == R.id.rideHistoryFragment) {
-                SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                String userRole = prefs.getString("user_role", "");
+                if (id == R.id.rideHistoryFragment) {
+                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    String userRole = prefs.getString("user_role", "");
 
-                Bundle args = new Bundle();
-                args.putString("role", "ROLE_PASSENGER".equals(userRole) ? "PASSENGER" : "DRIVER");
+                    drawerLayout.closeDrawer(GravityCompat.START);
 
-                drawerLayout.closeDrawer(GravityCompat.START);
-                navController.navigate(R.id.rideHistoryFragment, args);
-                return true;
-            }
+                    if ("ROLE_PASSENGER".equals(userRole)) {
+                        navController.navigate(R.id.passengerRideHistoryFragment);
+                    } else if ("ROLE_DRIVER".equals(userRole)) {
+                        navController.navigate(R.id.driverRideHistoryFragment);
+                    } else if ("ROLE_ADMIN".equals(userRole)) {
+                        navController.navigate(R.id.adminRideHistoryFragment);
+                    }
+                    return true;
+                }
 
             if (id == R.id.homeFragment) {
                 SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
@@ -156,6 +163,43 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             }
+
+                if (id == R.id.supportChatEntry) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+
+                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    long currentUserId = prefs.getLong("user_id", 0L);
+
+                    RetrofitClient.getClient(this)
+                            .create(com.example.mobile.network.service.ChatApiService.class)
+                            .getAdminId()
+                            .enqueue(new retrofit2.Callback<>() {
+                                @Override
+                                public void onResponse(
+                                        retrofit2.Call<com.example.mobile.dto.chat.AdminIdResponse> call,
+                                        retrofit2.Response<com.example.mobile.dto.chat.AdminIdResponse> response) {
+                                    if (response.isSuccessful() && response.body() != null) {
+                                        Bundle args = new Bundle();
+                                        args.putLong("current_user_id", currentUserId);
+                                        args.putLong("other_user_id", response.body().getAdminId());
+                                        args.putString("other_user_name", "Support");
+                                        navController.navigate(R.id.chatFragment, args);
+                                    } else {
+                                        Toast.makeText(MainActivity.this,
+                                                "Support is currently unavailable", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(
+                                        retrofit2.Call<com.example.mobile.dto.chat.AdminIdResponse> call,
+                                        Throwable t) {
+                                    Toast.makeText(MainActivity.this,
+                                            "Could not reach support", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                    return true;
+                }
 
             boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
             if (handled) drawerLayout.closeDrawer(GravityCompat.START);
@@ -245,14 +289,16 @@ public class MainActivity extends AppCompatActivity {
         MenuItem home = menu.findItem(R.id.homeFragment);
         MenuItem history = menu.findItem(R.id.rideHistoryFragment);
         // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
-//        MenuItem supervise = menu.findItem(R.id.rideSupervisorFragment);
+        MenuItem supervise = menu.findItem(R.id.adminSuperviseFragment);
 //        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
         MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
-//        MenuItem support = menu.findItem(R.id.supportFragment);
+        MenuItem support = menu.findItem(R.id.supportChatEntry);
+        MenuItem adminSupport = menu.findItem(R.id.adminConversationListFragment);
         MenuItem profile = menu.findItem(R.id.userProfileFragment);
         MenuItem logout = menu.findItem(R.id.nav_logout);
         MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
         MenuItem changeRequests = menu.findItem(R.id.changeRequestsReviewFragment);
+        MenuItem blocks = menu.findItem(R.id.blockFragment);
         MenuItem driverRegistration = menu.findItem(R.id.adminDriverRegistrationFragment);
         MenuItem userReports = menu.findItem(R.id.userReportsFragment);
 
@@ -260,51 +306,61 @@ public class MainActivity extends AppCompatActivity {
             // Common items for all logged in users
             home.setVisible(true);
             history.setVisible(true);
-            // support.setVisible(true);
             profile.setVisible(true);
             logout.setVisible(true);
             userReports.setVisible(true);
 
             // Role-specific items
             if ("ROLE_ADMIN".equals(role)) {
-                // supervise.setVisible(true);
+                 supervise.setVisible(true);
 //                notifications.setVisible(true);
                 pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
                 changeRequests.setVisible(true);
                 driverRegistration.setVisible(true);
+                support.setVisible(false);
+                blocks.setVisible(true);
+                adminSupport.setVisible(true);
 
             } else if ("ROLE_DRIVER".equals(role)) {
-//                supervise.setVisible(false);
+                supervise.setVisible(false);
 //                notifications.setVisible(false);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
                 changeRequests.setVisible(false);
                 driverRegistration.setVisible(false);
+                support.setVisible(true);
+                adminSupport.setVisible(false);
+                blocks.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
-//                supervise.setVisible(false);
+                supervise.setVisible(false);
 //                notifications.setVisible(true);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
                 changeRequests.setVisible(false);
                 driverRegistration.setVisible(false);
+                support.setVisible(true);
+                adminSupport.setVisible(false);
+                blocks.setVisible(false);
             }
 
         } else {
             // Not logged in - hide everything
             home.setVisible(false);
             history.setVisible(false);
-//            supervise.setVisible(false);
+            supervise.setVisible(false);
 //            notifications.setVisible(false);
             pricelist.setVisible(false);
-//            support.setVisible(false);
+            support.setVisible(false);
+            adminSupport.setVisible(false);
             profile.setVisible(false);
             logout.setVisible(false);
             statusSwitch.setVisible(false);
             changeRequests.setVisible(false);
             driverRegistration.setVisible(false);
             userReports.setVisible(false);
+            blocks.setVisible(false);
         }
     }
 

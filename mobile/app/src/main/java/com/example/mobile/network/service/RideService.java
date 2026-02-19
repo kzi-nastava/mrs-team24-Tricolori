@@ -3,10 +3,17 @@ package com.example.mobile.network.service;
 import com.example.mobile.dto.ride.CancellationRequest;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
 import com.example.mobile.dto.ride.DriverRideHistoryResponse;
+import com.example.mobile.dto.ride.InconsistencyReportRequest;
+import com.example.mobile.dto.ride.OrderRequest;
+import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.PassengerRideHistoryResponse;
 import com.example.mobile.dto.ride.RideRatingRequest;
 import com.example.mobile.dto.ride.RideRatingStatusResponse;
+import com.example.mobile.dto.ride.RideTrackingResponse;
+import com.example.mobile.dto.ride.StopRideRequest;
+import com.example.mobile.dto.ride.StopRideResponse;
+import com.example.mobile.dto.vehicle.UpdateVehicleLocationRequest;
 
 import java.util.List;
 
@@ -20,6 +27,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface RideService {
+    @POST("api/v1/rides/order")
+    Call<Long> bookRide(@Body OrderRequest request);
 
     @GET("api/v1/rides/history/driver")
     Call<List<DriverRideHistoryResponse>> getDriverRideHistory(
@@ -34,12 +43,25 @@ public interface RideService {
             @Path("rideId") Long rideId
     );
 
+    @GET("api/v1/rides/{id}/details/admin")
+    Call<DriverRideDetailResponse> getAdminRideDetail(@Path("id") long rideId);
+
     @GET("api/v1/rides/passenger")
     Call<ResponseBody> getPassengerRideHistory(
             @Query("startDate") String startDate,
             @Query("endDate") String endDate,
-            @Query("page") int page,
-            @Query("size") int size,
+            @Query("page") Integer page,
+            @Query("size") Integer size,
+            @Query("sort") String sort
+    );
+
+    @GET("api/v1/rides/admin")
+    Call<ResponseBody> getAdminRideHistory(
+            @Query("personEmail") String personEmail,
+            @Query("startDate") String startDate,
+            @Query("endDate") String endDate,
+            @Query("page") Integer page,
+            @Query("size") Integer size,
             @Query("sort") String sort
     );
 
@@ -58,7 +80,40 @@ public interface RideService {
     Call<RideRatingStatusResponse> getRatingStatus(
             @Path("rideId") Long rideId
     );
+  
+    @PUT("api/v1/rides/{id}/cancel")
+    Call<ResponseBody> cancelRide(@Path("id") Long rideId, @Body CancellationRequest request);
 
-    @PUT("api/v1/rides/cancel")
-    Call<ResponseBody> cancelRide(@Body CancellationRequest request);
+    @GET("api/v1/rides/ongoing")
+    Call<List<RideTrackingResponse>> getAllOngoingRides();
+  
+    @GET("api/v1/rides/{rideId}/track")
+    Call<RideTrackingResponse> trackRide(
+            @Path("rideId") Long rideId
+    );
+
+    @PUT("api/v1/rides/panic")
+    Call<Void> panicRide(@Body PanicRideRequest request);
+
+    @POST("api/v1/rides/{rideId}/report-inconsistency")
+    Call<Void> reportInconsistency(
+            @Path("rideId") Long rideId,
+            @Body InconsistencyReportRequest request
+    );
+
+    @PUT("api/v1/rides/{rideId}/complete")
+    Call<Void> completeRide(
+            @Path("rideId") Long rideId
+    );
+
+    @PUT("api/v1/rides/stop")
+    Call<StopRideResponse> stopRide(
+            @Body StopRideRequest request
+    );
+
+    @PUT("api/v1/rides/{rideId}/vehicle-location")
+    Call<Void> updateRideVehicleLocation(
+            @Path("rideId") Long rideId,
+            @Body UpdateVehicleLocationRequest request
+    );
 }

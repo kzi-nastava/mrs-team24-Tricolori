@@ -1,22 +1,30 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, OnDestroy, inject} from '@angular/core';
 import { Router } from '@angular/router';
+import { WebSocketService } from '../../../../../services/websocket.service';
 
 @Component({
   selector: 'app-driver-waiting',
   standalone: true,
   templateUrl: './driver-waiting.html'
 })
-export class DriverWaiting implements OnInit {
+export class DriverWaiting implements OnInit, OnDestroy {
 
-  // TODO: remove content of this class when web sockets are introduced in project
+  private readonly rideAssignTopic = '/user/queue/ride-assigned';
 
-  constructor(private router: Router) {}
+  private router = inject(Router);
+  private webSocketService = inject(WebSocketService);
 
   ngOnInit(): void {
-    setTimeout(() => {
-      const fakeRideId = 42;
-      this.router.navigate(['/driver/home/ride-assign', fakeRideId]);
-    }, 5000000);
+    this.webSocketService.subscribe(
+      this.rideAssignTopic,
+      (rideId: number) => {
+        console.log('Ride assigned:', rideId);
+        this.router.navigate(['/driver/ride-assign/', rideId]);
+      }
+    );
   }
 
+  ngOnDestroy(): void {
+    this.webSocketService.unsubscribe(this.rideAssignTopic);
+  }
 }

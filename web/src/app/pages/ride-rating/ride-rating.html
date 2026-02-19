@@ -181,7 +181,7 @@
   </div>
 
   <div class="w-full lg:w-3/4 h-[50vh] lg:h-full relative">
-    <app-map [vehicles]="[]"></app-map>
+    <div id="ride-map" class="w-full h-full"></div>
 
     @if (rideDetails(); as ride) {
       <div class="absolute top-6 left-6 bg-white rounded-lg shadow-lg p-4 z-20">

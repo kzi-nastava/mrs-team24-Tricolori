@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.time.LocalDateTime;
@@ -20,6 +19,13 @@ import java.util.Optional;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride, Long> {
+    List<Ride> findAllByDriverAndStatusInAndCreatedAtBetween(
+        Driver driver,
+        List<RideStatus> statuses,
+        LocalDateTime startDate,
+        LocalDateTime endDate
+    );
+
     List<Ride> findAllByStatusInAndCreatedAtBetween(
         List<RideStatus> statuses,
         LocalDateTime start,

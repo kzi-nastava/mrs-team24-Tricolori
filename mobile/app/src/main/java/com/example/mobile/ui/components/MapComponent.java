@@ -8,6 +8,9 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 import com.example.mobile.R;
+
+import org.osmdroid.bonuspack.routing.OSRMRoadManager;
+import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.utils.PolylineEncoder;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -115,4 +118,50 @@ public class MapComponent {
         }
         mapView.invalidate();
     }
+
+    public void drawRouteFromPoints(GeoPoint start, GeoPoint end) {
+
+        new Thread(() -> {
+            try {
+                OSRMRoadManager roadManager =
+                        new OSRMRoadManager(context, "ANDROID");
+
+                ArrayList<GeoPoint> waypoints = new ArrayList<>();
+                waypoints.add(start);
+                waypoints.add(end);
+                Road road = roadManager.getRoad(waypoints);
+
+                Polyline roadOverlay =
+                        org.osmdroid.bonuspack.routing.RoadManager.buildRoadOverlay(road);
+
+                roadOverlay.setWidth(14f);
+                roadOverlay.setColor(Color.parseColor("#00ACC1"));
+                List<GeoPoint> routePoints = roadOverlay.getActualPoints();
+
+                mapView.post(() -> {
+                    clearRouteAndMarkers();
+                    mapView.getOverlays().add(roadOverlay);
+                    pickupMarker = createMarker(
+                            routePoints.get(0),
+                            R.drawable.ic_marker_start,
+                            "Pickup"
+                    );
+                    destinationMarker = createMarker(
+                            routePoints.get(routePoints.size() - 1),
+                            R.drawable.ic_marker_end,
+                            "Destination"
+                    );
+                    mapView.getOverlays().add(pickupMarker);
+                    mapView.getOverlays().add(destinationMarker);
+
+                    zoomToRoute(routePoints);
+                    mapView.invalidate();
+                });
+
+            } catch (Exception e) {
+                Log.e("ROUTE", e.toString());
+            }
+        }).start();
+    }
+
 }

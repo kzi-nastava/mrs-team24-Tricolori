@@ -54,8 +54,14 @@ public class RouteService {
 
     private void locateStop(Stop stop) {
         Location location = stop.getLocation();
-        if (location.getLatitude() != null && location.getLongitude() != null)
+        if (
+            location.getLatitude() != null && location.getLatitude() != 0.0 && 
+            location.getLongitude() != null && location.getLongitude() != 0.0
+        )
             return;
+
+        location.setLatitude(null);
+        location.setLongitude(null);
 
         NominatimResponse response = geocodingService.getAddressCoordinates(stop.getAddress());
         location.setLatitude(Double.parseDouble(response.getLat()));

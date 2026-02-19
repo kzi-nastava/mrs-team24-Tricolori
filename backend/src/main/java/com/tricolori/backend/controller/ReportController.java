@@ -13,6 +13,7 @@ import com.tricolori.backend.dto.report.ReportResponse;
 import com.tricolori.backend.entity.Person;
 import com.tricolori.backend.service.ReportService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,7 +26,7 @@ public class ReportController {
     @PreAuthorize("hasAnyRole('DRIVER', 'PASSENGER')")
     public ResponseEntity<ReportResponse> getPersonalReport(
         @AuthenticationPrincipal Person person,
-        ReportRequest request
+        @Valid ReportRequest request
     ) {
         var response = service.getPersonalResponse(person, request);
         return ResponseEntity.ok(response);
@@ -35,7 +36,7 @@ public class ReportController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ReportResponse> getAdminReport(
         @AuthenticationPrincipal Person person,
-        AdminReportRequest request
+        @Valid AdminReportRequest request
     ) {
         var response = service.getAdminResponse(person, request);
         return ResponseEntity.ok(response);

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NotificationService } from '../../../services/notification.service';
@@ -16,13 +16,15 @@ export class NavigationAdmin implements OnInit, OnDestroy {
   private unreadSubscription?: Subscription;
 
   constructor(
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.unreadSubscription = this.notificationService.unreadCount$.subscribe(
       count => {
         this.unreadCount = count;
+        this.cdr.detectChanges();
       }
     );
   }
@@ -31,6 +33,4 @@ export class NavigationAdmin implements OnInit, OnDestroy {
     this.unreadSubscription?.unsubscribe();
   }
 
-  onLogout() {
-  }
 }

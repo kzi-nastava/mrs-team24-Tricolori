@@ -1,5 +1,6 @@
 package com.tricolori.backend.service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -115,8 +116,12 @@ public class DriverService {
     private boolean isEndingInTenMinutes(Ride ride) {
         if (ride.getStartTime() == null || ride.getRoute() == null) return false;
         
+        LocalDateTime now = LocalDateTime.now();
         LocalDateTime estimatedEnd = ride.getStartTime().plusSeconds(ride.getRoute().getEstimatedTimeSeconds());
-        return estimatedEnd.isBefore(LocalDateTime.now().plusMinutes(10));
+        
+        long minutesRemaining = Duration.between(now, estimatedEnd).toMinutes();
+        
+        return minutesRemaining >= 0 && minutesRemaining <= 10;
     }
 
     private boolean matchesPreferences(Driver driver, RidePreferences prefs, int trackingPassengersNumber) {
@@ -135,10 +140,14 @@ public class DriverService {
     }
 
     private Driver findBestBusyDriver(List<Driver> candidates, Location pickup) {
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay(); // 2026-02-17T00:00:00
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX); // 2026-02-17T23:59:59.999...
+
         return candidates.stream()
             .filter(d -> {
-                List<Ride> driverRides = rideRepository.findAllByDriverAndStatusIn(d, 
-                        List.of(RideStatus.ONGOING, RideStatus.SCHEDULED));
+                List<Ride> driverRides = rideRepository.findAllByDriverAndStatusInAndCreatedAtBetween(
+                    d, List.of(RideStatus.ONGOING, RideStatus.SCHEDULED), startOfDay, endOfDay
+                );
                 
                 boolean hasScheduled = driverRides.stream().anyMatch(r -> r.getStatus() == RideStatus.SCHEDULED);
                 if (hasScheduled) return false;

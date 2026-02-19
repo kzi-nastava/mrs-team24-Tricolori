@@ -29,14 +29,14 @@ export class UnregisteredHome implements OnInit {
   private vehicleService = inject(VehicleService);
 
   vehicles = signal<Vehicle[]>([]);
-  loading = signal(false); 
+  loading = signal(false);
 
   ngOnInit(): void {
     this.loadVehicles();
   }
 
   loadVehicles(): void {
-    this.loading.set(true); 
+    this.loading.set(true);
 
     this.vehicleService.getActiveVehicles().subscribe({
       next: (v) => {
@@ -44,7 +44,7 @@ export class UnregisteredHome implements OnInit {
         this.mapService.updateVehicleMarkers(v);
       },
       error: () => {
-        this.loading.set(false); 
+        this.loading.set(false);
       },
       complete: () => {
         setTimeout(() => this.loading.set(false), 500);

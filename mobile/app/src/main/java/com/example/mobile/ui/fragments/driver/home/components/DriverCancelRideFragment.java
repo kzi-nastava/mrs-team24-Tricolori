@@ -82,9 +82,11 @@ public class DriverCancelRideFragment extends Fragment {
         btnConfirmCancel.setEnabled(false);
         btnConfirmCancel.setAlpha(0.5f);
 
+        Long rideId = viewModel.getActiveRide().getValue().id;
+
         RideService rideService = RetrofitClient.getClient(requireContext()).create(RideService.class);
 
-        rideService.cancelRide(new CancellationRequest(reason)).enqueue(new Callback<>() {
+        rideService.cancelRide(rideId, new CancellationRequest(reason)).enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 

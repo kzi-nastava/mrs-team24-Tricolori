@@ -2,6 +2,42 @@
     <string name="app_name">Cuber</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <!-- Block page -->
+    <string name="block_filter_title">Filter Users</string>
+    <string name="block_filter_reset">Reset filters</string>
+    <string name="block_filter_by_id">Filter by ID</string>
+    <string name="block_filter_by_id_hint">1</string>
+    <string name="block_filter_by_first_name">Filter by first name</string>
+    <string name="block_filter_by_first_name_hint">Joe</string>
+    <string name="block_filter_by_last_name">Filter by last name</string>
+    <string name="block_filter_by_last_name_hint">Doe</string>
+    <string name="block_filter_by_email">Filter by email</string>
+    <string name="block_filter_by_email_hint">joedoe@example.com</string>
+    <string name="block_filter_apply">Apply filters</string>
+    <string name="block_no_users_found">No users found with given criteria.</string>
+    <string name="block_results_show_amount">Showing 1–5 out of 20 users</string>
+    <string name="block_results_prev_btn">← Prev</string>
+    <string name="block_results_cur_page">1</string>
+    <string name="block_results_of_n">of 4</string>
+    <string name="block_results_next_btn">Next →</string>
+    <string name="block_result_item_name">Name</string>
+    <string name="block_result_item_name_example">John Doe</string>
+    <string name="block_result_item_email">Email</string>
+    <string name="block_result_item_email_example">john@example.com</string>
+    <string name="block_result_item_registration">Reg. date</string>
+    <string name="block_result_item_registration_example">01.01.2024 – 12:00</string>
+    <string name="block_result_item_change_status_block">Block user</string>
+    <string name="block_result_item_change_status_unblock">Unlock user</string>
+    <string name="block_result_item_id">1</string>
+    <string name="block_modal_title">Block user</string>
+    <string name="block_modal_user">User: </string>
+    <string name="block_modal_user_email">user@example.com</string>
+    <string name="block_modal_reason">Block reason:</string>
+    <string name="block_modal_reason_hint">Enter reason…</string>
+    <string name="block_modal_are_you_sure">Are you sure you want to unblock this user?</string>
+    <string name="block_modal_cancel_btn">Cancel</string>
+    <string name="block_modal_confirm_btn">Block now</string>
+
     <!--   Strings used on Change password page   -->
     <string name="change_password_title">Change your password</string>
     <string name="change_password_desc">Choose a strong password to secure your account</string>
@@ -327,4 +363,29 @@
     <string name="reports_rides_per_days">Rides per days</string>
     <string name="reports_kilometers_per_days">Kilometers per days</string>
     <string name="reports_money_per_days">Money spent/gained per days</string>
+    <!-- Ride History -->
+    <string name="my_ride_history">My Ride History</string>
+    <string name="view_all_rides">View all your rides and leave ratings for completed trips</string>
+    <string name="filters">Filters</string>
+    <string name="hint_person_email">Filter by passenger/driver email</string>
+    <string name="btn_apply_filters">Apply Filters</string>
+    <string name="btn_clear_all">Clear All</string>
+
+    <!-- Table Headers -->
+    <string name="header_route">Route</string>
+    <string name="header_date">Date</string>
+    <string name="header_price">Price</string>
+    <string name="header_status">Status</string>
+    <string name="header_actions">Actions</string>
+
+    <!-- Pagination -->
+    <string name="showing_rides">Showing %1$d of %2$d rides</string>
+    <string name="page_number">Page %1$d</string>
+    <string name="btn_previous">Previous</string>
+    <string name="btn_next">Next</string>
+    <string name="no_rides_found">No rides found.</string>
+
+    <!-- Other -->
+    <string name="currency_rsd">RSD</string>
+    <string name="btn_view">View</string>
 </resources>

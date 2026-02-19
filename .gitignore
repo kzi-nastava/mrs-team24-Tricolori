@@ -1,1 +1,67 @@
-.vscode/
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+.vscode
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build files
+*.js.map
+*.metadata.json
+
+# Package manager locks (optional - zakomentariši ako želiš da čuvaš lock fajlove)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# E2E
+/e2e/*.js
+/e2e/*.map
+
+# Documentation
+/documentation
+
+# Browser extension build
+*.crx
+*.xpi
+*.zip

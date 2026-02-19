@@ -35,7 +35,7 @@ import { Router } from '@angular/router';
   templateUrl: './ride-booking.html',
   styleUrl: './ride-booking.css'
 })
-export class RideBooking implements OnInit, AfterViewInit {
+export class RideBooking implements OnInit {
   // Services:
   private mapService = inject(MapService);
   private rideService = inject(RideService);
@@ -67,10 +67,6 @@ export class RideBooking implements OnInit, AfterViewInit {
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
     });
-  }
-
-  ngAfterViewInit(): void {
-    this.mapService.initMap('map');
   }
 
   openFavoriteRoutes() {
@@ -108,7 +104,7 @@ export class RideBooking implements OnInit, AfterViewInit {
     });
   }
 
-  
+
 
   async rideSubmit(event: Event) {
     event.preventDefault();

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   heroMapPin,
@@ -10,12 +10,13 @@ import {
   heroXMark,
   heroArrowLeft,
   heroUser,
-  heroPhone
+  heroPhone,
+  heroCurrencyDollar
 } from '@ng-icons/heroicons/outline';
 import { CancelRideModalComponent } from '../cancel-ride-modal/cancel-ride-modal';
 import { RideService } from '../../../../../services/ride.service';
 import { MapService } from '../../../../../services/map.service';
-import { RideAssignment } from '../../../../../model/ride';
+import {RideAssignmentResponse} from '../../../../../model/ride';
 import {ToastService} from '../../../../../services/toast.service';
 
 @Component({
@@ -32,35 +33,48 @@ import {ToastService} from '../../../../../services/toast.service';
       heroXMark,
       heroArrowLeft,
       heroUser,
-      heroPhone
+      heroPhone,
+      heroCurrencyDollar
     })
   ]
 })
 export class DriverRideAssignment implements OnInit, OnDestroy {
 
   showCancelModal = signal(false);
-
-  activeRide = signal<RideAssignment>({
-    id: 1,
-    pickupAddress: 'Železnička stanica, Novi Sad',
-    destinationAddress: 'Štrand, Novi Sad',
-    passengerName: 'Putnica Putnić',
-    passengerPhone: '+381 64 123 4567',
-    estimatedDistance: 3.3,
-    estimatedDuration: 8,
-    estimatedPrice: 334,
-    pickupCoords: [45.2656, 19.8289],
-    destinationCoords: [45.2397, 19.8514],
-    eta: 5
-  });
+  activeRide = signal<RideAssignmentResponse | null>(null);
 
   private rideService = inject(RideService);
   private mapService = inject(MapService);
   private toastService = inject(ToastService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    this.mapService.drawRoute([]);
+    const rideId = this.route.snapshot.paramMap.get('id');
+
+    if (rideId) {
+      this.loadRideDetails(+rideId);
+    } else {
+      console.error('Missing Ride Id');
+      this.toastService.show('Something went wrong', 'error');
+      this.router.navigate(['/driver/']);
+    }
+  }
+
+  private loadRideDetails(rideId: number): void {
+    this.rideService.getRideAssignment(rideId).subscribe({
+      next: (ride) => {
+        this.activeRide.set(ride);
+        if (ride.routeGeometry) {
+          this.mapService.drawRoute(ride.routeGeometry);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading ride assignment:', error);
+        this.toastService.show('Could not load ride assignment', 'error');
+        this.router.navigate(['/driver/']);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -72,13 +86,22 @@ export class DriverRideAssignment implements OnInit, OnDestroy {
   }
 
   submitCancellation(reason: string): void {
-    this.rideService.cancelRide(reason).subscribe({
+    const rideId = this.activeRide()?.id;
+
+    if (!rideId) {
+      this.toastService.show('Ride ID missing', 'error');
+      this.showCancelModal.set(false);
+      return;
+    }
+
+    this.rideService.cancelRide(rideId, reason).subscribe({
       next: () => {
         this.showCancelModal.set(false);
         this.toastService.show('Ride canceled successfully!', 'success');
         this.router.navigate(['/driver']);
       },
       error: (err) => {
+        console.error(err);
         this.showCancelModal.set(false);
         const msg = err.error?.message || err.error || 'Something went wrong';
         this.toastService.show(msg, 'error');
@@ -86,28 +109,32 @@ export class DriverRideAssignment implements OnInit, OnDestroy {
     });
   }
 
-  handleStartRide() {
-    this.rideService.startRide(this.activeRide().id).subscribe({
+  handleStartRide(): void {
+    const rideId = this.activeRide()?.id;
+
+    if (!rideId) {
+      this.toastService.show('Cannot start ride: missing ID', 'error');
+      return;
+    }
+
+    this.rideService.startRide(rideId).subscribe({
       next: () => {
-        console.log("Ride started successfully.");
-        this.router.navigate(['/driver/ride-tracking', this.activeRide().id]);
+        this.toastService.show('Ride started successfully', 'success');
+        this.router.navigate(['/driver/ride-tracking', rideId]);
       },
       error: (err) => {
-        // console.error("Error cancelling the ride", err);
-        this.router.navigate(['/driver/ride-tracking', this.activeRide().id]);
+        console.error("Error starting the ride", err);
+        const msg = err.error?.message || err.error || 'Failed to start ride';
+        this.toastService.show(msg, 'error');
       }
     });
   }
 
   get pickup(): string {
-    return this.activeRide().pickupAddress;
+    return this.activeRide()?.pickupAddress || 'N/A';
   }
 
   get destination(): string {
-    return this.activeRide().destinationAddress;
-  }
-
-  get eta(): number {
-    return this.activeRide().eta;
+    return this.activeRide()?.destinationAddress || 'N/A';
   }
 }

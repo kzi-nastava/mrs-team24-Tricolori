@@ -107,6 +107,7 @@ public class LoginFragment extends Fragment {
         editor.putString("jwt_token", response.accessToken);
         editor.putString("user_email", response.personDto.email);
         editor.putString("user_role", response.personDto.role.name());
+        editor.putLong("user_id", response.personDto.id);
         editor.apply();
     }
 

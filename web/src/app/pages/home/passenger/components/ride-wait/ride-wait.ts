@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import {Component, inject, signal, OnInit, OnDestroy, AfterViewInit} from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -12,8 +12,10 @@ import {
 import { CancelRideModalComponent } from '../../../driver/components/cancel-ride-modal/cancel-ride-modal';
 import { RideService } from '../../../../../services/ride.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import {ToastService} from '../../../../../services/toast.service';
+import { ToastService } from '../../../../../services/toast.service';
 import { RideAssignmentResponse } from '../../../../../model/ride';
+import { WebSocketService } from '../../../../../services/websocket.service';
+import {MapService} from '../../../../../services/map.service';
 
 @Component({
   selector: 'app-ride-wait',
@@ -24,14 +26,17 @@ import { RideAssignmentResponse } from '../../../../../model/ride';
     heroMapPin, heroFlag, heroClock, heroXMark, heroUser, heroShieldCheck
   })]
 })
-export class RideWait implements OnInit {
+export class RideWait implements OnInit, OnDestroy {
   private rideService = inject(RideService);
   private router = inject(Router);
   private toastService = inject(ToastService);
   private route = inject(ActivatedRoute);
+  private webSocketService = inject(WebSocketService);
+  private mapService = inject(MapService);
+
+  private readonly rideUpdatesTopic = '/user/queue/ride-updates';
 
   showCancelModal = signal(false);
-
   activeRide = signal<RideAssignmentResponse | undefined>(undefined);
 
   ngOnInit(): void {
@@ -39,16 +44,61 @@ export class RideWait implements OnInit {
 
     if (rideId) {
       this.loadRideData(+rideId);
+      this.subscribeToRideUpdates();
     } else {
       this.toastService.show('Invalid ride ID', 'error');
       this.router.navigate(['/passenger/home']);
     }
   }
 
-  private loadRideData(id: number) {
-    this.rideService.getRideDetails(id).subscribe({
+  ngOnDestroy(): void {
+    this.webSocketService.unsubscribe(this.rideUpdatesTopic);
+  }
+
+  private subscribeToRideUpdates(): void {
+    this.webSocketService.subscribe(
+      this.rideUpdatesTopic,
+      (update: any) => {
+        console.log('Ride update received:', update);
+        this.handleRideUpdate(update);
+      }
+    );
+  }
+
+  private handleRideUpdate(update: any): void {
+    switch (update.status) {
+      case 'ONGOING':
+        this.toastService.show('Your ride has started!', 'success');
+        this.router.navigate(['/passenger/ride-tracking', this.activeRide()?.id]);
+        break;
+
+      case 'CANCELLED_BY_DRIVER':
+        this.toastService.show(update.message || 'Driver cancelled your ride', 'info');
+        this.router.navigate(['/passenger/home']);
+        break;
+
+      case 'CANCELLED_BY_PASSENGER':
+        this.toastService.show(update.message || 'Ride has been cancelled', 'info');
+        this.router.navigate(['/passenger/home']);
+        break;
+
+      case 'FINISHED':
+        this.toastService.show('Your ride has been finished!', 'success');
+        this.router.navigate(['/passenger/ride-history', this.activeRide()?.id]);
+        break;
+
+      default:
+        console.log('Unknown ride status:', update.status);
+    }
+  }
+
+  private loadRideData(id: number): void {
+    this.rideService.getRideAssignment(id).subscribe({
       next: (res: RideAssignmentResponse) => {
         this.activeRide.set(res);
+        if (res.routeGeometry) {
+          this.mapService.drawRoute(res.routeGeometry);
+        }
       },
       error: (err) => {
         const msg = err.error?.message || 'Could not load ride details';
@@ -58,12 +108,20 @@ export class RideWait implements OnInit {
     });
   }
 
-  handleCancel() {
+  handleCancel(): void {
     this.showCancelModal.set(true);
   }
 
-  submitCancellation(reason: string) {
-    this.rideService.cancelRide(reason).subscribe({
+  submitCancellation(reason: string): void {
+    const rideId = this.activeRide()?.id;
+
+    if (!rideId) {
+      this.toastService.show('Ride ID missing', 'error');
+      this.showCancelModal.set(false);
+      return;
+    }
+
+    this.rideService.cancelRide(rideId, reason).subscribe({
       next: () => {
         this.showCancelModal.set(false);
         this.toastService.show('Ride canceled successfully!', 'success');

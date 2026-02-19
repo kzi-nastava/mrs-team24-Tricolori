@@ -65,6 +65,7 @@ dependencies {
 
     // Glide
     implementation(libs.glide)
+    implementation(libs.swiperefreshlayout)
     annotationProcessor(libs.glide.compiler)
 
     testImplementation(libs.junit)

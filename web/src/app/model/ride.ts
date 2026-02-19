@@ -24,8 +24,8 @@ export interface RideDetails {
   id: number;
   pickup: string;
   destination: string;
-  pickupCoords: number[];  // Changed from [number, number] to number[]
-  destinationCoords: number[];  // Changed from [number, number] to number[]
+  pickupCoords: [number, number];
+destinationCoords: [number, number];
   driverName: string;
   vehicleType: string;
   licensePlate: string;
