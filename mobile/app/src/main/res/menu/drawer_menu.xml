@@ -17,16 +17,16 @@
 
         <!-- TODO: COMMENT OUT AFTER ADDING FRAGMENTS -->
         <!-- Supervise - admin only -->
-<!--        <item-->
-<!--            android:id="@+id/rideSupervisorFragment"-->
-<!--            android:icon="@drawable/ic_supervise"-->
-<!--            android:title="Supervise" />-->
+        <item
+            android:id="@+id/adminSuperviseFragment"
+            android:icon="@drawable/ic_supervise"
+            android:title="Supervise" />
 
 <!--        &lt;!&ndash; Notifications - passenger and admin &ndash;&gt;-->
-<!--        <item-->
-<!--            android:id="@+id/notificationsFragment"-->
-<!--            android:icon="@drawable/ic_notifications"-->
-<!--            android:title="Notifications" />-->
+        <item
+            android:id="@+id/notificationsFragment"
+            android:icon="@drawable/ic_notification"
+            android:title="Notifications" />
 
         <!-- Pricelist - admin only -->
         <item
@@ -39,6 +39,16 @@
             android:title="Driver registration"
             android:icon="@drawable/ic_vehicle"
             app:showAsAction="never" />
+
+        <item
+            android:id="@+id/userReportsFragment"
+            android:title="Reports"
+            android:icon="@drawable/ic_chart" />
+      
+      <item
+            android:id="@+id/blockFragment"
+            android:icon="@drawable/ic_block"
+            android:title="Blocks" />
 
     <item
         android:id="@+id/userProfileFragment"

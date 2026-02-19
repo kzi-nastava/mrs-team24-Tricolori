@@ -27,7 +27,7 @@ public class Route {
     @OrderColumn(name = "stop_index")
     private List<Stop> stops = new ArrayList<>();
 
-    @Column(name = "route_geometry", columnDefinition = "TEXT", unique = true)
+    @Column(name = "route_geometry", columnDefinition = "TEXT", unique = false)
     private String routeGeometry;
 
     @Column(name = "distance_km")
