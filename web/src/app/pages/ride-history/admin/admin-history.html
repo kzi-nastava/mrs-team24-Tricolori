@@ -155,6 +155,28 @@
       }
     </div>
   </div>
+
+  <!-- See Reports Button -->
+  <button
+  (click)="goToReports()"
+  title="See Reports"
+  class="fixed bottom-9 right-9 z-50 flex items-center gap-3 px-6 py-4 rounded-full bg-gradient-to-br from-[#00acc1] to-[#006f7f] shadow-xl shadow-[#00acc1]/40 cursor-pointer">
+
+  <!-- Pulse ring -->
+  <span class="absolute inset-0 rounded-full bg-[#00acc1]/15 animate-ping" style="animation-duration: 2.5s;"></span>
+
+  <svg class="w-6 h-6 text-white relative z-10"
+       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"/>
+    <line x1="12" y1="20" x2="12" y2="4"/>
+    <line x1="6"  y1="20" x2="6"  y2="14"/>
+  </svg>
+
+  <span class="text-white font-medium text-base tracking-wide relative z-10">Reports</span>
+
+</button>
+
 </div>
 
 @if (selectedRide()) {
