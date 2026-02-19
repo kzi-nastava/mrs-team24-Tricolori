@@ -78,13 +78,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Set<Integer> topLevelDestinations = new HashSet<>();
-        topLevelDestinations.add(R.id.rideHistoryFragment);
         topLevelDestinations.add(R.id.userProfileFragment);
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
         topLevelDestinations.add(R.id.driverHomeFragment);
         topLevelDestinations.add(R.id.passengerHomeFragment);
         topLevelDestinations.add(R.id.adminSuperviseFragment);
+        topLevelDestinations.add(R.id.passengerRideHistoryFragment);
+        topLevelDestinations.add(R.id.driverRideHistoryFragment);
+        topLevelDestinations.add(R.id.adminRideHistoryFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -125,17 +127,21 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-            if (id == R.id.rideHistoryFragment) {
-                SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                String userRole = prefs.getString("user_role", "");
+                if (id == R.id.rideHistoryFragment) {
+                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    String userRole = prefs.getString("user_role", "");
 
-                Bundle args = new Bundle();
-                args.putString("role", "ROLE_PASSENGER".equals(userRole) ? "PASSENGER" : "DRIVER");
+                    drawerLayout.closeDrawer(GravityCompat.START);
 
-                drawerLayout.closeDrawer(GravityCompat.START);
-                navController.navigate(R.id.rideHistoryFragment, args);
-                return true;
-            }
+                    if ("ROLE_PASSENGER".equals(userRole)) {
+                        navController.navigate(R.id.passengerRideHistoryFragment);
+                    } else if ("ROLE_DRIVER".equals(userRole)) {
+                        navController.navigate(R.id.driverRideHistoryFragment);
+                    } else if ("ROLE_ADMIN".equals(userRole)) {
+                        navController.navigate(R.id.adminRideHistoryFragment);
+                    }
+                    return true;
+                }
 
             if (id == R.id.homeFragment) {
                 SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
