@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_50"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_4">
+
+        <!-- ======================== FILTER CARD ======================== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_filter"
+            android:padding="@dimen/spacing_4"
+            android:elevation="2dp">
+
+            <!-- Header row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/block_filter_title"
+                    android:textColor="@color/dark_600"
+                    android:textSize="@dimen/text_lg"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btnResetFilters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/block_filter_reset"
+                    android:textColor="@color/base_600"
+                    android:textSize="@dimen/text_sm"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground" />
+            </LinearLayout>
+
+            <!-- Filter: ID -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_5"
+                android:text="@string/block_filter_by_id"
+                android:textColor="@color/dark_800"
+                android:textSize="@dimen/text_sm" />
+
+            <EditText
+                android:id="@+id/etFilterId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_1_5"
+                android:autofillHints="@string/block_filter_by_id_hint"
+                android:background="@drawable/bg_input_field"
+                android:hint="@string/block_filter_by_id_hint"
+                android:inputType="number"
+                android:padding="@dimen/spacing_3"
+                android:textColor="@color/gray_800"
+                android:textColorHint="@color/gray_400"
+                android:textSize="@dimen/text_sm" />
+
+            <!-- Filter: First Name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_4"
+                android:text="@string/block_filter_by_first_name"
+                android:textColor="@color/dark_800"
+                android:textSize="@dimen/text_sm" />
+
+            <EditText
+                android:id="@+id/etFilterFirstName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_1_5"
+                android:autofillHints="@string/block_filter_by_first_name_hint"
+                android:background="@drawable/bg_input_field"
+                android:hint="@string/block_filter_by_first_name_hint"
+                android:inputType="textPersonName"
+                android:padding="@dimen/spacing_3"
+                android:textColor="@color/gray_800"
+                android:textColorHint="@color/gray_400"
+                android:textSize="@dimen/text_sm" />
+
+            <!-- Filter: Last Name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_4"
+                android:text="@string/block_filter_by_last_name"
+                android:textColor="@color/dark_800"
+                android:textSize="@dimen/text_sm" />
+
+            <EditText
+                android:id="@+id/etFilterLastName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_1_5"
+                android:autofillHints="@string/block_filter_by_last_name_hint"
+                android:background="@drawable/bg_input_field"
+                android:hint="@string/block_filter_by_last_name_hint"
+                android:inputType="textPersonName"
+                android:padding="@dimen/spacing_3"
+                android:textColor="@color/gray_800"
+                android:textColorHint="@color/gray_400"
+                android:textSize="@dimen/text_sm" />
+
+            <!-- Filter: Email -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_4"
+                android:text="@string/block_filter_by_email"
+                android:textColor="@color/dark_800"
+                android:textSize="@dimen/text_sm" />
+
+            <EditText
+                android:id="@+id/etFilterEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_1_5"
+                android:autofillHints="@string/block_filter_by_email_hint"
+                android:background="@drawable/bg_input_field"
+                android:hint="@string/block_filter_by_email_hint"
+                android:inputType="textEmailAddress"
+                android:padding="@dimen/spacing_3"
+                android:textColor="@color/gray_800"
+                android:textColorHint="@color/gray_400"
+                android:textSize="@dimen/text_sm" />
+
+            <!-- Apply Filters Button -->
+            <Button
+                android:id="@+id/btnApplyFilters"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_6"
+                android:background="@drawable/bg_button_primary"
+                android:paddingStart="@dimen/spacing_6"
+                android:paddingEnd="@dimen/spacing_6"
+                android:paddingTop="@dimen/spacing_2_5"
+                android:paddingBottom="@dimen/spacing_2_5"
+                android:text="@string/block_filter_apply"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
+
+        </LinearLayout>
+
+        <!-- ======================== USER LIST ======================== -->
+        <LinearLayout
+            android:id="@+id/llEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="@dimen/spacing_10"
+            android:layout_marginTop="@dimen/spacing_6"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/block_no_users_found"
+                android:textColor="@color/gray_400"
+                android:textSize="@dimen/text_sm"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvUsers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_6"
+            android:nestedScrollingEnabled="false" />
+
+        <!-- ======================== PAGINATION ======================== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="@dimen/spacing_6"
+            android:layout_marginBottom="@dimen/spacing_10">
+
+            <!-- Display range text -->
+            <TextView
+                android:id="@+id/tvDisplayRange"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="@dimen/spacing_4"
+                android:text="@string/block_results_show_amount"
+                android:textColor="@color/gray_500"
+                android:textSize="@dimen/text_sm" />
+
+            <!-- Pagination row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <!-- Previous button -->
+                <Button
+                    android:id="@+id/btnPrev"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_pagination_button"
+                    android:paddingStart="@dimen/spacing_4"
+                    android:paddingEnd="@dimen/spacing_4"
+                    android:paddingTop="@dimen/spacing_2"
+                    android:paddingBottom="@dimen/spacing_2"
+                    android:text="@string/block_results_prev_btn"
+                    android:textColor="@color/dark_700"
+                    android:textSize="@dimen/text_sm"
+                    android:textStyle="bold"
+                    app:backgroundTint="@null" />
+
+                <!-- Current page badge -->
+                <TextView
+                    android:id="@+id/tvCurrentPage"
+                    android:layout_width="@dimen/spacing_10"
+                    android:layout_height="@dimen/spacing_10"
+                    android:layout_marginStart="@dimen/spacing_3"
+                    android:layout_marginEnd="@dimen/spacing_2"
+                    android:background="@drawable/bg_page_badge"
+                    android:gravity="center"
+                    android:text="@string/block_results_cur_page"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_sm"
+                    android:textStyle="bold" />
+
+                <!-- "of N" label -->
+                <TextView
+                    android:id="@+id/tvTotalPages"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_3"
+                    android:text="@string/block_results_of_n"
+                    android:textColor="@color/gray_400"
+                    android:textSize="@dimen/text_sm" />
+
+                <!-- Next button -->
+                <Button
+                    android:id="@+id/btnNext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_pagination_button"
+                    android:paddingStart="@dimen/spacing_4"
+                    android:paddingEnd="@dimen/spacing_4"
+                    android:paddingTop="@dimen/spacing_2"
+                    android:paddingBottom="@dimen/spacing_2"
+                    android:text="@string/block_results_next_btn"
+                    android:textColor="@color/dark_700"
+                    android:textSize="@dimen/text_sm"
+                    android:textStyle="bold"
+                    app:backgroundTint="@null" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

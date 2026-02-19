@@ -15,8 +15,11 @@ import com.example.mobile.R;
 import com.example.mobile.dto.block.ActivePersonStatus;
 import com.example.mobile.enums.AccountStatus;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ActivePersonStatusAdapter extends RecyclerView.Adapter<ActivePersonStatusAdapter.UserViewHolder> {
 
@@ -126,11 +129,11 @@ public class ActivePersonStatusAdapter extends RecyclerView.Adapter<ActivePerson
             if (isoDate == null || isoDate.isEmpty()) return "-";
             try {
                 // Parse ISO date: yyyy-MM-dd'T'HH:mm:ss
-                java.text.SimpleDateFormat inputFmt = new java.text.SimpleDateFormat(
-                        "yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
-                java.text.SimpleDateFormat outputFmt = new java.text.SimpleDateFormat(
-                        "dd.MM.yyyy - HH:mm", java.util.Locale.getDefault());
-                java.util.Date date = inputFmt.parse(isoDate);
+                SimpleDateFormat inputFmt = new SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                SimpleDateFormat outputFmt = new SimpleDateFormat(
+                        "dd.MM.yyyy - HH:mm", Locale.getDefault());
+                Date date = inputFmt.parse(isoDate);
                 return date != null ? outputFmt.format(date) : isoDate;
             } catch (Exception e) {
                 return isoDate;

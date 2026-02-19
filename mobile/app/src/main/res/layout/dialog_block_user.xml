@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_6"
+        android:background="@color/white">
+
+        <TextView
+            android:id="@+id/tvDialogTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/block_modal_title"
+            android:textColor="@color/dark_800"
+            android:textSize="@dimen/text_xl"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/spacing_1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/block_modal_user"
+                android:textColor="@color/gray_500"
+                android:textSize="@dimen/text_sm" />
+
+            <TextView
+                android:id="@+id/tvDialogEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/block_modal_user_email"
+                android:textColor="@color/dark_600"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray_100" />
+
+    <!-- Body -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_6">
+
+        <!-- Block reason section (visible when blocking) -->
+        <LinearLayout
+            android:id="@+id/llBlockReason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/block_modal_reason"
+                android:textColor="@color/gray_700"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_2" />
+
+            <EditText
+                android:id="@+id/etBlockReason"
+                android:layout_width="match_parent"
+                android:layout_height="128dp"
+                android:background="@drawable/bg_input_field"
+                android:gravity="top|start"
+                android:hint="@string/block_modal_reason_hint"
+                android:inputType="textMultiLine"
+                android:padding="@dimen/spacing_3"
+                android:textColor="@color/gray_800"
+                android:textColorHint="@color/gray_400"
+                android:textSize="@dimen/text_sm" />
+        </LinearLayout>
+
+        <!-- Unblock confirmation (visible when unblocking) -->
+        <TextView
+            android:id="@+id/tvUnblockConfirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/block_modal_are_you_sure"
+            android:textColor="@color/gray_600"
+            android:textSize="@dimen/text_sm"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Footer -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:padding="@dimen/spacing_6"
+        android:paddingTop="@dimen/spacing_4"
+        android:background="@color/gray_50">
+
+        <TextView
+            android:id="@+id/btnDialogCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/spacing_4"
+            android:paddingEnd="@dimen/spacing_4"
+            android:paddingTop="@dimen/spacing_2"
+            android:paddingBottom="@dimen/spacing_2"
+            android:text="@string/block_modal_cancel_btn"
+            android:textColor="@color/gray_600"
+            android:textSize="@dimen/text_sm"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginEnd="@dimen/spacing_2"
+            app:backgroundTint="@null" />
+
+        <Button
+            android:id="@+id/btnDialogConfirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/spacing_6"
+            android:paddingEnd="@dimen/spacing_6"
+            android:paddingTop="@dimen/spacing_2"
+            android:paddingBottom="@dimen/spacing_2"
+            android:text="@string/block_modal_confirm_btn"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_sm"
+            android:textStyle="bold"
+            android:background="@drawable/bg_button_block"
+            app:backgroundTint="@null" />
+    </LinearLayout>
+
+</LinearLayout>

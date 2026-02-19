@@ -2,6 +2,6 @@
 <!-- bg_button_block.xml - color is set programmatically -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#DC2626" />
+    <solid android:color="@color/deep_400" />
     <corners android:radius="8dp" />
 </shape>
