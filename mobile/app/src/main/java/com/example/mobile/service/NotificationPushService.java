@@ -97,9 +97,14 @@ public class NotificationPushService extends Service
     @Override
     public void onNotificationReceived(NotificationDto dto) {
         Log.d(TAG, "Notification received: " + dto.getType());
+
         Intent broadcast = new Intent(ACTION_NEW_NOTIFICATION);
         broadcast.putExtra(EXTRA_NOTIFICATION_JSON, gson.toJson(dto));
-        sendBroadcast(broadcast);
+
+        androidx.localbroadcastmanager.content.LocalBroadcastManager
+                .getInstance(this)
+                .sendBroadcast(broadcast);
+
         postPushNotification(dto);
     }
 

@@ -1,5 +1,6 @@
 package com.example.mobile.ui.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -118,6 +119,7 @@ public class NotificationFragment extends Fragment {
                 .unregisterReceiver(notificationReceiver);
     }
 
+    @SuppressLint("WrongViewCast")
     private void bindViews(View root) {
         recyclerView    = root.findViewById(R.id.rv_notifications);
         loadingSpinner  = root.findViewById(R.id.loading_spinner);
@@ -125,7 +127,7 @@ public class NotificationFragment extends Fragment {
         tvUnreadCount   = root.findViewById(R.id.tv_unread_count);
         tvReadCount     = root.findViewById(R.id.tv_read_count);
         tvTotalCount    = root.findViewById(R.id.tv_total_count);
-//        btnToggleFilter = root.findViewById(R.id.btn_toggle_filter);
+        btnToggleFilter = root.findViewById(R.id.btn_toggle_filter);
         btnMarkAllRead  = root.findViewById(R.id.btn_mark_all_read);
         btnClearAll     = root.findViewById(R.id.btn_clear_all);
         panicSection    = root.findViewById(R.id.panic_section);
