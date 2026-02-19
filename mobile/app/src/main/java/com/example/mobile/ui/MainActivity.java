@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
         topLevelDestinations.add(R.id.driverHomeFragment);
         topLevelDestinations.add(R.id.passengerHomeFragment);
+        topLevelDestinations.add(R.id.adminSuperviseFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -281,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem home = menu.findItem(R.id.homeFragment);
         MenuItem history = menu.findItem(R.id.rideHistoryFragment);
         // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
-//        MenuItem supervise = menu.findItem(R.id.rideSupervisorFragment);
+        MenuItem supervise = menu.findItem(R.id.adminSuperviseFragment);
 //        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
         MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
         MenuItem support = menu.findItem(R.id.supportChatEntry);
@@ -301,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Role-specific items
             if ("ROLE_ADMIN".equals(role)) {
-                // supervise.setVisible(true);
+                 supervise.setVisible(true);
 //                notifications.setVisible(true);
                 pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
@@ -311,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
                 adminSupport.setVisible(true);
 
             } else if ("ROLE_DRIVER".equals(role)) {
-//                supervise.setVisible(false);
+                supervise.setVisible(false);
 //                notifications.setVisible(false);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
@@ -321,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
                 adminSupport.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
-//                supervise.setVisible(false);
+                supervise.setVisible(false);
 //                notifications.setVisible(true);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
@@ -335,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
             // Not logged in - hide everything
             home.setVisible(false);
             history.setVisible(false);
-//            supervise.setVisible(false);
+            supervise.setVisible(false);
 //            notifications.setVisible(false);
             pricelist.setVisible(false);
             support.setVisible(false);

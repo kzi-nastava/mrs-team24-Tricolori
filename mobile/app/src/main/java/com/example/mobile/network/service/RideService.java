@@ -68,6 +68,9 @@ public interface RideService {
     @PUT("api/v1/rides/{id}/cancel")
     Call<ResponseBody> cancelRide(@Path("id") Long rideId, @Body CancellationRequest request);
 
+    @GET("api/v1/rides/ongoing")
+    Call<List<RideTrackingResponse>> getAllOngoingRides();
+  
     @GET("api/v1/rides/{rideId}/track")
     Call<RideTrackingResponse> trackRide(
             @Path("rideId") Long rideId

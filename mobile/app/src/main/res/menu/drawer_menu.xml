@@ -17,10 +17,10 @@
 
         <!-- TODO: COMMENT OUT AFTER ADDING FRAGMENTS -->
         <!-- Supervise - admin only -->
-<!--        <item-->
-<!--            android:id="@+id/rideSupervisorFragment"-->
-<!--            android:icon="@drawable/ic_supervise"-->
-<!--            android:title="Supervise" />-->
+        <item
+            android:id="@+id/adminSuperviseFragment"
+            android:icon="@drawable/ic_supervise"
+            android:title="Supervise" />
 
 <!--        &lt;!&ndash; Notifications - passenger and admin &ndash;&gt;-->
 <!--        <item-->
