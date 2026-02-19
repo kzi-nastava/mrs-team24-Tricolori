@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_50"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_3">
+
+        <!-- Title and description -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/spacing_3"
+            android:text="@string/reports_title"
+            android:textColor="@color/light_700"
+            android:textSize="@dimen/text_2xl"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/spacing_3"
+            android:paddingTop="@dimen/spacing_1"
+            android:text="@string/reports_desc"
+            android:textColor="@color/gray_500"
+            android:textSize="@dimen/text_sm" />
+
+        <!-- ===================== FORM CARD ===================== -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_9"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_4">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reports_filter_title"
+                    android:textColor="@color/gray_800"
+                    android:textSize="@dimen/text_lg"
+                    android:paddingBottom="@dimen/spacing_4"/>
+
+                <!-- SCOPE TOGGLE (only for admin) -->
+                <LinearLayout
+                    android:id="@+id/layoutScopeToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_6"
+                    android:background="@drawable/bg_toggle_container"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_1"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/btnScopeAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_toggle_selected"
+                        android:paddingHorizontal="@dimen/spacing_4"
+                        android:paddingVertical="@dimen/spacing_2"
+                        android:text="@string/reports_filter_admin_all_users"
+                        android:textColor="@color/deep_600"
+                        android:textSize="@dimen/text_sm"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnScopeIndividual"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:paddingHorizontal="@dimen/spacing_4"
+                        android:paddingVertical="@dimen/spacing_2"
+                        android:text="@string/reports_filter_admin_specific"
+                        android:textColor="@color/gray_500"
+                        android:textSize="@dimen/text_sm"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- EMAIL FIELD (only for admin + INDIVIDUAL scope) -->
+                <LinearLayout
+                    android:id="@+id/layoutEmailField"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_6"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_1_5"
+                        android:text="@string/reports_filter_admin_search_mail"
+                        android:textColor="@color/gray_800"
+                        android:textSize="@dimen/text_sm" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:startIconTint="@color/gray_400"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etUserEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/reports_filter_admin_enter_mail"
+                            android:inputType="textEmailAddress"
+                            android:textSize="@dimen/text_sm" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- DATE PICKERS ROW -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/spacing_6">
+
+                    <!-- Date From -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="@dimen/spacing_1_5"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_1_5"
+                            android:text="@string/reports_filer_from_date"
+                            android:textColor="@color/gray_800"
+                            android:textSize="@dimen/text_sm" />
+
+                        <TextView
+                            android:id="@+id/tvDateFrom"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_input_field"
+                            android:drawableEnd="@drawable/ic_calendar"
+                            app:drawableTint="@color/gray_400"
+                            android:hint="@string/reports_filer_select_date"
+                            android:padding="@dimen/spacing_3"
+                            android:textColor="@color/gray_800"
+                            android:textColorHint="@color/gray_400"
+                            android:textSize="@dimen/text_sm" />
+                    </LinearLayout>
+
+                    <!-- Date To -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_1_5"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_1_5"
+                            android:text="@string/reports_filer_to_date"
+                            android:textColor="@color/gray_800"
+                            android:textSize="@dimen/text_sm" />
+
+                        <TextView
+                            android:id="@+id/tvDateTo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_input_field"
+                            android:drawableEnd="@drawable/ic_calendar"
+                            app:drawableTint="@color/gray_400"
+                            android:hint="@string/reports_filer_select_date"
+                            android:padding="@dimen/spacing_3"
+                            android:textColor="@color/gray_800"
+                            android:textColorHint="@color/gray_400"
+                            android:textSize="@dimen/text_sm" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Generate Button -->
+                <Button
+                    android:id="@+id/btnGenerateReport"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_button_deep"
+                    android:drawableStart="@drawable/ic_file"
+                    android:drawablePadding="@dimen/spacing_2"
+                    android:paddingHorizontal="@dimen/spacing_6"
+                    android:paddingVertical="@dimen/spacing_2_5"
+                    android:text="@string/reports_filter_generate"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_sm"
+                    app:backgroundTint="@null"/>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ===================== LOADING ===================== -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/spacing_9"
+            android:indeterminateTint="@color/deep_400"
+            android:visibility="gone"/>
+
+        <!-- ===================== ERROR MESSAGE ===================== -->
+        <TextView
+            android:id="@+id/tvErrorMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_4"
+            android:background="@drawable/bg_error_message"
+            android:padding="@dimen/spacing_4"
+            android:textColor="#b91c1c"
+            android:textSize="@dimen/text_sm"
+            android:visibility="gone" />
+
+        <!-- ===================== EMPTY STATE ===================== -->
+        <TextView
+            android:id="@+id/tvEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_9"
+            android:gravity="center"
+            android:text="@string/reports_hint"
+            android:textColor="@color/gray_400"
+            android:textSize="@dimen/text_sm"
+            android:visibility="visible" />
+
+        <!-- ===================== RESULTS SECTION ===================== -->
+        <LinearLayout
+            android:id="@+id/layoutResults"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- STAT CARDS ROW -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_9"
+                android:orientation="vertical">
+
+                <!-- Total rides -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_3"
+                    app:cardBackgroundColor="@color/light_100"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_3">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.1"
+                            android:paddingStart="@dimen/spacing_1"
+                            android:text="@string/reports_total_rides_title"
+                            android:textColor="@color/light_700"
+                            android:textSize="@dimen/text_xs"
+                            android:textStyle="bold"
+                            tools:ignore="RtlSymmetry" />
+
+                        <TextView
+                            android:id="@+id/tvTotalRides"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="@dimen/spacing_2"
+                            android:paddingTop="@dimen/spacing_2"
+                            android:text="@string/reports_total_rides_default"
+                            android:textColor="@color/light_800"
+                            android:textSize="@dimen/text_3xl"
+                            android:textStyle="bold"
+                            tools:ignore="RtlSymmetry" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="@dimen/spacing_4"
+                            android:background="@color/light_800" />
+
+                        <TextView
+                            android:id="@+id/tvAvgRides"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="@dimen/spacing_2"
+                            android:paddingTop="@dimen/spacing_3"
+                            android:text="@string/reports_total_rides_average_default"
+                            android:textColor="@color/light_700"
+                            android:textSize="@dimen/text_xs"
+                            tools:ignore="RtlSymmetry" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Total kilometers -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_3"
+                    app:cardBackgroundColor="@color/accent_100"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_3">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.1"
+                            android:paddingStart="@dimen/spacing_1"
+                            android:text="@string/reports_total_rides_distance"
+                            android:textColor="@color/accent_700"
+                            android:textSize="@dimen/text_xs"
+                            android:textStyle="bold"
+                            tools:ignore="RtlSymmetry" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="bottom"
+                            android:paddingTop="@dimen/spacing_2">
+
+                            <TextView
+                                android:id="@+id/tvTotalKm"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="@dimen/spacing_2"
+                                android:text="@string/reports_total_rides_distance_default"
+                                android:textColor="@color/accent_800"
+                                android:textSize="@dimen/text_3xl"
+                                android:textStyle="bold"
+                                tools:ignore="RtlSymmetry" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_1"
+                                android:paddingBottom="@dimen/spacing_1"
+                                android:text="@string/reports_total_rides_distance_unit"
+                                android:textColor="@color/accent_800"
+                                android:textSize="@dimen/text_lg" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="@dimen/spacing_4"
+                            android:background="@color/accent_800" />
+
+                        <TextView
+                            android:id="@+id/tvAvgKm"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="@dimen/spacing_2"
+                            android:paddingTop="@dimen/spacing_3"
+                            android:text="@string/reports_total_rides_distance_average_default"
+                            android:textColor="@color/accent_700"
+                            android:textSize="@dimen/text_xs"
+                            tools:ignore="RtlSymmetry" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Total money -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/deep_100"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_3">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.1"
+                            android:paddingStart="@dimen/spacing_1"
+                            android:text="@string/reports_total_rides_price"
+                            android:textColor="@color/deep_700"
+                            android:textSize="@dimen/text_xs"
+                            android:textStyle="bold"
+                            tools:ignore="RtlSymmetry" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="bottom"
+                            android:paddingTop="@dimen/spacing_2">
+
+                            <TextView
+                                android:id="@+id/tvTotalMoney"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="@dimen/spacing_2"
+                                android:text="@string/reports_total_rides_price_default"
+                                android:textColor="@color/deep_800"
+                                android:textSize="@dimen/text_3xl"
+                                android:textStyle="bold"
+                                tools:ignore="RtlSymmetry" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_1"
+                                android:paddingBottom="@dimen/spacing_1"
+                                android:text="@string/reports_total_rides_price_unit"
+                                android:textColor="@color/deep_800"
+                                android:textSize="@dimen/text_lg" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="@dimen/spacing_4"
+                            android:background="@color/deep_800" />
+
+                        <TextView
+                            android:id="@+id/tvAvgMoney"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="@dimen/spacing_2"
+                            android:paddingTop="@dimen/spacing_3"
+                            android:text="@string/reports_total_rides_price_average_default"
+                            android:textColor="@color/deep_700"
+                            android:textSize="@dimen/text_xs"
+                            tools:ignore="RtlSymmetry" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+            <!-- ===================== CHARTS ===================== -->
+
+            <!-- Rides per day (Bar) -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_9"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/base_700"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/spacing_4"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="@string/reports_chart_img_desc"
+                            android:src="@drawable/ic_chart"
+                            app:tint="@color/white" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_3"
+                            android:text="@string/reports_rides_per_days"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/text_base" />
+                    </LinearLayout>
+
+                    <!-- Chart -->
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/chartRidesPerDay"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:padding="@dimen/spacing_4" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Kilometers per day (Line) -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_9"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/base_700"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/spacing_4"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="@string/reports_chart_img_desc"
+                            android:src="@drawable/ic_chart"
+                            app:tint="@color/white" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_3"
+                            android:text="@string/reports_kilometers_per_days"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/text_base" />
+                    </LinearLayout>
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/chartKmPerDay"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:padding="@dimen/spacing_4" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Money per day (Bar) -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_9"
+                android:layout_marginBottom="@dimen/spacing_9"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/base_700"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/spacing_4"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="@string/reports_chart_img_desc"
+                            android:src="@drawable/ic_chart"
+                            app:tint="@color/white" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_3"
+                            android:text="@string/reports_money_per_days"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/text_base" />
+                    </LinearLayout>
+
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/chartMoneyPerDay"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:padding="@dimen/spacing_4" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

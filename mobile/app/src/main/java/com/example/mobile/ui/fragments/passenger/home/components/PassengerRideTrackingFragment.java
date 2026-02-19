@@ -43,7 +43,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PassengerRideTrackingFragment extends Fragment {
-
+/*
     private static final String TAG = "PassengerRideTracking";
     private static final String ARG_RIDE_ID = "ride_id";
     private static final long TRACKING_INTERVAL_MS = 5000;
@@ -466,5 +466,5 @@ public class PassengerRideTrackingFragment extends Fragment {
     private void handleRideCompletion() {
         Toast.makeText(getContext(), "Ride completed!", Toast.LENGTH_SHORT).show();
         requireActivity().getSupportFragmentManager().popBackStack();
-    }
+    }*/
 }

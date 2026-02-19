@@ -1,9 +1,11 @@
 package com.example.mobile.ui;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +16,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
@@ -27,6 +31,7 @@ import com.example.mobile.dto.profile.ProfileResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.service.DriverDailyLogService;
+import com.example.mobile.service.NotificationPushService;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
@@ -48,9 +53,10 @@ public class MainActivity extends AppCompatActivity {
     private DriverDailyLogService dailyLogService;
     private AuthService authService;
 
-    // nav header fields
     private TextView navHeaderUserName;
     private TextView navHeaderUserEmail;
+
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,19 +78,21 @@ public class MainActivity extends AppCompatActivity {
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
 
-            findViewById(android.R.id.content).post(() -> {
-                handleIntent(getIntent());
-            });
+            findViewById(android.R.id.content).post(() -> handleIntent(getIntent()));
         }
 
         Set<Integer> topLevelDestinations = new HashSet<>();
-        topLevelDestinations.add(R.id.rideHistoryFragment);
         topLevelDestinations.add(R.id.userProfileFragment);
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
         topLevelDestinations.add(R.id.driverHomeFragment);
         topLevelDestinations.add(R.id.passengerHomeFragment);
+        topLevelDestinations.add(R.id.userReportsFragment);
         topLevelDestinations.add(R.id.adminSuperviseFragment);
+        topLevelDestinations.add(R.id.notificationsFragment);
+        topLevelDestinations.add(R.id.passengerRideHistoryFragment);
+        topLevelDestinations.add(R.id.driverRideHistoryFragment);
+        topLevelDestinations.add(R.id.adminRideHistoryFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -101,6 +109,9 @@ public class MainActivity extends AppCompatActivity {
             updateMenuVisibility();
             updateNavigationHeader();
 
+            // Start the notification service if the user is already logged in
+            // (e.g. app reopened after being killed while logged in)
+            maybeStartNotificationService();
 
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int id = destination.getId();
@@ -116,46 +127,46 @@ public class MainActivity extends AppCompatActivity {
             });
 
             navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
+                int id = item.getItemId();
 
-            if (id == R.id.nav_status_switch) return false;
+                if (id == R.id.nav_status_switch) return false;
 
-            if (id == R.id.nav_logout) {
-                logoutUser();
-                return true;
-            }
-
-            if (id == R.id.rideHistoryFragment) {
-                SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                String userRole = prefs.getString("user_role", "");
-
-                Bundle args = new Bundle();
-                args.putString("role", "ROLE_PASSENGER".equals(userRole) ? "PASSENGER" : "DRIVER");
-
-                drawerLayout.closeDrawer(GravityCompat.START);
-                navController.navigate(R.id.rideHistoryFragment, args);
-                return true;
-            }
-
-            if (id == R.id.homeFragment) {
-                SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                String role = prefs.getString("user_role", "");
-
-                drawerLayout.closeDrawer(GravityCompat.START);
-
-                if ("ROLE_DRIVER".equals(role)) {
-                    if (navController.getCurrentDestination() != null && 
-                        navController.getCurrentDestination().getId() != R.id.driverHomeFragment) {
-                        navController.navigate(R.id.driverHomeFragment);
-                    }
-                } else if ("ROLE_PASSENGER".equals(role)) {
-                    if (navController.getCurrentDestination() != null && 
-                        navController.getCurrentDestination().getId() != R.id.passengerHomeFragment) {
-                        navController.navigate(R.id.passengerHomeFragment);
-                    }
+                if (id == R.id.nav_logout) {
+                    logoutUser();
+                    return true;
                 }
-                return true;
-            }
+
+                if (id == R.id.rideHistoryFragment) {
+                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    String userRole = prefs.getString("user_role", "");
+
+                    Bundle args = new Bundle();
+                    args.putString("role", "ROLE_PASSENGER".equals(userRole) ? "PASSENGER" : "DRIVER");
+
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    navController.navigate(R.id.rideHistoryFragment, args);
+                    return true;
+                }
+
+                if (id == R.id.homeFragment) {
+                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    String role = prefs.getString("user_role", "");
+
+                    drawerLayout.closeDrawer(GravityCompat.START);
+
+                    if ("ROLE_DRIVER".equals(role)) {
+                        if (navController.getCurrentDestination() != null &&
+                                navController.getCurrentDestination().getId() != R.id.driverHomeFragment) {
+                            navController.navigate(R.id.driverHomeFragment);
+                        }
+                    } else if ("ROLE_PASSENGER".equals(role)) {
+                        if (navController.getCurrentDestination() != null &&
+                                navController.getCurrentDestination().getId() != R.id.passengerHomeFragment) {
+                            navController.navigate(R.id.passengerHomeFragment);
+                        }
+                    }
+                    return true;
+                }
 
                 if (id == R.id.supportChatEntry) {
                     drawerLayout.closeDrawer(GravityCompat.START);
@@ -194,11 +205,70 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 }
 
-            boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
-            if (handled) drawerLayout.closeDrawer(GravityCompat.START);
-            return handled;
-        });
+                boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+                if (handled) drawerLayout.closeDrawer(GravityCompat.START);
+                return handled;
+            });
         }
+    }
+
+    public void onUserLoggedIn() {
+        requestNotificationPermissionThenStartService();
+        updateMenuVisibility();
+        updateNavigationHeader();
+    }
+
+    private void maybeStartNotificationService() {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String email = prefs.getString("user_email", null);
+        String jwt   = prefs.getString("jwt_token",  null);
+        if (email != null && jwt != null) {
+            requestNotificationPermissionThenStartService();
+        }
+    }
+
+    private void requestNotificationPermissionThenStartService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                // Ask the user — result handled in onRequestPermissionsResult
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        REQUEST_NOTIFICATION_PERMISSION);
+                return;
+            }
+        }
+        // Permission already granted (or not needed on older Android) — start immediately
+        startNotificationService();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
+            // Start regardless — the service will still maintain the STOMP connection
+            // and update the in-app fragment even if the user denied push notifications.
+            startNotificationService();
+        }
+    }
+
+    private void startNotificationService() {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String email = prefs.getString("user_email", null);
+        String jwt   = prefs.getString("jwt_token",  null);
+        if (email == null || jwt == null) return;
+
+        Intent serviceIntent = new Intent(this, NotificationPushService.class);
+        serviceIntent.putExtra(NotificationPushService.EXTRA_USER_EMAIL, email);
+        serviceIntent.putExtra(NotificationPushService.EXTRA_JWT_TOKEN,  jwt);
+        ContextCompat.startForegroundService(this, serviceIntent);
+    }
+
+    public void stopNotificationService() {
+        stopService(new Intent(this, NotificationPushService.class));
     }
 
     private void setupDriverStatusSwitch() {
@@ -213,9 +283,8 @@ public class MainActivity extends AppCompatActivity {
                 statusItem.setTitle("Status: Online");
                 statusItem.setIcon(R.drawable.ic_online);
 
-                statusSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    updateStatus(isChecked, statusSwitch, statusItem);
-                });
+                statusSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
+                        updateStatus(isChecked, statusSwitch, statusItem));
             }
         }
     }
@@ -228,11 +297,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
                     statusItem.setTitle(isChecked ? "Status: Online" : "Status: Offline");
-
-                    statusItem.setIcon(isChecked ?
-                            R.drawable.ic_online :
-                            R.drawable.ic_offline);
-
+                    statusItem.setIcon(isChecked ? R.drawable.ic_online : R.drawable.ic_offline);
                     Toast.makeText(MainActivity.this, "Status updated!", Toast.LENGTH_SHORT).show();
                 } else {
                     revertSwitch(statusSwitch, isChecked, statusItem);
@@ -251,10 +316,14 @@ public class MainActivity extends AppCompatActivity {
     private void revertSwitch(SwitchMaterial statusSwitch, boolean isChecked, MenuItem statusItem) {
         statusSwitch.setOnCheckedChangeListener(null);
         statusSwitch.setChecked(!isChecked);
-        statusSwitch.setOnCheckedChangeListener((bv, checked) -> updateStatus(checked, statusSwitch, statusItem));
+        statusSwitch.setOnCheckedChangeListener((bv, checked) ->
+                updateStatus(checked, statusSwitch, statusItem));
     }
 
     private void logoutUser() {
+        // Stop the notification service before clearing credentials
+        stopNotificationService();
+
         SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         prefs.edit().clear().apply();
         navHeaderUserName.setText("Guest User");
@@ -270,14 +339,24 @@ public class MainActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
-    // method that makes the menu dynamic - declares what is visible and what not
     public void updateMenuVisibility() {
         SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("jwt_token", null);
-        String role = prefs.getString("user_role", null);
+        String role  = prefs.getString("user_role", null);
 
         Menu menu = navigationView.getMenu();
 
+        MenuItem home             = menu.findItem(R.id.homeFragment);
+        MenuItem history          = menu.findItem(R.id.rideHistoryFragment);
+        MenuItem supervise        = menu.findItem(R.id.adminSuperviseFragment);
+        MenuItem notifications    = menu.findItem(R.id.notificationsFragment);
+        MenuItem pricelist        = menu.findItem(R.id.pricelistFragment);
+        MenuItem support          = menu.findItem(R.id.supportChatEntry);
+        MenuItem adminSupport     = menu.findItem(R.id.adminConversationListFragment);
+        MenuItem profile          = menu.findItem(R.id.userProfileFragment);
+        MenuItem logout           = menu.findItem(R.id.nav_logout);
+        MenuItem statusSwitch     = menu.findItem(R.id.nav_status_switch);
+        MenuItem changeRequests   = menu.findItem(R.id.changeRequestsReviewFragment);
         // Get all menu items
         MenuItem home = menu.findItem(R.id.homeFragment);
         MenuItem history = menu.findItem(R.id.rideHistoryFragment);
@@ -291,53 +370,52 @@ public class MainActivity extends AppCompatActivity {
         MenuItem logout = menu.findItem(R.id.nav_logout);
         MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
         MenuItem changeRequests = menu.findItem(R.id.changeRequestsReviewFragment);
+        MenuItem blocks = menu.findItem(R.id.blockFragment);
         MenuItem driverRegistration = menu.findItem(R.id.adminDriverRegistrationFragment);
+        MenuItem userReports = menu.findItem(R.id.userReportsFragment);
 
         if (token != null && role != null) {
-            // Common items for all logged in users
             home.setVisible(true);
             history.setVisible(true);
             profile.setVisible(true);
             logout.setVisible(true);
+            notifications.setVisible(true);
+            userReports.setVisible(true);
 
-            // Role-specific items
             if ("ROLE_ADMIN".equals(role)) {
-                 supervise.setVisible(true);
-//                notifications.setVisible(true);
+                supervise.setVisible(true);
                 pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
                 changeRequests.setVisible(true);
                 driverRegistration.setVisible(true);
                 support.setVisible(false);
+                blocks.setVisible(true);
                 adminSupport.setVisible(true);
-
             } else if ("ROLE_DRIVER".equals(role)) {
                 supervise.setVisible(false);
-//                notifications.setVisible(false);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
                 changeRequests.setVisible(false);
                 driverRegistration.setVisible(false);
                 support.setVisible(true);
                 adminSupport.setVisible(false);
+                blocks.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
                 supervise.setVisible(false);
-//                notifications.setVisible(true);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
                 changeRequests.setVisible(false);
                 driverRegistration.setVisible(false);
                 support.setVisible(true);
                 adminSupport.setVisible(false);
+                blocks.setVisible(false);
             }
-
         } else {
-            // Not logged in - hide everything
             home.setVisible(false);
             history.setVisible(false);
             supervise.setVisible(false);
-//            notifications.setVisible(false);
+            notifications.setVisible(false);
             pricelist.setVisible(false);
             support.setVisible(false);
             adminSupport.setVisible(false);
@@ -346,6 +424,8 @@ public class MainActivity extends AppCompatActivity {
             statusSwitch.setVisible(false);
             changeRequests.setVisible(false);
             driverRegistration.setVisible(false);
+            userReports.setVisible(false);
+            blocks.setVisible(false);
         }
     }
 
@@ -354,29 +434,26 @@ public class MainActivity extends AppCompatActivity {
         String token = prefs.getString("jwt_token", null);
 
         if (token != null) {
-            // User is logged in - fetch profile data
             RetrofitClient.getProfileService(this)
                     .getUserProfile()
                     .enqueue(new Callback<ProfileResponse>() {
                         @Override
-                        public void onResponse(Call<ProfileResponse> call, Response<ProfileResponse> response) {
+                        public void onResponse(Call<ProfileResponse> call,
+                                               Response<ProfileResponse> response) {
                             if (response.isSuccessful() && response.body() != null) {
                                 ProfileResponse profile = response.body();
-                                String fullName = profile.getFirstName() + " " + profile.getLastName();
-                                navHeaderUserName.setText(fullName);
+                                navHeaderUserName.setText(profile.getFirstName() + " " + profile.getLastName());
                                 navHeaderUserEmail.setText(profile.getEmail());
                             }
                         }
 
                         @Override
                         public void onFailure(Call<ProfileResponse> call, Throwable t) {
-                            // Failed to load profile - use defaults
                             navHeaderUserName.setText("User");
                             navHeaderUserEmail.setText("Loading...");
                         }
                     });
         } else {
-            // Not logged in
             navHeaderUserName.setText("Guest User");
             navHeaderUserEmail.setText("Not logged in");
         }
@@ -396,11 +473,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (path.contains("activate")) {
                 String token = data.getQueryParameter("token");
-                if (token != null) {
-                    executeActivation(token);
-                }
-            }
-            else if (path.contains("reset-password")) {
+                if (token != null) executeActivation(token);
+            } else if (path.contains("reset-password")) {
                 String token = data.getQueryParameter("token");
                 if (token != null) {
                     Bundle bundle = new Bundle();
@@ -414,20 +488,24 @@ public class MainActivity extends AppCompatActivity {
     private void executeActivation(String token) {
         authService.activateAccount(token).enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+            public void onResponse(@NonNull Call<ResponseBody> call,
+                                   @NonNull Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(MainActivity.this, "Account activated successfully! You can now login.", Toast.LENGTH_LONG).show();
-                    if (navController != null) {
-                        navController.navigate(R.id.loginFragment);
-                    }
+                    Toast.makeText(MainActivity.this,
+                            "Account activated successfully! You can now login.",
+                            Toast.LENGTH_LONG).show();
+                    if (navController != null) navController.navigate(R.id.loginFragment);
                 } else {
-                    Toast.makeText(MainActivity.this, "Activation failed. The link might be expired.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,
+                            "Activation failed. The link might be expired.",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                Toast.makeText(MainActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,
+                        "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

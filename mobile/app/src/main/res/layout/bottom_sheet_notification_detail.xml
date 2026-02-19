@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_bottom_sheet"
+    android:paddingBottom="32dp">
+
+    <!-- Drag handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_drag_handle" />
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:id="@+id/tv_sheet_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#111827"
+            tools:text="Ride completed" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E5E7EB" />
+
+    <!-- Content area -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp">
+
+        <!-- Message label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Message"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#6B7280"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_sheet_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textColor="#111827"
+            android:lineSpacingMultiplier="1.4"
+            android:layout_marginBottom="16dp"
+            tools:text="Your ride has been completed successfully. Thank you for travelling with us!" />
+
+        <!-- Received label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Received"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#6B7280"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_sheet_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#111827"
+            android:layout_marginBottom="16dp"
+            tools:text="Thursday, February 19 2026  14:30" />
+
+        <!-- FIX: wrapper LinearLayout now has id="layout_sheet_ride_card"
+             so it doesn't clash with the TextView id="tv_sheet_ride_id" inside it -->
+        <LinearLayout
+            android:id="@+id/layout_sheet_ride_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_teal_card"
+            android:padding="14dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Related Ride"
+                android:textSize="11sp"
+                android:textColor="#0F766E"
+                android:textStyle="bold"
+                android:layout_marginBottom="2dp" />
+
+            <!-- This is the only view with id tv_sheet_ride_id -->
+            <TextView
+                android:id="@+id/tv_sheet_ride_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#134E4A"
+                tools:text="Ride #42" />
+
+        </LinearLayout>
+
+        <!-- Driver name (shown conditionally) -->
+        <TextView
+            android:id="@+id/tv_sheet_driver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#374151"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            tools:text="Driver: John Smith"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+    <!-- Footer -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E5E7EB"
+        android:layout_marginTop="8dp" />
+
+
+    <Button
+        android:id="@+id/btn_sheet_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="12dp"
+        android:text="Close"
+        android:textColor="#374151"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+</LinearLayout>

@@ -1,14 +1,509 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.fragments.passenger.home.components.PassengerOrderFragment">
+    android:fillViewport="true"
+    android:padding="16dp"
+    android:background="@color/white">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
 
-</FrameLayout>
+        <!-- ===== ROUTE SECTION ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="32dp">
+
+            <!-- Section header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_location_pin"
+                    app:tint="@color/base_700"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Book your Ride"
+                    android:textSize="22sp"
+                    android:textColor="@color/base_700"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginStart="12dp"/>
+            </LinearLayout>
+
+            <!-- Favorite routes button -->
+            <Button
+                android:id="@+id/btnFavoriteRoutes"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Select from Favorite Routes"
+                android:textColor="@color/light_600"
+                android:backgroundTint="@color/gray_100"
+                android:layout_marginBottom="12dp"
+                app:strokeColor="@color/gray_500"
+                android:fontFamily="sans-serif-medium"
+                android:stateListAnimator="@null"/>
+
+            <!-- Pickup -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pickup Location"
+                android:textColor="@color/gray_400"
+                android:textSize="14sp"
+                android:paddingStart="8dp"
+                android:layout_marginBottom="4dp"/>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPickup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxStrokeColor="@color/gray_200"
+                    app:startIconDrawable="@drawable/bg_dot_dark"
+                    app:startIconTint="@null"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPickupAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Bulevar kralja Petra 3"
+                        android:imeOptions="actionNext"
+                        android:inputType="text"
+                        android:padding="16dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tvPickupError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pickup location is required"
+                android:textColor="@color/deep_300"
+                android:textSize="12sp"
+                android:paddingStart="12dp"
+                android:visibility="gone"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Dynamic stops container -->
+            <LinearLayout
+                android:id="@+id/stopsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Add Stop button -->
+            <Button
+                android:id="@+id/btnAddStop"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="+ Add Stop"
+                android:textColor="@color/base_700"
+                android:backgroundTint="@color/gray_100"
+                android:layout_marginBottom="12dp"
+                android:layout_marginTop="8dp"
+                app:strokeColor="@color/gray_400"
+                android:fontFamily="sans-serif-medium"
+                android:stateListAnimator="@null"/>
+
+            <!-- Destination -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Destination"
+                android:textColor="@color/gray_400"
+                android:textSize="14sp"
+                android:paddingStart="8dp"
+                android:layout_marginBottom="4dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilDestination"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxCornerRadiusTopStart="16dp"
+                app:boxCornerRadiusTopEnd="16dp"
+                app:boxCornerRadiusBottomStart="16dp"
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:boxStrokeColor="@color/gray_200"
+                app:startIconDrawable="@drawable/bg_dot_light"
+                app:startIconTint="@null"
+                app:hintEnabled="false">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDestinationAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Laze Teleckog 13"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:padding="16dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tvDestinationError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Destination location is required"
+                android:textColor="@color/deep_300"
+                android:textSize="12sp"
+                android:paddingStart="12dp"
+                android:visibility="gone"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- ===== PREFERENCES SECTION ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="32dp">
+
+            <!-- Section header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_car"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ride Options"
+                    android:textSize="22sp"
+                    android:textColor="@color/base_700"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginStart="12dp"/>
+            </LinearLayout>
+
+            <!-- Vehicle type spinner -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <Spinner
+                    android:id="@+id/spinnerVehicleType"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_spinner"
+                    android:padding="4dp"/>
+            </FrameLayout>
+
+            <!-- Baby seat toggle -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardBabySeat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/gray_100"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="@color/gray_100"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivBabySeatIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_baby"
+                        app:tint="@color/black"/>
+
+                    <TextView
+                        android:id="@+id/tvBabySeat"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Baby seat"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:layout_marginStart="16dp"/>
+
+                    <CheckBox
+                        android:id="@+id/cbBabySeat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Pet friendly toggle -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPetFriendly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/gray_100"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="@color/gray_100"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivPetIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_pets"
+                        app:tint="@color/black"/>
+
+                    <TextView
+                        android:id="@+id/tvPetFriendly"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Pet friendly"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:layout_marginStart="16dp"/>
+
+                    <CheckBox
+                        android:id="@+id/cbPetFriendly"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Schedule for later toggle -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSchedule"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/gray_100"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="@color/gray_100"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivScheduleIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_time"
+                        app:tint="@color/black"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="16dp">
+
+                        <TextView
+                            android:id="@+id/tvSchedule"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Schedule for later"
+                            android:textColor="@color/black"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:id="@+id/tvScheduledTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/base_600"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Info hint -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:layout_marginTop="8dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_info"
+                    app:tint="@color/gray_400"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Max 5 hours in advance"
+                    android:textColor="@color/gray_400"
+                    android:textSize="13sp"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ===== TRACKERS SECTION ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="32dp">
+
+            <!-- Section header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_person"
+                    app:tint="@color/base_700"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Link passengers (optional)"
+                    android:textSize="22sp"
+                    android:textColor="@color/base_700"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginStart="12dp"/>
+            </LinearLayout>
+
+            <!-- Email input row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTrackerEmail"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxStrokeColor="@color/gray_200"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTrackerEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="passenger@email.com"
+                        android:inputType="textEmailAddress"
+                        android:imeOptions="actionDone"
+                        android:padding="16dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddTracker"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:backgroundTint="@color/deep_300"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/ic_add"
+                    app:iconTint="@color/white"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="24dp"
+                    android:padding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"/>
+            </LinearLayout>
+
+            <!-- Trackers list -->
+            <LinearLayout
+                android:id="@+id/trackersContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+        </LinearLayout>
+
+        <!-- ===== ACTION BUTTONS ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnPreviewRide"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Preview a Ride"
+                android:layout_marginBottom="@dimen/spacing_1"
+                android:backgroundTint="@color/dark_300"
+                app:cornerRadius="12dp"
+                android:textColor="@color/white"
+                app:backgroundTint="@null"
+                android:stateListAnimator="@null"/>
+
+            <Button
+                android:id="@+id/btnBookRide"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Book a Ride"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/deep_300"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@null"
+                android:stateListAnimator="@null"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
