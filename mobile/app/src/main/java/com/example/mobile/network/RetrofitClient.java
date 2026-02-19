@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.mobile.network.service.AuthService;
 import com.example.mobile.network.service.ChangeDataRequestService;
+import com.example.mobile.network.service.ReportService;
 import com.example.mobile.network.service.FavoriteRoutesService;
 import com.example.mobile.network.service.RideService;
 import com.example.mobile.network.service.PersonService;
@@ -75,5 +76,9 @@ public class RetrofitClient {
 
     public static AuthService getAuthService(Context context) {
         return getClient(context).create(AuthService.class);
+    }
+
+    public static ReportService getReportService(Context context) {
+        return getClient(context).create(ReportService.class);
     }
 }

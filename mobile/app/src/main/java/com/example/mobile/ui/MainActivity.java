@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
         topLevelDestinations.add(R.id.driverHomeFragment);
         topLevelDestinations.add(R.id.passengerHomeFragment);
+        topLevelDestinations.add(R.id.userReportsFragment);
         topLevelDestinations.add(R.id.adminSuperviseFragment);
         topLevelDestinations.add(R.id.passengerRideHistoryFragment);
         topLevelDestinations.add(R.id.driverRideHistoryFragment);
@@ -299,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem changeRequests = menu.findItem(R.id.changeRequestsReviewFragment);
         MenuItem blocks = menu.findItem(R.id.blockFragment);
         MenuItem driverRegistration = menu.findItem(R.id.adminDriverRegistrationFragment);
+        MenuItem userReports = menu.findItem(R.id.userReportsFragment);
 
         if (token != null && role != null) {
             // Common items for all logged in users
@@ -306,6 +308,7 @@ public class MainActivity extends AppCompatActivity {
             history.setVisible(true);
             profile.setVisible(true);
             logout.setVisible(true);
+            userReports.setVisible(true);
 
             // Role-specific items
             if ("ROLE_ADMIN".equals(role)) {
@@ -356,6 +359,7 @@ public class MainActivity extends AppCompatActivity {
             statusSwitch.setVisible(false);
             changeRequests.setVisible(false);
             driverRegistration.setVisible(false);
+            userReports.setVisible(false);
             blocks.setVisible(false);
         }
     }
