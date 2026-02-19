@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,8 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +29,7 @@ import com.example.mobile.network.service.NotificationApiService;
 import com.example.mobile.service.NotificationPushService;
 import com.example.mobile.ui.adapters.NotificationAdapter;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -39,54 +40,42 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * Displays the user's notification history and receives real-time updates
- * via a local broadcast from {@link NotificationPushService}.
- */
 public class NotificationFragment extends Fragment {
 
     private NotificationApiService apiService;
-    private NotificationAdapter   adapter;
+    private NotificationAdapter    adapter;
 
-    // All notifications currently loaded
     private final List<NotificationDto> allNotifications = new ArrayList<>();
     private boolean showUnreadOnly = false;
 
-    // UI refs
-    private RecyclerView recyclerView;
-    private View          loadingSpinner;
-    private LinearLayout  emptyState;
-    private TextView      tvUnreadCount;
-    private TextView      tvReadCount;
-    private TextView      tvTotalCount;
-    private Button        btnToggleFilter;
-    private Button        btnMarkAllRead;
-    private Button        btnClearAll;
+    private RecyclerView   recyclerView;
+    private View           loadingSpinner;
+    private LinearLayout   emptyState;
+    private TextView       tvUnreadCount;
+    private TextView       tvReadCount;
+    private TextView       tvTotalCount;
+    private MaterialButton btnToggleFilter;
+    private ImageButton    btnMarkAllRead;
+    private ImageButton    btnClearAll;
 
-    // Admin-only panic section
-    private LinearLayout  panicSection;
-    private RecyclerView  panicRecycler;
+    private LinearLayout        panicSection;
+    private RecyclerView        panicRecycler;
     private NotificationAdapter panicAdapter;
 
     private boolean isAdmin = false;
 
-    // ─────────────────────────────────────────────────────────────────
-    //  BroadcastReceiver — listens for real-time pushes from the service
-    // ─────────────────────────────────────────────────────────────────
-
+    // Must use LocalBroadcastManager here — the service sends via
+    // LocalBroadcastManager.sendBroadcast(), so this receiver must also
+    // be registered through LocalBroadcastManager to receive it.
     private final BroadcastReceiver notificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String json = intent.getStringExtra("notification_json");
+            String json = intent.getStringExtra(NotificationPushService.EXTRA_NOTIFICATION_JSON);
             if (json == null) return;
             NotificationDto dto = new Gson().fromJson(json, NotificationDto.class);
             if (dto != null) prependNotification(dto);
         }
     };
-
-    // ─────────────────────────────────────────────────────────────────
-    //  Fragment lifecycle
-    // ─────────────────────────────────────────────────────────────────
 
     @Nullable
     @Override
@@ -111,32 +100,23 @@ public class NotificationFragment extends Fragment {
         setupAdapters();
         setupClickListeners();
         setupPanicSection();
-
         loadNotifications();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        // Register broadcast receiver for live updates
-        IntentFilter filter = new IntentFilter("com.example.mobile.NEW_NOTIFICATION");
-        ContextCompat.registerReceiver(
-                requireContext(),
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(
                 notificationReceiver,
-                filter,
-                ContextCompat.RECEIVER_NOT_EXPORTED
-        );
+                new IntentFilter(NotificationPushService.ACTION_NEW_NOTIFICATION));
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        requireContext().unregisterReceiver(notificationReceiver);
+        LocalBroadcastManager.getInstance(requireContext())
+                .unregisterReceiver(notificationReceiver);
     }
-
-    // ─────────────────────────────────────────────────────────────────
-    //  View binding
-    // ─────────────────────────────────────────────────────────────────
 
     private void bindViews(View root) {
         recyclerView    = root.findViewById(R.id.rv_notifications);
@@ -145,7 +125,7 @@ public class NotificationFragment extends Fragment {
         tvUnreadCount   = root.findViewById(R.id.tv_unread_count);
         tvReadCount     = root.findViewById(R.id.tv_read_count);
         tvTotalCount    = root.findViewById(R.id.tv_total_count);
-        btnToggleFilter = root.findViewById(R.id.btn_toggle_filter);
+//        btnToggleFilter = root.findViewById(R.id.btn_toggle_filter);
         btnMarkAllRead  = root.findViewById(R.id.btn_mark_all_read);
         btnClearAll     = root.findViewById(R.id.btn_clear_all);
         panicSection    = root.findViewById(R.id.panic_section);
@@ -177,14 +157,9 @@ public class NotificationFragment extends Fragment {
 
     private void setupPanicSection() {
         if (panicSection != null) {
-            // Only admins see the dedicated panic section at the top
             panicSection.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────
-    //  Data loading
-    // ─────────────────────────────────────────────────────────────────
 
     private void loadNotifications() {
         showLoading(true);
@@ -212,10 +187,6 @@ public class NotificationFragment extends Fragment {
         });
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    //  List refresh helpers
-    // ─────────────────────────────────────────────────────────────────
-
     private void refreshList() {
         List<NotificationDto> regularItems = allNotifications.stream()
                 .filter(n -> !"RIDE_PANIC".equals(n.getType()))
@@ -227,10 +198,12 @@ public class NotificationFragment extends Fragment {
                 .filter(n -> !showUnreadOnly || !n.isOpened())
                 .collect(Collectors.toList());
 
-        adapter.submitList(regularItems);
+        // Wrap in new ArrayList so DiffUtil sees a new list reference
+        // and correctly diffs the contents instead of skipping the update.
+        adapter.submitList(new ArrayList<>(regularItems));
 
         if (isAdmin && panicAdapter != null) {
-            panicAdapter.submitList(panicItems);
+            panicAdapter.submitList(new ArrayList<>(panicItems));
             if (panicSection != null) {
                 panicSection.setVisibility(panicItems.isEmpty() ? View.GONE : View.VISIBLE);
             }
@@ -250,29 +223,21 @@ public class NotificationFragment extends Fragment {
         tvTotalCount.setText(total + " total");
 
         btnMarkAllRead.setVisibility(unread > 0 ? View.VISIBLE : View.GONE);
-        btnClearAll.setVisibility(total > 0    ? View.VISIBLE : View.GONE);
+        btnClearAll.setVisibility(total > 0     ? View.VISIBLE : View.GONE);
     }
 
     private void updateEmptyState(boolean empty) {
         emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
-        recyclerView.setVisibility(empty ? View.GONE  : View.VISIBLE);
+        recyclerView.setVisibility(empty ? View.GONE   : View.VISIBLE);
     }
 
-    /** Prepends a freshly received real-time notification to the top of the list */
     private void prependNotification(NotificationDto dto) {
         allNotifications.add(0, dto);
         refreshList();
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    //  Notification detail (bottom sheet)
-    // ─────────────────────────────────────────────────────────────────
-
     private void openNotificationDetail(NotificationDto dto) {
-        // Mark as read on the server if still unread
-        if (!dto.isOpened()) {
-            markAsRead(dto);
-        }
+        if (!dto.isOpened()) markAsRead(dto);
 
         BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
         View sheetView = LayoutInflater.from(requireContext())
@@ -283,7 +248,7 @@ public class NotificationFragment extends Fragment {
         TextView tvSheetTime    = sheetView.findViewById(R.id.tv_sheet_time);
         TextView tvSheetRide    = sheetView.findViewById(R.id.tv_sheet_ride_id);
         TextView tvSheetDriver  = sheetView.findViewById(R.id.tv_sheet_driver);
-        Button   btnClose       = sheetView.findViewById(R.id.btn_sheet_close);
+        View     btnClose       = sheetView.findViewById(R.id.btn_sheet_close);
 
         tvSheetTitle.setText(getTitleForType(dto.getType()));
         tvSheetContent.setText(dto.getContent());
@@ -308,40 +273,44 @@ public class NotificationFragment extends Fragment {
         sheet.show();
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    //  API actions
-    // ─────────────────────────────────────────────────────────────────
-
     private void markAsRead(NotificationDto dto) {
+        // Optimistic update — reflect in UI immediately
+        dto.setOpened(true);
+        refreshList();
+
         apiService.markAsRead(dto.getId()).enqueue(new Callback<NotificationDto>() {
             @Override
             public void onResponse(@NonNull Call<NotificationDto> call,
                                    @NonNull Response<NotificationDto> response) {
-                if (response.isSuccessful()) {
-                    dto.setOpened(true);
-                    refreshList();
-                }
+                // Already updated — nothing to do
             }
+
             @Override
             public void onFailure(@NonNull Call<NotificationDto> call, @NonNull Throwable t) {
-                // Non-critical — swallow silently
+                // Roll back on failure
+                dto.setOpened(false);
+                refreshList();
             }
         });
     }
 
     private void markAllAsRead() {
+        // Optimistic update — mark everything read instantly
+        for (NotificationDto n : allNotifications) n.setOpened(true);
+        refreshList();
+
         apiService.markAllAsRead().enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call,
                                    @NonNull Response<Void> response) {
-                if (response.isSuccessful()) {
-                    for (NotificationDto n : allNotifications) n.setOpened(true);
-                    refreshList();
-                }
+                // Already updated — nothing to do
             }
+
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                showToast("Network error");
+                // Roll back by reloading from server
+                showToast("Failed to mark all as read");
+                loadNotifications();
             }
         });
     }
@@ -356,25 +325,27 @@ public class NotificationFragment extends Fragment {
     }
 
     private void clearAll() {
+        // Optimistic update
+        List<NotificationDto> backup = new ArrayList<>(allNotifications);
+        allNotifications.clear();
+        refreshList();
+
         apiService.deleteAllNotifications().enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call,
                                    @NonNull Response<Void> response) {
-                if (response.isSuccessful()) {
-                    allNotifications.clear();
-                    refreshList();
-                }
+                // Already cleared — nothing to do
             }
+
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                // Roll back
                 showToast("Network error");
+                allNotifications.addAll(backup);
+                refreshList();
             }
         });
     }
-
-    // ─────────────────────────────────────────────────────────────────
-    //  UI helpers
-    // ─────────────────────────────────────────────────────────────────
 
     private void showLoading(boolean loading) {
         if (loadingSpinner != null)
@@ -390,22 +361,22 @@ public class NotificationFragment extends Fragment {
     private String getTitleForType(String type) {
         if (type == null) return "Notification";
         switch (type) {
-            case "RIDE_PANIC":              return "🚨 Emergency Panic Alert";
-            case "RIDE_STARTING":           return "Ride is starting";
-            case "RIDE_STARTED":            return "Ride has started";
-            case "RIDE_COMPLETED":          return "Ride completed";
-            case "RIDE_CANCELLED":          return "Ride cancelled";
-            case "RIDE_REJECTED":           return "Ride request rejected";
-            case "ADDED_TO_RIDE":           return "Added to shared ride";
-            case "RATING_REMINDER":         return "Rating reminder";
-            case "RATING_RECEIVED":         return "You received a rating";
+            case "RIDE_PANIC":             return "🚨 Emergency Panic Alert";
+            case "RIDE_STARTING":          return "Ride is starting";
+            case "RIDE_STARTED":           return "Ride has started";
+            case "RIDE_COMPLETED":         return "Ride completed";
+            case "RIDE_CANCELLED":         return "Ride cancelled";
+            case "RIDE_REJECTED":          return "Ride request rejected";
+            case "ADDED_TO_RIDE":          return "Added to shared ride";
+            case "RATING_REMINDER":        return "Rating reminder";
+            case "RATING_RECEIVED":        return "You received a rating";
             case "RIDE_REMINDER":
-            case "UPCOMING_RIDE_REMINDER":  return "Upcoming ride reminder";
-            case "RIDE_REPORT":             return "Ride issue reported";
-            case "NEW_REGISTRATION":        return "New driver registered";
-            case "PROFILE_CHANGE_REQUEST":  return "Profile change request";
-            case "NEW_CHAT_MESSAGE":        return "New support message";
-            default:                        return "Notification";
+            case "UPCOMING_RIDE_REMINDER": return "Upcoming ride reminder";
+            case "RIDE_REPORT":            return "Ride issue reported";
+            case "NEW_REGISTRATION":       return "New driver registered";
+            case "PROFILE_CHANGE_REQUEST": return "Profile change request";
+            case "NEW_CHAT_MESSAGE":       return "New support message";
+            default:                       return "Notification";
         }
     }
 

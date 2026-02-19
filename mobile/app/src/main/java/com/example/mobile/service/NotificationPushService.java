@@ -20,36 +20,26 @@ import com.example.mobile.dto.notification.NotificationDto;
 import com.example.mobile.network.service.StompNotificationService;
 import com.example.mobile.ui.MainActivity;
 
-/**
- * Foreground service that keeps the STOMP notification subscription alive
- * while the app is in the background.  Started/stopped by NotificationsFragment
- * on attach/detach and by MainActivity on login/logout.
- *
- * Usage:
- *   // Start (pass userId via Intent extra)
- *   Intent i = new Intent(context, NotificationPushService.class);
- *   i.putExtra("user_id", userId);
- *   ContextCompat.startForegroundService(context, i);
- *
- *   // Stop
- *   context.stopService(new Intent(context, NotificationPushService.class));
- */
-public class NotificationPushService extends Service {
+public class NotificationPushService extends Service
+        implements StompNotificationService.NotificationListener {
 
     private static final String TAG = "NotifPushService";
 
-    // Notification channel IDs
-    public static final String CHANNEL_SERVICE  = "notif_service_channel";   // foreground service
-    public static final String CHANNEL_ALERTS   = "notif_alerts_channel";    // user-facing alerts
-    public static final String CHANNEL_PANIC    = "notif_panic_channel";     // high-priority panic
+    public static final String EXTRA_USER_EMAIL = "user_email";
+    public static final String EXTRA_JWT_TOKEN  = "jwt_token";
 
-    // Foreground service notification id
+    public static final String ACTION_NEW_NOTIFICATION = "com.example.mobile.NEW_NOTIFICATION";
+    public static final String EXTRA_NOTIFICATION_JSON = "notification_json";
+
+    public static final String CHANNEL_SERVICE = "notif_service_channel";
+    public static final String CHANNEL_ALERTS  = "notif_alerts_channel";
+    public static final String CHANNEL_PANIC   = "notif_panic_channel";
+
     private static final int FG_NOTIFICATION_ID = 1001;
-    // Base id for user-facing push notifications (incremented per alert)
     private static int nextPushId = 2000;
 
     private StompNotificationService stompService;
-
+    private final com.google.gson.Gson gson = new com.google.gson.Gson();
 
     @Override
     public void onCreate() {
@@ -60,27 +50,35 @@ public class NotificationPushService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        long userId = 0;
+        String email = null;
+        String jwt   = null;
+
         if (intent != null) {
-            userId = intent.getLongExtra("user_id", 0);
+            email = intent.getStringExtra(EXTRA_USER_EMAIL);
+            jwt   = intent.getStringExtra(EXTRA_JWT_TOKEN);
         }
 
-        // If we didn't get a valid id from the intent, try SharedPrefs as fallback
-        if (userId == 0) {
+        if (email != null && jwt != null) {
+            getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+                    .edit()
+                    .putString("user_email", email)
+                    .putString("jwt_token",  jwt)
+                    .apply();
+        } else {
             SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-            userId = prefs.getLong("user_id", 0);
+            email = prefs.getString("user_email", null);
+            jwt   = prefs.getString("jwt_token",  null);
         }
 
         startForeground(FG_NOTIFICATION_ID, buildForegroundNotification());
 
-        if (userId != 0) {
-            final long finalUserId = userId;
-            stompService.connect(finalUserId, this::onNotificationReceived);
+        if (email != null && jwt != null) {
+            if (stompService.isConnected()) stompService.disconnect();
+            stompService.connect(email, jwt, this);
         } else {
-            Log.w(TAG, "No user_id — service will idle until restarted with valid user");
+            Log.w(TAG, "Missing credentials — service will idle until restarted");
         }
 
-        // If killed by system, restart and re-deliver last intent so we reconnect
         return START_REDELIVER_INTENT;
     }
 
@@ -93,30 +91,28 @@ public class NotificationPushService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null; // Not a bound service
+        return null;
     }
 
-
-    private void onNotificationReceived(NotificationDto dto) {
-        Log.d(TAG, "Push notification received: type=" + dto.getType());
-
-        // Broadcast to any live NotificationsFragment
-        Intent broadcast = new Intent("com.example.mobile.NEW_NOTIFICATION");
-        broadcast.putExtra("notification_json", new com.google.gson.Gson().toJson(dto));
+    @Override
+    public void onNotificationReceived(NotificationDto dto) {
+        Log.d(TAG, "Notification received: " + dto.getType());
+        Intent broadcast = new Intent(ACTION_NEW_NOTIFICATION);
+        broadcast.putExtra(EXTRA_NOTIFICATION_JSON, gson.toJson(dto));
         sendBroadcast(broadcast);
-
-        // Post a system-level push notification
         postPushNotification(dto);
     }
 
+    @Override
+    public void onConnectionStateChanged(boolean connected) {
+        Log.d(TAG, "STOMP " + (connected ? "connected" : "disconnected"));
+    }
 
     private void postPushNotification(NotificationDto dto) {
-        String title = getTitleForType(dto.getType());
-        String body  = dto.getContent() != null ? dto.getContent() : "You have a new notification.";
-
         boolean isPanic = "RIDE_PANIC".equals(dto.getType());
+        String  title   = getTitleForType(dto.getType());
+        String  body    = dto.getContent() != null ? dto.getContent() : "You have a new notification.";
 
-        // Tap action — opens MainActivity (NavController will handle deep links if needed)
         Intent tapIntent = new Intent(this, MainActivity.class);
         tapIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         if (dto.getRideId() != null) tapIntent.putExtra("ride_id", dto.getRideId());
@@ -124,27 +120,24 @@ public class NotificationPushService extends Service {
 
         PendingIntent pi = PendingIntent.getActivity(
                 this,
-                (int) dto.getId(),
+                nextPushId,
                 tapIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        String channel = isPanic ? CHANNEL_PANIC : CHANNEL_ALERTS;
-        int priority   = isPanic
-                ? NotificationCompat.PRIORITY_MAX
-                : NotificationCompat.PRIORITY_DEFAULT;
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channel)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(
+                this, isPanic ? CHANNEL_PANIC : CHANNEL_ALERTS)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-                .setPriority(priority)
+                .setPriority(isPanic
+                        ? NotificationCompat.PRIORITY_MAX
+                        : NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true)
                 .setContentIntent(pi);
 
         if (isPanic) {
-            builder.setColor(0xFFD32F2F)        // red tint
+            builder.setColor(0xFFD32F2F)
                     .setColorized(true)
                     .setVibrate(new long[]{0, 500, 200, 500, 200, 500});
         }
@@ -153,13 +146,11 @@ public class NotificationPushService extends Service {
         if (nm != null) nm.notify(nextPushId++, builder.build());
     }
 
-
     private Notification buildForegroundNotification() {
-        Intent tapIntent = new Intent(this, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(
-                this, 0, tapIntent,
-                PendingIntent.FLAG_IMMUTABLE
-        );
+                this, 0,
+                new Intent(this, MainActivity.class),
+                PendingIntent.FLAG_IMMUTABLE);
 
         return new NotificationCompat.Builder(this, CHANNEL_SERVICE)
                 .setSmallIcon(R.drawable.ic_notification)
@@ -172,38 +163,24 @@ public class NotificationPushService extends Service {
                 .build();
     }
 
-
     private void createNotificationChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (nm == null) return;
 
-        // Silent foreground service channel
         NotificationChannel serviceChannel = new NotificationChannel(
-                CHANNEL_SERVICE,
-                "Background Service",
-                NotificationManager.IMPORTANCE_MIN
-        );
+                CHANNEL_SERVICE, "Background Service", NotificationManager.IMPORTANCE_MIN);
         serviceChannel.setDescription("Keeps notification delivery active");
         serviceChannel.setShowBadge(false);
         nm.createNotificationChannel(serviceChannel);
 
-        // Standard alerts
         NotificationChannel alertsChannel = new NotificationChannel(
-                CHANNEL_ALERTS,
-                "Ride & App Notifications",
-                NotificationManager.IMPORTANCE_DEFAULT
-        );
+                CHANNEL_ALERTS, "Ride & App Notifications", NotificationManager.IMPORTANCE_DEFAULT);
         alertsChannel.setDescription("Ride updates, ratings, and support messages");
         nm.createNotificationChannel(alertsChannel);
 
-        // High-importance panic channel
         NotificationChannel panicChannel = new NotificationChannel(
-                CHANNEL_PANIC,
-                "Emergency Panic Alerts",
-                NotificationManager.IMPORTANCE_HIGH
-        );
+                CHANNEL_PANIC, "Emergency Panic Alerts", NotificationManager.IMPORTANCE_HIGH);
         panicChannel.setDescription("Emergency panic alerts requiring immediate attention");
         panicChannel.enableVibration(true);
         panicChannel.setVibrationPattern(new long[]{0, 500, 200, 500, 200, 500});
@@ -213,22 +190,22 @@ public class NotificationPushService extends Service {
     private String getTitleForType(String type) {
         if (type == null) return "Notification";
         switch (type) {
-            case "RIDE_PANIC":              return "🚨 Emergency Panic Alert";
-            case "RIDE_STARTING":           return "Ride is starting";
-            case "RIDE_STARTED":            return "Ride has started";
-            case "RIDE_COMPLETED":          return "Ride completed";
-            case "RIDE_CANCELLED":          return "Ride cancelled";
-            case "RIDE_REJECTED":           return "Ride request rejected";
-            case "ADDED_TO_RIDE":           return "Added to shared ride";
-            case "RATING_REMINDER":         return "Rating reminder";
-            case "RATING_RECEIVED":         return "You received a rating";
+            case "RIDE_PANIC":             return "🚨 Emergency Panic Alert";
+            case "RIDE_STARTING":          return "Ride is starting";
+            case "RIDE_STARTED":           return "Ride has started";
+            case "RIDE_COMPLETED":         return "Ride completed";
+            case "RIDE_CANCELLED":         return "Ride cancelled";
+            case "RIDE_REJECTED":          return "Ride request rejected";
+            case "ADDED_TO_RIDE":          return "Added to shared ride";
+            case "RATING_REMINDER":        return "Rating reminder";
+            case "RATING_RECEIVED":        return "You received a rating";
             case "RIDE_REMINDER":
-            case "UPCOMING_RIDE_REMINDER":  return "Upcoming ride reminder";
-            case "RIDE_REPORT":             return "Ride issue reported";
-            case "NEW_REGISTRATION":        return "New driver registered";
-            case "PROFILE_CHANGE_REQUEST":  return "Profile change request";
-            case "NEW_CHAT_MESSAGE":        return "New support message";
-            default:                        return "Notification";
+            case "UPCOMING_RIDE_REMINDER": return "Upcoming ride reminder";
+            case "RIDE_REPORT":            return "Ride issue reported";
+            case "NEW_REGISTRATION":       return "New driver registered";
+            case "PROFILE_CHANGE_REQUEST": return "Profile change request";
+            case "NEW_CHAT_MESSAGE":       return "New support message";
+            default:                       return "Notification";
         }
     }
 }

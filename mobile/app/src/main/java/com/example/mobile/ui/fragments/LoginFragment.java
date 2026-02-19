@@ -131,13 +131,12 @@ public class LoginFragment extends Fragment {
 
     private void handleLoginSuccess(LoginResponse response) {
         saveUserSession(response);
+
         if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).updateMenuVisibility();
+            MainActivity activity = (MainActivity) getActivity();
+            activity.onUserLoggedIn();
         }
         Toast.makeText(getContext(), "Welcome back!", Toast.LENGTH_SHORT).show();
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).updateNavigationHeader();
-        }
         navigateBasedOnRole(response.personDto.role.name());
     }
 

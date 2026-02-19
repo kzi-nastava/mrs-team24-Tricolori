@@ -14,55 +14,57 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- ── Header row ── -->
+        <!-- Row 1: title alone, full width, no competition -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Notifications"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="2dp" />
+
+        <!-- Row 2: subtitle + compact icon buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="16dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Notifications"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/black" />
+                android:text="Stay updated on ride requests, earnings, and alerts"
+                android:textColor="#6B7280"
+                android:textSize="13sp" />
 
-            <Button
-                android:id="@+id/btn_clear_all"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Clear All"
-                android:textColor="#DC2626"
-                android:backgroundTint="@android:color/transparent"
-                android:visibility="gone"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
-
-            <Button
+            <ImageButton
                 android:id="@+id/btn_mark_all_read"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mark all read"
-                android:textColor="#0D9488"
-                android:backgroundTint="@android:color/transparent"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_done_all"
+                app:tint="#0D9488"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Mark all as read"
                 android:visibility="gone"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
+                android:layout_marginStart="8dp" />
+
+            <ImageButton
+                android:id="@+id/btn_clear_all"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_delete_sweep"
+                app:tint="#DC2626"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Clear all notifications"
+                android:visibility="gone"
+                android:layout_marginStart="4dp" />
 
         </LinearLayout>
 
-        <!-- Sub-title -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Stay updated on ride requests, earnings, and alerts"
-            android:textColor="#6B7280"
-            android:textSize="13sp"
-            android:layout_marginBottom="16dp" />
-
-        <!-- ── Stats bar ── -->
+        <!-- Stats bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -72,7 +74,6 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="16dp">
 
-            <!-- Unread pill -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -102,7 +103,6 @@
                     android:textSize="13sp" />
             </LinearLayout>
 
-            <!-- Read pill -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -132,7 +132,6 @@
                     android:textSize="13sp" />
             </LinearLayout>
 
-            <!-- Divider -->
             <View
                 android:layout_width="1dp"
                 android:layout_height="16dp"
@@ -148,7 +147,6 @@
                 android:textSize="13sp"
                 tools:text="13 total" />
 
-            <!-- Filter toggle -->
             <Button
                 android:id="@+id/btn_toggle_filter"
                 android:layout_width="wrap_content"
@@ -161,9 +159,7 @@
 
         </LinearLayout>
 
-        <!-- ── Loading spinner ── -->
-        <!-- FIX: removed invalid android:layout_marginStart="auto" and
-             android:layout_marginEnd="auto" — use layout_gravity instead -->
+        <!-- Loading spinner -->
         <ProgressBar
             android:id="@+id/loading_spinner"
             android:layout_width="48dp"
@@ -174,7 +170,7 @@
             android:indeterminateTint="#14B8A6"
             android:visibility="gone" />
 
-        <!-- ── Admin panic section (top-pinned, admin-only) ── -->
+        <!-- Admin panic section -->
         <LinearLayout
             android:id="@+id/panic_section"
             android:layout_width="match_parent"
@@ -217,7 +213,7 @@
 
         </LinearLayout>
 
-        <!-- ── Regular notifications list ── -->
+        <!-- Regular notifications list -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_notifications"
             android:layout_width="match_parent"
@@ -228,7 +224,7 @@
             android:visibility="gone"
             tools:visibility="visible" />
 
-        <!-- ── Empty state ── -->
+        <!-- Empty state -->
         <LinearLayout
             android:id="@+id/empty_state"
             android:layout_width="match_parent"
