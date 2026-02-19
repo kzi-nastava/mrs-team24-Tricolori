@@ -149,10 +149,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'home',
-        loadComponent: () => import('./pages/home/admin/admin-home').then(m => m.AdminHome)
-      },
-      {
         path: 'support',
         loadComponent: () => import('./pages/support-chat/admin/admin-support').then(m => m.AdminSupport)
       },
