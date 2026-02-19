@@ -1,5 +1,6 @@
 package com.example.mobile.ui.adapters;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mobile.R;
@@ -91,22 +93,21 @@ public class ActivePersonStatusAdapter extends RecyclerView.Adapter<ActivePerson
             tvStatus.setBackground(badgeBg);
 
             // Action button
-            if (user.getStatus() == AccountStatus.SUSPENDED) {
-                btnChangeStatus.setText("Unblock user");
-                GradientDrawable btnBg = new GradientDrawable();
-                btnBg.setShape(GradientDrawable.RECTANGLE);
-                btnBg.setCornerRadius(dpToPx(8));
-                btnBg.setColor(Color.parseColor("#059669")); // emerald-600
-                btnChangeStatus.setBackground(btnBg);
-            } else {
-                btnChangeStatus.setText("Block user");
-                GradientDrawable btnBg = new GradientDrawable();
-                btnBg.setShape(GradientDrawable.RECTANGLE);
-                btnBg.setCornerRadius(dpToPx(8));
-                btnBg.setColor(Color.parseColor("#DC2626")); // red-600
-                btnChangeStatus.setBackground(btnBg);
-            }
+            Context context = btnChangeStatus.getContext();
+            GradientDrawable btnBg = new GradientDrawable();
+            btnBg.setShape(GradientDrawable.RECTANGLE);
+            btnBg.setCornerRadius(dpToPx(8));
 
+            if (user.getStatus() == AccountStatus.SUSPENDED) {
+                btnChangeStatus.setText(context.getString(R.string.block_result_item_change_status_unblock));
+                int colorEmerald = ContextCompat.getColor(context, R.color.light_600);
+                btnBg.setColor(colorEmerald);
+            } else {
+                btnChangeStatus.setText(context.getString(R.string.block_result_item_change_status_block));
+                int colorBase = ContextCompat.getColor(context, R.color.base_600);
+                btnBg.setColor(colorBase);
+            }
+            btnChangeStatus.setBackground(btnBg);
             btnChangeStatus.setOnClickListener(v -> listener.onChangeStatus(user));
         }
 

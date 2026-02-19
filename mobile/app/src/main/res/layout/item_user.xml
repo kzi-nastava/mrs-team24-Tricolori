@@ -142,7 +142,7 @@
             android:textStyle="bold"
             android:textColor="@color/white"
             android:background="@drawable/bg_button_block"
-            android:text="@string/block_result_item_change_status"
+            android:text="@string/block_result_item_change_status_block"
             app:backgroundTint="@null" />
 
     </LinearLayout>

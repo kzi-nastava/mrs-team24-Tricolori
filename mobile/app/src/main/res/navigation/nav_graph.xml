@@ -22,6 +22,20 @@
     </fragment>
 
     <fragment
+        android:id="@+id/blockFragment"
+        android:name="com.example.mobile.ui.fragments.BlockUsersFragment"
+        android:label="Blocks"
+        tools:layout="@layout/fragment_block_users">
+        <action
+            android:id="@+id/action_block_to_profile"
+            app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_block_to_changeRequests"
+            app:destination="@id/changeRequestsReviewFragment" />
+    </fragment>
+
+
+    <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.mobile.ui.fragments.LoginFragment"
         android:label="Login"
@@ -179,6 +193,9 @@
             android:id="@+id/action_profile_to_login"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/homeFragment" />
+        <action
+            android:id="@+id/action_profile_to_block"
+            app:destination="@id/blockFragment" />
     </fragment>
 
     <fragment

@@ -290,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem logout = menu.findItem(R.id.nav_logout);
         MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
         MenuItem changeRequests = menu.findItem(R.id.changeRequestsReviewFragment);
+        MenuItem blocks = menu.findItem(R.id.blockFragment);
         MenuItem driverRegistration = menu.findItem(R.id.adminDriverRegistrationFragment);
 
         if (token != null && role != null) {
@@ -308,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
                 changeRequests.setVisible(true);
                 driverRegistration.setVisible(true);
                 support.setVisible(false);
+                blocks.setVisible(true);
                 adminSupport.setVisible(true);
 
             } else if ("ROLE_DRIVER".equals(role)) {
@@ -319,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
                 driverRegistration.setVisible(false);
                 support.setVisible(true);
                 adminSupport.setVisible(false);
+                blocks.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
 //                supervise.setVisible(false);
@@ -329,6 +332,7 @@ public class MainActivity extends AppCompatActivity {
                 driverRegistration.setVisible(false);
                 support.setVisible(true);
                 adminSupport.setVisible(false);
+                blocks.setVisible(false);
             }
 
         } else {
@@ -345,6 +349,7 @@ public class MainActivity extends AppCompatActivity {
             statusSwitch.setVisible(false);
             changeRequests.setVisible(false);
             driverRegistration.setVisible(false);
+            blocks.setVisible(false);
         }
     }
 

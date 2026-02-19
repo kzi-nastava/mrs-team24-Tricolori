@@ -8,7 +8,7 @@ import retrofit2.Call;
 import retrofit2.http.*;
 
 public interface PersonService {
-    @GET("persons/statuses")
+    @GET("api/v1/persons/statuses")
     Call<PageResponse<ActivePersonStatus>> getUsers(
             @Query("id") Long id,
             @Query("firstName") String firstName,
@@ -18,9 +18,9 @@ public interface PersonService {
             @Query("size") int size
     );
 
-    @PATCH("persons/block")
+    @PATCH("api/v1/persons/block")
     Call<Void> applyBlock(@Body BlockRequest request);
 
-    @DELETE("persons/unblock")
+    @DELETE("api/v1/persons/unblock")
     Call<Void> removeBlock(@Query("email") String email);
 }

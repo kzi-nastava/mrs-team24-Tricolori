@@ -26,7 +26,8 @@
     <string name="block_result_item_email_example">john@example.com</string>
     <string name="block_result_item_registration">Reg. date</string>
     <string name="block_result_item_registration_example">01.01.2024 – 12:00</string>
-    <string name="block_result_item_change_status">Change Status</string>
+    <string name="block_result_item_change_status_block">Block user</string>
+    <string name="block_result_item_change_status_unblock">Unlock user</string>
     <string name="block_result_item_id">1</string>
     <string name="block_modal_title">Block user</string>
     <string name="block_modal_user">User: </string>
