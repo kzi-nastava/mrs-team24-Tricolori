@@ -40,12 +40,25 @@ public interface RideService {
             @Path("rideId") Long rideId
     );
 
+    @GET("api/v1/rides/{id}/details/admin")
+    Call<DriverRideDetailResponse> getAdminRideDetail(@Path("id") long rideId);
+
     @GET("api/v1/rides/passenger")
     Call<ResponseBody> getPassengerRideHistory(
             @Query("startDate") String startDate,
             @Query("endDate") String endDate,
-            @Query("page") int page,
-            @Query("size") int size,
+            @Query("page") Integer page,
+            @Query("size") Integer size,
+            @Query("sort") String sort
+    );
+
+    @GET("api/v1/rides/admin")
+    Call<ResponseBody> getAdminRideHistory(
+            @Query("personEmail") String personEmail,
+            @Query("startDate") String startDate,
+            @Query("endDate") String endDate,
+            @Query("page") Integer page,
+            @Query("size") Integer size,
             @Query("sort") String sort
     );
 
@@ -68,6 +81,9 @@ public interface RideService {
     @PUT("api/v1/rides/{id}/cancel")
     Call<ResponseBody> cancelRide(@Path("id") Long rideId, @Body CancellationRequest request);
 
+    @GET("api/v1/rides/ongoing")
+    Call<List<RideTrackingResponse>> getAllOngoingRides();
+  
     @GET("api/v1/rides/{rideId}/track")
     Call<RideTrackingResponse> trackRide(
             @Path("rideId") Long rideId

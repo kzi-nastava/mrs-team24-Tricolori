@@ -78,12 +78,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Set<Integer> topLevelDestinations = new HashSet<>();
-        topLevelDestinations.add(R.id.rideHistoryFragment);
         topLevelDestinations.add(R.id.userProfileFragment);
         topLevelDestinations.add(R.id.changeRequestsReviewFragment);
         topLevelDestinations.add(R.id.adminDriverRegistrationFragment);
         topLevelDestinations.add(R.id.driverHomeFragment);
         topLevelDestinations.add(R.id.passengerHomeFragment);
+        topLevelDestinations.add(R.id.adminSuperviseFragment);
+        topLevelDestinations.add(R.id.passengerRideHistoryFragment);
+        topLevelDestinations.add(R.id.driverRideHistoryFragment);
+        topLevelDestinations.add(R.id.adminRideHistoryFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
@@ -124,17 +127,21 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-            if (id == R.id.rideHistoryFragment) {
-                SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                String userRole = prefs.getString("user_role", "");
+                if (id == R.id.rideHistoryFragment) {
+                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    String userRole = prefs.getString("user_role", "");
 
-                Bundle args = new Bundle();
-                args.putString("role", "ROLE_PASSENGER".equals(userRole) ? "PASSENGER" : "DRIVER");
+                    drawerLayout.closeDrawer(GravityCompat.START);
 
-                drawerLayout.closeDrawer(GravityCompat.START);
-                navController.navigate(R.id.rideHistoryFragment, args);
-                return true;
-            }
+                    if ("ROLE_PASSENGER".equals(userRole)) {
+                        navController.navigate(R.id.passengerRideHistoryFragment);
+                    } else if ("ROLE_DRIVER".equals(userRole)) {
+                        navController.navigate(R.id.driverRideHistoryFragment);
+                    } else if ("ROLE_ADMIN".equals(userRole)) {
+                        navController.navigate(R.id.adminRideHistoryFragment);
+                    }
+                    return true;
+                }
 
             if (id == R.id.homeFragment) {
                 SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
@@ -281,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem home = menu.findItem(R.id.homeFragment);
         MenuItem history = menu.findItem(R.id.rideHistoryFragment);
         // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
-//        MenuItem supervise = menu.findItem(R.id.rideSupervisorFragment);
+        MenuItem supervise = menu.findItem(R.id.adminSuperviseFragment);
 //        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
         MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
         MenuItem support = menu.findItem(R.id.supportChatEntry);
@@ -302,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Role-specific items
             if ("ROLE_ADMIN".equals(role)) {
-                // supervise.setVisible(true);
+                 supervise.setVisible(true);
 //                notifications.setVisible(true);
                 pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
@@ -313,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
                 adminSupport.setVisible(true);
 
             } else if ("ROLE_DRIVER".equals(role)) {
-//                supervise.setVisible(false);
+                supervise.setVisible(false);
 //                notifications.setVisible(false);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
@@ -324,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
                 blocks.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
-//                supervise.setVisible(false);
+                supervise.setVisible(false);
 //                notifications.setVisible(true);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
@@ -339,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
             // Not logged in - hide everything
             home.setVisible(false);
             history.setVisible(false);
-//            supervise.setVisible(false);
+            supervise.setVisible(false);
 //            notifications.setVisible(false);
             pricelist.setVisible(false);
             support.setVisible(false);

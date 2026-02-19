@@ -329,4 +329,30 @@
     <!-- Passenger Ride Waiting -->
     <string name="waiting_for_driver_to_arrive">Waiting for driver to arrive…</string>
     <string name="driver">DRIVER</string>
+
+    <!-- Ride History -->
+    <string name="my_ride_history">My Ride History</string>
+    <string name="view_all_rides">View all your rides and leave ratings for completed trips</string>
+    <string name="filters">Filters</string>
+    <string name="hint_person_email">Filter by passenger/driver email</string>
+    <string name="btn_apply_filters">Apply Filters</string>
+    <string name="btn_clear_all">Clear All</string>
+
+    <!-- Table Headers -->
+    <string name="header_route">Route</string>
+    <string name="header_date">Date</string>
+    <string name="header_price">Price</string>
+    <string name="header_status">Status</string>
+    <string name="header_actions">Actions</string>
+
+    <!-- Pagination -->
+    <string name="showing_rides">Showing %1$d of %2$d rides</string>
+    <string name="page_number">Page %1$d</string>
+    <string name="btn_previous">Previous</string>
+    <string name="btn_next">Next</string>
+    <string name="no_rides_found">No rides found.</string>
+
+    <!-- Other -->
+    <string name="currency_rsd">RSD</string>
+    <string name="btn_view">View</string>
 </resources>
