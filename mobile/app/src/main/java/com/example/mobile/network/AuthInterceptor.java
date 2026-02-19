@@ -24,6 +24,11 @@ public class AuthInterceptor implements Interceptor {
     @Override
     public Response intercept(@NonNull Chain chain) throws IOException {
         Request request = chain.request();
+
+        Request.Builder builder = request.newBuilder()
+                .header("Content-Type", "application/json; charset=utf-8")
+                .header("Accept", "application/json");
+
         boolean shouldAddToken = shouldAddToken(request);
 
         if (shouldAddToken) {
@@ -31,13 +36,11 @@ public class AuthInterceptor implements Interceptor {
             String token = prefs.getString("jwt_token", null);
 
             if (token != null) {
-                request = request.newBuilder()
-                        .addHeader("Authorization", "Bearer " + token)
-                        .build();
+                builder.header("Authorization", "Bearer " + token);
             }
         }
 
-        return chain.proceed(request);
+        return chain.proceed(builder.build());
     }
 
     private boolean shouldAddToken(Request request) {
