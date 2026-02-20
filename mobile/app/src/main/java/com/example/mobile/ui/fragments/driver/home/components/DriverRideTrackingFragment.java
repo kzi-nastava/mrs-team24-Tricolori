@@ -19,6 +19,7 @@ import androidx.preference.PreferenceManager;
 import com.example.mobile.R;
 import com.example.mobile.dto.pricelist.PriceConfigResponse;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
+import com.example.mobile.dto.ride.Location;
 import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.RideTrackingResponse;
 import com.example.mobile.dto.ride.StopRideRequest;
@@ -49,7 +50,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class DriverRideTrackingFragment extends Fragment {
-/*
+
     private static final String TAG = "DriverRideTracking";
     private static final String ARG_RIDE_ID = "ride_id";
     private static final long SIMULATION_INTERVAL_MS = 3_000L;
@@ -406,7 +407,7 @@ public class DriverRideTrackingFragment extends Fragment {
         RetrofitClient.getClient(requireContext())
                 .create(RideService.class)
                 .panicRide(new PanicRideRequest(
-                        new PanicRideRequest.VehicleLocation(pos.getLatitude(), pos.getLongitude())))
+                        new Location(pos.getLongitude(), pos.getLatitude())))
                 .enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
@@ -456,5 +457,5 @@ public class DriverRideTrackingFragment extends Fragment {
                 rideId, totalDistance, totalDurationMin,
                 calculatePrice(), pickupAddress, dropoffAddress
         ).show(requireActivity().getSupportFragmentManager(), "ride_complete");
-    }*/
+    }
 }

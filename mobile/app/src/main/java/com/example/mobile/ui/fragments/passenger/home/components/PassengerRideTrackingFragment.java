@@ -19,6 +19,7 @@ import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.ride.InconsistencyReportRequest;
+import com.example.mobile.dto.ride.Location;
 import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.RideTrackingResponse;
@@ -43,7 +44,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PassengerRideTrackingFragment extends Fragment {
-/*
+
     private static final String TAG = "PassengerRideTracking";
     private static final String ARG_RIDE_ID = "ride_id";
     private static final long TRACKING_INTERVAL_MS = 5000;
@@ -437,8 +438,8 @@ public class PassengerRideTrackingFragment extends Fragment {
     private void triggerPanic() {
         if (panicTriggered) return;
 
-        PanicRideRequest.VehicleLocation location =
-                new PanicRideRequest.VehicleLocation(lastVehicleLat, lastVehicleLng);
+        Location location =
+                new Location(lastVehicleLng, lastVehicleLat);
         PanicRideRequest request = new PanicRideRequest(location);
 
         RetrofitClient.getClient(requireContext()).create(RideService.class)
@@ -466,5 +467,5 @@ public class PassengerRideTrackingFragment extends Fragment {
     private void handleRideCompletion() {
         Toast.makeText(getContext(), "Ride completed!", Toast.LENGTH_SHORT).show();
         requireActivity().getSupportFragmentManager().popBackStack();
-    }*/
+    }
 }
