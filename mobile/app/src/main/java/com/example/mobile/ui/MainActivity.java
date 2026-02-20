@@ -93,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
         topLevelDestinations.add(R.id.passengerRideHistoryFragment);
         topLevelDestinations.add(R.id.driverRideHistoryFragment);
         topLevelDestinations.add(R.id.adminRideHistoryFragment);
+        topLevelDestinations.add(R.id.pricelistFragment);
+        topLevelDestinations.add(R.id.blockFragment);
 
         View headerView = navigationView.getHeaderView(0);
         navHeaderUserName = headerView.findViewById(R.id.nav_header_user_name);
