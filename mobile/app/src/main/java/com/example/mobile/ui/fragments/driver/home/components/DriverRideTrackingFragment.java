@@ -19,6 +19,7 @@ import androidx.preference.PreferenceManager;
 import com.example.mobile.R;
 import com.example.mobile.dto.pricelist.PriceConfigResponse;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
+import com.example.mobile.dto.ride.Location;
 import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.RideTrackingResponse;
 import com.example.mobile.dto.ride.StopRideRequest;
@@ -406,7 +407,7 @@ public class DriverRideTrackingFragment extends Fragment {
         RetrofitClient.getClient(requireContext())
                 .create(RideService.class)
                 .panicRide(new PanicRideRequest(
-                        new PanicRideRequest.VehicleLocation(pos.getLatitude(), pos.getLongitude())))
+                        new Location(pos.getLatitude(), pos.getLongitude())))
                 .enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {

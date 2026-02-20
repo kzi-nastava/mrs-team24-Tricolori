@@ -19,6 +19,7 @@ import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
 import com.example.mobile.dto.ride.InconsistencyReportRequest;
+import com.example.mobile.dto.ride.Location;
 import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.PassengerRideDetailResponse;
 import com.example.mobile.dto.ride.RideTrackingResponse;
@@ -437,8 +438,8 @@ public class PassengerRideTrackingFragment extends Fragment {
     private void triggerPanic() {
         if (panicTriggered) return;
 
-        PanicRideRequest.VehicleLocation location =
-                new PanicRideRequest.VehicleLocation(lastVehicleLat, lastVehicleLng);
+        Location location =
+                new Location(lastVehicleLat, lastVehicleLng);
         PanicRideRequest request = new PanicRideRequest(location);
 
         RetrofitClient.getClient(requireContext()).create(RideService.class)
