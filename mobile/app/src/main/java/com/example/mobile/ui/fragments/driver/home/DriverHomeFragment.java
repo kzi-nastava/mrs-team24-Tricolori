@@ -12,9 +12,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
+import com.example.mobile.model.RideAssignmentResponse;
 import com.example.mobile.ui.fragments.driver.home.components.DriverCancelRideFragment;
 import com.example.mobile.ui.components.MapComponent;
 import com.example.mobile.ui.fragments.driver.home.components.DriverRideAssignmentFragment;
+import com.example.mobile.ui.fragments.driver.home.components.DriverRideTrackingFragment;
 import com.example.mobile.ui.fragments.driver.home.components.DriverWaitingFragment;
 
 import org.osmdroid.config.Configuration;
@@ -29,6 +31,8 @@ public class DriverHomeFragment extends Fragment {
 
     private static final double NS_LAT = 45.2671;
     private static final double NS_LON = 19.8335;
+
+    private DriverViewModel viewModel;
 
     @Nullable
     @Override
@@ -50,7 +54,7 @@ public class DriverHomeFragment extends Fragment {
 
         mapComponent = new MapComponent(mapView, requireContext());
 
-        DriverViewModel viewModel = new ViewModelProvider(requireActivity()).get(DriverViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(DriverViewModel.class);
 
         viewModel.getRideStatus().observe(getViewLifecycleOwner(), this::handleStateChange);
 
@@ -86,6 +90,12 @@ public class DriverHomeFragment extends Fragment {
             case DriverViewModel.STATE_CANCEL_RIDE:
                 fragment = new DriverCancelRideFragment();
                 break;
+            case DriverViewModel.STATE_ACTIVE_RIDE:
+                RideAssignmentResponse ride = viewModel.getActiveRide().getValue();
+                if (ride != null && ride.id != null) {
+                    replacePanel(DriverRideTrackingFragment.newInstance(ride.id));
+                }
+                return;
             case DriverViewModel.STATE_WAITING:
             default:
                 if (mapComponent != null) mapComponent.clearRouteAndMarkers();

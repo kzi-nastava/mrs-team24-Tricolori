@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.text.Editable;
 import android.text.TextUtils;
@@ -28,9 +29,11 @@ import com.example.mobile.dto.ride.RidePreferences;
 import com.example.mobile.dto.ride.RideRoute;
 import com.example.mobile.dto.ride.Stop;
 import com.example.mobile.enums.VehicleType;
+import com.example.mobile.model.RideAssignmentResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.ui.fragments.FavoriteRouteSelectorDialogFragment;
 import com.example.mobile.ui.fragments.SchedulePickerDialogFragment;
+import com.example.mobile.ui.fragments.passenger.home.PassengerViewModel;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -519,6 +522,23 @@ public class PassengerOrderFragment extends Fragment implements SchedulePickerDi
         // args.putLong("rideId", rideId);
         // Navigation.findNavController(requireView()).navigate(R.id.action_to_rideWait, args);
         Toast.makeText(requireContext(), "Ride booked! ID: " + rideId, Toast.LENGTH_SHORT).show();
+        RetrofitClient.getRideService(requireContext())
+                .getRideAssignment(rideId)
+                .enqueue(new Callback<RideAssignmentResponse>() {
+                    @Override
+                    public void onResponse(Call<RideAssignmentResponse> call, Response<RideAssignmentResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            // Ovo pokreće WebSocket i mijenja state na WAITING
+                            PassengerViewModel vm = new ViewModelProvider(requireActivity())
+                                    .get(PassengerViewModel.class);
+                            vm.updateActiveRide(response.body());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<RideAssignmentResponse> call, Throwable t) {
+                        Toast.makeText(requireContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     // ─────────────────────────────────────────────────────────────────────────

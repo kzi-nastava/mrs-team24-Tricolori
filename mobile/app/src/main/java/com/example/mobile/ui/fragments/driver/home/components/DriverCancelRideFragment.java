@@ -3,11 +3,13 @@ package com.example.mobile.ui.fragments.driver.home.components;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,9 +30,13 @@ import retrofit2.Response;
 
 public class DriverCancelRideFragment extends Fragment {
 
+    private static final String TAG = "DriverCancelRide";
+
     private DriverViewModel viewModel;
     private EditText etCancelReason;
     private Button btnConfirmCancel;
+    private Button btnGoBack;
+    private ImageButton btnClose;
 
     @Nullable
     @Override
@@ -41,18 +47,27 @@ public class DriverCancelRideFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        Log.d(TAG, "onViewCreated");
+
         viewModel = new ViewModelProvider(requireActivity()).get(DriverViewModel.class);
 
+        // ============ SETUP VIEWS ============
         etCancelReason = view.findViewById(R.id.etCancelReason);
         btnConfirmCancel = view.findViewById(R.id.btnConfirmCancel);
+        btnGoBack = view.findViewById(R.id.btnGoBack);
+        btnClose = view.findViewById(R.id.btnClose);
 
+        // ============ DISABLE CONFIRM BUTTON PO DEFAULTU ============
         btnConfirmCancel.setEnabled(false);
         btnConfirmCancel.setAlpha(0.5f);
 
-        setupListeners(view);
+        // ============ SETUP LISTENERS ============
+        setupListeners();
     }
 
-    private void setupListeners(View rootView) {
+    private void setupListeners() {
+        // ============ TEXT CHANGE LISTENER ============
         etCancelReason.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -68,51 +83,121 @@ public class DriverCancelRideFragment extends Fragment {
             public void afterTextChanged(Editable s) {}
         });
 
+        // ============ CONFIRM CANCEL BUTTON ============
         btnConfirmCancel.setOnClickListener(v -> {
             String reason = etCancelReason.getText().toString().trim();
+            Log.d(TAG, "Confirm cancel clicked with reason: " + reason);
             handleCancelRide(reason);
         });
 
-        View.OnClickListener goBackAction = v -> viewModel.setRideStatus(DriverViewModel.STATE_ASSIGNED);
-        rootView.findViewById(R.id.btnGoBack).setOnClickListener(goBackAction);
-        rootView.findViewById(R.id.btnClose).setOnClickListener(goBackAction);
+        // ============ GO BACK BUTTON ============
+        btnGoBack.setOnClickListener(v -> {
+            Log.d(TAG, "Go back clicked");
+            viewModel.setRideStatus(DriverViewModel.STATE_ASSIGNED);
+        });
+
+        // ============ CLOSE BUTTON ============
+        btnClose.setOnClickListener(v -> {
+            Log.d(TAG, "Close clicked");
+            viewModel.setRideStatus(DriverViewModel.STATE_ASSIGNED);
+        });
     }
 
+    /**
+     * Otkaži voznju sa razlogom
+     *
+     * REST API: PUT /api/v1/rides/{rideId}/cancel
+     */
     private void handleCancelRide(String reason) {
+        Long rideId = viewModel.getActiveRide().getValue().id;
+
+        if (rideId == null) {
+            Toast.makeText(getContext(), "No active ride", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "Cancelling ride: " + rideId + " with reason: " + reason);
+
         btnConfirmCancel.setEnabled(false);
         btnConfirmCancel.setAlpha(0.5f);
 
-        Long rideId = viewModel.getActiveRide().getValue().id;
-
-        RideService rideService = RetrofitClient.getClient(requireContext()).create(RideService.class);
-
-        rideService.cancelRide(rideId, new CancellationRequest(reason)).enqueue(new Callback<>() {
+        // ✅ Koristi stvarni endpoint: PUT /api/v1/rides/{rideId}/cancel
+        RetrofitClient.getRideService(requireContext()).cancelRide(rideId, new CancellationRequest(reason)).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-
+            public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
+                    Log.d(TAG, "Ride cancelled successfully");
                     Toast.makeText(getContext(), "Ride canceled successfully!", Toast.LENGTH_SHORT).show();
+
+                    viewModel.clearActiveRide();
                     viewModel.setRideStatus(DriverViewModel.STATE_WAITING);
+
                 } else {
+                    Log.e(TAG, "Failed to cancel: " + response.code());
                     handleError(response.code());
                 }
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e(TAG, "Network error", t);
                 Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+
                 btnConfirmCancel.setEnabled(true);
                 btnConfirmCancel.setAlpha(1.0f);
             }
         });
-
-        viewModel.setRideStatus(DriverViewModel.STATE_WAITING);
     }
 
+    /*
+    private void cancelRide() {
+        RideAssignmentResponse ride = viewModel.getActiveRide().getValue();
+
+        if (ride == null || ride.id == null) {
+            Toast.makeText(getContext(), "No active ride", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Long rideId = ride.id;
+        Log.d(TAG, "cancelling a ride: " + rideId);
+
+        CancellationRequest cancellationRequest = new CancellationRequest("Driver cancelled the ride");
+
+        btnCancelAssignment.setEnabled(false);
+
+        RetrofitClient.getRideService(requireContext())
+                .cancelRide(rideId, cancellationRequest)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Log.d(TAG, "Ride cancelled successfully");
+                            Toast.makeText(getContext(), "Ride cancelled successfully", Toast.LENGTH_SHORT).show();
+                            viewModel.setRideStatus(DriverViewModel.STATE_WAITING);
+                        } else {
+                            Log.e(TAG, "Error while cancelling: " + response.code());
+                            Toast.makeText(getContext(), "Failed to cancel a ride", Toast.LENGTH_SHORT).show();
+                            btnCancelAssignment.setEnabled(true);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e(TAG, "Network error while cancelling a ride", t);
+                        Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        btnCancelAssignment.setEnabled(true);
+                    }
+                });
+    }
+    */
+
+    /**
+     * Rukuj greškami
+     */
     private void handleError(int code) {
         String msg = (code == 404) ? "Ride not found" : "Something went wrong (" + code + ")";
         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+
         btnConfirmCancel.setEnabled(true);
         btnConfirmCancel.setAlpha(1.0f);
     }

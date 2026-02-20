@@ -33,13 +33,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PassengerWaitingFragment extends Fragment {
-
-    private static final String TAG = "PassengerWaitingFragment";
-    private static final long POLL_INTERVAL_MS = 3000;
+    private static final String TAG = "PassengerWaiting";
     private PassengerViewModel viewModel;
-    private RideService rideService;
-    private Handler pollHandler;
-    private Runnable pollRunnable;
 
     @Nullable
     @Override
@@ -50,94 +45,47 @@ public class PassengerWaitingFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // ============ SETUP VIEWMODEL ============
         viewModel = new ViewModelProvider(requireActivity()).get(PassengerViewModel.class);
 
+        // ============ PULSE ANIMATION ============
         View pulseCircle = view.findViewById(R.id.pulseCircle);
         if (pulseCircle != null) {
             Animation pulse = AnimationUtils.loadAnimation(getContext(), R.anim.pulse);
             pulseCircle.startAnimation(pulse);
         }
 
-        rideService = RetrofitClient.getClient(requireContext()).create(RideService.class);
-
+        // ============ SLUŠAJ RIDE DETALJE ============
         viewModel.getActiveRide().observe(getViewLifecycleOwner(), ride -> {
             if (ride != null) {
                 displayRideData(view, ride);
-                startPolling(ride.id);
             }
         });
 
+        // ============ SLUŠAJ RIDE STATUS ============
+        // 🆕 OVO JE GLAVNA PROSLJEĐIVANJA
+        viewModel.getRideStatus().observe(getViewLifecycleOwner(), status -> {
+            if (status != null && status.equals(PassengerViewModel.STATE_TRACKING)) {
+                // ✅ Voznja je počela
+                Log.d(TAG, "Ride ONGOING - navigating to tracking");
+                // PassengerHomeFragment će viditi STATE_TRACKING i navigirati
+            } else if (status != null && status.equals(PassengerViewModel.STATE_HOME)) {
+                // ❌ Voznja je otkazana
+                if (isAdded() && getContext() != null) {
+                    Toast.makeText(getContext(), "Ride was cancelled", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // ============ CANCEL BUTTON ============
         view.findViewById(R.id.btnCancelRidePassenger).setOnClickListener(v -> cancelRide());
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        stopPolling();
-    }
-
-    private void startPolling(Long rideId) {
-        if (rideId == null) return;
-
-        stopPolling();
-
-        pollHandler = new Handler(Looper.getMainLooper());
-        pollRunnable = new Runnable() {
-            @Override
-            public void run() {
-                checkRideStatus(rideId);
-                if (pollHandler != null) {
-                    pollHandler.postDelayed(this, POLL_INTERVAL_MS);
-                }
-            }
-        };
-        pollHandler.post(pollRunnable);
-    }
-
-    private void stopPolling() {
-        if (pollHandler != null && pollRunnable != null) {
-            pollHandler.removeCallbacks(pollRunnable);
-            pollHandler = null;
-            pollRunnable = null;
-        }
-    }
-
-    private void checkRideStatus(Long rideId) {
-        rideService.trackRide(rideId).enqueue(new Callback<RideTrackingResponse>() {
-            @Override
-            public void onResponse(Call<RideTrackingResponse> call, Response<RideTrackingResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    handleRideStatusUpdate(response.body().getStatus());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<RideTrackingResponse> call, Throwable t) {
-                Log.e(TAG, "Failed to check ride status", t);
-            }
-        });
-    }
-
-    private void handleRideStatusUpdate(String status) {
-        if ("ONGOING".equalsIgnoreCase(status)) {
-            stopPolling();
-            viewModel.setRideStatus(PassengerViewModel.STATE_TRACKING);
-        } else if ("CANCELLED".equalsIgnoreCase(status)) {
-            stopPolling();
-            viewModel.clearActiveRide();
-            if (isAdded() && getContext() != null) {
-                Toast.makeText(getContext(), "Ride was cancelled", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
     private void displayRideData(View view, RideAssignmentResponse ride) {
-        // Driver info
         TextView tvName = view.findViewById(R.id.tvDriverName);
         TextView tvVehicle = view.findViewById(R.id.tvVehicleInfo);
         TextView tvInitial = view.findViewById(R.id.tvDriverInitial);
-
-        // Route info
         TextView tvPickup = view.findViewById(R.id.tvPickupAddr);
         TextView tvDest = view.findViewById(R.id.tvDestinationAddr);
         TextView tvPrice = view.findViewById(R.id.tvEstimatedPrice);
@@ -162,19 +110,29 @@ public class PassengerWaitingFragment extends Fragment {
     }
 
     private void cancelRide() {
-        Long rideId = viewModel.getActiveRide().getValue().id;
+        RideAssignmentResponse ride = viewModel.getActiveRide().getValue();
 
-        rideService.cancelRide(rideId, new CancellationRequest("")).enqueue(new Callback<>() {
+        if (ride == null || ride.id == null) {
+            Toast.makeText(getContext(), "No active ride", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Long rideId = ride.id;
+        Log.d(TAG, "Cancelling ride: " + rideId);
+
+        // ✅ Koristi stvarni endpoint: PUT /api/v1/rides/{rideId}/cancel
+        RetrofitClient.getRideService(requireContext()).cancelRide(rideId, new CancellationRequest("Passenger cancelled")).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-
+            public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
-                    stopPolling();
+                    Log.d(TAG, "Ride cancelled successfully");
                     viewModel.clearActiveRide();
+
                     if (isAdded() && getContext() != null) {
                         Toast.makeText(getContext(), "Ride cancelled", Toast.LENGTH_SHORT).show();
                     }
                 } else {
+                    Log.e(TAG, "Failed to cancel: " + response.code());
                     if (isAdded() && getContext() != null) {
                         Toast.makeText(getContext(), "Failed to cancel ride: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -182,9 +140,17 @@ public class PassengerWaitingFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e(TAG, "Error cancelling ride", t);
+                if (isAdded() && getContext() != null) {
+                    Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
     }
 }
