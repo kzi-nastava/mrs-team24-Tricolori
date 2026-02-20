@@ -18,6 +18,7 @@ import {RideService} from '../../../services/ride.service';
 import {ToastService} from '../../../services/toast.service';
 import {finalize} from 'rxjs/operators';
 import {RideDetailsModal} from './components/ride-details-modal/ride-details-modal';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-ride-history',
@@ -64,6 +65,8 @@ export class AdminRideHistoryComponent implements OnInit {
 
   private rideService = inject(RideService);
   private toastService = inject(ToastService);
+
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.loadRideHistory();
@@ -124,6 +127,10 @@ export class AdminRideHistoryComponent implements OnInit {
 
   viewRideDetails(ride: RideHistory): void {
     this.selectedRide.set(ride);
+  }
+
+  goToReports(): void {
+  this.router.navigate(['/admin/reports']);
   }
 
   protected readonly getStatusClass = getStatusClass;

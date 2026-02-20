@@ -149,10 +149,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'home',
-        loadComponent: () => import('./pages/home/admin/admin-home').then(m => m.AdminHome)
-      },
-      {
         path: 'support',
         loadComponent: () => import('./pages/support-chat/admin/admin-support').then(m => m.AdminSupport)
       },
@@ -192,7 +188,7 @@ export const routes: Routes = [
         path: "blocks",
         loadComponent: () => import('./pages/block/block').then(m => m.Block)
       },
-      { path: '', redirectTo: 'home', pathMatch: 'full' }
+      { path: '', redirectTo: 'history', pathMatch: 'full' }
     ]
   },
 
