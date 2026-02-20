@@ -439,7 +439,7 @@ public class PassengerRideTrackingFragment extends Fragment {
         if (panicTriggered) return;
 
         Location location =
-                new Location(lastVehicleLat, lastVehicleLng);
+                new Location(lastVehicleLng, lastVehicleLat);
         PanicRideRequest request = new PanicRideRequest(location);
 
         RetrofitClient.getClient(requireContext()).create(RideService.class)

@@ -407,7 +407,7 @@ public class DriverRideTrackingFragment extends Fragment {
         RetrofitClient.getClient(requireContext())
                 .create(RideService.class)
                 .panicRide(new PanicRideRequest(
-                        new Location(pos.getLatitude(), pos.getLongitude())))
+                        new Location(pos.getLongitude(), pos.getLatitude())))
                 .enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
