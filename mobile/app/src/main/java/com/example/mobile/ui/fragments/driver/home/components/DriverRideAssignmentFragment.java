@@ -154,44 +154,4 @@ public class DriverRideAssignmentFragment extends Fragment {
             }
         });
     }
-
-    /*private void cancelRide() {
-        RideAssignmentResponse ride = viewModel.getActiveRide().getValue();
-
-        if (ride == null || ride.id == null) {
-            Toast.makeText(getContext(), "No active ride", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Long rideId = ride.id;
-        Log.d(TAG, "cancelling a ride: " + rideId);
-
-        CancellationRequest cancellationRequest = new CancellationRequest("Driver cancelled the ride");
-
-        btnCancelAssignment.setEnabled(false);
-
-        RetrofitClient.getRideService(requireContext())
-                .cancelRide(rideId, cancellationRequest)
-                .enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            Log.d(TAG, "Ride cancelled successfully");
-                            Toast.makeText(getContext(), "Ride cancelled successfully", Toast.LENGTH_SHORT).show();
-                            viewModel.setRideStatus(DriverViewModel.STATE_WAITING);
-                        } else {
-                            Log.e(TAG, "Error while cancelling: " + response.code());
-                            Toast.makeText(getContext(), "Failed to cancel a ride", Toast.LENGTH_SHORT).show();
-                            btnCancelAssignment.setEnabled(true);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        Log.e(TAG, "Network error while cancelling a ride", t);
-                        Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                        btnCancelAssignment.setEnabled(true);
-                    }
-                });
-    }*/
 }
