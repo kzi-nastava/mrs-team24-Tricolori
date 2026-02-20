@@ -357,25 +357,11 @@ public class MainActivity extends AppCompatActivity {
         MenuItem logout           = menu.findItem(R.id.nav_logout);
         MenuItem statusSwitch     = menu.findItem(R.id.nav_status_switch);
         MenuItem changeRequests   = menu.findItem(R.id.changeRequestsReviewFragment);
-        // Get all menu items
-        MenuItem home = menu.findItem(R.id.homeFragment);
-        MenuItem history = menu.findItem(R.id.rideHistoryFragment);
-        // TODO: UNCOMMENT AFTER ADDING FRAGMENTS (for example pricelist, support...)
-        MenuItem supervise = menu.findItem(R.id.adminSuperviseFragment);
-//        MenuItem notifications = menu.findItem(R.id.notificationsFragment);
-        MenuItem pricelist = menu.findItem(R.id.pricelistFragment);
-        MenuItem support = menu.findItem(R.id.supportChatEntry);
-        MenuItem adminSupport = menu.findItem(R.id.adminConversationListFragment);
-        MenuItem profile = menu.findItem(R.id.userProfileFragment);
-        MenuItem logout = menu.findItem(R.id.nav_logout);
-        MenuItem statusSwitch = menu.findItem(R.id.nav_status_switch);
-        MenuItem changeRequests = menu.findItem(R.id.changeRequestsReviewFragment);
-        MenuItem blocks = menu.findItem(R.id.blockFragment);
         MenuItem driverRegistration = menu.findItem(R.id.adminDriverRegistrationFragment);
         MenuItem userReports = menu.findItem(R.id.userReportsFragment);
+        MenuItem blocks = menu.findItem(R.id.blockFragment);
 
         if (token != null && role != null) {
-            home.setVisible(true);
             history.setVisible(true);
             profile.setVisible(true);
             logout.setVisible(true);
@@ -383,6 +369,7 @@ public class MainActivity extends AppCompatActivity {
             userReports.setVisible(true);
 
             if ("ROLE_ADMIN".equals(role)) {
+                home.setVisible(false);
                 supervise.setVisible(true);
                 pricelist.setVisible(true);
                 statusSwitch.setVisible(false);
@@ -392,6 +379,7 @@ public class MainActivity extends AppCompatActivity {
                 blocks.setVisible(true);
                 adminSupport.setVisible(true);
             } else if ("ROLE_DRIVER".equals(role)) {
+                home.setVisible(true);
                 supervise.setVisible(false);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(true);
@@ -402,6 +390,7 @@ public class MainActivity extends AppCompatActivity {
                 blocks.setVisible(false);
 
             } else if ("ROLE_PASSENGER".equals(role)) {
+                home.setVisible(true);
                 supervise.setVisible(false);
                 pricelist.setVisible(false);
                 statusSwitch.setVisible(false);
