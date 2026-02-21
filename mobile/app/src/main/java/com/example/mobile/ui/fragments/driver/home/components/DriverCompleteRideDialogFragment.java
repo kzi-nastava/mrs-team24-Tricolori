@@ -11,12 +11,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.mobile.R;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.RideService;
+import com.example.mobile.ui.fragments.driver.home.DriverViewModel;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.Locale;
@@ -35,6 +37,8 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
     private static final String ARG_PRICE       = "price";
     private static final String ARG_PICKUP      = "pickup";
     private static final String ARG_DESTINATION = "destination";
+    private DriverViewModel driverViewModel;
+
 
     public static DriverCompleteRideDialogFragment newInstance(
             long rideId, double distance, int durationMinutes,
@@ -70,6 +74,8 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
         int    price    = args.getInt(ARG_PRICE);
         String pickup   = args.getString(ARG_PICKUP, "");
         String destination = args.getString(ARG_DESTINATION, "");
+        driverViewModel = new ViewModelProvider(requireActivity()).get(DriverViewModel.class);
+
 
         ((TextView) view.findViewById(R.id.tvDistance))
                 .setText(String.format(Locale.getDefault(), "%.1f km", distance));
@@ -102,20 +108,11 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
     }
 
     private void navigateHome() {
-        dismiss();
-        try {
-            NavController nav = Navigation.findNavController(
-                    requireActivity(), R.id.nav_host_fragment);
-            nav.navigate(R.id.driverHomeFragment);
-        } catch (Exception e) {
-            Log.w(TAG, "NavController navigate failed, falling back to popBackStack", e);
-            try {
-                requireActivity().getSupportFragmentManager().popBackStack(null,
-                        androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            } catch (Exception ex) {
-                Log.e(TAG, "popBackStack also failed", ex);
-            }
-        }
+        Toast.makeText(getContext(), "Ride completed!", Toast.LENGTH_SHORT).show();
+        driverViewModel.clearActiveRide();
+
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(R.id.driverHomeFragment);
     }
 
     private void completeRideOnBackend(long rideId) {

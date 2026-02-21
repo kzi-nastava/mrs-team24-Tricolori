@@ -15,6 +15,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
@@ -26,6 +28,7 @@ import com.example.mobile.dto.ride.RideTrackingResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.RideService;
 import com.example.mobile.ui.components.MapComponent;
+import com.example.mobile.ui.fragments.passenger.home.PassengerViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
@@ -50,6 +53,7 @@ public class PassengerRideTrackingFragment extends Fragment {
     private static final long TRACKING_INTERVAL_MS = 5000;
 
     private long rideId;
+    private PassengerViewModel passengerViewModel;
     private Handler trackingHandler;
     private Runnable trackingRunnable;
 
@@ -466,6 +470,10 @@ public class PassengerRideTrackingFragment extends Fragment {
 
     private void handleRideCompletion() {
         Toast.makeText(getContext(), "Ride completed!", Toast.LENGTH_SHORT).show();
-        requireActivity().getSupportFragmentManager().popBackStack();
+        stopTracking();
+        passengerViewModel.clearActiveRide();
+
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(R.id.passengerHomeFragment);
     }
 }
