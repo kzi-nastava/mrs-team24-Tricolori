@@ -4,16 +4,17 @@ import com.example.mobile.dto.ride.CancellationRequest;
 import com.example.mobile.dto.ride.DriverRideDetailResponse;
 import com.example.mobile.dto.ride.DriverRideHistoryResponse;
 import com.example.mobile.dto.ride.InconsistencyReportRequest;
+import com.example.mobile.dto.ride.Location;
 import com.example.mobile.dto.ride.OrderRequest;
 import com.example.mobile.dto.ride.PanicRideRequest;
 import com.example.mobile.dto.ride.PassengerRideDetailResponse;
-import com.example.mobile.dto.ride.PassengerRideHistoryResponse;
 import com.example.mobile.dto.ride.RideRatingRequest;
 import com.example.mobile.dto.ride.RideRatingStatusResponse;
 import com.example.mobile.dto.ride.RideTrackingResponse;
 import com.example.mobile.dto.ride.StopRideRequest;
 import com.example.mobile.dto.ride.StopRideResponse;
 import com.example.mobile.dto.vehicle.UpdateVehicleLocationRequest;
+import com.example.mobile.model.RideAssignmentResponse;
 
 import java.util.List;
 
@@ -27,6 +28,12 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface RideService {
+    @PUT("api/v1/rides/{rideId}/start")
+    Call<Void> startRide(@Path("rideId") Long rideId);
+
+    @GET("api/v1/rides/{id}")
+    Call<RideAssignmentResponse> getRideAssignment(@Path("id") Long rideId);
+
     @POST("api/v1/rides/order")
     Call<Long> bookRide(@Body OrderRequest request);
 
@@ -82,7 +89,7 @@ public interface RideService {
     );
   
     @PUT("api/v1/rides/{id}/cancel")
-    Call<ResponseBody> cancelRide(@Path("id") Long rideId, @Body CancellationRequest request);
+    Call<Void> cancelRide(@Path("id") Long rideId, @Body CancellationRequest request);
 
     @GET("api/v1/rides/ongoing")
     Call<List<RideTrackingResponse>> getAllOngoingRides();

@@ -1,6 +1,7 @@
 package com.example.mobile.ui.fragments.driver.home.components;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +21,7 @@ import org.osmdroid.util.GeoPoint;
 import java.util.ArrayList;
 
 public class DriverWaitingFragment extends Fragment {
-
+    private static final String TAG = "DriverWaiting";
     private DriverViewModel viewModel;
 
     @Nullable
@@ -33,37 +34,28 @@ public class DriverWaitingFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // ============ SETUP VIEWMODEL ============
         viewModel = new ViewModelProvider(requireActivity()).get(DriverViewModel.class);
 
+        // ============ PULSE ANIMATION ============
         View pulseView = view.findViewById(R.id.pulseView);
         startPulseAnimation(pulseView);
 
-        view.postDelayed(() -> {
-            if (isAdded()) {
-                RideAssignmentResponse mockRide = createMockRide();
-                viewModel.updateActiveRide(mockRide);
+        // ============ POČNI SLUŠATI RIDE ASSIGNMENTS ============
+        // 🆕 OVO JE GLAVNA LINIJA
+        viewModel.startListeningForRideAssignments();
+
+        // ============ SLUŠAJ RIDE ASSIGNMENTS ============
+        viewModel.getActiveRide().observe(getViewLifecycleOwner(), ride -> {
+            if (ride != null) {
+                Log.d(TAG, "Ride received!");
+                // DriverHomeFragment će viditi STATE_ASSIGNED i prikazati detalje
             }
-        }, 5000);
+        });
     }
 
     private void startPulseAnimation(View view) {
         Animation pulse = AnimationUtils.loadAnimation(getContext(), R.anim.pulse_ring);
         view.startAnimation(pulse);
-    }
-
-    private RideAssignmentResponse createMockRide() {
-        RideAssignmentResponse ride = new RideAssignmentResponse();
-
-        ride.passengerFirstName = "Mali";
-        ride.passengerLastName = "Bobi";
-        ride.passengerPhoneNum = "+381 65 123 456";
-
-        ride.pickupAddress = "Mise Dimitrijevica 40";
-        ride.destinationAddress = "Lasla Gala 21";
-        ride.price = 480.0;
-        ride.distanceKm = 0.78;
-
-        ride.routeGeometry = "gscsGsb`xBkIiIMMOOGGIIKIGGYYII_A{@OOk@i@m@k@KIEEGIFS`ByEDIHWNq@VeAPe@BIDKBInAyDJMMO_AkA";
-        return ride;
     }
 }

@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class StompChatService {
 
     private static final String TAG = "StompChatService";
-    private static final String WS_URL = "ws://192.168.1.7:8080/ws";
+    private static final String WS_URL = "ws://192.168.31.196:8080/ws";
     private static final int RECONNECT_DELAY_MS = 5000;
 
     private WebSocket webSocket;

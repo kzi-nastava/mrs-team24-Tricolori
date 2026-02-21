@@ -34,6 +34,23 @@
             app:destination="@id/changeRequestsReviewFragment" />
     </fragment>
 
+    <!--<fragment
+        android:id="@+id/driverCompleteRideDialogFragment"
+        android:label="Complete Ride Driver"
+        android:name="com.example.mobile.ui.fragments.driver.home.components.DriverCompleteRideDialogFragment" >
+        <action
+            android:id="@+id/action_completeRideDriver_to_driverHome"
+            app:destination="@+id/driverHomeFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/passengerCompleteRideDialogFragment"
+        android:label="Complete Ride Passenger"
+        android:name="com.example.mobile.ui.fragments.passenger.home.components.PassengerRideTrackingFragment" >
+        <action
+            android:id="@+id/action_completeRidePassenger_to_driverHome"
+            app:destination="@+id/passengerHomeFragment" />
+    </fragment>-->
 
     <fragment
         android:id="@+id/loginFragment"

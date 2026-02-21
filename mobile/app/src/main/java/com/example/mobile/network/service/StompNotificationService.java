@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class StompNotificationService {
 
     private static final String TAG = "StompNotifService";
-    private static final String WS_URL = "ws://192.168.1.7:8080/ws";
+    private static final String WS_URL = "ws://192.168.31.196:8080/ws";
 
     private static final int  RECONNECT_BASE_MS      = 3_000;
     private static final int  MAX_RECONNECT_ATTEMPTS = 10;
