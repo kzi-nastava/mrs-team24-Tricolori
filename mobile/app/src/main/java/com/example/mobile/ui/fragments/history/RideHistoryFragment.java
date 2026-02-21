@@ -1,6 +1,9 @@
 package com.example.mobile.ui.fragments.history;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +24,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.mobile.R;
 import com.example.mobile.ui.fragments.RideDetailsDialogFragment;
 import com.example.mobile.ui.models.Ride;
+import com.example.mobile.utils.ShakeDetector;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -56,6 +60,19 @@ public class RideHistoryFragment extends Fragment {
 
     // Adapter
     private PagedRideHistoryAdapter adapter;
+
+    private SensorManager sensorManager;
+    private ShakeDetector shakeDetector;
+
+    private static final String[][] SORT_CYCLE = {
+            {"createdAt", "DESC"},
+            {"createdAt", "ASC"},
+            {"price",     "DESC"},
+            {"price",     "ASC"},
+            {"status",    "ASC"},
+            {"route",     "ASC"},
+    };
+    private int sortCycleIndex = 0;
 
     private final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -104,7 +121,26 @@ public class RideHistoryFragment extends Fragment {
         setupListeners();
         observeViewModel();
 
+        setupShakeDetector();
+
+        // Initial load
         viewModel.loadRideHistory(requireContext());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Sensor accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (accel != null) {
+            sensorManager.registerListener(shakeDetector, accel,
+                    SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(shakeDetector);
     }
 
     private void initViews(View view, RideHistoryViewModel.Role role) {
@@ -290,5 +326,23 @@ public class RideHistoryFragment extends Fragment {
         RideDetailsDialogFragment dialog =
                 RideDetailsDialogFragment.newInstance((long) ride.getId(), roleString);
         dialog.show(getParentFragmentManager(), "RideDetailsDialog");
+    }
+
+    private void setupShakeDetector() {
+        sensorManager = (SensorManager) requireContext()
+                .getSystemService(Context.SENSOR_SERVICE);
+
+        shakeDetector = new ShakeDetector();
+        shakeDetector.setOnShakeListener(count -> {
+            sortCycleIndex = (sortCycleIndex + 1) % SORT_CYCLE.length;
+            String col = SORT_CYCLE[sortCycleIndex][0];
+            String dir = SORT_CYCLE[sortCycleIndex][1];
+
+            viewModel.setSorting(col, dir);
+            viewModel.loadRideHistory(requireContext());
+
+            String msg = "Sort: " + col + " " + dir;
+            Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+        });
     }
 }
