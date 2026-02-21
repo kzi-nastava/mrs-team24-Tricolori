@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
@@ -29,6 +30,7 @@ import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.PricelistService;
 import com.example.mobile.network.service.RideService;
 import com.example.mobile.ui.components.MapComponent;
+import com.example.mobile.ui.fragments.driver.home.DriverViewModel;
 import com.google.android.material.button.MaterialButton;
 
 import org.osmdroid.bonuspack.routing.OSRMRoadManager;
@@ -353,6 +355,68 @@ public class DriverRideTrackingFragment extends Fragment {
         simRunnable = null;
     }
 
+    private void terminateRide(boolean withDelay) {
+        stopSimulation();
+        int delayMs = withDelay ? 2000 : 0;
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (!isAdded() || getActivity() == null) return;
+            DriverViewModel vm = new ViewModelProvider(requireActivity())
+                    .get(DriverViewModel.class);
+            vm.clearActiveRide();
+        }, delayMs);
+    }
+
+    private void triggerPanic() {
+        if (panicTriggered) return;
+        GeoPoint pos = vehicleMarker != null ? vehicleMarker.getPosition() : new GeoPoint(pickupLat, pickupLng);
+        RetrofitClient.getClient(requireContext())
+                .create(RideService.class)
+                .panicRide(new PanicRideRequest(
+                        new Location(pos.getLongitude(), pos.getLatitude())))
+                .enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            panicTriggered = true;
+                            btnPanic.setEnabled(false);
+                            btnPanic.setText("PANIC Alert Sent");
+                            Toast.makeText(getContext(), "Emergency services notified", Toast.LENGTH_LONG).show();
+                            terminateRide(true);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(getContext(), "Failed to send panic alert", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void triggerStop() {
+        if (stopTriggered) return;
+        GeoPoint pos = vehicleMarker != null ? vehicleMarker.getPosition() : new GeoPoint(pickupLat, pickupLng);
+        RetrofitClient.getClient(requireContext())
+                .create(RideService.class)
+                .stopRide(new StopRideRequest(pos.getLatitude(), pos.getLongitude()))
+                .enqueue(new Callback<StopRideResponse>() {
+                    @Override
+                    public void onResponse(Call<StopRideResponse> call, Response<StopRideResponse> response) {
+                        if (response.isSuccessful()) {
+                            stopTriggered = true;
+                            btnStopRide.setEnabled(false);
+                            btnStopRide.setText("Ride Stopped");
+                            terminateRide(true);
+                        } else {
+                            Toast.makeText(getContext(), "Failed to stop ride", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<StopRideResponse> call, Throwable t) {
+                        Toast.makeText(getContext(), "Network error", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
     private void advanceVehicle() {
         if (routePoints.isEmpty()) return;
 
@@ -397,57 +461,6 @@ public class DriverRideTrackingFragment extends Fragment {
                     @Override public void onResponse(Call<Void> c, Response<Void> r) {}
                     @Override public void onFailure(Call<Void> c, Throwable t) {
                         Log.e(TAG, "updateVehicleLocation failed", t);
-                    }
-                });
-    }
-
-    private void triggerPanic() {
-        if (panicTriggered) return;
-        GeoPoint pos = vehicleMarker != null ? vehicleMarker.getPosition() : new GeoPoint(pickupLat, pickupLng);
-        RetrofitClient.getClient(requireContext())
-                .create(RideService.class)
-                .panicRide(new PanicRideRequest(
-                        new Location(pos.getLongitude(), pos.getLatitude())))
-                .enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            panicTriggered = true;
-                            stopSimulation();
-                            btnPanic.setEnabled(false);
-                            btnPanic.setText("PANIC Alert Sent");
-                            Toast.makeText(getContext(), "Emergency services notified", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        Toast.makeText(getContext(), "Failed to send panic alert", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void triggerStop() {
-        if (stopTriggered) return;
-        GeoPoint pos = vehicleMarker != null ? vehicleMarker.getPosition() : new GeoPoint(pickupLat, pickupLng);
-        RetrofitClient.getClient(requireContext())
-                .create(RideService.class)
-                .stopRide(new StopRideRequest(pos.getLatitude(), pos.getLongitude()))
-                .enqueue(new Callback<StopRideResponse>() {
-                    @Override
-                    public void onResponse(Call<StopRideResponse> call, Response<StopRideResponse> response) {
-                        if (response.isSuccessful()) {
-                            stopTriggered = true;
-                            stopSimulation();
-                            btnStopRide.setEnabled(false);
-                            btnStopRide.setText("Ride Stopped");
-                            requireActivity().getSupportFragmentManager().popBackStack();
-                        } else {
-                            Toast.makeText(getContext(), "Failed to stop ride", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<StopRideResponse> call, Throwable t) {
-                        Toast.makeText(getContext(), "Network error", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
