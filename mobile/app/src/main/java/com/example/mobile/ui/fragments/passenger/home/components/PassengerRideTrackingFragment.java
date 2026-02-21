@@ -119,6 +119,7 @@ public class PassengerRideTrackingFragment extends Fragment {
         if (getArguments() != null) {
             rideId = getArguments().getLong(ARG_RIDE_ID);
         }
+        passengerViewModel = new ViewModelProvider(requireActivity()).get(PassengerViewModel.class);
 
         initViews(view);
         setupMap();
