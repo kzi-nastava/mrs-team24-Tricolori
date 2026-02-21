@@ -111,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
             updateMenuVisibility();
             updateNavigationHeader();
 
-            // Start the notification service if the user is already logged in
-            // (e.g. app reopened after being killed while logged in)
             maybeStartNotificationService();
 
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
@@ -142,11 +140,15 @@ public class MainActivity extends AppCompatActivity {
                     SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
                     String userRole = prefs.getString("user_role", "");
 
-                    Bundle args = new Bundle();
-                    args.putString("role", "ROLE_PASSENGER".equals(userRole) ? "PASSENGER" : "DRIVER");
-
                     drawerLayout.closeDrawer(GravityCompat.START);
-                    navController.navigate(R.id.rideHistoryFragment, args);
+
+                    if ("ROLE_DRIVER".equals(userRole)) {
+                        navController.navigate(R.id.driverRideHistoryFragment);
+                    } else if ("ROLE_ADMIN".equals(userRole)) {
+                        navController.navigate(R.id.adminRideHistoryFragment);
+                    } else {
+                        navController.navigate(R.id.passengerRideHistoryFragment);
+                    }
                     return true;
                 }
 
@@ -233,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                // Ask the user — result handled in onRequestPermissionsResult
                 ActivityCompat.requestPermissions(
                         this,
                         new String[]{Manifest.permission.POST_NOTIFICATIONS},
@@ -241,7 +242,6 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        // Permission already granted (or not needed on older Android) — start immediately
         startNotificationService();
     }
 
@@ -251,8 +251,6 @@ public class MainActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
-            // Start regardless — the service will still maintain the STOMP connection
-            // and update the in-app fragment even if the user denied push notifications.
             startNotificationService();
         }
     }
@@ -323,7 +321,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void logoutUser() {
-        // Stop the notification service before clearing credentials
         stopNotificationService();
 
         SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
@@ -348,20 +345,20 @@ public class MainActivity extends AppCompatActivity {
 
         Menu menu = navigationView.getMenu();
 
-        MenuItem home             = menu.findItem(R.id.homeFragment);
-        MenuItem history          = menu.findItem(R.id.rideHistoryFragment);
-        MenuItem supervise        = menu.findItem(R.id.adminSuperviseFragment);
-        MenuItem notifications    = menu.findItem(R.id.notificationsFragment);
-        MenuItem pricelist        = menu.findItem(R.id.pricelistFragment);
-        MenuItem support          = menu.findItem(R.id.supportChatEntry);
-        MenuItem adminSupport     = menu.findItem(R.id.adminConversationListFragment);
-        MenuItem profile          = menu.findItem(R.id.userProfileFragment);
-        MenuItem logout           = menu.findItem(R.id.nav_logout);
-        MenuItem statusSwitch     = menu.findItem(R.id.nav_status_switch);
-        MenuItem changeRequests   = menu.findItem(R.id.changeRequestsReviewFragment);
+        MenuItem home               = menu.findItem(R.id.homeFragment);
+        MenuItem history            = menu.findItem(R.id.rideHistoryFragment);
+        MenuItem supervise          = menu.findItem(R.id.adminSuperviseFragment);
+        MenuItem notifications      = menu.findItem(R.id.notificationsFragment);
+        MenuItem pricelist          = menu.findItem(R.id.pricelistFragment);
+        MenuItem support            = menu.findItem(R.id.supportChatEntry);
+        MenuItem adminSupport       = menu.findItem(R.id.adminConversationListFragment);
+        MenuItem profile            = menu.findItem(R.id.userProfileFragment);
+        MenuItem logout             = menu.findItem(R.id.nav_logout);
+        MenuItem statusSwitch       = menu.findItem(R.id.nav_status_switch);
+        MenuItem changeRequests     = menu.findItem(R.id.changeRequestsReviewFragment);
         MenuItem driverRegistration = menu.findItem(R.id.adminDriverRegistrationFragment);
-        MenuItem userReports = menu.findItem(R.id.userReportsFragment);
-        MenuItem blocks = menu.findItem(R.id.blockFragment);
+        MenuItem userReports        = menu.findItem(R.id.userReportsFragment);
+        MenuItem blocks             = menu.findItem(R.id.blockFragment);
 
         if (token != null && role != null) {
             history.setVisible(true);
@@ -390,7 +387,6 @@ public class MainActivity extends AppCompatActivity {
                 support.setVisible(true);
                 adminSupport.setVisible(false);
                 blocks.setVisible(false);
-
             } else if ("ROLE_PASSENGER".equals(role)) {
                 home.setVisible(true);
                 supervise.setVisible(false);

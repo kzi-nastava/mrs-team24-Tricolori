@@ -15,6 +15,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.preference.PreferenceManager;
 
 import com.example.mobile.R;
@@ -26,6 +29,8 @@ import com.example.mobile.dto.ride.RideTrackingResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.RideService;
 import com.example.mobile.ui.components.MapComponent;
+import com.example.mobile.ui.fragments.driver.home.DriverViewModel;
+import com.example.mobile.ui.fragments.passenger.home.PassengerViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
@@ -50,6 +55,7 @@ public class PassengerRideTrackingFragment extends Fragment {
     private static final long TRACKING_INTERVAL_MS = 5000;
 
     private long rideId;
+    private PassengerViewModel passengerViewModel;
     private Handler trackingHandler;
     private Runnable trackingRunnable;
 
@@ -113,6 +119,7 @@ public class PassengerRideTrackingFragment extends Fragment {
         if (getArguments() != null) {
             rideId = getArguments().getLong(ARG_RIDE_ID);
         }
+        passengerViewModel = new ViewModelProvider(requireActivity()).get(PassengerViewModel.class);
 
         initViews(view);
         setupMap();
@@ -435,28 +442,32 @@ public class PassengerRideTrackingFragment extends Fragment {
                 });
     }
 
+    private void terminateRide(boolean withDelay) {
+        int delayMs = withDelay ? 2000 : 0;
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (!isAdded() || getActivity() == null) return;
+            passengerViewModel.clearActiveRide();
+        }, delayMs);
+    }
+
     private void triggerPanic() {
         if (panicTriggered) return;
-
-        Location location =
-                new Location(lastVehicleLng, lastVehicleLat);
-        PanicRideRequest request = new PanicRideRequest(location);
-
-        RetrofitClient.getClient(requireContext()).create(RideService.class)
-                .panicRide(request)
-                .enqueue(new Callback<Void>() {
+        GeoPoint pos = vehicleMarker != null ? vehicleMarker.getPosition() : new GeoPoint(pickupLat, pickupLng);
+        RetrofitClient.getClient(requireContext())
+                .create(RideService.class)
+                .panicRide(new PanicRideRequest(
+                        new Location(pos.getLongitude(), pos.getLatitude())))
+                .enqueue(new Callback<>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         if (response.isSuccessful()) {
                             panicTriggered = true;
                             btnPanic.setEnabled(false);
                             btnPanic.setText("PANIC Alert Sent");
-                            stopTracking();
-                            updateVehicleMarker();
                             Toast.makeText(getContext(), "Emergency services notified", Toast.LENGTH_LONG).show();
+                            terminateRide(true);
                         }
                     }
-
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
                         Toast.makeText(getContext(), "Failed to send panic alert", Toast.LENGTH_SHORT).show();
@@ -466,6 +477,8 @@ public class PassengerRideTrackingFragment extends Fragment {
 
     private void handleRideCompletion() {
         Toast.makeText(getContext(), "Ride completed!", Toast.LENGTH_SHORT).show();
-        requireActivity().getSupportFragmentManager().popBackStack();
+        stopTracking();
+        passengerViewModel.clearActiveRide();
+
     }
 }

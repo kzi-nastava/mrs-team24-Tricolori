@@ -22,9 +22,11 @@ import java.util.Locale;
 public class PagedRideHistoryAdapter extends RecyclerView.Adapter<PagedRideHistoryAdapter.RideViewHolder> {
 
     private List<Ride> rides = new ArrayList<>();
-    private OnRideClickListener listener;
+    private final OnRideClickListener listener;
 
-    // Date formatters
+    // When true the passenger/person name column is shown (driver & admin views)
+    private final boolean showPersonName;
+
     private final SimpleDateFormat inputDateTimeFormat =
             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
     private final SimpleDateFormat inputDateFormat =
@@ -38,9 +40,11 @@ public class PagedRideHistoryAdapter extends RecyclerView.Adapter<PagedRideHisto
         void onRideClick(Ride ride);
     }
 
-    public PagedRideHistoryAdapter(List<Ride> rides, OnRideClickListener listener) {
-        this.rides = rides != null ? rides : new ArrayList<>();
-        this.listener = listener;
+    public PagedRideHistoryAdapter(List<Ride> rides, OnRideClickListener listener,
+                                   boolean showPersonName) {
+        this.rides          = rides != null ? rides : new ArrayList<>();
+        this.listener       = listener;
+        this.showPersonName = showPersonName;
     }
 
     public void updateData(List<Ride> newRides) {
@@ -78,11 +82,11 @@ public class PagedRideHistoryAdapter extends RecyclerView.Adapter<PagedRideHisto
         public RideViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            cardView = itemView.findViewById(R.id.cardView);
-            tvRoute = itemView.findViewById(R.id.tvRoute);
-            tvDate = itemView.findViewById(R.id.tvDate);
-            tvPrice = itemView.findViewById(R.id.tvPrice);
-            tvStatus = itemView.findViewById(R.id.tvStatus);
+            cardView    = itemView.findViewById(R.id.cardView);
+            tvRoute     = itemView.findViewById(R.id.tvRoute);
+            tvDate      = itemView.findViewById(R.id.tvDate);
+            tvPrice     = itemView.findViewById(R.id.tvPrice);
+            tvStatus    = itemView.findViewById(R.id.tvStatus);
             tvPassenger = itemView.findViewById(R.id.tvPassenger);
 
             cardView.setOnClickListener(v -> {
@@ -96,17 +100,10 @@ public class PagedRideHistoryAdapter extends RecyclerView.Adapter<PagedRideHisto
         public void bind(Ride ride) {
             if (ride == null) return;
 
-            // Route
             tvRoute.setText(ride.getRoute());
-
-            // Date - format from backend
-            String formattedDate = formatDate(ride.getStartDate());
-            tvDate.setText(formattedDate);
-
-            // Price with RSD currency
+            tvDate.setText(formatDate(ride.getStartDate()));
             tvPrice.setText(String.format(Locale.getDefault(), "%.2f RSD", ride.getPrice()));
 
-            // Status
             String status = ride.getStatus();
             if (status != null && !status.isEmpty()) {
                 tvStatus.setText(formatStatus(status));
@@ -116,53 +113,42 @@ public class PagedRideHistoryAdapter extends RecyclerView.Adapter<PagedRideHisto
                 tvStatus.setTextColor(Color.GRAY);
             }
 
-            // Passenger/Driver name - hide if not present
-            // For passenger view, this will be hidden
-            // For admin view, this could show passenger or driver name
-            String personName = ride.getPassengerName();
-            if (personName != null && !personName.isEmpty()) {
-                tvPassenger.setText(personName);
-                tvPassenger.setVisibility(View.VISIBLE);
+            // Show passenger name for driver / admin; hide for passenger
+            if (showPersonName) {
+                String personName = ride.getPassengerName();
+                if (personName != null && !personName.isEmpty()) {
+                    tvPassenger.setText(personName);
+                    tvPassenger.setVisibility(View.VISIBLE);
+                } else {
+                    tvPassenger.setVisibility(View.GONE);
+                }
             } else {
                 tvPassenger.setVisibility(View.GONE);
             }
         }
 
         private String formatDate(String dateStr) {
-            if (dateStr == null || dateStr.isEmpty()) {
-                return "";
-            }
-
+            if (dateStr == null || dateStr.isEmpty()) return "";
             try {
                 Date date;
-
-                // Try parsing as full datetime: "2025-02-19T14:30:00"
                 if (dateStr.contains("T")) {
                     date = inputDateTimeFormat.parse(dateStr);
-                    return outputFormat.format(date); // "19.02.2025 • 14:30"
+                    return outputFormat.format(date);
                 } else {
-                    // Parse as date only: "2025-02-19"
                     date = inputDateFormat.parse(dateStr);
-                    return outputDateOnly.format(date); // "19.02.2025"
+                    return outputDateOnly.format(date);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                // Return as-is if parsing fails
                 return dateStr;
             }
         }
 
         private String formatStatus(String status) {
             if (status == null || status.isEmpty()) return "";
-
-            // Convert: COMPLETED -> Completed
-            // Convert: CANCELLED_BY_DRIVER -> Cancelled By Driver
             String formatted = status.replace("_", " ");
-
-            // Capitalize first letter of each word
-            String[] words = formatted.split(" ");
+            String[] words   = formatted.split(" ");
             StringBuilder result = new StringBuilder();
-
             for (String word : words) {
                 if (word.length() > 0) {
                     result.append(word.substring(0, 1).toUpperCase())
@@ -170,7 +156,6 @@ public class PagedRideHistoryAdapter extends RecyclerView.Adapter<PagedRideHisto
                             .append(" ");
                 }
             }
-
             return result.toString().trim();
         }
 
@@ -179,39 +164,31 @@ public class PagedRideHistoryAdapter extends RecyclerView.Adapter<PagedRideHisto
                 tvStatus.setTextColor(Color.GRAY);
                 return;
             }
-
-            String upperStatus = status.toUpperCase();
-
-            switch (upperStatus) {
+            switch (status.toUpperCase()) {
                 case "COMPLETED":
                 case "FINISHED":
-                    tvStatus.setTextColor(Color.parseColor("#15803D")); // Green
+                    tvStatus.setTextColor(Color.parseColor("#15803D"));
                     break;
-
                 case "ONGOING":
                 case "IN_PROGRESS":
                 case "ACTIVE":
-                    tvStatus.setTextColor(Color.parseColor("#1D4ED8")); // Blue
+                    tvStatus.setTextColor(Color.parseColor("#1D4ED8"));
                     break;
-
                 case "SCHEDULED":
                 case "PENDING":
                 case "WAITING":
-                    tvStatus.setTextColor(Color.parseColor("#9333EA")); // Purple
+                    tvStatus.setTextColor(Color.parseColor("#9333EA"));
                     break;
-
                 case "CANCELLED":
                 case "CANCELLED_BY_DRIVER":
                 case "CANCELLED_BY_PASSENGER":
                 case "REJECTED":
-                    tvStatus.setTextColor(Color.parseColor("#EA580C")); // Orange
+                    tvStatus.setTextColor(Color.parseColor("#EA580C"));
                     break;
-
                 case "PANIC":
                 case "STOPPED":
-                    tvStatus.setTextColor(Color.parseColor("#DC2626")); // Red
+                    tvStatus.setTextColor(Color.parseColor("#DC2626"));
                     break;
-
                 default:
                     tvStatus.setTextColor(Color.GRAY);
             }

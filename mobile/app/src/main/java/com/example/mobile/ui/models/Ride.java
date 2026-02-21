@@ -15,13 +15,11 @@ public class Ride implements Serializable {
     private String passengerName;
     private String passengerPhone;
     private double distance;
-    private String paymentMethod;
     private String notes;
 
     public Ride(int id, String route, String startDate, String endDate, double price,
                 String status, String startTime, String endTime, String duration,
-                String passengerName, String passengerPhone, double distance,
-                String paymentMethod, String notes) {
+                String passengerName, String passengerPhone, double distance, String notes) {
         this.id = id;
         this.route = route;
         this.startDate = startDate;
@@ -34,7 +32,6 @@ public class Ride implements Serializable {
         this.passengerName = passengerName;
         this.passengerPhone = passengerPhone;
         this.distance = distance;
-        this.paymentMethod = paymentMethod;
         this.notes = notes;
     }
 
@@ -51,7 +48,6 @@ public class Ride implements Serializable {
     public String getPassengerName() { return passengerName; }
     public String getPassengerPhone() { return passengerPhone; }
     public double getDistance() { return distance; }
-    public String getPaymentMethod() { return paymentMethod; }
     public String getNotes() { return notes; }
 
     // Setters
@@ -67,6 +63,5 @@ public class Ride implements Serializable {
     public void setPassengerName(String passengerName) { this.passengerName = passengerName; }
     public void setPassengerPhone(String passengerPhone) { this.passengerPhone = passengerPhone; }
     public void setDistance(double distance) { this.distance = distance; }
-    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
     public void setNotes(String notes) { this.notes = notes; }
 }

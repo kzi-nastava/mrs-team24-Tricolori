@@ -52,7 +52,7 @@ public class RideHistoryFragment extends Fragment {
     private Button btnPrevPage, btnNextPage;
     private TextView tvPageInfo, tvRideCount;
 
-    // UI Components - Sorting headers (optional)
+    // UI Components - Sorting headers
     private View sortRouteHeader, sortDateHeader, sortPriceHeader, sortStatusHeader;
 
     // ViewModel
@@ -77,9 +77,12 @@ public class RideHistoryFragment extends Fragment {
     private final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
-    // Factory methods
     public static RideHistoryFragment forPassenger() {
         return newInstance(RideHistoryViewModel.Role.PASSENGER);
+    }
+
+    public static RideHistoryFragment forDriver() {
+        return newInstance(RideHistoryViewModel.Role.DRIVER);
     }
 
     public static RideHistoryFragment forAdmin() {
@@ -104,20 +107,17 @@ public class RideHistoryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(RideHistoryViewModel.class);
 
-        // Set role from arguments
         String roleString = getArguments() != null
                 ? getArguments().getString(ARG_ROLE, RideHistoryViewModel.Role.PASSENGER.name())
                 : RideHistoryViewModel.Role.PASSENGER.name();
 
-        RideHistoryViewModel.Role role =
-                RideHistoryViewModel.Role.valueOf(roleString);
+        RideHistoryViewModel.Role role = RideHistoryViewModel.Role.valueOf(roleString);
         viewModel.setRole(role);
 
         initViews(view, role);
-        setupRecyclerView();
+        setupRecyclerView(role);
         setupListeners();
         observeViewModel();
 
@@ -144,63 +144,53 @@ public class RideHistoryFragment extends Fragment {
     }
 
     private void initViews(View view, RideHistoryViewModel.Role role) {
-        // Filter inputs
-        etStartDate = view.findViewById(R.id.etStartDate);
-        etEndDate = view.findViewById(R.id.etEndDate);
+        etStartDate   = view.findViewById(R.id.etStartDate);
+        etEndDate     = view.findViewById(R.id.etEndDate);
         etPersonEmail = view.findViewById(R.id.etPersonEmail);
         tilPersonEmail = view.findViewById(R.id.tilPersonEmail);
         btnApplyFilter = view.findViewById(R.id.btnApplyFilter);
         btnClearFilter = view.findViewById(R.id.btnClearFilter);
 
-        // Show/hide email filter for admin only
-        if (role == RideHistoryViewModel.Role.ADMIN) {
-            tilPersonEmail.setVisibility(View.VISIBLE);
-        } else {
-            tilPersonEmail.setVisibility(View.GONE);
-        }
+        tilPersonEmail.setVisibility(
+                role == RideHistoryViewModel.Role.ADMIN ? View.VISIBLE : View.GONE);
 
-        // RecyclerView
-        rvRides = view.findViewById(R.id.rvRides);
-        progressBar = view.findViewById(R.id.progressBar);
+        rvRides      = view.findViewById(R.id.rvRides);
+        progressBar  = view.findViewById(R.id.progressBar);
         tvEmptyState = view.findViewById(R.id.tvEmptyState);
         swipeRefresh = view.findViewById(R.id.swipeRefresh);
 
-        // Pagination
-        btnPrevPage = view.findViewById(R.id.btnPrevPage);
-        btnNextPage = view.findViewById(R.id.btnNextPage);
-        tvPageInfo = view.findViewById(R.id.tvPageInfo);
-        tvRideCount = view.findViewById(R.id.tvRideCount);
+        btnPrevPage  = view.findViewById(R.id.btnPrevPage);
+        btnNextPage  = view.findViewById(R.id.btnNextPage);
+        tvPageInfo   = view.findViewById(R.id.tvPageInfo);
+        tvRideCount  = view.findViewById(R.id.tvRideCount);
 
-        // Sorting headers
-        sortRouteHeader = view.findViewById(R.id.sortRouteHeader);
-        sortDateHeader = view.findViewById(R.id.sortDateHeader);
-        sortPriceHeader = view.findViewById(R.id.sortPriceHeader);
+        sortRouteHeader  = view.findViewById(R.id.sortRouteHeader);
+        sortDateHeader   = view.findViewById(R.id.sortDateHeader);
+        sortPriceHeader  = view.findViewById(R.id.sortPriceHeader);
         sortStatusHeader = view.findViewById(R.id.sortStatusHeader);
 
-        // Make date fields clickable
         etStartDate.setFocusable(false);
         etStartDate.setClickable(true);
         etEndDate.setFocusable(false);
         etEndDate.setClickable(true);
     }
 
-    private void setupRecyclerView() {
-        adapter = new PagedRideHistoryAdapter(new ArrayList<>(), this::onRideTapped);
+    private void setupRecyclerView(RideHistoryViewModel.Role role) {
+        boolean showPersonName = (role == RideHistoryViewModel.Role.DRIVER
+                || role == RideHistoryViewModel.Role.ADMIN);
 
+        adapter = new PagedRideHistoryAdapter(new ArrayList<>(), this::onRideTapped, showPersonName);
         rvRides.setLayoutManager(new LinearLayoutManager(getContext()));
         rvRides.setAdapter(adapter);
     }
 
     private void setupListeners() {
-        // Date pickers
         etStartDate.setOnClickListener(v -> showDatePicker(true));
         etEndDate.setOnClickListener(v -> showDatePicker(false));
 
-        // Filter buttons
         btnApplyFilter.setOnClickListener(v -> onFilterChange());
         btnClearFilter.setOnClickListener(v -> clearFilters());
 
-        // Pagination
         btnPrevPage.setOnClickListener(v -> {
             viewModel.previousPage();
             viewModel.loadRideHistory(requireContext());
@@ -211,41 +201,21 @@ public class RideHistoryFragment extends Fragment {
             viewModel.loadRideHistory(requireContext());
         });
 
-        // Swipe to refresh
         swipeRefresh.setOnRefreshListener(() -> {
             viewModel.resetPage();
             viewModel.loadRideHistory(requireContext());
         });
 
-        // Sorting headers
-        sortRouteHeader.setOnClickListener(v -> toggleSort("route"));
-        sortDateHeader.setOnClickListener(v -> toggleSort("createdAt"));
-        sortPriceHeader.setOnClickListener(v -> toggleSort("price"));
+        sortRouteHeader.setOnClickListener(v  -> toggleSort("route"));
+        sortDateHeader.setOnClickListener(v   -> toggleSort("createdAt"));
+        sortPriceHeader.setOnClickListener(v  -> toggleSort("price"));
         sortStatusHeader.setOnClickListener(v -> toggleSort("status"));
     }
 
-    private void toggleSort(String column) {
-        String currentSort = viewModel.getSortBy();
-        String currentDirection = viewModel.getSortDirection();
-
-        if (currentSort.equals(column)) {
-            // Toggle direction
-            String newDirection = currentDirection.equals("DESC") ? "ASC" : "DESC";
-            viewModel.setSorting(column, newDirection);
-        } else {
-            // New column, default to DESC
-            viewModel.setSorting(column, "DESC");
-        }
-
-        viewModel.loadRideHistory(requireContext());
-    }
-
     private void observeViewModel() {
-        // Observe rides
         viewModel.getRides().observe(getViewLifecycleOwner(), rides -> {
             adapter.updateData(rides);
 
-            // Show/hide empty state
             if (rides.isEmpty()) {
                 rvRides.setVisibility(View.GONE);
                 tvEmptyState.setVisibility(View.VISIBLE);
@@ -255,61 +225,59 @@ public class RideHistoryFragment extends Fragment {
             }
         });
 
-        // Observe loading state
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (swipeRefresh.isRefreshing()) {
-                swipeRefresh.setRefreshing(false);
-            }
+            if (swipeRefresh.isRefreshing()) swipeRefresh.setRefreshing(false);
 
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             rvRides.setVisibility(isLoading ? View.GONE : View.VISIBLE);
 
-            // Disable buttons during loading
             btnApplyFilter.setEnabled(!isLoading);
             btnClearFilter.setEnabled(!isLoading);
 
             updatePaginationUI();
         });
 
-        // Observe errors
         viewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
             }
         });
 
-        // Observe pagination changes
-        viewModel.getTotalElements().observe(getViewLifecycleOwner(), total -> {
-            updatePaginationUI();
-        });
-
-        viewModel.getCurrentPage().observe(getViewLifecycleOwner(), page -> {
-            updatePaginationUI();
-        });
+        viewModel.getTotalElements().observe(getViewLifecycleOwner(), total -> updatePaginationUI());
+        viewModel.getCurrentPage().observe(getViewLifecycleOwner(), page -> updatePaginationUI());
     }
 
     private void updatePaginationUI() {
         Boolean isLoading = viewModel.getIsLoading().getValue();
-        boolean loading = isLoading != null && isLoading;
+        boolean loading   = isLoading != null && isLoading;
 
         Integer currentPage = viewModel.getCurrentPage().getValue();
         int pageNum = currentPage != null ? currentPage : 0;
 
-        // Update page info
-        tvPageInfo.setText(String.format(Locale.getDefault(),
-                "Page %d", pageNum + 1));
+        tvPageInfo.setText(String.format(Locale.getDefault(), "Page %d", pageNum + 1));
 
-        // Update ride count
         Integer total = viewModel.getTotalElements().getValue();
-        int totalCount = total != null ? total : 0;
+        int totalCount   = total != null ? total : 0;
         int currentCount = adapter.getItemCount();
 
         tvRideCount.setText(String.format(Locale.getDefault(),
                 "Showing %d of %d rides", currentCount, totalCount));
 
-        // Enable/disable pagination buttons
         btnPrevPage.setEnabled(!loading && viewModel.canGoPrevious());
         btnNextPage.setEnabled(!loading && viewModel.canGoNext());
+    }
+
+    private void toggleSort(String column) {
+        String currentSort      = viewModel.getSortBy();
+        String currentDirection = viewModel.getSortDirection();
+
+        if (currentSort.equals(column)) {
+            viewModel.setSorting(column, currentDirection.equals("DESC") ? "ASC" : "DESC");
+        } else {
+            viewModel.setSorting(column, "DESC");
+        }
+
+        viewModel.loadRideHistory(requireContext());
     }
 
     private void onFilterChange() {
@@ -341,11 +309,8 @@ public class RideHistoryFragment extends Fragment {
                 (v, year, month, day) -> {
                     cal.set(year, month, day);
                     String selected = dateFormat.format(cal.getTime());
-                    if (isStartDate) {
-                        etStartDate.setText(selected);
-                    } else {
-                        etEndDate.setText(selected);
-                    }
+                    if (isStartDate) etStartDate.setText(selected);
+                    else             etEndDate.setText(selected);
                 },
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),

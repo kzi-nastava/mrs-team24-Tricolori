@@ -34,24 +34,6 @@
             app:destination="@id/changeRequestsReviewFragment" />
     </fragment>
 
-    <!--<fragment
-        android:id="@+id/driverCompleteRideDialogFragment"
-        android:label="Complete Ride Driver"
-        android:name="com.example.mobile.ui.fragments.driver.home.components.DriverCompleteRideDialogFragment" >
-        <action
-            android:id="@+id/action_completeRideDriver_to_driverHome"
-            app:destination="@+id/driverHomeFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/passengerCompleteRideDialogFragment"
-        android:label="Complete Ride Passenger"
-        android:name="com.example.mobile.ui.fragments.passenger.home.components.PassengerRideTrackingFragment" >
-        <action
-            android:id="@+id/action_completeRidePassenger_to_driverHome"
-            app:destination="@+id/passengerHomeFragment" />
-    </fragment>-->
-
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.mobile.ui.fragments.LoginFragment"
@@ -127,9 +109,13 @@
 
     <fragment
         android:id="@+id/driverRideHistoryFragment"
-        android:name="com.example.mobile.ui.fragments.DriverRideHistoryFragment"
+        android:name="com.example.mobile.ui.fragments.history.RideHistoryFragment"
         android:label="Ride History"
-        tools:layout="@layout/fragment_driver_ride_history">
+        tools:layout="@layout/fragment_ride_history">
+        <argument
+            android:name="role"
+            app:argType="string"
+            android:defaultValue="DRIVER" />
         <action
             android:id="@+id/action_driverRideHistory_to_home"
             app:destination="@id/driverHomeFragment" />
@@ -177,7 +163,7 @@
             android:id="@+id/action_passengerRideHistory_to_home"
             app:destination="@id/passengerHomeFragment" />
         <action
-            android:id="@+id/action_passengerRideHistory_to_rating"
+            android:id="@+id/action_to_rideRatingFragment"
             app:destination="@id/rideRatingFragment" />
     </fragment>
 
@@ -284,8 +270,7 @@
         <action
             android:id="@+id/action_profile_to_reports"
             app:destination="@+id/userReportsFragment" />
-      
-      <action
+        <action
             android:id="@+id/action_profile_to_block"
             app:destination="@id/blockFragment" />
     </fragment>
@@ -367,12 +352,6 @@
             app:nullable="true"
             android:defaultValue="@null" />
     </fragment>
-
-    <fragment
-        android:id="@+id/adminConversationListFragment"
-        android:name="com.example.mobile.ui.fragments.AdminConversationListFragment"
-        android:label="Support Chats"
-        tools:layout="@layout/fragment_admin_conversation_list" />
 
     <fragment
         android:id="@+id/notificationsFragment"
