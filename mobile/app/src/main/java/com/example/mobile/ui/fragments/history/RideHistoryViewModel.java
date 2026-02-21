@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.mobile.dto.ride.DriverRideHistoryResponse;
 import com.example.mobile.network.RetrofitClient;
 import com.example.mobile.network.service.RideService;
 import com.example.mobile.ui.models.Ride;
@@ -29,7 +30,7 @@ public class RideHistoryViewModel extends ViewModel {
     private static final String TAG = "PagedRideHistoryVM";
 
     public enum Role {
-        PASSENGER, ADMIN
+        PASSENGER, DRIVER, ADMIN
     }
 
     // LiveData for UI state
@@ -54,33 +55,15 @@ public class RideHistoryViewModel extends ViewModel {
     private Role role;
 
     // Getters for LiveData
-    public LiveData<List<Ride>> getRides() {
-        return rides;
-    }
+    public LiveData<List<Ride>> getRides() { return rides; }
+    public LiveData<Boolean> getIsLoading() { return isLoading; }
+    public LiveData<String> getErrorMessage() { return errorMessage; }
+    public LiveData<Integer> getTotalElements() { return totalElements; }
+    public LiveData<Integer> getCurrentPage() { return currentPage; }
+    public int getSize() { return size; }
 
-    public LiveData<Boolean> getIsLoading() {
-        return isLoading;
-    }
-
-    public LiveData<String> getErrorMessage() {
-        return errorMessage;
-    }
-
-    public LiveData<Integer> getTotalElements() {
-        return totalElements;
-    }
-
-    public LiveData<Integer> getCurrentPage() {
-        return currentPage;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
+    public void setRole(Role role) { this.role = role; }
+    public Role getRole() { return role; }
 
     // Pagination methods
     public void nextPage() {
@@ -108,9 +91,7 @@ public class RideHistoryViewModel extends ViewModel {
         return total != null && (page + 1) * size < total;
     }
 
-    public boolean canGoPrevious() {
-        return page > 0;
-    }
+    public boolean canGoPrevious() { return page > 0; }
 
     // Filter methods
     public void setDateRange(String start, String end) {
@@ -118,9 +99,7 @@ public class RideHistoryViewModel extends ViewModel {
         this.endDate = end;
     }
 
-    public void setPersonEmail(String email) {
-        this.personEmail = email;
-    }
+    public void setPersonEmail(String email) { this.personEmail = email; }
 
     public void clearFilters() {
         this.startDate = "";
@@ -138,13 +117,8 @@ public class RideHistoryViewModel extends ViewModel {
         currentPage.setValue(page);
     }
 
-    public String getSortBy() {
-        return sortBy;
-    }
-
-    public String getSortDirection() {
-        return sortDirection;
-    }
+    public String getSortBy() { return sortBy; }
+    public String getSortDirection() { return sortDirection; }
 
     // Main load method
     public void loadRideHistory(Context context) {
@@ -161,11 +135,71 @@ public class RideHistoryViewModel extends ViewModel {
             return;
         }
 
-        if (role == Role.PASSENGER) {
-            loadPassengerHistory(context);
-        } else {
-            loadAdminHistory(context);
+        switch (role) {
+            case DRIVER:
+                loadDriverHistory(context);
+                break;
+            case ADMIN:
+                loadAdminHistory(context);
+                break;
+            default:
+                loadPassengerHistory(context);
+                break;
         }
+    }
+
+    private void loadDriverHistory(Context context) {
+        RideService rideService =
+                RetrofitClient.getClient(context).create(RideService.class);
+
+        String startDateParam = startDate.isEmpty() ? null : startDate;
+        String endDateParam   = endDate.isEmpty()   ? null : endDate;
+
+        rideService.getDriverRideHistory(startDateParam, endDateParam, sortBy, sortDirection)
+                .enqueue(new Callback<List<DriverRideHistoryResponse>>() {
+
+                    @Override
+                    public void onResponse(@NonNull Call<List<DriverRideHistoryResponse>> call,
+                                           @NonNull Response<List<DriverRideHistoryResponse>> response) {
+                        isLoading.setValue(false);
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            handleError(response);
+                            return;
+                        }
+
+                        List<DriverRideHistoryResponse> all = response.body();
+                        totalElements.setValue(all.size());
+
+                        int fromIndex = page * size;
+                        int toIndex   = Math.min(fromIndex + size, all.size());
+
+                        List<Ride> rideList = new ArrayList<>();
+                        if (fromIndex < all.size()) {
+                            for (DriverRideHistoryResponse dto : all.subList(fromIndex, toIndex)) {
+                                rideList.add(new Ride(
+                                        dto.getId().intValue(), safe(dto.getPickupAddress()) + " → " + safe(dto.getDestinationAddress()),
+                                        formatDateTime(dto.getStartDate()), formatDateTime(dto.getEndDate()),
+                                        dto.getPrice()    != null ? dto.getPrice()    : 0.0,
+                                        dto.getStatus(), "", "", "", "",
+                                        "", dto.getDistance() != null ? dto.getDistance() : 0.0,
+                                        null
+                                ));
+                            }
+                        }
+
+                        currentPage.setValue(page);
+                        rides.setValue(rideList);
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<DriverRideHistoryResponse>> call,
+                                          @NonNull Throwable t) {
+                        isLoading.setValue(false);
+                        errorMessage.setValue("Network error: " + t.getMessage());
+                        Log.e(TAG, "Driver history failure", t);
+                    }
+                });
     }
 
     private void loadPassengerHistory(Context context) {
@@ -173,38 +207,32 @@ public class RideHistoryViewModel extends ViewModel {
                 RetrofitClient.getClient(context).create(RideService.class);
 
         String startDateParam = startDate.isEmpty() ? null : startDate;
-        String endDateParam = endDate.isEmpty() ? null : endDate;
-        String sortParam = sortBy + "," + sortDirection;
+        String endDateParam   = endDate.isEmpty()   ? null : endDate;
+        String sortParam      = sortBy + "," + sortDirection;
 
-        rideService.getPassengerRideHistory(
-                startDateParam,
-                endDateParam,
-                page,
-                size,
-                sortParam
-        ).enqueue(new Callback<>() {
+        rideService.getPassengerRideHistory(startDateParam, endDateParam, page, size, sortParam)
+                .enqueue(new Callback<ResponseBody>() {
 
-            @Override
-            public void onResponse(Call<ResponseBody> call,
-                                   Response<ResponseBody> response) {
+                    @Override
+                    public void onResponse(@NonNull Call<ResponseBody> call,
+                                           @NonNull Response<ResponseBody> response) {
+                        isLoading.setValue(false);
 
-                isLoading.setValue(false);
+                        if (!response.isSuccessful() || response.body() == null) {
+                            handleError(response);
+                            return;
+                        }
 
-                if (!response.isSuccessful() || response.body() == null) {
-                    handleError(response);
-                    return;
-                }
+                        parsePagedResponse(response);
+                    }
 
-                parsePagedResponse(response);
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                isLoading.setValue(false);
-                errorMessage.setValue("Network error: " + t.getMessage());
-                Log.e(TAG, "Passenger history failure", t);
-            }
-        });
+                    @Override
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                        isLoading.setValue(false);
+                        errorMessage.setValue("Network error: " + t.getMessage());
+                        Log.e(TAG, "Passenger history failure", t);
+                    }
+                });
     }
 
     private void loadAdminHistory(Context context) {
@@ -212,40 +240,33 @@ public class RideHistoryViewModel extends ViewModel {
                 RetrofitClient.getClient(context).create(RideService.class);
 
         String startDateParam = startDate.isEmpty() ? null : startDate;
-        String endDateParam = endDate.isEmpty() ? null : endDate;
-        String emailParam = personEmail.isEmpty() ? null : personEmail;
-        String sortParam = sortBy + "," + sortDirection;
+        String endDateParam   = endDate.isEmpty()   ? null : endDate;
+        String emailParam     = personEmail.isEmpty() ? null : personEmail;
+        String sortParam      = sortBy + "," + sortDirection;
 
-        rideService.getAdminRideHistory(
-                emailParam,
-                startDateParam,
-                endDateParam,
-                page,
-                size,
-                sortParam
-        ).enqueue(new Callback<>() {
+        rideService.getAdminRideHistory(emailParam, startDateParam, endDateParam, page, size, sortParam)
+                .enqueue(new Callback<ResponseBody>() {
 
-            @Override
-            public void onResponse(@NonNull Call<ResponseBody> call,
-                                   @NonNull Response<ResponseBody> response) {
+                    @Override
+                    public void onResponse(@NonNull Call<ResponseBody> call,
+                                           @NonNull Response<ResponseBody> response) {
+                        isLoading.setValue(false);
 
-                isLoading.setValue(false);
+                        if (!response.isSuccessful() || response.body() == null) {
+                            handleError(response);
+                            return;
+                        }
 
-                if (!response.isSuccessful() || response.body() == null) {
-                    handleError(response);
-                    return;
-                }
+                        parsePagedResponse(response);
+                    }
 
-                parsePagedResponse(response);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                isLoading.setValue(false);
-                errorMessage.setValue("Network error: " + t.getMessage());
-                Log.e(TAG, "Admin history failure", t);
-            }
-        });
+                    @Override
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                        isLoading.setValue(false);
+                        errorMessage.setValue("Network error: " + t.getMessage());
+                        Log.e(TAG, "Admin history failure", t);
+                    }
+                });
     }
 
     private void parsePagedResponse(Response<ResponseBody> response) {
@@ -253,33 +274,29 @@ public class RideHistoryViewModel extends ViewModel {
             String json = response.body().string();
             JSONObject pageResponse = new JSONObject(json);
 
-            // Extract pagination info
             totalElements.setValue(pageResponse.optInt("totalElements", 0));
             currentPage.setValue(pageResponse.optInt("number", 0));
 
-            // Parse content array
             JSONArray content = pageResponse.getJSONArray("content");
             List<Ride> rideList = new ArrayList<>();
 
             for (int i = 0; i < content.length(); i++) {
                 JSONObject o = content.getJSONObject(i);
 
-                Ride ride = new Ride(
+                rideList.add(new Ride(
                         (int) o.optLong("id"),
                         o.optString("pickupAddress", "") + " → " +
                                 o.optString("destinationAddress", ""),
                         formatDateTime(o.optString("createdAt", "")),
-                        "", // endDate not in response
-                        o.has("price") && !o.isNull("price")
-                                ? o.getDouble("price") : 0.0,
-                        o.optString("status", ""),
-                        "", "", "", "", "", // driver/vehicle info not in response
-                        0.0, // distance not in response
                         "",
+                        o.has("price") && !o.isNull("price") ? o.getDouble("price") : 0.0,
+                        o.optString("status", ""),
+                        "", "", "",
+                        o.optString("passengerName", ""),
+                        "",
+                        0.0,
                         null
-                );
-
-                rideList.add(ride);
+                ));
             }
 
             rides.setValue(rideList);
@@ -291,12 +308,13 @@ public class RideHistoryViewModel extends ViewModel {
     }
 
     private String formatDateTime(String dateTime) {
-        // Format: "2025-02-19T14:30:00" -> "2025-02-19"
         if (dateTime != null && dateTime.length() >= 10) {
             return dateTime.substring(0, 10);
         }
         return "";
     }
+
+    private String safe(String s) { return s != null ? s : ""; }
 
     private void handleError(Response<?> response) {
         try {

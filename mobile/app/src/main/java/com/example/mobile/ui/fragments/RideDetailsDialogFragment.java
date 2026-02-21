@@ -50,8 +50,12 @@ public class RideDetailsDialogFragment extends DialogFragment {
     private static final String ARG_ROLE    = "role";
     private static final String TAG         = "RideDetailsDialog";
 
+    public static final String ROLE_DRIVER    = "DRIVER";
+    public static final String ROLE_PASSENGER = "PASSENGER";
+    public static final String ROLE_ADMIN     = "ADMIN";
+
     public static RideDetailsDialogFragment newInstance(Long rideId) {
-        return newInstance(rideId, DriverRideHistoryFragment.ROLE_DRIVER);
+        return newInstance(rideId, ROLE_DRIVER);
     }
 
     public static RideDetailsDialogFragment newInstance(Long rideId, String role) {
@@ -79,14 +83,18 @@ public class RideDetailsDialogFragment extends DialogFragment {
         Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
 
         long   rideId = getArguments().getLong(ARG_RIDE_ID);
-        String role   = getArguments().getString(ARG_ROLE, DriverRideHistoryFragment.ROLE_DRIVER);
+        String role   = getArguments().getString(ARG_ROLE, ROLE_DRIVER);
 
-        if (DriverRideHistoryFragment.ROLE_PASSENGER.equals(role)) {
-            fetchPassengerRideDetails(rideId, view);
-        } else if ("ADMIN".equals(role)) {
-            fetchAdminRideDetails(rideId, view);
-        } else {
-            fetchDriverRideDetails(rideId, view);
+        switch (role) {
+            case ROLE_PASSENGER:
+                fetchPassengerRideDetails(rideId, view);
+                break;
+            case ROLE_ADMIN:
+                fetchAdminRideDetails(rideId, view);
+                break;
+            default:
+                fetchDriverRideDetails(rideId, view);
+                break;
         }
 
         view.findViewById(R.id.btnClose).setOnClickListener(v -> dismiss());
@@ -105,13 +113,35 @@ public class RideDetailsDialogFragment extends DialogFragment {
         }
     }
 
+    private void fetchDriverRideDetails(long rideId, View view) {
+        RetrofitClient.getClient(requireContext()).create(RideService.class)
+                .getDriverRideDetail(rideId)
+                .enqueue(new Callback<DriverRideDetailResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<DriverRideDetailResponse> call,
+                                           @NonNull retrofit2.Response<DriverRideDetailResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            bindDriverData(view, response.body());
+                        } else {
+                            Log.e(TAG, "Driver detail error: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<DriverRideDetailResponse> call,
+                                          @NonNull Throwable t) {
+                        Log.e(TAG, "FAILURE", t);
+                    }
+                });
+    }
+
     private void fetchAdminRideDetails(long rideId, View view) {
         RetrofitClient.getClient(requireContext()).create(RideService.class)
                 .getAdminRideDetail(rideId)
-                .enqueue(new Callback<>() {
+                .enqueue(new Callback<DriverRideDetailResponse>() {
                     @Override
-                    public void onResponse(Call<DriverRideDetailResponse> call,
-                                           retrofit2.Response<DriverRideDetailResponse> response) {
+                    public void onResponse(@NonNull Call<DriverRideDetailResponse> call,
+                                           @NonNull retrofit2.Response<DriverRideDetailResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             bindDriverData(view, response.body());
                             view.findViewById(R.id.btnTrackRide).setVisibility(View.GONE);
@@ -121,28 +151,8 @@ public class RideDetailsDialogFragment extends DialogFragment {
                     }
 
                     @Override
-                    public void onFailure(Call<DriverRideDetailResponse> call, Throwable t) {
-                        Log.e(TAG, "FAILURE", t);
-                    }
-                });
-    }
-
-    private void fetchDriverRideDetails(long rideId, View view) {
-        RetrofitClient.getClient(requireContext()).create(RideService.class)
-                .getDriverRideDetail(rideId)
-                .enqueue(new Callback<DriverRideDetailResponse>() {
-                    @Override
-                    public void onResponse(Call<DriverRideDetailResponse> call,
-                                           retrofit2.Response<DriverRideDetailResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            bindDriverData(view, response.body());
-                        } else {
-                            Log.e(TAG, "Driver detail error: " + response.code());
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<DriverRideDetailResponse> call, Throwable t) {
+                    public void onFailure(@NonNull Call<DriverRideDetailResponse> call,
+                                          @NonNull Throwable t) {
                         Log.e(TAG, "FAILURE", t);
                     }
                 });
@@ -153,8 +163,8 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 .getPassengerRideDetail(rideId)
                 .enqueue(new Callback<PassengerRideDetailResponse>() {
                     @Override
-                    public void onResponse(Call<PassengerRideDetailResponse> call,
-                                           retrofit2.Response<PassengerRideDetailResponse> response) {
+                    public void onResponse(@NonNull Call<PassengerRideDetailResponse> call,
+                                           @NonNull retrofit2.Response<PassengerRideDetailResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             bindPassengerData(view, response.body());
                             checkRatingStatus(view, rideId, response.body());
@@ -164,38 +174,9 @@ public class RideDetailsDialogFragment extends DialogFragment {
                     }
 
                     @Override
-                    public void onFailure(Call<PassengerRideDetailResponse> call, Throwable t) {
+                    public void onFailure(@NonNull Call<PassengerRideDetailResponse> call,
+                                          @NonNull Throwable t) {
                         Log.e(TAG, "FAILURE", t);
-                    }
-                });
-    }
-
-    private void checkRatingStatus(View view, long rideId, PassengerRideDetailResponse dto) {
-        MaterialButton btnRate = view.findViewById(R.id.btnRateRide);
-        btnRate.setVisibility(View.GONE);
-
-        RetrofitClient.getClient(requireContext()).create(RideService.class)
-                .getRatingStatus(rideId)
-                .enqueue(new Callback<RideRatingStatusResponse>() {
-                    @Override
-                    public void onResponse(Call<RideRatingStatusResponse> call,
-                                           retrofit2.Response<RideRatingStatusResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            boolean canRate = Boolean.TRUE.equals(response.body().getCanRate());
-                            boolean rated   = Boolean.TRUE.equals(response.body().getRated());
-                            if (canRate && !rated) {
-                                btnRate.setVisibility(View.VISIBLE);
-                                btnRate.setOnClickListener(v ->
-                                        openRatingScreen(dto.getId(), safe(dto.getDriverName())));
-                            }
-                        } else {
-                            Log.w(TAG, "Rating status failed: " + response.code());
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<RideRatingStatusResponse> call, Throwable t) {
-                        Log.w(TAG, "Rating status error", t);
                     }
                 });
     }
@@ -209,9 +190,17 @@ public class RideDetailsDialogFragment extends DialogFragment {
         setDurationDistance(view, dto.getDuration(), dto.getDistance());
         setPrice(view, dto.getTotalPrice());
         setStatus(view, dto.getStatus());
-        setPersonRow(view, "Passenger", safe(dto.getPassengerName()), safe(dto.getPassengerPhone()));
-        bindRatings(view, "Passenger Rating", dto.getDriverRating(), dto.getVehicleRating(), dto.getRatingComment());
 
+        // Passenger info row
+        setPersonRow(view, "Passenger",
+                safe(dto.getPassengerName()),
+                safe(dto.getPassengerPhone()));
+
+        // Ratings the passenger gave
+        bindRatings(view, "Passenger Rating",
+                dto.getDriverRating(), dto.getVehicleRating(), dto.getRatingComment());
+
+        // Driver never leaves a rating from the history screen
         view.findViewById(R.id.btnRateRide).setVisibility(View.GONE);
         view.findViewById(R.id.vehicleContainer).setVisibility(View.GONE);
 
@@ -239,16 +228,20 @@ public class RideDetailsDialogFragment extends DialogFragment {
         boolean hasVehicle =
                 (dto.getVehicleModel() != null && !dto.getVehicleModel().isEmpty()) ||
                         (dto.getVehiclePlate() != null && !dto.getVehiclePlate().isEmpty());
-
         if (hasVehicle) {
-            ((TextView) view.findViewById(R.id.tvDetailVehicleModel)).setText(safe(dto.getVehicleModel()));
-            ((TextView) view.findViewById(R.id.tvDetailVehiclePlate)).setText(safe(dto.getVehiclePlate()));
+            ((TextView) view.findViewById(R.id.tvDetailVehicleModel))
+                    .setText(safe(dto.getVehicleModel()));
+            ((TextView) view.findViewById(R.id.tvDetailVehiclePlate))
+                    .setText(safe(dto.getVehiclePlate()));
             vehicleContainer.setVisibility(View.VISIBLE);
         } else {
             vehicleContainer.setVisibility(View.GONE);
         }
 
-        bindRatings(view, "Your Rating", dto.getDriverRating(), dto.getVehicleRating(), dto.getRatingComment());
+        bindRatings(view, "Your Rating",
+                dto.getDriverRating(), dto.getVehicleRating(), dto.getRatingComment());
+
+        // Rate button visibility is handled separately in checkRatingStatus
         view.findViewById(R.id.btnRateRide).setVisibility(View.GONE);
 
         setupTrackRideButton(view, dto);
@@ -258,6 +251,37 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 dto.getDropoffLatitude(), dto.getDropoffLongitude(),
                 safe(dto.getPickupAddress()),
                 safe(dto.getDropoffAddress()));
+    }
+
+    private void checkRatingStatus(View view, long rideId, PassengerRideDetailResponse dto) {
+        MaterialButton btnRate = view.findViewById(R.id.btnRateRide);
+        btnRate.setVisibility(View.GONE);
+
+        RetrofitClient.getClient(requireContext()).create(RideService.class)
+                .getRatingStatus(rideId)
+                .enqueue(new Callback<RideRatingStatusResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<RideRatingStatusResponse> call,
+                                           @NonNull retrofit2.Response<RideRatingStatusResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            boolean canRate = Boolean.TRUE.equals(response.body().getCanRate());
+                            boolean rated   = Boolean.TRUE.equals(response.body().getRated());
+                            if (canRate && !rated) {
+                                btnRate.setVisibility(View.VISIBLE);
+                                btnRate.setOnClickListener(v ->
+                                        openRatingScreen(dto.getId(), safe(dto.getDriverName())));
+                            }
+                        } else {
+                            Log.w(TAG, "Rating status failed: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<RideRatingStatusResponse> call,
+                                          @NonNull Throwable t) {
+                        Log.w(TAG, "Rating status error", t);
+                    }
+                });
     }
 
     private void setupDriverTrackRideButton(View view, DriverRideDetailResponse dto) {
@@ -281,6 +305,25 @@ public class RideDetailsDialogFragment extends DialogFragment {
         }
     }
 
+    private void setupTrackRideButton(View view, PassengerRideDetailResponse dto) {
+        MaterialButton btnTrack = view.findViewById(R.id.btnTrackRide);
+
+        if ("ONGOING".equalsIgnoreCase(dto.getStatus())) {
+            btnTrack.setVisibility(View.VISIBLE);
+            btnTrack.setOnClickListener(v -> {
+                dismiss();
+                Bundle args = new Bundle();
+                args.putLong("ride_id", dto.getId());
+
+                NavController navController = androidx.navigation.Navigation.findNavController(
+                        requireActivity(), R.id.nav_host_fragment);
+                navController.navigate(R.id.passengerRideTrackingFragment, args);
+            });
+        } else {
+            btnTrack.setVisibility(View.GONE);
+        }
+    }
+
     private void setRoute(View view, String pickup, String dropoff) {
         ((TextView) view.findViewById(R.id.tvDetailRoute)).setText(pickup + " → " + dropoff);
     }
@@ -295,15 +338,13 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 .setText(duration != null ? duration + " min" : "-");
         ((TextView) view.findViewById(R.id.tvDetailDistance))
                 .setText(distance != null
-                        ? String.format(Locale.getDefault(), "%.1f km", distance)
-                        : "-");
+                        ? String.format(Locale.getDefault(), "%.1f km", distance) : "-");
     }
 
     private void setPrice(View view, Double price) {
         ((TextView) view.findViewById(R.id.tvDetailPrice))
                 .setText(price != null
-                        ? String.format(Locale.getDefault(), "%.2f RSD", price)
-                        : "-");
+                        ? String.format(Locale.getDefault(), "%.2f RSD", price) : "-");
     }
 
     private void setStatus(View view, String status) {
@@ -347,39 +388,17 @@ public class RideDetailsDialogFragment extends DialogFragment {
 
     private void openRatingScreen(Long rideId, String driverName) {
         dismiss();
-
         NavController navController = androidx.navigation.Navigation.findNavController(
                 requireActivity(), R.id.nav_host_fragment);
-
         Bundle args = new Bundle();
         args.putLong("ride_id", rideId);
         args.putString("driver_name", driverName);
-
         navController.navigate(R.id.action_to_rideRatingFragment, args);
-    }
-
-    private void setupTrackRideButton(View view, PassengerRideDetailResponse dto) {
-        MaterialButton btnTrack = view.findViewById(R.id.btnTrackRide);
-
-        if ("ONGOING".equalsIgnoreCase(dto.getStatus())) {
-            btnTrack.setVisibility(View.VISIBLE);
-            btnTrack.setOnClickListener(v -> {
-                dismiss();
-                Bundle args = new Bundle();
-                args.putLong("ride_id", dto.getId());
-
-                NavController navController = androidx.navigation.Navigation.findNavController(
-                        requireActivity(), R.id.nav_host_fragment);
-                navController.navigate(R.id.passengerRideTrackingFragment, args);
-            });
-        } else {
-            btnTrack.setVisibility(View.GONE);
-        }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
     private void setupMap(View view,
-                          Double pickupLat,  Double pickupLng,
+                          Double pickupLat, Double pickupLng,
                           Double dropoffLat, Double dropoffLng,
                           String pickupAddr, String dropoffAddr) {
         MapView map = view.findViewById(R.id.rideMap);
@@ -437,7 +456,6 @@ public class RideDetailsDialogFragment extends DialogFragment {
                 }
 
                 JSONObject json = new JSONObject(response.body().string());
-
                 if (!json.has("routes") || json.getJSONArray("routes").length() == 0) {
                     drawFallbackLine(map, start, end);
                     return;
