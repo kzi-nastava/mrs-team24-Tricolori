@@ -473,7 +473,5 @@ public class PassengerRideTrackingFragment extends Fragment {
         stopTracking();
         passengerViewModel.clearActiveRide();
 
-        NavController navController = Navigation.findNavController(requireView());
-        navController.navigate(R.id.passengerHomeFragment);
     }
 }

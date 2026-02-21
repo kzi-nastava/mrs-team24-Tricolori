@@ -110,9 +110,6 @@ public class DriverCompleteRideDialogFragment extends DialogFragment {
     private void navigateHome() {
         Toast.makeText(getContext(), "Ride completed!", Toast.LENGTH_SHORT).show();
         driverViewModel.clearActiveRide();
-
-        NavController navController = Navigation.findNavController(requireView());
-        navController.navigate(R.id.driverHomeFragment);
     }
 
     private void completeRideOnBackend(long rideId) {
